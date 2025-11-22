@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_color"
+    tools:context=".SettingsActivity">
+
+    <!-- Toolbar for Back Button and Title -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/settings_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbar_color"
+        android:elevation="4dp"
+        app:title="Settings"
+        app:titleTextColor="@color/text_color"
+        app:popupTheme="@style/Theme.JustPatience.PopupOverlay" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Title for Theme Settings -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Appearance"
+                android:textColor="@color/text_color_secondary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"/>
+
+            <!-- Option: Show Card Hints -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_hints"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Show Card Movement Hints"
+                android:textColor="@color/text_color"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="16sp"
+                android:checked="true"/>
+
+            <!-- Option: Show Timer -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_timer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Show Game Timer"
+                android:textColor="@color/text_color"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="16sp"
+                android:checked="true"/>
+
+            <!-- Title for Account Settings -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Account"
+                android:textColor="@color/text_color_secondary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingTop="24dp"
+                android:paddingBottom="8dp"/>
+
+            <!-- Button: Logout -->
+            <Button
+                android:id="@+id/btn_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Logout"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/logout_button_color"
+                android:layout_marginTop="8dp"
+                android:padding="12dp"
+                app:cornerRadius="8dp"/>
+
+            <!-- Button: Reset High Score -->
+            <Button
+                android:id="@+id/btn_reset_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reset High Score"
+                android:textColor="@color/text_color"
+                android:backgroundTint="@color/secondary_button_color"
+                android:layout_marginTop="16dp"
+                android:padding="12dp"
+                app:cornerRadius="8dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

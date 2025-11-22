@@ -1,0 +1,77 @@
+<resources>
+    <string name="app_name">JustPatience</string>
+
+    <!-- Settings Activity Strings -->
+    <string name="win_rate_format">%s%%</string>
+
+    <!-- Dialog Strings (General) -->
+    <string name="confirm_logout_title">Confirm Logout</string>
+    <string name="confirm_logout_message">Are you sure you want to log out?</string>
+    <string name="logout">Logout</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm_reset_stats_title">Confirm Reset</string>
+    <string name="confirm_reset_stats_message">Are you sure you want to reset your game statistics? This action cannot be undone.</string>
+    <string name="reset">Reset</string> <string name="logout_action">Logout</string>
+    <string name="cancel_action">Cancel</string>
+    <string name="load_action">Load</string>
+
+    <!-- General Status Strings -->
+    <string name="status_logged_in">Logged In</string>
+    <string name="status_guest_user">Guest User</string>
+    <string name="status_loading">Loading Status...</string>
+    <string name="not_applicable">N/A</string>
+
+    <!-- Stats Strings -->
+    <string name="stats_played_format">Games Played: %d</string>
+    <string name="stats_high_score_format">High Score: %d</string>
+    <string name="stats_summary_format">Played: %d | High Score: %d</string>
+    <string name="stats_reset_success">Statistics successfully reset.</string>
+
+    <!-- Home Activity Strings -->
+    <string name="settings_button_description">Settings</string>
+    <string name="new_game_button_text">New Game</string>
+    <string name="load_game_button_text">Load Game</string>
+    <string name="confirm_new_game_message">A game is currently in progress. Starting a new game will discard your progress. Are you sure?</string>
+    <string name="undo_button_text">Undo</string>
+    <string name="time_format">Time: %s</string>
+    <string name="no_moves_to_undo">No moves to undo.</string>
+
+    <!-- Settings Activity Strings -->
+    <string name="setting_sfx">Sound Effects</string>
+    <string name="setting_hints">Enable Hints</string>
+    <string name="setting_reset_stats">Reset Statistics</string>
+    <string name="setting_sign_out">Sign Out</string>
+
+    <!-- Game Activity Strings (New) -->
+    <string name="game_title">Solitaire</string>
+    <string name="score_format">Score: %d</string>
+    <string name="moves_format">Moves: %d</string>
+    <string name="exit_game_title">Exit Game?</string>
+    <string name="exit_game_message">Do you want to save your current game before exiting?</string>
+    <string name="save_and_exit">Save &amp; Exit</string>
+    <string name="discard_and_exit">Discard &amp; Exit</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_hint">Hint</string>
+    <string name="action_restart">Restart Game</string>
+    <string name="restart_game_title">Restart Confirmation</string>
+    <string name="restart_game_message">Are you sure you want to restart? Your current progress will be lost if not saved.</string>
+    <string name="game_won_title">Congratulations!</string>
+    <string name="game_won_message">You won! Final Score: %1$d | Total Moves: %2$d</string>
+    <string name="game_lost_title">Game Over</string>
+    <string name="game_lost_message">Final Score: %1$d | Total Moves: %2$d</string>
+    <string name="exit_to_home">Exit to Home</string>
+
+    <string name="new_game_title">Start New Game</string>
+    <string name="new_game_message">Starting a new game will save your current progress, or overwrite it if no save slot is available. Continue?</string>
+    <string name="game_started">New game started!</string>
+
+    <string name="load_game_title">Load Saved Game</string>
+    <string name="load_game_message">Do you want to continue your last game? The current board state will be lost.</string>
+    <string name="game_loaded">Game loaded successfully!</string>
+    <string name="load_error">Failed to load saved game.</string>
+
+    <string name="congratulations_title">Congratulations, You Won!</string>
+    <string name="win_message">You solved the game with a final score of %1$d in %2$s! Well done!</string>
+    <string name="continue_playing">View Board</string>
+
+</resources>

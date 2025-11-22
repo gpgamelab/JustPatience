@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Undo Last Move -->
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo"
+        android:title="@string/action_undo"
+        app:showAsAction="ifRoom" />
+
+    <!-- Get a Hint -->
+    <item
+        android:id="@+id/action_hint"
+        android:icon="@drawable/ic_lightbulb"
+        android:title="@string/action_hint"
+        app:showAsAction="ifRoom" />
+
+    <!-- Restart Game (hidden in overflow) -->
+    <item
+        android:id="@+id/action_restart"
+        android:title="@string/action_restart"
+        app:showAsAction="never" />
+
+</menu>

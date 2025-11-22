@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "582303378154",
+    "project_id": "just-patience-backend",
+    "storage_bucket": "just-patience-backend.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582303378154:android:fad9167753630166994593",
+        "android_client_info": {
+          "package_name": "com.gpgamelab.justpatience"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXXxti0T46xA9a3fxDy22coRTKKRqjTIc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Standard Colors -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- Base Colors -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
+    <!-- App-Specific Theme Colors (Dark Theme) -->
+    <color name="background_color">#1E1E1E</color>
+    <color name="toolbar_color">#2C2C2C</color>
+
+    <!-- Text Colors -->
+    <color name="text_color">#FFFFFF</color>
+    <color name="text_color_secondary">#A0A0A0</color>
+
+    <!-- Button Colors -->
+    <color name="logout_button_color">#FF5252</color> <!-- Bright Red for warning/logout -->
+    <color name="secondary_button_color">#00BCD4</color> <!-- Cyan/Teal for secondary action -->
+
+    <!-- Custom App Colors -->
+    <color name="colorPrimary">#4CAF50</color> <!-- A nice green for the toolbar -->
+    <color name="colorPrimaryDark">#388E3C</color>
+    <color name="colorAccent">#FFC107</color>
+
+    <!-- Colors referenced by activity_home.xml -->
+    <color name="gray_dark">#616161</color>
+</resources>

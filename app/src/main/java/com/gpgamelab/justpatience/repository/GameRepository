@@ -1,0 +1,147 @@
+package com.gpgamelab.justpatience.repository
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import com.google.firebase.auth.FirebaseAuth // Import fixed
+import com.google.firebase.firestore.FirebaseFirestore // Import fixed
+import com.google.firebase.firestore.FieldValue // Import fixed
+import com.gpgamelab.justpatience.data.SettingsManager
+import com.gpgamelab.justpatience.data.SettingsManager.UserSettings
+import com.gpgamelab.justpatience.data.SettingsManager.UserStats
+import com.gpgamelab.justpatience.data.TokenManager
+import kotlinx.coroutines.flow.catch
+import java.io.IOException
+
+/**
+ * Repository layer responsible for managing all non-authentication related user data,
+ * including game settings, stats, and the current saved game state.
+ *
+ * This repository is the sole source of truth for local game data persistence.
+ *
+ * @param firestore The Firebase Firestore instance for cloud data.
+ * @param settingsManager The DataStore manager for persistent settings and stats.
+ * @param tokenManager The DataStore manager for authentication status (used to determine if data is cleared).
+ */
+class GameRepository(
+    private val firestore: FirebaseFirestore,
+    private val settingsManager: SettingsManager,
+    private val tokenManager: TokenManager
+) {
+    // We need an instance of FirebaseAuth to get the current user ID
+    private val auth = FirebaseAuth.getInstance()
+
+    // --- Combined Data Flow ---
+
+    /**
+     * A combined Flow that merges the latest UserSettings and UserStats.
+     * This provides a single, streamable object for the UI to consume.
+     */
+    val userDataFlow: Flow<UserData> = combine(
+        settingsManager.getUserSettings(),
+        settingsManager.getUserStats(),
+        tokenManager.getAuthToken // Use auth token existence as isLoggedIn status
+    ) { settings, stats, authToken ->
+        // This is where we combine the three flows into a single UserData object
+        UserData(
+            settings = settings,
+            stats = stats,
+            isLoggedIn = authToken != null
+        )
+    }.distinctUntilChanged() // Ensures we only emit if the data actually changed
+
+    // --- Settings Actions ---
+
+    suspend fun toggleSound() {
+        settingsManager.toggleSound()
+    }
+
+    suspend fun toggleHints() {
+        settingsManager.toggleHints()
+    }
+
+    /** Resets all local stats and high scores. */
+    suspend fun resetStats() {
+        settingsManager.resetStats()
+    }
+
+    // --- Game Statistics Actions ---
+
+    /**
+     * Updates statistics after a game is played (win or loss).
+     * This handles both local DataStore and cloud Firestore updates.
+     */
+    suspend fun recordGamePlayed() {
+        // 1. Update local stats (DataStore)
+        settingsManager.recordGamePlayed()
+
+        // 2. Update cloud stats (Firestore, if logged in)
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            updateUserGamesPlayed(userId)
+        }
+    }
+
+    private suspend fun updateUserGamesPlayed(userId: String) {
+        val userDocRef = firestore.collection("users").document(userId)
+
+        // Increment the 'gamesPlayed' field by 1 atomically
+        // This is safe for concurrent updates
+        userDocRef.update("stats.gamesPlayed", FieldValue.increment(1))
+            .addOnFailureListener { e ->
+                // Log and handle failure to update cloud stats
+                println("Error incrementing games played for user $userId: $e")
+            }
+    }
+
+    /**
+     * Updates statistics after a game is won.
+     */
+    suspend fun recordGameWin(score: Int) {
+        settingsManager.recordGameWin(score)
+    }
+
+    /**
+     * Updates statistics after a game is lost.
+     */
+    suspend fun recordGameLoss() {
+        settingsManager.recordGameLoss()
+    }
+
+    // --- Saved Game Operations ---
+
+    /**
+     * Saves the current game state (e.g., the deck and stack positions)
+     * as a serialized JSON string.
+     * @param gameStateJson The serialized state of the current game.
+     */
+    suspend fun saveCurrentGameState(gameStateJson: String) {
+        settingsManager.saveCurrentGameState(gameStateJson)
+    }
+
+    /**
+     * Retrieves the current saved game state.
+     * @return A flow emitting the saved game state JSON string, or null if none is saved.
+     */
+    fun getCurrentGameState(): Flow<String?> = settingsManager.getCurrentGameState()
+
+    /**
+     * Clears the current saved game state (e.g., when a game is finished or discarded).
+     */
+    suspend fun clearSavedGame() {
+        settingsManager.clearSavedGame()
+    }
+}
+
+// --- Data Transfer Object (DTO) ---
+
+/**
+ * A data class to combine all user settings and statistics for easy state consumption.
+ * This prevents the ViewModel from having to subscribe to multiple DataStore flows.
+ */
+data class UserData(
+    val settings: UserSettings,
+    val stats: UserStats,
+    val isLoggedIn: Boolean
+)

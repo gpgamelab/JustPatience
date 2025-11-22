@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_color"
+    tools:context=".GameActivity">
+
+    <!-- 1. Toolbar for Navigation and Menu -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbar_color"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:titleTextColor="@color/text_color" />
+
+    <!-- 2. Game Info Panel (Score, Moves, Time) -->
+    <LinearLayout
+        android:id="@+id/game_info_panel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/dark_surface_color"
+        android:elevation="2dp"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <!-- Score -->
+        <TextView
+            android:id="@+id/tv_score"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAlignment="viewStart"
+            android:textColor="@color/secondary_text_color"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Score: 120" />
+
+        <!-- Moves -->
+        <TextView
+            android:id="@+id/tv_moves"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAlignment="center"
+            android:textColor="@color/secondary_text_color"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Moves: 15" />
+
+        <!-- Time (Placeholder for future timer implementation) -->
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAlignment="viewEnd"
+            android:textColor="@color/secondary_text_color"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Time: 0:35" />
+    </LinearLayout>
+
+    <!-- 3. Custom Game Board View -->
+    <!-- This is where the GameActivity.GameBoardView class will handle all card drawing and touch logic. -->
+    <com.gpgamelab.justpatience.GameActivity.GameBoardView
+        android:id="@+id/game_board_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/game_info_panel" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
