@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Card Dimensions for Solitaire/Patience Game -->
+    <dimen name="card_width">68dp</dimen>
+    <dimen name="card_height">96dp</dimen>
+    <dimen name="card_corner_radius">6dp</dimen>
+
+    <!-- General Spacing -->
+    <dimen name="spacing_small">4dp</dimen>
+    <dimen name="spacing_medium">8dp</dimen>
+    <dimen name="spacing_large">16dp</dimen>
+</resources>

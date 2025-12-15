@@ -1,151 +1,212 @@
 package com.gpgamelab.justpatience.model
 
-import com.google.gson.annotations.SerializedName
+import com.gpgamelab.justpatience.model.CardSuit.CardColor
 
-/**
- * Enumeration of the different types of card stacks on the Solitaire board.
- * This helps the game logic identify where a card is coming from or going to.
- */
 enum class StackType {
-    @SerializedName("stk") STOCK,
-    @SerializedName("wst") WASTE,
-    @SerializedName("tab") TABLEAU,
-    @SerializedName("fnd") FOUNDATION
+    STOCK,
+    WASTE,
+    TABLEAU,
+    FOUNDATION
 }
 
 /**
- * Abstract base class for all card stacks in the game.
- * All concrete piles (Stock, Waste, Tableau, Foundation) must implement this.
- *
- * @property type The identifier for the type of stack.
- * @property cards The mutable list of cards in this stack.
+ * Represents one or more full 52-card (or 54-card with Jokers) decks.
+ */
+data class FullDeck(
+    val deckCount: Int = 1,
+    val includeJokers: Boolean = false,
+    val cards: MutableList<Card> = buildDeck(deckCount, includeJokers)
+) {
+    companion object {
+        const val MIN_DECKS = 1
+        const val MAX_DECKS = 8
+    }
+
+    init {
+        require(deckCount in MIN_DECKS..MAX_DECKS) {
+            "deckCount must be between $MIN_DECKS and $MAX_DECKS (was $deckCount)"
+        }
+    }
+
+    /** Randomly shuffles the deck multiple times based on deck size. */
+    fun shuffle() {
+        val deckSize = cards.size
+        val requiredShuffles = maxOf(3, kotlin.math.ceil(kotlin.math.sqrt(deckSize.toDouble())).toInt())
+
+        repeat(requiredShuffles) {
+            cards.shuffle()
+        }
+    }
+
+    /** Removes the top card and returns it, or null if empty. */
+    fun drawCard(): Card? = cards.removeLastOrNull()
+
+}
+
+// Helper function for building the FullDeck
+private fun buildDeck(
+    deckCount: Int,
+    includeJokers: Boolean
+): MutableList<Card> {
+
+    val result = mutableListOf<Card>()
+
+    repeat(deckCount) {
+        // Build the standard 52 cards
+        for (suit in CardSuit.entries) {
+            for (rank in StandardRank.entries) {
+                result.add(Card(rank, suit, Recto(rank, suit, faceImagePath(rank, suit), suit.defaultColor), Verso(defaultBackImagePath())))
+            }
+        }
+
+        // Optionally add Jokers
+        if (includeJokers) {
+            result.add(Card(Joker, null, Recto(Joker, null, "drawable:j_li", CardColor.LIGHT), Verso(defaultBackImagePath())))
+            result.add(Card(Joker, null, Recto(Joker, null, "drawable:j_da", CardColor.DARK), Verso(defaultBackImagePath())))
+        }
+    }
+
+    return result
+}
+
+private fun faceImagePath(rank: CardRank, suit: CardSuit?): String {
+    val suitCode = when (suit) {
+        CardSuit.HEARTS -> "h"
+        CardSuit.DIAMONDS -> "d"
+        CardSuit.CLUBS -> "c"
+        CardSuit.SPADES -> "s"
+        else -> error("Non-joker card must have suit")
+    }
+
+    val rankCode = when (rank) {
+        StandardRank.ACE -> "ac"
+        StandardRank.JACK -> "ja"
+        StandardRank.QUEEN -> "qu"
+        StandardRank.KING -> "ki"
+        else -> rank.sortOrder.toString().padStart(2, '0')
+    }
+
+    return "drawable:${suitCode}_${rankCode}"
+}
+private fun defaultBackImagePath(): String =
+    "drawable:b_0001"
+
+/**
+ * Base class for all board piles.
  */
 sealed class CardStack(
-    @SerializedName("t") open val type: StackType,
-    @SerializedName("c") open val cards: MutableList<Card> = mutableListOf()
+    open val type: StackType,
+    protected open val cards: MutableList<Card> = mutableListOf()
 ) {
-    /**
-     * Attempts to add a card to the top of the stack.
-     * Specific validation logic for adding cards is handled in the concrete subclasses.
-     * @return True if the card was added, false otherwise.
-     */
-    open fun addCard(card: Card): Boolean {
-        cards.add(card)
+    open fun canPush(card: Card): Boolean = true
+    open fun canPush(cards: List<Card>): Boolean = cards.size == 1 && canPush(cards.first())
+    open fun canPop(): Boolean = cards.isNotEmpty()
+
+    open fun push(card: Card): Boolean {
+        return if (canPush(card)) {
+            cards.add(card)
+            true
+        } else false
+    }
+
+    open fun push(cards: List<Card>): Boolean {
+        return if (canPush(cards)) {
+            this.cards.addAll(cards)
+            true
+        } else false
+    }
+
+    open fun pop(): Card? =
+        if (canPop()) cards.removeAt(cards.lastIndex) else null
+
+    /** Removes N cards from the end (tableau sequences) */
+    open fun take(count: Int): List<Card>? =
+        if (count in 1..cards.size) {
+            val taken = cards.takeLast(count)
+            repeat(count) { cards.removeAt(cards.lastIndex) }
+            taken
+        } else null
+
+    fun peek(): Card? = cards.lastOrNull()
+    fun isEmpty(): Boolean = cards.isEmpty()
+    fun size(): Int = cards.size
+    fun asList(): List<Card> = cards.toList()
+}
+
+class Stock(cards: MutableList<Card>) : CardStack(StackType.STOCK, cards) {
+
+    override fun canPush(card: Card): Boolean = false       // No pushing during play
+    override fun canPush(cards: List<Card>): Boolean = false
+    override fun canPop(): Boolean = cards.isNotEmpty()
+
+    /** Draws one card (or more if your rules allow it) */
+    fun draw(count: Int = 1): List<Card>? =
+        take(count)
+}
+
+class Waste : CardStack(StackType.WASTE) {
+
+    override fun canPush(card: Card): Boolean = true
+    override fun canPush(cards: List<Card>): Boolean = cards.size == 1
+
+    override fun canPop(): Boolean = cards.isNotEmpty()
+
+    override fun push(card: Card): Boolean {
+        card.isFaceUp = true
+        return super.push(card)
+    }
+}
+
+class FoundationPile(
+    override val cards: MutableList<Card> = mutableListOf()
+) : CardStack(StackType.FOUNDATION, cards) {
+
+    override fun push(card: Card): Boolean {
+        card.isFaceUp = true
+        return super.push(card)
+    }
+}
+
+class TableauPile(
+    override val cards: MutableList<Card> = mutableListOf()
+) : CardStack(StackType.TABLEAU, cards) {
+
+    override fun canPush(card: Card): Boolean {
+        val top = peek()
+
+        return when (top) {
+            null -> card.recto.rank == StandardRank.KING        // Only Kings on empty tableau
+            else ->
+                card.recto.hasOppositeColor(top.recto)  &&
+                        card.recto.isOneLowerRank(top.recto)
+        }
+    }
+
+    override fun canPush(cards: List<Card>): Boolean {
+        if (cards.isEmpty()) return false
+        return canPush(cards.first())            // Validate top card of moving sequence
+    }
+
+    /** Validates that the moving sequence is internally correct (descending + alternating) */
+    fun isValidSequence(seq: List<Card>): Boolean {
+        if (seq.size < 2) return true
+        for (i in 0 until seq.size - 1) {
+            val upper = seq[i]
+            val lower = seq[i + 1]
+
+            if (upper.recto.hasSameColor(lower.recto)) return false
+            if (upper.recto.isOneHigherRank(lower.recto)) return false
+        }
         return true
     }
 
-    /**
-     * Removes and returns the last (top) card from the stack.
-     * @return The top Card, or null if the stack is empty.
-     */
-    open fun removeCard(): Card? {
-        return if (cards.isNotEmpty()) cards.removeAt(cards.lastIndex) else null
+    override fun push(card: Card): Boolean {
+        card.isFaceUp = false
+        return super.push(card)
     }
 
-    /**
-     * Checks if the stack is currently empty.
-     */
-    fun isEmpty(): Boolean = cards.isEmpty()
-
-    /**
-     * Returns the top card of the stack without removing it.
-     */
-    fun peek(): Card? = cards.lastOrNull()
-}
-
-/**
- * Represents the Stock pile (draw pile).
- */
-data class Stock(
-    @SerializedName("c") override val cards: MutableList<Card> = mutableListOf()
-) : CardStack(StackType.STOCK, cards)
-
-/**
- * Represents the Waste pile (cards drawn from the Stock).
- */
-data class Waste(
-    @SerializedName("c") override val cards: MutableList<Card> = mutableListOf()
-) : CardStack(StackType.WASTE, cards) {
-    /**
-     * Only the top card of the waste pile is face up and available to move.
-     * In Solitaire, cards can only be added to the waste during an "undo" operation.
-     */
-    override fun addCard(card: Card): Boolean {
-        if (!card.isFaceUp) card.isFaceUp = true
-        return super.addCard(card)
+    override fun take(count: Int): List<Card>? {
+        val seq = super.take(count) ?: return null
+        return if (isValidSequence(seq)) seq else null
     }
-}
-
-/**
- * Represents one of the seven Tableau piles (the main playing area).
- * Tableau piles can contain both face-down and face-up cards.
- */
-data class TableauPile(
-    @SerializedName("c") override val cards: MutableList<Card> = mutableListOf()
-) : CardStack(StackType.TABLEAU, cards) {
-
-    /**
-     * Tableau piles allow adding if the card's rank is one less than the top card
-     * AND the suit color is opposite. (Logic check in GamePresenter, not here).
-     */
-    override fun addCard(card: Card): Boolean {
-        if (!card.isFaceUp) card.isFaceUp = true
-        return super.addCard(card)
-    }
-}
-
-/**
- * Represents one of the four Foundation piles (Ace-to-King in suit).
- * Foundation piles only accept cards of the same suit in ascending order.
- */
-data class FoundationPile(
-    @SerializedName("c") override val cards: MutableList<Card> = mutableListOf()
-) : CardStack(StackType.FOUNDATION, cards) {
-
-    /**
-     * Foundation piles only allow adding the next card in sequence of the same suit.
-     * (Logic check in GamePresenter, not here).
-     */
-    override fun addCard(card: Card): Boolean {
-        if (!card.isFaceUp) card.isFaceUp = true
-        return super.addCard(card)
-    }
-}
-
-// --- Move History (Required for Undo) ---
-
-/**
- * Represents a single action taken by the player that modifies the game state.
- * Used to store the state change for the 'Undo' functionality.
- */
-sealed class Move {
-    /**
-     * Move representing a set of cards moving from one stack to another.
-     * @param cards The cards that were moved.
-     * @param source The stack the cards moved from.
-     * @param target The stack the cards moved to.
-     * @param cardFlipped True if a face-down card was flipped face-up at the source.
-     */
-    data class CardMovement(
-        @SerializedName("c") val cards: List<Card>,
-        @SerializedName("s") val source: CardStack,
-        @SerializedName("t") val target: CardStack,
-        @SerializedName("f") val cardFlipped: Boolean = false
-    ) : Move()
-
-    /**
-     * Move representing drawing cards from the Stock to the Waste.
-     * @param cardsDrawn The cards moved from Stock to Waste.
-     */
-    data class DrawCard(
-        @SerializedName("d") val cardsDrawn: List<Card>
-    ) : Move()
-
-    /**
-     * Move representing the Stock being reset (moving all Waste cards back to Stock).
-     * @param wasteCards The cards moved from Waste back to Stock.
-     */
-    data class StockReset(
-        @SerializedName("w") val wasteCards: List<Card>
-    ) : Move()
 }

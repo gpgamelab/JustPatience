@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# --- Networking: Retrofit & OkHttp ---
+# Retrofit needs to keep signatures for its interfaces and classes
+-dontwarn retrofit2.**
+-keepattributes Signature
+-keep class retrofit2.** { *; }
+-keep interface com.gpgamelab.justpatience.api.JustPatienceApiService { *; }
+
+# OkHttp and its Logging Interceptor
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }
+-keep class com.squareup.okhttp3.internal.publicsuffix.PublicSuffixDatabase { *; }

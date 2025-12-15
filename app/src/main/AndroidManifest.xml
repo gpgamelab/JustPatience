@@ -25,13 +25,15 @@
 
         <!-- 1. Login Activity: Main Launcher -->
         <activity
-            android:name=".LoginActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:name=".LoginActivity" />
+<!--        <activity-->
+<!--            android:name=".LoginActivity"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
 
         <!-- 2. Home Activity: Primary screen after login -->
         <activity
@@ -44,15 +46,24 @@
         <activity android:name=".SettingsActivity" android:exported="false" />
 
         <!-- 4. Game Activity: NEW! The main gameplay screen -->
+<!--        <activity-->
+<!--            android:name=".ui.GameActivity"-->
+<!--            android:exported="false"-->
+<!--            android:screenOrientation="landscape"-->
+<!--            android:label="@string/game_title"-->
+<!--            android:configChanges="orientation|keyboardHidden|screenSize"/>-->
         <activity
-            android:name=".GameActivity"
-            android:exported="false"
+            android:name=".ui.GameActivity"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:label="@string/game_title"
-            android:configChanges="orientation|keyboardHidden|screenSize"/>
+            android:configChanges="orientation|keyboardHidden|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
-        <!-- SettingsActivity -->
-        <activity android:name=".SettingsActivity" android:exported="false" />
     </application>
 
 </manifest>

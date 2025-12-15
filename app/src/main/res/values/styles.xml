@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base App Theme (Assuming it's defined elsewhere, e.g., themes.xml) -->
+    <!-- <style name="Theme.JustPatience" parent="Theme.MaterialComponents.DayNight.NoActionBar"> ... </style> -->
+
+    <!-- Solitaire Stack Styles (Used in activity_home.xml) -->
+
+    <!-- Style for the Foundation Stacks (where cards are played up by cardSuit) -->
+    <style name="FoundationStack">
+        <item name="android:layout_width">@dimen/card_width</item>
+        <item name="android:layout_height">@dimen/card_height</item>
+        <item name="android:background">@drawable/stack_placeholder_background</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginEnd">@dimen/spacing_medium</item>
+    </style>
+
+    <!-- Style for the Tableau Stacks (the main play area) -->
+    <style name="TableauStack">
+        <item name="android:layout_width">@dimen/card_width</item>
+        <item name="android:layout_height">@dimen/card_height</item>
+        <item name="android:background">@drawable/stack_placeholder_background</item>
+        <item name="android:gravity">top|center_horizontal</item>
+        <item name="android:layout_marginEnd">@dimen/spacing_small</item>
+    </style>
+</resources>

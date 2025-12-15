@@ -5,10 +5,15 @@
     <string name="win_rate_format">%s%%</string>
 
     <!-- Dialog Strings (General) -->
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="confirm_logout_title">Confirm Logout</string>
     <string name="confirm_logout_message">Are you sure you want to log out?</string>
+    <string name="logout_confirmation">Are you sure you want to log out?</string>
     <string name="logout">Logout</string>
+    <string name="logout_title">Logout</string>
     <string name="cancel">Cancel</string>
+    <string name="reset_stats_title">Reset Game Statistics</string>
     <string name="confirm_reset_stats_title">Confirm Reset</string>
     <string name="confirm_reset_stats_message">Are you sure you want to reset your game statistics? This action cannot be undone.</string>
     <string name="reset">Reset</string> <string name="logout_action">Logout</string>
@@ -16,7 +21,6 @@
     <string name="load_action">Load</string>
 
     <!-- General Status Strings -->
-    <string name="status_logged_in">Logged In</string>
     <string name="status_guest_user">Guest User</string>
     <string name="status_loading">Loading Status...</string>
     <string name="not_applicable">N/A</string>
@@ -25,7 +29,8 @@
     <string name="stats_played_format">Games Played: %d</string>
     <string name="stats_high_score_format">High Score: %d</string>
     <string name="stats_summary_format">Played: %d | High Score: %d</string>
-    <string name="stats_reset_success">Statistics successfully reset.</string>
+    <string name="stats_reset_success">Game statistics have been reset!</string>
+<!--    <string name="stats_reset_success">Statistics successfully reset.</string>-->
 
     <!-- Home Activity Strings -->
     <string name="settings_button_description">Settings</string>
@@ -40,6 +45,7 @@
     <string name="setting_sfx">Sound Effects</string>
     <string name="setting_hints">Enable Hints</string>
     <string name="setting_reset_stats">Reset Statistics</string>
+    <string name="reset_high_score">Reset High Score</string>
     <string name="setting_sign_out">Sign Out</string>
 
     <!-- Game Activity Strings (New) -->
@@ -52,14 +58,18 @@
     <string name="discard_and_exit">Discard &amp; Exit</string>
     <string name="action_undo">Undo</string>
     <string name="action_hint">Hint</string>
+    <string name="restart_game_text">Restart</string>
     <string name="action_restart">Restart Game</string>
     <string name="restart_game_title">Restart Confirmation</string>
     <string name="restart_game_message">Are you sure you want to restart? Your current progress will be lost if not saved.</string>
     <string name="game_won_title">Congratulations!</string>
     <string name="game_won_message">You won! Final Score: %1$d | Total Moves: %2$d</string>
     <string name="game_lost_title">Game Over</string>
+    <string name="loss_dialog_title">Game Over, You Lost</string>
     <string name="game_lost_message">Final Score: %1$d | Total Moves: %2$d</string>
+    <string name="loss_dialog_message">Better luck next time! Start a new game and try again.</string>
     <string name="exit_to_home">Exit to Home</string>
+    <string name="try_again_button_text">Try Again</string>
 
     <string name="new_game_title">Start New Game</string>
     <string name="new_game_message">Starting a new game will save your current progress, or overwrite it if no save slot is available. Continue?</string>
@@ -69,9 +79,27 @@
     <string name="load_game_message">Do you want to continue your last game? The current board state will be lost.</string>
     <string name="game_loaded">Game loaded successfully!</string>
     <string name="load_error">Failed to load saved game.</string>
+    <string name="status_logged_in">Logged In</string>
+    <string name="no_saved_game_message">No saved game found. Starting a new game.</string>
 
     <string name="congratulations_title">Congratulations, You Won!</string>
+    <string name="win_dialog_title">Congratulations, You Won!</string>
     <string name="win_message">You solved the game with a final score of %1$d in %2$s! Well done!</string>
+    <string name="win_dialog_message">You solved the puzzle!\nFinal Score: %1$d | Total Moves: %2$d</string>
     <string name="continue_playing">View Board</string>
+
+    <string name="switch_to_register">Don\'t have an account? Register</string>
+    <string name="login_title_text">User Login</string>
+    <string name="register_title_text">Create Account</string>
+    <string name="password_hint">User Password</string>
+    <string name="register_title">User Login</string>
+    <string name="login_button_text">Login</string>
+    <string name="register_button_text">Register</string>
+
+    <string name="register">Register</string>
+    <string name="switch_to_login">Switch Login Mode</string>
+    <string name="password_min_length_hint">Must be at least 8 characters, not easily guessable.</string>
+
+    <string name="zyzzx">Zyzzx</string>
 
 </resources>

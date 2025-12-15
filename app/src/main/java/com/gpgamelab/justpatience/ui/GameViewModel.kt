@@ -1,0 +1,195 @@
+package com.gpgamelab.justpatience.ui
+
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.gpgamelab.justpatience.data.SettingsManager
+import com.gpgamelab.justpatience.data.TokenManager
+import com.gpgamelab.justpatience.game.GameController
+import com.gpgamelab.justpatience.model.Game
+import com.gpgamelab.justpatience.model.GameStatus
+import com.gpgamelab.justpatience.model.StackType
+import com.gpgamelab.justpatience.repository.GameRepository
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
+/**
+ * ViewModel that holds the current Game state and provides actions for UI.
+ * Calls the GameController (rules engine) for all moves.
+ */
+class GameViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val settingsManager = SettingsManager(application.applicationContext)
+    private val tokenManager = TokenManager(application.applicationContext)
+    private val repository = GameRepository(settingsManager, tokenManager)
+    private val gson = Gson()
+    private val controller = GameController()
+    val hasSavedGame = repository.getCurrentGameState()
+        .map { !it.isNullOrEmpty() }
+    val gameTime = MutableStateFlow(0L)
+
+    // Exposed state
+    private val _game = MutableStateFlow(Game.newGame())
+    val game: StateFlow<Game> = _game
+
+    init {
+        viewModelScope.launch {
+            // Try load saved game; if not available, start fresh
+            try {
+                val saved = repository.getCurrentGameState().firstOrNull()
+                if (!saved.isNullOrEmpty()) {
+                    val loaded = gson.fromJson(saved, Game::class.java)
+                    _game.value = loaded
+                } else {
+                    _game.value = controller.newGame()
+                }
+            } catch (t: Throwable) {
+                Log.w("GameViewModel", "Load failed, new game: ${t.message}")
+                _game.value = controller.newGame()
+            }
+        }
+    }
+
+    fun undoLastMove(): Boolean {
+        undo()
+        return true
+    }
+
+    fun startNewGame() {
+        viewModelScope.launch {
+            _game.value = controller.newGame()
+            saveGame()
+        }
+    }
+
+    fun drawFromStock() {
+        viewModelScope.launch {
+            try {
+                val updated = controller.drawFromStock(_game.value)
+                _game.value = updated
+                saveGameIfInProgress()
+            } catch (t: Throwable) {
+                Log.w("GameViewModel", "drawFromStock failed: ${t.message}")
+            }
+        }
+    }
+
+    fun attemptMove(
+        sourceType: StackType,
+        sourceIndex: Int,
+        cardIndexInSource: Int,
+        targetType: StackType,
+        targetIndex: Int
+    ) {
+        viewModelScope.launch {
+            try {
+                val (newGame, success) = controller.attemptMove(
+                    _game.value,
+                    sourceType,
+                    sourceIndex,
+                    cardIndexInSource,
+                    targetType,
+                    targetIndex
+                )
+                if (success) {
+                    _game.value = newGame
+                    saveGameIfInProgress()
+                }
+            } catch (t: Throwable) {
+                Log.w("GameViewModel", "attemptMove failed: ${t.message}")
+            }
+        }
+    }
+
+//    fun tryMoveWasteToTableau(tableauIndex: Int) {
+//        val current = _game.value
+//        val updated = current.moveWasteToTableau(tableauIndex)
+//        _game.value = updated
+//    }
+//fun tryMoveWasteToTableau(index: Int) {
+//    _game.update { game ->
+//        game.moveWasteToTableau(index)
+//    }
+//}
+fun tryMoveWasteToTableau(index: Int) {
+    val current = _game.value
+    val updated = current.moveWasteToTableau(index)
+    _game.value = updated
+}
+
+
+    fun undo() {
+        viewModelScope.launch {
+            try {
+                _game.value = controller.undo(_game.value)
+                saveGameIfInProgress()
+            } catch (t: Throwable) {
+                Log.w("GameViewModel", "undo failed: ${t.message}")
+            }
+        }
+    }
+
+    private fun saveGameIfInProgress() {
+        if (_game.value.status == GameStatus.IN_PROGRESS) saveGame()
+    }
+
+    fun saveGame() {
+        viewModelScope.launch {
+            try {
+                val json = gson.toJson(_game.value)
+                repository.saveCurrentGameState(json)
+            } catch (t: Throwable) {
+                Log.w("GameViewModel", "saveGame failed: ${t.message}")
+            }
+        }
+    }
+
+    suspend fun loadSavedGame(): Boolean {
+        return try {
+            val saved = repository.getCurrentGameState().firstOrNull()
+            if (!saved.isNullOrEmpty()) {
+                _game.value = gson.fromJson(saved, Game::class.java)
+                true
+            } else {
+                false
+            }
+        } catch (t: Throwable) {
+            false
+        }
+    }
+
+    fun restart() {
+        viewModelScope.launch {
+            _game.value = controller.newGame()
+            saveGame()
+        }
+    }
+
+    fun stopGame() {
+        saveGame()
+    }
+
+    /**
+     * Convenience: locate the stack that contains a specific card instance.
+     * Used by CardStackUIManager if needed.
+     */
+    fun findStackContainingCard(card: com.gpgamelab.justpatience.model.Card)
+            : Pair<StackType, Int>? {
+        val g = _game.value
+        if (g.waste.peek() == card) return Pair(StackType.WASTE, 0)
+        if (g.stock.peek() == card) return Pair(StackType.STOCK, 0)
+        g.foundations.forEachIndexed { idx, pile ->
+            if (pile.peek() == card) return Pair(StackType.FOUNDATION, idx)
+            if (pile.asList().contains(card)) return Pair(StackType.FOUNDATION, idx)
+        }
+        g.tableau.forEachIndexed { idx, pile ->
+            if (pile.asList().contains(card)) return Pair(StackType.TABLEAU, idx)
+        }
+        return null
+    }
+}

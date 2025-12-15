@@ -10,8 +10,10 @@ import com.gpgamelab.justpatience.api.UserLoginRequest
 import com.gpgamelab.justpatience.api.UserRegistrationRequest
 import com.gpgamelab.justpatience.data.TokenManager
 import com.gpgamelab.justpatience.repository.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -35,24 +37,25 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    /** Holds any error messages resulting from a network request. */
+    /** Holds any error messages resulting from a login/registration attempt. */
     private val _error = MutableLiveData<String?>(null)
     val error: LiveData<String?> = _error
 
-    /** Holds the result of a successful authentication attempt. */
+    /** Holds the successful authentication response. Should only be read once per action. */
     private val _authResult = MutableLiveData<AuthResponse?>(null)
     val authResult: LiveData<AuthResponse?> = _authResult
 
+    /** Tracks successful logout status. True temporarily after a logout call. */
+    private val _logoutStatus = MutableStateFlow(false)
+    val logoutStatus: StateFlow<Boolean> = _logoutStatus.asStateFlow()
 
-    // --- Global Auth State ---
-
-    /** * StateFlow exposing the user's current authentication status (token presence).
-     * The UI can use this to navigate immediately if a token exists.
+    /**
+     * Public Flow for the token. UI can observe this to check persistent login status.
+     * Starts collecting immediately and shares the latest value.
      */
     val authToken: StateFlow<String?> = repository.getAuthTokenFlow()
         .stateIn(
             scope = viewModelScope,
-            // Start collecting immediately and share the latest value with new subscribers
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
         )
@@ -67,6 +70,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         // Clear previous state before starting
         _error.value = null
         _isLoading.value = true
+        _logoutStatus.value = false // Clear logout status on new action
 
         viewModelScope.launch {
             try {
@@ -87,6 +91,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         // Clear previous state before starting
         _error.value = null
         _isLoading.value = true
+        _logoutStatus.value = false // Clear logout status on new action
 
         viewModelScope.launch {
             try {
@@ -100,8 +105,23 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+//    /**
+//     * Logs the user out by clearing the token.
+//     */
+//    fun logout() {
+//        viewModelScope.launch {
+//            repository.logout()
+//            // Clear any old UI state
+//            _authResult.value = null
+//            _error.value = null
+//            _logoutStatus.value = true // Indicate success for the UI to navigate
+//        }
+//    }
+
+
     /**
      * Logs the user out by clearing the token.
+     * This implementation delegates to the repository and updates UI state flows.
      */
     fun logout() {
         viewModelScope.launch {
@@ -109,7 +129,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             // Clear any old UI state
             _authResult.value = null
             _error.value = null
+            _logoutStatus.value = true // Indicate success for the UI to navigate
         }
     }
+
+    // Implemented: Clears the local auth token.
+//    fun logout() {
+//        tokenManager.clearToken()
+//        // Note: If you had a server-side logout/invalidate token endpoint,
+//        // you would call authRepository.logout() here (ideally in a Coroutine).
+//    }
+
+
 
 }

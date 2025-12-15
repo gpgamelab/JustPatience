@@ -7,11 +7,10 @@ import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.TokenManager
 import com.gpgamelab.justpatience.repository.GameRepository
 import com.gpgamelab.justpatience.repository.UserData
-import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map // Required import
-import kotlinx.coroutines.flow.stateIn // Required import
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -20,12 +19,12 @@ import kotlinx.coroutines.launch
  */
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
-    // --- Dependencies ---
+    // Dependencies: Manually instantiated for simplicity.
     private val settingsManager = SettingsManager(application.applicationContext)
     private val tokenManager = TokenManager(application.applicationContext)
-    private val firestore = FirebaseFirestore.getInstance()
-    // FIX: Ensure GameRepository constructor matches the one defined in GameRepository.kt
-    private val repository = GameRepository(firestore, settingsManager, tokenManager)
+
+    // Instantiate the repository with its required dependencies
+    private val repository = GameRepository(settingsManager, tokenManager)
 
     /**
      * StateFlow exposing all combined user data (settings, stats, login status) to the UI.
@@ -40,9 +39,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     /**
      * Public accessor for settings, mapped from userData for convenience.
-     * FIX: Corrected the map function to resolve 'Cannot infer type' and 'Unresolved reference 'settings'' errors.
      */
-    val userSettings = userData.map { userData: UserData? -> userData?.settings }.stateIn(
+    val userSettings = userData.map { it?.settings }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = null
@@ -50,9 +48,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     /**
      * Public accessor for stats, mapped from userData for convenience.
-     * FIX: Corrected the map function to resolve 'Cannot infer type' and 'Unresolved reference 'stats'' errors.
      */
-    val userStats = userData.map { userData: UserData? -> userData?.stats }.stateIn(
+    val userStats = userData.map { it?.stats }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = null
@@ -70,8 +67,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         repository.toggleHints()
     }
 
-    /** Resets all persistent game statistics. */
-    fun resetStats() = viewModelScope.launch {
-        repository.resetStats()
+//    /** Resets all persistent game statistics. */
+//    fun resetStats() = viewModelScope.launch {
+//        // This action should be guarded by a confirmation dialog in the UI.
+//        repository.resetStats()
+//    }
+
+    // Implemented: Clears game statistics using SettingsManager
+    fun resetStats() {
+        viewModelScope.launch {
+            // Clear local stats stored in Shared Preferences
+            settingsManager.resetStats()
+            // Note: If stats are also on the server, you would call a repository function here
+            // (e.g., gameRepository.resetUserStats())
+        }
     }
+
 }

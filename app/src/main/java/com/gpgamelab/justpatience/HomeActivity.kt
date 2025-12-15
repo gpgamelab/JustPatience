@@ -2,10 +2,6 @@ package com.gpgamelab.justpatience
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.DragEvent
-import android.view.MotionEvent
-import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -14,20 +10,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gpgamelab.justpatience.databinding.ActivityHomeBinding
-import com.gpgamelab.justpatience.model.Card
-import com.gpgamelab.justpatience.model.StackType
-import com.gpgamelab.justpatience.viewmodel.GameViewModel
+import com.gpgamelab.justpatience.ui.GameActivity
+import com.gpgamelab.justpatience.ui.GameViewModel
 import com.gpgamelab.justpatience.ui.CardStackUIManager // Import the helper class
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
+
+private const val DEV_BYPASS_AUTH = true
 
 /**
  * The main activity for the Solitaire game.
  * Responsible for rendering the game state and handling user input events.
  */
 class HomeActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityHomeBinding
     private val viewModel: GameViewModel by viewModels()
 
@@ -36,6 +32,13 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (DEV_BYPASS_AUTH) {
+            startActivity(Intent(this, GameActivity::class.java))
+            finish()
+            return
+        }
+
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -46,7 +49,9 @@ class HomeActivity : AppCompatActivity() {
 
         // Attempt to load a saved game on first launch
         if (savedInstanceState == null) {
-            viewModel.loadSavedGame()
+            lifecycleScope.launch {
+                viewModel.loadSavedGame()
+            }
         }
     }
 
@@ -110,7 +115,8 @@ class HomeActivity : AppCompatActivity() {
         // Collect the game state (cards, score, move history)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.gameState.collectLatest { game ->
+                // FIX: Use 'viewModel.game' which is the actual StateFlow property
+                viewModel.game.collectLatest { game ->
                     // 1. Update general stats
                     binding.tvScore.text = getString(R.string.score_format, game.score)
 
@@ -118,8 +124,13 @@ class HomeActivity : AppCompatActivity() {
                     cardStackUIManager.render(game)
 
                     // 3. Check for win condition
-                    if (game.isWon()) {
-                        showWinDialog(game.score, game.timeSeconds)
+                    if (game.status == com.gpgamelab.justpatience.model.GameStatus.WON) {
+                        // Calculate the duration in seconds since the game started.
+                        // game.savedGameTime holds the start timestamp (System.currentTimeMillis()).
+                        val gameDurationSeconds = (System.currentTimeMillis() - game.savedGameTime) / 1000L
+
+                        // Pass the calculated duration to the dialog function.
+                        showWinDialog(game.score, gameDurationSeconds)
                         viewModel.stopGame() // Ensure it saves and stops the timer
                     }
                 }
@@ -160,22 +171,42 @@ class HomeActivity : AppCompatActivity() {
             .setTitle(R.string.new_game_title)
             .setMessage(R.string.new_game_message)
             .setPositiveButton(R.string.new_game_button_text) { _, _ ->
-                viewModel.startNewGame(saveCurrent = true) // Save current game before starting new
+                viewModel.startNewGame()
                 Toast.makeText(this, R.string.game_started, Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
+//    private fun showLoadGameDialog() {
+//        AlertDialog.Builder(this)
+//            .setTitle(R.string.load_game_title)
+//            .setMessage(R.string.load_game_message)
+//            .setPositiveButton(R.string.load_game_button_text) { _, _ ->
+//                if (viewModel.loadSavedGame()) {
+//                    Toast.makeText(this, R.string.game_loaded, Toast.LENGTH_SHORT).show()
+//                } else {
+//                    Toast.makeText(this, R.string.load_error, Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//            .setNegativeButton(R.string.cancel, null)
+//            .show()
+//    }
+
     private fun showLoadGameDialog() {
         AlertDialog.Builder(this)
             .setTitle(R.string.load_game_title)
             .setMessage(R.string.load_game_message)
-            .setPositiveButton(R.string.load_game_button_text) { _, _ ->
-                if (viewModel.loadSavedGame()) {
-                    Toast.makeText(this, R.string.game_loaded, Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, R.string.load_error, Toast.LENGTH_SHORT).show()
+            // Correct the button text to use the existing R.string.load_action
+            .setPositiveButton(R.string.load_action) { _, _ ->
+                // FIX: Call the suspend function inside a coroutine
+                lifecycleScope.launch {
+                    val success = viewModel.loadSavedGame()
+                    if (success) {
+                        Toast.makeText(this@HomeActivity, R.string.game_loaded, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@HomeActivity, R.string.load_error, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .setNegativeButton(R.string.cancel, null)
@@ -188,7 +219,7 @@ class HomeActivity : AppCompatActivity() {
             .setTitle(R.string.congratulations_title)
             .setMessage(getString(R.string.win_message, score, timeFormatted))
             .setPositiveButton(R.string.new_game_button_text) { _, _ ->
-                viewModel.startNewGame(saveCurrent = false)
+                viewModel.startNewGame()
             }
             .setNegativeButton(R.string.continue_playing) { _, _ ->
                 // User chose to continue, but the game is effectively won.

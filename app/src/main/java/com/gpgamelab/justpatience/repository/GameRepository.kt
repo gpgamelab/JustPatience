@@ -4,15 +4,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import com.google.firebase.auth.FirebaseAuth // Import fixed
-import com.google.firebase.firestore.FirebaseFirestore // Import fixed
-import com.google.firebase.firestore.FieldValue // Import fixed
 import com.gpgamelab.justpatience.data.SettingsManager
-import com.gpgamelab.justpatience.data.SettingsManager.UserSettings
-import com.gpgamelab.justpatience.data.SettingsManager.UserStats
+import com.gpgamelab.justpatience.data.SettingsManager.UserSettings // Import specific class from manager
+import com.gpgamelab.justpatience.data.SettingsManager.UserStats // Import specific class from manager
 import com.gpgamelab.justpatience.data.TokenManager
-import kotlinx.coroutines.flow.catch
-import java.io.IOException
 
 /**
  * Repository layer responsible for managing all non-authentication related user data,
@@ -20,79 +15,46 @@ import java.io.IOException
  *
  * This repository is the sole source of truth for local game data persistence.
  *
- * @param firestore The Firebase Firestore instance for cloud data.
  * @param settingsManager The DataStore manager for persistent settings and stats.
  * @param tokenManager The DataStore manager for authentication status (used to determine if data is cleared).
  */
 class GameRepository(
-    private val firestore: FirebaseFirestore,
+    // Removed FirebaseFirestore dependency to align with local persistence focus.
     private val settingsManager: SettingsManager,
     private val tokenManager: TokenManager
 ) {
-    // We need an instance of FirebaseAuth to get the current user ID
-    private val auth = FirebaseAuth.getInstance()
-
     // --- Combined Data Flow ---
 
     /**
-     * A combined Flow that merges the latest UserSettings and UserStats.
-     * This provides a single, streamable object for the UI to consume.
+     * A combined Flow that merges the latest UserSettings, UserStats, and login status.
+     * This provides a single, stateful object for the ViewModel to observe.
      */
     val userDataFlow: Flow<UserData> = combine(
-        settingsManager.getUserSettings(),
-        settingsManager.getUserStats(),
-        tokenManager.getAuthToken // Use auth token existence as isLoggedIn status
-    ) { settings, stats, authToken ->
-        // This is where we combine the three flows into a single UserData object
-        UserData(
-            settings = settings,
-            stats = stats,
-            isLoggedIn = authToken != null
-        )
-    }.distinctUntilChanged() // Ensures we only emit if the data actually changed
+        settingsManager.settingsFlow,
+        settingsManager.statsFlow,
+        tokenManager.getAuthToken.map { it != null } // Map token flow to a simple isLoggedIn boolean
+    ) { settings, stats, isLoggedIn ->
+        UserData(settings, stats, isLoggedIn)
+    }.distinctUntilChanged() // Only emit when the contents of UserData actually change
+
 
     // --- Settings Actions ---
 
+    /** Toggles the sound setting state. */
     suspend fun toggleSound() {
         settingsManager.toggleSound()
     }
 
+    /** Toggles the hints setting state. */
     suspend fun toggleHints() {
         settingsManager.toggleHints()
     }
 
-    /** Resets all local stats and high scores. */
+    // --- Statistics Actions ---
+
+    /** Resets all persistent game statistics (games played, high score, etc.). */
     suspend fun resetStats() {
         settingsManager.resetStats()
-    }
-
-    // --- Game Statistics Actions ---
-
-    /**
-     * Updates statistics after a game is played (win or loss).
-     * This handles both local DataStore and cloud Firestore updates.
-     */
-    suspend fun recordGamePlayed() {
-        // 1. Update local stats (DataStore)
-        settingsManager.recordGamePlayed()
-
-        // 2. Update cloud stats (Firestore, if logged in)
-        val userId = auth.currentUser?.uid
-        if (userId != null) {
-            updateUserGamesPlayed(userId)
-        }
-    }
-
-    private suspend fun updateUserGamesPlayed(userId: String) {
-        val userDocRef = firestore.collection("users").document(userId)
-
-        // Increment the 'gamesPlayed' field by 1 atomically
-        // This is safe for concurrent updates
-        userDocRef.update("stats.gamesPlayed", FieldValue.increment(1))
-            .addOnFailureListener { e ->
-                // Log and handle failure to update cloud stats
-                println("Error incrementing games played for user $userId: $e")
-            }
     }
 
     /**

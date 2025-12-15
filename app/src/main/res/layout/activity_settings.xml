@@ -77,10 +77,10 @@
 
             <!-- Button: Logout -->
             <Button
-                android:id="@+id/btn_logout"
+                android:id="@+id/logoutButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Logout"
+                android:text="@string/logout_title"
                 android:textColor="@android:color/white"
                 android:backgroundTint="@color/logout_button_color"
                 android:layout_marginTop="8dp"
@@ -89,15 +89,18 @@
 
             <!-- Button: Reset High Score -->
             <Button
-                android:id="@+id/btn_reset_score"
+                android:id="@+id/resetStatsButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Reset High Score"
+                android:text="@string/reset_high_score"
                 android:textColor="@color/text_color"
                 android:backgroundTint="@color/secondary_button_color"
                 android:layout_marginTop="16dp"
                 android:padding="12dp"
                 app:cornerRadius="8dp"/>
+
+
+
 
         </LinearLayout>
     </ScrollView>

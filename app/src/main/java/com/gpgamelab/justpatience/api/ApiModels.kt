@@ -76,7 +76,7 @@ data class StatusResponse(
  * Nested object for a single leaderboard entry
  */
 data class LeaderboardEntry(
-    @SerializedName("rank") val rank: Int,
+    @SerializedName("cardRank") val rank: Int,
     @SerializedName("username") val username: String,
     @SerializedName("score") val score: Int,
     @SerializedName("time_ms") val timeMs: Long
