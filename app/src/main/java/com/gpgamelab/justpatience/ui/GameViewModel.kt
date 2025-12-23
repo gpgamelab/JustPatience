@@ -38,21 +38,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val game: StateFlow<Game> = _game
 
     init {
-        viewModelScope.launch {
-            // Try load saved game; if not available, start fresh
-            try {
-                val saved = repository.getCurrentGameState().firstOrNull()
-                if (!saved.isNullOrEmpty()) {
-                    val loaded = gson.fromJson(saved, Game::class.java)
-                    _game.value = loaded
-                } else {
-                    _game.value = controller.newGame()
-                }
-            } catch (t: Throwable) {
-                Log.w("GameViewModel", "Load failed, new game: ${t.message}")
-                _game.value = controller.newGame()
-            }
-        }
+
+        startNewGame()
+
+//        viewModelScope.launch {
+//            // Try load saved game; if not available, start fresh
+//            try {
+//                val saved = repository.getCurrentGameState().firstOrNull()
+//                if (!saved.isNullOrEmpty()) {
+//                    val loaded = gson.fromJson(saved, Game::class.java)
+//                    _game.value = loaded
+//                } else {
+//                    _game.value = controller.newGameWithClearHistory()
+//                }
+//            } catch (t: Throwable) {
+//                Log.w("GameViewModel", "Load failed, new game: ${t.message}")
+//                _game.value = controller.newGameWithClearHistory()
+//            }
+//        }
     }
 
     fun undoLastMove(): Boolean {
@@ -62,7 +65,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startNewGame() {
         viewModelScope.launch {
-            _game.value = controller.newGame()
+            _game.value = controller.newGameWithClearHistory()
             saveGame()
         }
     }
@@ -88,7 +91,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             try {
-                val (newGame, success) = controller.attemptMove(
+                val (theUpdatedGame, success) = controller.attemptMove(
                     _game.value,
                     sourceType,
                     sourceIndex,
@@ -97,7 +100,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     targetIndex
                 )
                 if (success) {
-                    _game.value = newGame
+                    _game.value = theUpdatedGame
                     saveGameIfInProgress()
                 }
             } catch (t: Throwable) {
@@ -106,22 +109,33 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-//    fun tryMoveWasteToTableau(tableauIndex: Int) {
-//        val current = _game.value
-//        val updated = current.moveWasteToTableau(tableauIndex)
-//        _game.value = updated
-//    }
-//fun tryMoveWasteToTableau(index: Int) {
-//    _game.update { game ->
-//        game.moveWasteToTableau(index)
-//    }
-//}
-fun tryMoveWasteToTableau(index: Int) {
-    val current = _game.value
-    val updated = current.moveWasteToTableau(index)
-    _game.value = updated
-}
+    fun tryMoveWasteToTableau(index: Int) {
+        val current = _game.value
+        val updated = current.moveWasteToTableau(index)
+        _game.value = updated
+    }
 
+    fun tryMoveTableauToTableau(
+        fromIndex: Int,
+        cardIndex: Int,
+        toIndex: Int
+    ) {
+        val current = _game.value
+        _game.value = current.moveTableauToTableau(fromIndex, cardIndex, toIndex)
+    }
+
+    fun tryMoveWasteToFoundation(index: Int) {
+        val current = _game.value
+        _game.value = current.moveWasteToFoundation(index)
+    }
+
+    fun tryMoveTableauToFoundation(
+        tableauIndex: Int,
+        foundationIndex: Int
+    ) {
+        val current = _game.value
+        _game.value = current.moveTableauToFoundation(tableauIndex, foundationIndex)
+    }
 
     fun undo() {
         viewModelScope.launch {
@@ -163,12 +177,12 @@ fun tryMoveWasteToTableau(index: Int) {
         }
     }
 
-    fun restart() {
-        viewModelScope.launch {
-            _game.value = controller.newGame()
-            saveGame()
-        }
-    }
+//    fun restart() {
+//        viewModelScope.launch {
+//            _game.value = controller.newGameWithClearHistory()
+//            saveGame()
+//        }
+//    }
 
     fun stopGame() {
         saveGame()

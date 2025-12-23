@@ -171,15 +171,34 @@ class TableauPile(
     override val cards: MutableList<Card> = mutableListOf()
 ) : CardStack(StackType.TABLEAU, cards) {
 
+    // Private member variable (defaults to false)
+    private var dealInProgress: Boolean = false
+
+    // Setter
+    fun setDealInProgress() {
+        dealInProgress = true
+    }
+
+    // Clears (resets to default)
+    fun clearDealInProgress() {
+        dealInProgress = false
+    }
+
+    // Getter
+    fun getDealInProgressStatus(): Boolean {
+        return dealInProgress
+    }
+
     override fun canPush(card: Card): Boolean {
         val top = peek()
 
-        return when (top) {
-            null -> card.recto.rank == StandardRank.KING        // Only Kings on empty tableau
-            else ->
-                card.recto.hasOppositeColor(top.recto)  &&
-                        card.recto.isOneLowerRank(top.recto)
-        }
+        return getDealInProgressStatus() ||
+                when (top) {
+                    null -> card.recto.rank == StandardRank.KING        // Only Kings on empty tableau
+                    else ->
+                        card.recto.hasOppositeColor(top.recto) &&
+                                card.recto.isOneLowerRank(top.recto)
+                }
     }
 
     override fun canPush(cards: List<Card>): Boolean {
@@ -201,7 +220,7 @@ class TableauPile(
     }
 
     override fun push(card: Card): Boolean {
-        card.isFaceUp = false
+//        card.isFaceUp = false
         return super.push(card)
     }
 

@@ -1,3 +1,7 @@
+// TODO: deprecated – replaced by Game + GameViewModel
+//       either delete this file or refactor other code to be here instead.
+//       need to analize and decide this later.
+
 package com.gpgamelab.justpatience.game
 
 import com.gpgamelab.justpatience.model.*
@@ -18,7 +22,7 @@ class GameController {
     // Mutex for thread-safety if called from multiple coroutines
     private val mutex = Mutex()
 
-    suspend fun newGame(): Game = mutex.withLock {
+    suspend fun newGameWithClearHistory(): Game = mutex.withLock {
         val g = Game.newGame()
         moveHistory.clear()
         g

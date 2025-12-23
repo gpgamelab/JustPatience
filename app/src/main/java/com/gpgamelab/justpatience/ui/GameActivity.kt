@@ -79,7 +79,7 @@ class GameActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(R.string.restart_game_title)
             .setMessage(R.string.restart_game_message)
-            .setPositiveButton(R.string.restart_game_text) { _, _ -> viewModel.restart() }
+            .setPositiveButton(R.string.restart_game_text) { _, _ -> null } //viewModel.restart() }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }

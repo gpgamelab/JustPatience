@@ -168,15 +168,17 @@ private fun drawDragGhost(canvas: Canvas) {
                         colIdx == dragStackIndex &&
                         index >= dragCardIndex
                     ) {
-                        y += if (card.isFaceUp) cardW * 0.4f else cardW * 0.1f
+                        y += if (card.isFaceUp) cardW * 0.1f else cardW * 0.1f
                         return@forEachIndexed
                     }
 
                     val rect = RectF(x, y, x + cardW, y + cardH)
-                    if (card.isFaceUp) drawCard(canvas, card, rect)
-                    else drawCardBack(canvas, rect, card.verso)
+                    if (card.isFaceUp)
+                        drawCard(canvas, card, rect)
+                    else
+                        drawCardBack(canvas, rect, card.verso)
 
-                    y += if (card.isFaceUp) cardW * 0.4f else cardW * 0.1f
+                    y += if (card.isFaceUp) cardW * 2.4f else cardW * 0.1f
                 }
             }
         }
@@ -337,78 +339,6 @@ private fun drawDragGhost(canvas: Canvas) {
                 return true
             }
 
-//            MotionEvent.ACTION_UP -> {
-//                if (!isDragging) {
-//                    handleTap(event.x, event.y)
-//                }
-//
-//                isDragging = false
-//                clearDragState()
-//                invalidate()
-//                return true
-//            }
-//            MotionEvent.ACTION_UP -> {
-//
-//                dropTargetTableauIndex = null
-//
-//                if (isDragging && dragStackType == StackType.WASTE) {
-//
-//                    val startY =
-//                        cardPadding + cardH + cardPadding + tableauOffset
-//
-//                    columnX.forEachIndexed { index, colX ->
-//                        val rect = RectF(
-//                            colX,
-//                            startY,
-//                            colX + cardW,
-//                            height.toFloat()
-//                        )
-//
-//                        if (rect.contains(event.x, event.y)) {
-//                            dropTargetTableauIndex = index
-//                            return@forEachIndexed
-//                        }
-//                    }
-//                }
-//
-//                clearDragState()
-//                invalidate()
-//            }
-//            MotionEvent.ACTION_UP -> {
-//
-//                // CASE 1: No drag → this was a tap
-//                if (!isDragging) {
-//                    handleTap(event.x, event.y)
-//                    return true
-//                }
-//
-//                // CASE 2: Drag ended
-//                dropTargetTableauIndex = null
-//
-//                if (dragStackType == StackType.WASTE) {
-//
-//                    val startY =
-//                        cardPadding + cardH + cardPadding + tableauOffset
-//
-//                    columnX.forEachIndexed { index, colX ->
-//                        val rect = RectF(
-//                            colX,
-//                            startY,
-//                            colX + cardW,
-//                            height.toFloat()
-//                        )
-//
-//                        if (rect.contains(event.x, event.y)) {
-//                            dropTargetTableauIndex = index
-//                            return@forEachIndexed
-//                        }
-//                    }
-//                }
-//
-//                clearDragState()
-//                invalidate()
-//                return true
-//            }
             MotionEvent.ACTION_UP -> {
 
                 var handled = false
@@ -441,6 +371,74 @@ private fun drawDragGhost(canvas: Canvas) {
                 if (!handled && !isDragging) {
                     handleTap(event.x, event.y)
                 }
+
+                if (isDragging && dragStackType == StackType.TABLEAU) {
+
+                    var dropTargetIndex: Int? = null
+
+                    val startY = cardPadding + cardH + cardPadding + tableauOffset
+
+                    columnX.forEachIndexed { index, colX ->
+                        val rect = RectF(
+                            colX,
+                            startY,
+                            colX + cardW,
+                            height.toFloat()
+                        )
+
+                        if (rect.contains(event.x, event.y)) {
+                            dropTargetIndex = index
+                            return@forEachIndexed
+                        }
+                    }
+
+                    if (dropTargetIndex != null) {
+                        viewModel.tryMoveTableauToTableau(
+                            dragStackIndex,
+                            dragCardIndex,
+                            dropTargetIndex!!
+                        )
+                    }
+                }
+
+                if (isDragging) {
+
+                    val topY = cardPadding
+                    val foundationStartX = columnX[3]   // first foundation column
+
+                    var foundationIndex: Int? = null
+
+                    for (i in viewModel.game.value.foundations.indices) {
+                        val x = foundationStartX + i * (cardW + cardPadding)
+                        val rect = RectF(
+                            x,
+                            topY,
+                            x + cardW,
+                            topY + cardH
+                        )
+
+                        if (rect.contains(event.x, event.y)) {
+                            foundationIndex = i
+                            break
+                        }
+                    }
+
+                    if (foundationIndex != null) {
+                        when (dragStackType) {
+                            StackType.WASTE -> {
+                                viewModel.tryMoveWasteToFoundation(foundationIndex!!)
+                            }
+                            StackType.TABLEAU -> {
+                                viewModel.tryMoveTableauToFoundation(
+                                    dragStackIndex,
+                                    foundationIndex!!
+                                )
+                            }
+                            else -> {}
+                        }
+                    }
+                }
+
 
                 clearDragState()
                 invalidate()
