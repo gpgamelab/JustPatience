@@ -131,6 +131,14 @@ sealed class CardStack(
     fun isEmpty(): Boolean = cards.isEmpty()
     fun size(): Int = cards.size
     fun asList(): List<Card> = cards.toList()
+    fun peekAt(index: Int): Card? {
+        return if (index in cards.indices) cards[index] else null
+    }
+    fun popFrom(index: Int): Card? {
+        return if (index in cards.indices) {
+            cards.removeAt(index)
+        } else null
+    }
 }
 
 class Stock(cards: MutableList<Card>) : CardStack(StackType.STOCK, cards) {
@@ -168,7 +176,7 @@ class FoundationPile(
 }
 
 class TableauPile(
-    override val cards: MutableList<Card> = mutableListOf()
+    public override val cards: MutableList<Card> = mutableListOf()
 ) : CardStack(StackType.TABLEAU, cards) {
 
     // Private member variable (defaults to false)
@@ -214,7 +222,7 @@ class TableauPile(
             val lower = seq[i + 1]
 
             if (upper.recto.hasSameColor(lower.recto)) return false
-            if (upper.recto.isOneHigherRank(lower.recto)) return false
+            if (upper.recto.isOneHigherRank(lower.recto).not()) return false
         }
         return true
     }

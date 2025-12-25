@@ -115,13 +115,35 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _game.value = updated
     }
 
+//    fun tryMoveTableauToTableau(
+//        fromIndex: Int,
+//        cardIndex: Int,
+//        toIndex: Int
+//    ) {
+//        val current = _game.value
+//        _game.value = current.moveTableauToTableau(fromIndex, cardIndex, toIndex)
+//    }
+//    fun tryMoveTableauToTableau(
+//        fromIndex: Int,
+//        cardIndex: Int,
+//        toIndex: Int
+//    ): Boolean {
+//        val current = _game.value
+//        val updated = current.moveTableauToTableau(fromIndex, cardIndex, toIndex)
+//
+//        return if (updated !== current) {
+//            _game.value = updated
+//            true
+//        } else {
+//            false
+//        }
+//    }
     fun tryMoveTableauToTableau(
         fromIndex: Int,
         cardIndex: Int,
         toIndex: Int
-    ) {
-        val current = _game.value
-        _game.value = current.moveTableauToTableau(fromIndex, cardIndex, toIndex)
+    ): Boolean {
+        return _game.value.moveTableauToTableau(fromIndex, cardIndex, toIndex)
     }
 
     fun tryMoveWasteToFoundation(index: Int) {
@@ -129,13 +151,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _game.value = current.moveWasteToFoundation(index)
     }
 
-    fun tryMoveTableauToFoundation(
-        tableauIndex: Int,
-        foundationIndex: Int
-    ) {
-        val current = _game.value
-        _game.value = current.moveTableauToFoundation(tableauIndex, foundationIndex)
+//    fun tryMoveTableauToFoundation(
+//        tableauIndex: Int,
+//        cardIndex: Int,
+//        foundationIndex: Int
+//    ) {
+//        val current = _game.value
+//        _game.value = current.moveTableauToFoundation(tableauIndex, foundationIndex)
+//    }
+fun tryMoveTableauToFoundation(
+    tableauIndex: Int,
+    cardIndex: Int,
+    foundationIndex: Int
+): Boolean {
+    val current = _game.value
+    val moved = current.moveTableauToFoundation(
+        tableauIndex,
+        cardIndex,
+        foundationIndex
+    )
+
+    if (moved) {
+        _game.value = current
     }
+
+    return moved
+}
 
     fun undo() {
         viewModelScope.launch {
