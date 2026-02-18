@@ -88,14 +88,14 @@ fun drawFromStock() {
     viewModelScope.launch {
         // 1️⃣ Normal draw
         if (!_game.value.stock.isEmpty()) {
-            val card: Card = _game.value.stock.pop() ?: throw IllegalStateException("User not found")
+            val card: Card = _game.value.stock.pop() ?: throw IllegalStateException("Stock pop failed")
             card.isFaceUp = true
             _game.value.waste.push(card)
         } else {
             // 2️⃣ Recycle waste → stock
             if (!_game.value.waste.isEmpty()) {
                 val recycled =
-                    _game.value.waste.take(_game.value.waste.size()) ?: throw IllegalStateException("User not found")
+                    _game.value.waste.take(_game.value.waste.size()) ?: throw IllegalStateException("Waste take failed")
 
                 recycled
                     .reversed()
