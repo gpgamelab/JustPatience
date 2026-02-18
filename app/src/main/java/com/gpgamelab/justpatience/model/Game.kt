@@ -286,18 +286,18 @@ fun moveTableauToFoundation(
     cardIndex: Int,
     foundationIndex: Int
 ): Boolean {
-    Log.d("FOUNDATION", "Entry: tableauIndex ${tableauIndex}, cardIndex ${cardIndex}, foundationIndex ${foundationIndex}, ")
+//    Log.d("FOUNDATION", "Entry: tableauIndex ${tableauIndex}, cardIndex ${cardIndex}, foundationIndex ${foundationIndex}, ")
 
     val fromPile = tableau[tableauIndex]
     val toPile = foundations[foundationIndex]
 
     // MUST be top card
     if (cardIndex != fromPile.size() - 1) return false
-    Log.d("FOUNDATION", "CHECK POINT 01 ")
+//    Log.d("FOUNDATION", "CHECK POINT 01 ")
 
     val card = fromPile.peekAt(cardIndex) ?: return false
-    Log.d("FOUNDATION", "Trying to push ${card.recto.rank} ${card.recto.suit}")
-    Log.d("FOUNDATION", "canPush = ${toPile.canPush(card)}")
+//    Log.d("FOUNDATION", "Trying to push ${card.recto.rank} ${card.recto.suit}")
+//    Log.d("FOUNDATION", "canPush = ${toPile.canPush(card)}")
 
     if (!toPile.canPush(card)) return false
 
@@ -343,6 +343,20 @@ fun moveTableauToFoundation(
         }
 
         return "${suitChar}_${rankCode}"
+    }
+
+    fun recycleWasteToStock(): Boolean {
+        if (!stock.isEmpty() || waste.isEmpty()) return false
+
+        val recycled = waste.take(waste.size()) ?: return false
+
+        // Reverse order (top waste card becomes last stock card)
+        recycled.reversed().forEach { card ->
+            card.isFaceUp = false
+            stock.push(card)
+        }
+
+        return true
     }
 
 }

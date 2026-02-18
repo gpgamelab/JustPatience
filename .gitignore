@@ -1,5 +1,6 @@
 *.iml
 .gradle
+/app/release/
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -13,3 +14,20 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+
+
+
+/.idea/AndroidProjectSystem.xml
+/.idea/appInsightsSettings.xml
+/.idea/codeStyles
+/.idea/compiler.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
+/.idea/gradle.xml
+/.idea/migrations.xml
+/.idea/misc.xml
+/.idea/runConfigurations.xml
+/.idea/vcs.xml
+/.idea/.name
+/.idea/.gitignore

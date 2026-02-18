@@ -47,7 +47,7 @@ class GameActivity : AppCompatActivity() {
                 viewModel.game.collect { g ->
                     binding.tvScore.text = getString(R.string.score_format, g.score)
                     binding.tvMoves.text = getString(R.string.moves_format, g.moves)
-                    binding.gameBoardView.invalidate()
+                    binding.gameBoardView.postInvalidateOnAnimation()
                     if (g.status == GameStatus.WON) showGameEndDialog(true)
                 }
             }

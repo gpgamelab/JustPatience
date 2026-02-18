@@ -26,12 +26,12 @@ class CardStackUIManager(
     ) {
         // Bind views lazily (Activity should pass container IDs)
         // For now we just log existence; expand to findViewById if needed
-        Log.d("CardStackUIManager", "initViews called. stock=$stockId waste=$wasteId")
+//        Log.d("CardStackUIManager", "initViews called. stock=$stockId waste=$wasteId")
     }
 
     fun render(game: com.gpgamelab.justpatience.model.Game) {
         // Simple render hook: logs for now. Replace by actual view updates later.
-        Log.d("CardStackUIManager", "Render called. Score=${game.score} Moves=${game.moves}")
+//        Log.d("CardStackUIManager", "Render called. Score=${game.score} Moves=${game.moves}")
     }
 
     /**

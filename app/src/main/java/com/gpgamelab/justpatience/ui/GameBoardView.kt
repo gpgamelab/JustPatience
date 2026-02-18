@@ -29,6 +29,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     lateinit var viewModel: GameViewModel
     lateinit var assetResolver: AssetResolver
 
+    private val currentSetId = "default"
+
     private val cardPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; style = Paint.Style.FILL }
     private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; style = Paint.Style.STROKE; strokeWidth = 2f }
     private val placeholderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = ContextCompat.getColor(context, R.color.card_placeholder); style = Paint.Style.STROKE; strokeWidth = 4f }
@@ -209,7 +211,7 @@ private fun drawDragGhost(canvas: Canvas) {
     }
 
     private fun drawCard(canvas: Canvas, card: Card, rect: RectF) {
-        val bitmap = assetResolver.resolve(card.recto.imagePath, rect.width().toInt(), rect.height().toInt())
+        val bitmap = assetResolver.resolve(currentSetId, card.recto.imagePath, rect.width().toInt(), rect.height().toInt())
 
         canvas.drawBitmap(
             bitmap,
@@ -222,7 +224,7 @@ private fun drawDragGhost(canvas: Canvas) {
     }
 
     private fun drawCardBack(canvas: Canvas, rect: RectF, verso: Verso) {
-        val bitmap = assetResolver.resolve(verso.imagePath, rect.width().toInt(), rect.height().toInt())
+        val bitmap = assetResolver.resolve(currentSetId, verso.imagePath, rect.width().toInt(), rect.height().toInt())
 
         canvas.drawBitmap(
             bitmap,
@@ -236,6 +238,7 @@ private fun drawDragGhost(canvas: Canvas) {
     private fun drawStockBack(canvas: Canvas, rect: RectF) {
 //        val bitmap = assetResolver.resolve(DEFAULT_STOCK_BACK_IMAGE_PATH)
         val bitmap = assetResolver.resolve(
+            currentSetId,
             DEFAULT_STOCK_BACK_IMAGE_PATH,
             cardW.toInt(),
             cardH.toInt()
@@ -251,11 +254,24 @@ private fun drawDragGhost(canvas: Canvas) {
             viewModel.drawFromStock()
         }
     }
+//    private fun handleTap(x: Float, y: Float): Boolean {
+//        val (type, _, _) = findStackAt(x, y)
+//
+//        if (type == StackType.STOCK) {
+//            viewModel.drawFromStock()
+//            invalidate()
+//            return true
+//        }
+//
+//        return false
+//    }
+
 
     private fun clearDragState() {
         dragStackType = null
         dragStackIndex = -1
         dragCardIndex = -1
+        isDragging = false
     }
 
     private fun getCardRect(
@@ -389,6 +405,8 @@ private fun drawDragGhost(canvas: Canvas) {
 
                     // ✅ Valid tableau drag
                     isDragging = true
+                    dragX = event.x
+                    dragY = event.y
                     dragStackType = StackType.TABLEAU
                     dragStackIndex = stackIndex
                     dragCardIndex = dragStartIndex
@@ -402,7 +420,7 @@ private fun drawDragGhost(canvas: Canvas) {
                     dragOffsetX = event.x - columnX[stackIndex]
                     dragOffsetY = event.y - cardTopY
 
-                    invalidate()
+//                    invalidate()
                     return true
 
                 } else if (stackType == StackType.WASTE) {
@@ -437,13 +455,15 @@ private fun drawDragGhost(canvas: Canvas) {
 
                     if (dx > touchSlop || dy > touchSlop) {
                         if (dragStackType == StackType.TABLEAU || dragStackType == StackType.WASTE) {                            isDragging = true
-                            invalidate() // force redraw with drag state
-                        } else {
-                            clearDragState()
+//                            invalidate() // force redraw with drag state
+                            postInvalidateOnAnimation()
+                        } else
+                        {                            clearDragState()
                         }
                     }
                 } else {
-                    invalidate()
+//                    invalidate()
+                    postInvalidateOnAnimation()
                 }
                 return true
             }
@@ -671,7 +691,8 @@ private fun drawDragGhost(canvas: Canvas) {
 
                 // 4️⃣ ALWAYS clear drag state ONCE
                 clearDragState()
-                invalidate()
+//                invalidate()
+                postInvalidateOnAnimation()
                 return true
             }
         }

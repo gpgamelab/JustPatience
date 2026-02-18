@@ -8,6 +8,7 @@ import com.google.gson.Gson
 import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.TokenManager
 import com.gpgamelab.justpatience.game.GameController
+import com.gpgamelab.justpatience.model.Card
 import com.gpgamelab.justpatience.model.Game
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.model.StackType
@@ -70,17 +71,43 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun drawFromStock() {
-        viewModelScope.launch {
-            try {
-                val updated = controller.drawFromStock(_game.value)
-                _game.value = updated
-                saveGameIfInProgress()
-            } catch (t: Throwable) {
-                Log.w("GameViewModel", "drawFromStock failed: ${t.message}")
+//    fun drawFromStock() {
+//        viewModelScope.launch {
+//            try {
+//                val updated = controller.drawFromStock(_game.value)
+//                _game.value = updated
+//                saveGameIfInProgress()
+//            } catch (t: Throwable) {
+//                Log.w("GameViewModel", "drawFromStock failed: ${t.message}")
+//            }
+//        }
+//    }
+//    tryDrawFromStock
+    //fun drawFromStock(game: Game): Game {
+fun drawFromStock() {
+    viewModelScope.launch {
+        // 1️⃣ Normal draw
+        if (!_game.value.stock.isEmpty()) {
+            val card: Card = _game.value.stock.pop() ?: throw IllegalStateException("User not found")
+            card.isFaceUp = true
+            _game.value.waste.push(card)
+        } else {
+            // 2️⃣ Recycle waste → stock
+            if (!_game.value.waste.isEmpty()) {
+                val recycled =
+                    _game.value.waste.take(_game.value.waste.size()) ?: throw IllegalStateException("User not found")
+
+                recycled
+                    .reversed()
+                    .forEach { card ->
+                        card.isFaceUp = false
+                        _game.value.stock.push(card)
+                    }
             }
         }
     }
+}
+
 
     fun attemptMove(
         sourceType: StackType,
@@ -246,5 +273,16 @@ fun tryMoveTableauToFoundation(
             if (pile.asList().contains(card)) return Pair(StackType.TABLEAU, idx)
         }
         return null
+    }
+
+    fun tryRecycleWasteToStock(): Boolean {
+        val current = _game.value
+        val recycled = current.recycleWasteToStock()
+
+        if (recycled) {
+            _game.value = current
+        }
+
+        return recycled
     }
 }

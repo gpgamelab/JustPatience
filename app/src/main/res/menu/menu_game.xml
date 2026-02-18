@@ -33,31 +33,4 @@
         android:id="@+id/action_settings"
         android:title="Settings"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_undo"
-        android:icon="@drawable/ic_undo"
-        android:title="@string/action_undo"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_hint"
-        android:icon="@drawable/ic_lightbulb"
-        android:title="@string/action_hint"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_restart"
-        android:title="@string/action_restart"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_new_game"
-        android:title="@string/new_game_title"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_settings"
-        android:title="Settings"
-        app:showAsAction="never" />
 </menu>
