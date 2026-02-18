@@ -26,6 +26,35 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 
 ---
 
+## ? Roadmap / TODO (Prioritized)
+
+This section tracks work currently in progress and upcoming improvements.
+
+### ? High Priority
+- [ ] Fix foundation pile put validation
+- [ ] Fix edge-case bug when dragging multiple stacked cards
+- [ ] Improve win detection logic
+- [ ] Reduce display size of the cards
+- [ ] Add unit tests for move validation engine
+
+### ? Medium Priority
+- [ ] Add account login and creation with the backend server
+- [ ] Add sound effects
+- [ ] Add animation polish
+- [ ] Improve tablet layout support
+
+### ? Low Priority
+- [ ] Add dark mode toggle
+- [ ] Add statistics tracking
+- [ ] Add alternative card themes
+
+### ? Wish list to be prioritized
+- [ ] Add monitization with ribbon ads
+- [ ] Add monitization with full screen ads
+- [ ] Add monitization with in app purchases
+
+---
+
 ## ? Getting Started
 
 ### Prerequisites
@@ -57,27 +86,6 @@ This game implements the classic solitaire rules:
 - Win by moving all cards to the foundations.
 
 (Expand this section if you implement specific solitaire variants.)
-
----
-
-## ? Roadmap / TODO (Prioritized)
-
-This section tracks work currently in progress and upcoming improvements.
-
-### ? High Priority
-- [ ] Fix edge-case bug when dragging multiple stacked cards
-- [ ] Improve win detection logic
-- [ ] Add unit tests for move validation engine
-
-### ? Medium Priority
-- [ ] Add sound effects
-- [ ] Add animation polish
-- [ ] Improve tablet layout support
-
-### ? Low Priority
-- [ ] Add dark mode toggle
-- [ ] Add statistics tracking
-- [ ] Add alternative card themes
 
 ---
 
