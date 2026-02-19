@@ -374,13 +374,6 @@ private fun drawDragGhost(canvas: Canvas) {
                 val (stackType, stackIndex, cardIndex) = findStackAt(event.x, event.y)
 
                 if (stackType == StackType.TABLEAU && cardIndex >= 0) {
-//                    dragStackType = stackType
-//                    dragStackIndex = stackIndex
-//                    dragCardIndex = cardIndex
-//
-//                    val cardRect = getCardRect(stackType, stackIndex, cardIndex)
-//                    dragOffsetX = event.x - cardRect.left
-//                    dragOffsetY = event.y - cardRect.top
                     val pile = viewModel.game.value.tableau[stackIndex]
                     val cards = pile.asList()
 
@@ -420,7 +413,6 @@ private fun drawDragGhost(canvas: Canvas) {
                     dragOffsetX = event.x - columnX[stackIndex]
                     dragOffsetY = event.y - cardTopY
 
-//                    invalidate()
                     return true
 
                 } else if (stackType == StackType.WASTE) {
@@ -455,163 +447,17 @@ private fun drawDragGhost(canvas: Canvas) {
 
                     if (dx > touchSlop || dy > touchSlop) {
                         if (dragStackType == StackType.TABLEAU || dragStackType == StackType.WASTE) {                            isDragging = true
-//                            invalidate() // force redraw with drag state
                             postInvalidateOnAnimation()
                         } else
                         {                            clearDragState()
                         }
                     }
                 } else {
-//                    invalidate()
                     postInvalidateOnAnimation()
                 }
                 return true
             }
 
-//            MotionEvent.ACTION_UP -> {
-//
-//                var handled = false
-//                var moveSucceeded = false
-//
-//                if (isDragging && dragStackType == StackType.WASTE) {
-//
-//                    val startY = cardPadding + cardH + cardPadding + tableauOffset
-//                    var dropTarget: Int? = null
-//
-//                    columnX.forEachIndexed { index, colX ->
-//                        val rect = RectF(
-//                            colX,
-//                            startY,
-//                            colX + cardW,
-//                            height.toFloat()
-//                        )
-//
-//                        if (rect.contains(event.x, event.y)) {
-//                            dropTarget = index
-//                            return@forEachIndexed
-//                        }
-//                    }
-//
-//                    if (dropTarget != null) {
-//                        viewModel.tryMoveWasteToTableau(dropTarget!!)
-//                        handled = true
-//                    }
-//                }
-//
-//                if (!handled && !isDragging) {
-//                    handleTap(event.x, event.y)
-//                }
-//
-//                if (isDragging && dragStackType == StackType.TABLEAU) {
-//
-//                    var dropTargetIndex: Int? = null
-//
-//                    val startY = cardPadding + cardH + cardPadding + tableauOffset
-//
-//                    columnX.forEachIndexed { index, colX ->
-//                        val rect = RectF(
-//                            colX,
-//                            startY,
-//                            colX + cardW,
-//                            height.toFloat()
-//                        )
-//
-//                        if (rect.contains(event.x, event.y)) {
-//                            dropTargetIndex = index
-//                            return@forEachIndexed
-//                        }
-//                    }
-//
-////                    if (dropTargetIndex != null) {
-////                        viewModel.tryMoveTableauToTableau(
-////                            dragStackIndex,
-////                            dragCardIndex,
-////                            dropTargetIndex!!
-////                        )
-////                    }
-////                    var moveSucceeded = false
-//
-//                    if (dropTargetIndex != null) {
-//                        moveSucceeded = viewModel.tryMoveTableauToTableau(
-//                            dragStackIndex,
-//                            dragCardIndex,
-//                            dropTargetIndex!!
-//                        )
-//                    }
-//
-//                    if (moveSucceeded) {
-//                        clearDragState()
-//                    } else {
-//                        // Restore drag visuals by NOT clearing drag state immediately
-//                        isDragging = false
-//                        dragStackType = null
-//                    }
-//                    invalidate()
-//                }
-//
-//                if (isDragging) {
-//
-//                    val topY = cardPadding
-//                    val foundationStartX = columnX[3]   // first foundation column
-//
-//                    var foundationIndex: Int? = null
-//
-//                    for (i in viewModel.game.value.foundations.indices) {
-//                        val x = foundationStartX + i * (cardW + cardPadding)
-//                        val rect = RectF(
-//                            x,
-//                            topY,
-//                            x + cardW,
-//                            topY + cardH
-//                        )
-//
-//                        if (rect.contains(event.x, event.y)) {
-//                            foundationIndex = i
-//                            break
-//                        }
-//                    }
-//
-////                    if (foundationIndex != null) {
-////                        when (dragStackType) {
-////                            StackType.WASTE -> {
-////                                viewModel.tryMoveWasteToFoundation(foundationIndex!!)
-////                            }
-////                            StackType.TABLEAU -> {
-////                                viewModel.tryMoveTableauToFoundation(
-////                                    dragStackIndex,
-////                                    foundationIndex!!
-////                                )
-////                            }
-////                            else -> {}
-////                        }
-////                    }
-//                    if (foundationIndex != null) {
-//                        when (dragStackType) {
-//                            StackType.WASTE -> {
-//                                viewModel.tryMoveWasteToFoundation(foundationIndex!!)
-//                            }
-//                            StackType.TABLEAU -> {
-//                                moveSucceeded = viewModel.tryMoveTableauToFoundation(
-//                                    dragStackIndex,
-//                                    dragCardIndex,
-//                                    foundationIndex!!
-//                                )
-//                            }
-//                            else -> {}
-//                        }
-//                    }
-//                }
-//
-//                if (moveSucceeded) {
-//                    clearDragState()
-//                } else {
-//                    // Drop failed → snap back visually
-//                    isDragging = false
-//                }
-//
-//                invalidate()
-//                return true
-//            }
             MotionEvent.ACTION_UP -> {
 
                 var moveSucceeded = false
@@ -648,7 +494,7 @@ private fun drawDragGhost(canvas: Canvas) {
                         }
                     }
 
-// 2️⃣ TABLEAU DROP (only if foundation failed)
+                    // 2️⃣ TABLEAU DROP (only if foundation failed)
                     if (!moveSucceeded) {
                         val startY = cardPadding + cardH + cardPadding + tableauOffset
 
@@ -691,7 +537,6 @@ private fun drawDragGhost(canvas: Canvas) {
 
                 // 4️⃣ ALWAYS clear drag state ONCE
                 clearDragState()
-//                invalidate()
                 postInvalidateOnAnimation()
                 return true
             }
@@ -720,22 +565,47 @@ private fun drawDragGhost(canvas: Canvas) {
             for (i in 0 until columns) {
                 val cx = columnX[i]
                 if (x in cx..(cx + cardW)) {
+
                     val pile = viewModel.game.value.tableau.getOrNull(i)
-                    if (pile == null || pile.isEmpty()) return Triple(StackType.TABLEAU, i, 0)
-                    var curY = startY
+                    if (pile == null || pile.isEmpty()) {
+                        return Triple(StackType.TABLEAU, i, 0)
+                    }
+
                     val cards = pile.asList()
-                    for ((index, c) in cards.withIndex()) {
-                        val top = curY
-                        val bottom = curY + cardH
-                        if (y in top..bottom) return Triple(StackType.TABLEAU, i, index)
+
+                    // Precompute all Y positions first
+                    val positions = mutableListOf<Float>()
+                    var curY = startY
+                    for (c in cards) {
+                        positions.add(curY)
                         curY += if (c.isFaceUp) cardW * 0.4f else cardW * 0.1f
                     }
-                    return Triple(StackType.TABLEAU, i, max(0, cards.size - 1))
+
+                    // Iterate TOP → DOWN
+                    for (index in cards.lastIndex downTo 0) {
+
+                        val top = positions[index]
+
+                        val bottom =
+                            if (index == cards.lastIndex)
+                                top + cardH // top card full height
+                            else
+                                top + (if (cards[index].isFaceUp) cardW * 0.4f else cardW * 0.1f)
+
+                        if (y in top..bottom) {
+                            return Triple(StackType.TABLEAU, i, index)
+                        }
+                    }
+
+                    // If below all exposed areas, default to top card
+                    return Triple(StackType.TABLEAU, i, cards.lastIndex)
                 }
             }
         }
+
         return Triple(null, -1, -1)
     }
+
 
     private fun getStack(type: StackType, index: Int) = when (type) {
         StackType.STOCK -> viewModel.game.value.stock

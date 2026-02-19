@@ -31,8 +31,8 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 This section tracks work currently in progress and upcoming improvements.
 
 ### ? High Priority
-- [ ] Fix foundation pile put validation
-- [ ] Fix edge-case bug when dragging multiple stacked cards
+- [X] Fix foundation pile put validation
+- [X] Fix edge-case bug when dragging multiple stacked cards
 - [ ] Improve win detection logic
 - [ ] Reduce display size of the cards
 - [ ] Add unit tests for move validation engine
