@@ -169,9 +169,27 @@ class FoundationPile(
     override val cards: MutableList<Card> = mutableListOf()
 ) : CardStack(StackType.FOUNDATION, cards) {
 
-    override fun push(card: Card): Boolean {
-        card.isFaceUp = true
-        return super.push(card)
+    override fun canPush(card: Card): Boolean {
+
+        if (!card.isFaceUp) return false
+
+        // Empty foundation → must be Ace
+        if (cards.isEmpty()) {
+            return card.rank == StandardRank.ACE
+        }
+
+        val top = peek() ?: return false
+
+        // Same suit
+        if (card.suit != top.suit) return false
+
+        // Ascending rank
+        return card.rank.sortOrder == top.rank.sortOrder + 1
+    }
+
+    override fun canPush(cards: List<Card>): Boolean {
+        // Foundations never accept multiple cards
+        return false
     }
 }
 
