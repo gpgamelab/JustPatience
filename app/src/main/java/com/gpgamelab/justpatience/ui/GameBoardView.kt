@@ -490,8 +490,7 @@ private fun drawDragGhost(canvas: Canvas) {
                             when (dragStackType) {
 
                                 StackType.WASTE -> {
-                                    viewModel.tryMoveWasteToFoundation(i)
-                                    moveSucceeded = true   // waste always succeeds or is ignored internally
+                                    moveSucceeded = viewModel.tryMoveWasteToFoundation(i)
                                 }
 
                                 StackType.TABLEAU -> {

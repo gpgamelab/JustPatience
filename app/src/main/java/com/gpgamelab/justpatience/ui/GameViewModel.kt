@@ -127,8 +127,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val game = _game.value
 
         for (i in game.foundations.indices) {
-            val movedGame = game.moveWasteToFoundation(i)
-            if (movedGame != game) {
+            val moved = game.moveWasteToFoundation(i)
+            if (moved) {
                 updateAfterMove(game)
                 return true
             }
@@ -180,13 +180,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 //
 //        return moved
 //    }
-    fun tryMoveWasteToFoundation(index: Int) {
+    fun tryMoveWasteToFoundation(index: Int): Boolean {
         val game = _game.value
-        val newGame = game.moveWasteToFoundation(index)
+        val moved = game.moveWasteToFoundation(index)
 
-        if (newGame != game) {
-            updateAfterMove(newGame)
+        if (moved) {
+            updateAfterMove(game)
         }
+
+        return moved
     }
 
     fun tryMoveTableauToFoundation(

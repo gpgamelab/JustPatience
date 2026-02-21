@@ -33,7 +33,8 @@ This section tracks work currently in progress and upcoming improvements.
 ### ? High Priority
 - [X] Fix foundation pile put validation
 - [X] Fix edge-case bug when dragging multiple stacked cards
-- [ ] Improve win detection logic
+- [X] Improve win detection logic
+- [X] Add doubl tap to move card to foundation
 - [ ] Reduce display size of the cards
 - [ ] Add unit tests for move validation engine
 
@@ -42,6 +43,7 @@ This section tracks work currently in progress and upcoming improvements.
 - [ ] Add sound effects
 - [ ] Add animation polish
 - [ ] Improve tablet layout support
+- [ ] Switch to portrait instead of landscape mode
 
 ### ? Low Priority
 - [ ] Add dark mode toggle

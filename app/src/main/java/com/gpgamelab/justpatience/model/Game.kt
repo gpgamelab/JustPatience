@@ -224,17 +224,17 @@ data class Game(
         return true
     }
 
-    fun moveWasteToFoundation(foundationIndex: Int): Game {
-        val foundationPile = foundations.getOrNull(foundationIndex) ?: return this
-        val card = waste.peek() ?: return this
+    fun moveWasteToFoundation(foundationIndex: Int): Boolean {
+        val foundationPile = foundations.getOrNull(foundationIndex) ?: return false
+        val card = waste.peek() ?: return false
 
         // push() validates suit + rank progression
         if (!foundationPile.push(card)) {
-            return this
+            return false
         }
 
         waste.pop()
-        return this
+        return true
     }
 
     //    fun moveTableauToFoundation(
@@ -286,18 +286,14 @@ data class Game(
         cardIndex: Int,
         foundationIndex: Int
     ): Boolean {
-//    Log.d("FOUNDATION", "Entry: tableauIndex ${tableauIndex}, cardIndex ${cardIndex}, foundationIndex ${foundationIndex}, ")
 
         val fromPile = tableau[tableauIndex]
         val toPile = foundations[foundationIndex]
 
         // MUST be top card
         if (cardIndex != fromPile.size() - 1) return false
-//    Log.d("FOUNDATION", "CHECK POINT 01 ")
 
         val card = fromPile.peekAt(cardIndex) ?: return false
-//    Log.d("FOUNDATION", "Trying to push ${card.recto.rank} ${card.recto.suit}")
-//    Log.d("FOUNDATION", "canPush = ${toPile.canPush(card)}")
 
         if (!toPile.canPush(card)) return false
 
