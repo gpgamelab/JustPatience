@@ -31,10 +31,20 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private val currentSetId = "default"
 
-    private val cardPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; style = Paint.Style.FILL }
-    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; style = Paint.Style.STROKE; strokeWidth = 2f }
-    private val placeholderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = ContextCompat.getColor(context, R.color.card_placeholder); style = Paint.Style.STROKE; strokeWidth = 4f }
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 48f; textAlign = Paint.Align.CENTER }
+    private var lastTapTime = 0L
+    private val doubleTapTimeout = 300L
+
+    private val cardPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; style = Paint.Style.FILL }
+    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLACK; style = Paint.Style.STROKE; strokeWidth = 2f
+    }
+    private val placeholderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.card_placeholder); style =
+        Paint.Style.STROKE; strokeWidth = 4f
+    }
+    private val textPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 48f; textAlign = Paint.Align.CENTER }
 
     // Board and Card dimensions.
     private val BOARD_WIDTH_FRACTION = 0.60f
@@ -316,34 +326,6 @@ private fun drawDragGhost(canvas: Canvas) {
         }
     }
 
-//    private fun tableauYOffsetForIndex(
-//        pile: TableauPile,
-//        index: Int
-//    ): Float {
-//        var y = 0f
-//        val cards = pile.asList()
-//        for (i in 0 until index) {
-//            y += if (cards[i].isFaceUp) cardW * 0.4f else cardW * 0.1f
-//        }
-//        return y
-//    }
-//    private fun tableauYOffsetForIndex(
-//        pile: Stack<Card>,
-//        index: Int
-//    ): Float {
-//        var y = 0f
-//        val cards: List<Card> = pile.asList()
-//
-//        for (i in 0 until index) {
-//            y += if (cards[i].isFaceUp) {
-//                cardW * 0.4f
-//            } else {
-//                cardW * 0.1f
-//            }
-//        }
-//
-//        return y
-//    }
     private fun tableauYOffsetForIndex(
     pile: TableauPile,
     index: Int
@@ -372,6 +354,38 @@ private fun drawDragGhost(canvas: Canvas) {
                 isDragging = false
 
                 val (stackType, stackIndex, cardIndex) = findStackAt(event.x, event.y)
+
+                val now = System.currentTimeMillis()
+                val isDoubleTap = now - lastTapTime < doubleTapTimeout
+                lastTapTime = now
+
+                if (isDoubleTap) {
+                    when (stackType) {
+                        StackType.WASTE -> {
+                            if (!viewModel.game.value.waste.isEmpty()) {
+                                if (viewModel.tryAutoMoveWasteToFoundation()) {
+                                    postInvalidateOnAnimation()
+                                    return true
+                                }
+                            }
+                        }
+
+                        StackType.TABLEAU -> {
+                            val pile = viewModel.game.value.tableau.getOrNull(stackIndex)
+                            val topIndex = pile?.size()?.minus(1) ?: -1
+
+                            if (cardIndex == topIndex) {
+                                if (viewModel.tryAutoMoveTableauTopToFoundation(stackIndex)) {
+                                    postInvalidateOnAnimation()
+                                    return true
+                                }
+                            }
+                        }
+
+                        else -> {}
+                    }
+                }
+
 
                 if (stackType == StackType.TABLEAU && cardIndex >= 0) {
                     val pile = viewModel.game.value.tableau[stackIndex]
