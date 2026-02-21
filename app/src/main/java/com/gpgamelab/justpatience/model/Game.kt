@@ -109,7 +109,7 @@ data class Game(
         return this
     }
 
-//    fun moveTableauToTableau(
+    //    fun moveTableauToTableau(
 //        fromIndex: Int,
 //        cardIndex: Int,
 //        toIndex: Int
@@ -193,36 +193,36 @@ data class Game(
 //
 //    return true
 //}
-fun moveTableauToTableau(
-    fromIndex: Int,
-    cardIndex: Int,
-    toIndex: Int
-): Boolean {
-    if (fromIndex == toIndex) return false
+    fun moveTableauToTableau(
+        fromIndex: Int,
+        cardIndex: Int,
+        toIndex: Int
+    ): Boolean {
+        if (fromIndex == toIndex) return false
 
-    val fromPile = tableau[fromIndex]
-    val toPile = tableau[toIndex]
+        val fromPile = tableau[fromIndex]
+        val toPile = tableau[toIndex]
 
-    val count = fromPile.size() - cardIndex
-    if (count <= 0) return false
+        val count = fromPile.size() - cardIndex
+        if (count <= 0) return false
 
-    // 🔒 PEEK FIRST — NO MUTATION
-    val seq = fromPile.asList().takeLast(count)
+        // 🔒 PEEK FIRST — NO MUTATION
+        val seq = fromPile.asList().takeLast(count)
 
-    if (!fromPile.isValidSequence(seq)) return false
-    if (!toPile.canPush(seq)) return false
+        if (!fromPile.isValidSequence(seq)) return false
+        if (!toPile.canPush(seq)) return false
 
-    // ✅ NOW MUTATE (SAFE)
-    fromPile.take(count)
-    toPile.push(seq)
+        // ✅ NOW MUTATE (SAFE)
+        fromPile.take(count)
+        toPile.push(seq)
 
-    // Auto-flip
-    fromPile.peek()?.let {
-        if (!it.isFaceUp) it.isFaceUp = true
+        // Auto-flip
+        fromPile.peek()?.let {
+            if (!it.isFaceUp) it.isFaceUp = true
+        }
+
+        return true
     }
-
-    return true
-}
 
     fun moveWasteToFoundation(foundationIndex: Int): Game {
         val foundationPile = foundations.getOrNull(foundationIndex) ?: return this
@@ -237,7 +237,7 @@ fun moveTableauToTableau(
         return this
     }
 
-//    fun moveTableauToFoundation(
+    //    fun moveTableauToFoundation(
 //        tableauIndex: Int,
 //        cardIndex: Int,
 //        foundationIndex: Int
@@ -281,36 +281,36 @@ fun moveTableauToTableau(
 //
 //        return true
 //    }
-fun moveTableauToFoundation(
-    tableauIndex: Int,
-    cardIndex: Int,
-    foundationIndex: Int
-): Boolean {
+    fun moveTableauToFoundation(
+        tableauIndex: Int,
+        cardIndex: Int,
+        foundationIndex: Int
+    ): Boolean {
 //    Log.d("FOUNDATION", "Entry: tableauIndex ${tableauIndex}, cardIndex ${cardIndex}, foundationIndex ${foundationIndex}, ")
 
-    val fromPile = tableau[tableauIndex]
-    val toPile = foundations[foundationIndex]
+        val fromPile = tableau[tableauIndex]
+        val toPile = foundations[foundationIndex]
 
-    // MUST be top card
-    if (cardIndex != fromPile.size() - 1) return false
+        // MUST be top card
+        if (cardIndex != fromPile.size() - 1) return false
 //    Log.d("FOUNDATION", "CHECK POINT 01 ")
 
-    val card = fromPile.peekAt(cardIndex) ?: return false
+        val card = fromPile.peekAt(cardIndex) ?: return false
 //    Log.d("FOUNDATION", "Trying to push ${card.recto.rank} ${card.recto.suit}")
 //    Log.d("FOUNDATION", "canPush = ${toPile.canPush(card)}")
 
-    if (!toPile.canPush(card)) return false
+        if (!toPile.canPush(card)) return false
 
-    fromPile.popFrom(cardIndex)
-    toPile.push(card)
+        fromPile.popFrom(cardIndex)
+        toPile.push(card)
 
-    // Auto-flip
-    fromPile.peek()?.let {
-        if (!it.isFaceUp) it.isFaceUp = true
+        // Auto-flip
+        fromPile.peek()?.let {
+            if (!it.isFaceUp) it.isFaceUp = true
+        }
+
+        return true
     }
-
-    return true
-}
 
     /**
      * Convenience: checks whether all foundation piles are complete.
