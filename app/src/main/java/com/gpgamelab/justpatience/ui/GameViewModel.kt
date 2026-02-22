@@ -136,27 +136,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return false
     }
 
-    fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
-        val game = _game.value
-        val pile = game.tableau[tableauIndex]
-        val topIndex = pile.size() - 1
+fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
+    val game = _game.value
+    val pile = game.tableau[tableauIndex]
 
-        if (topIndex < 0) return false
+    if (pile.isEmpty()) return false
 
-        for (i in game.foundations.indices) {
-            val moved = game.moveTableauToFoundation(
-                tableauIndex,
-                topIndex,
-                i
-            )
-            if (moved) {
-                updateAfterMove(game)
-                return true
-            }
+    val topIndex = pile.size() - 1
+    val topCard = pile.peek()
+
+    // 🚨 IMPORTANT
+    if (topCard?.isFaceUp != true) return false
+
+    for (i in game.foundations.indices) {
+        val moved = game.moveTableauToFoundation(
+            tableauIndex,
+            topIndex,
+            i
+        )
+        if (moved) {
+            updateAfterMove(game)
+            return true
         }
-
-        return false
     }
+
+    return false
+}
 
     fun tryMoveWasteToFoundation(index: Int): Boolean {
         val game = _game.value
@@ -236,13 +241,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             false
         }
     }
-
-//    fun restart() {
-//        viewModelScope.launch {
-//            _game.value = controller.newGameWithClearHistory()
-//            saveGame()
-//        }
-//    }
 
     fun stopGame() {
         saveGame()

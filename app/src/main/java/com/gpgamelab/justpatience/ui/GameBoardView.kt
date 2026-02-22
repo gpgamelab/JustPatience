@@ -163,7 +163,6 @@ private fun drawDragGhost(canvas: Canvas) {
         // Waste
         val wasteRect = RectF(columnX[1], topY, columnX[1] + cardW, topY + cardH)
         val waste = viewModel.game.value.waste
-//        if (!waste.isEmpty()) waste.peek()?.let { drawCard(canvas, it, wasteRect) } else canvas.drawRoundRect(wasteRect, cardRadius, cardRadius, placeholderPaint)
         if (!waste.isEmpty() && !(isDragging && dragStackType == StackType.WASTE)) {
             waste.peek()?.let { drawCard(canvas, it, wasteRect) }
         } else
@@ -238,7 +237,6 @@ private fun drawDragGhost(canvas: Canvas) {
         canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
     }
     private fun drawStockBack(canvas: Canvas, rect: RectF) {
-//        val bitmap = assetResolver.resolve(DEFAULT_STOCK_BACK_IMAGE_PATH)
         val bitmap = assetResolver.resolve(
             currentSetId,
             DEFAULT_STOCK_BACK_IMAGE_PATH,
@@ -249,11 +247,23 @@ private fun drawDragGhost(canvas: Canvas) {
         canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
     }
 
-    private fun handleTap(x: Float, y: Float) {
-        val (type, _, _) = findStackAt(x, y)
+     private fun handleTap(x: Float, y: Float) {
+        val (type, stackIndex, _) = findStackAt(x, y)
 
-        if (type == StackType.STOCK) {
-            viewModel.drawFromStock()
+        when (type) {
+            StackType.STOCK -> {
+                viewModel.drawFromStock()
+            }
+
+            StackType.WASTE -> {
+                viewModel.tryAutoMoveWasteToFoundation()
+            }
+
+            StackType.TABLEAU -> {
+                viewModel.tryAutoMoveTableauTopToFoundation(stackIndex)
+            }
+
+            else -> {}
         }
     }
 
@@ -335,39 +345,7 @@ private fun drawDragGhost(canvas: Canvas) {
 
                 val (stackType, stackIndex, cardIndex) = findStackAt(event.x, event.y)
 
-                val now = System.currentTimeMillis()
-                val isDoubleTap = now - lastTapTime < doubleTapTimeout
-                lastTapTime = now
-
-                if (isDoubleTap) {
-                    when (stackType) {
-                        StackType.WASTE -> {
-                            if (!viewModel.game.value.waste.isEmpty()) {
-                                if (viewModel.tryAutoMoveWasteToFoundation()) {
-                                    postInvalidateOnAnimation()
-                                    return true
-                                }
-                            }
-                        }
-
-                        StackType.TABLEAU -> {
-                            val pile = viewModel.game.value.tableau.getOrNull(stackIndex)
-                            val topIndex = pile?.size()?.minus(1) ?: -1
-
-                            if (cardIndex == topIndex) {
-                                if (viewModel.tryAutoMoveTableauTopToFoundation(stackIndex)) {
-                                    postInvalidateOnAnimation()
-                                    return true
-                                }
-                            }
-                        }
-
-                        else -> {}
-                    }
-                }
-
-
-                if (stackType == StackType.TABLEAU && cardIndex >= 0) {
+                if (stackType == StackType.TABLEAU) {
                     val pile = viewModel.game.value.tableau[stackIndex]
                     val cards = pile.asList()
 
@@ -524,8 +502,13 @@ private fun drawDragGhost(canvas: Canvas) {
                 }
 
                 // 3️⃣ Tap fallback
-                if (!isDragging && !moveSucceeded) {
-                    handleTap(event.x, event.y)
+                if (!moveSucceeded) {
+                    val dx = abs(event.x - downX)
+                    val dy = abs(event.y - downY)
+
+                    if (dx < touchSlop && dy < touchSlop) {
+                        handleTap(event.x, event.y)
+                    }
                 }
 
                 // 4️⃣ ALWAYS clear drag state ONCE
