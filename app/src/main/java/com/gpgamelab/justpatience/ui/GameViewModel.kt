@@ -158,28 +158,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return false
     }
 
-//    fun tryMoveTableauToFoundation(
-//        tableauIndex: Int,
-//        cardIndex: Int,
-//        foundationIndex: Int
-//    ): Boolean {
-//        val current = _game.value
-//        val moved = current.moveTableauToFoundation(
-//            tableauIndex,
-//            cardIndex,
-//            foundationIndex
-//        )
-//
-//        if (moved) {
-//            if (current.isWinCondition()) {
-//                _game.value = current.copy(status = GameStatus.WON)
-//            } else {
-//                _game.value = current
-//            }
-//        }
-//
-//        return moved
-//    }
     fun tryMoveWasteToFoundation(index: Int): Boolean {
         val game = _game.value
         val moved = game.moveWasteToFoundation(index)

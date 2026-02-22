@@ -47,10 +47,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 48f; textAlign = Paint.Align.CENTER }
 
     // Board and Card dimensions.
-    private val BOARD_WIDTH_FRACTION = 0.60f
-    private val BOARD_SHIFT_LEFT_PX = 500f
+    private val BOARD_WIDTH_FRACTION = 0.70f
+    private val BOARD_SHIFT_LEFT_PX = 300f
 
-    private val cardWidthRatio = 0.85f
+    private val cardWidthRatio = 1.0f
     private val cardHeightRatio = 2.0f
     private val cardRadius = 20f
     private val cardPadding = 16f
@@ -82,18 +82,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             columnX.clear()
             val usableWidth = w * BOARD_WIDTH_FRACTION
             val totalPad = cardPadding * (columns + 1)
-//            val avail = w - totalPad
-//            val colW = avail / columns
-//            var curX = cardPadding
             cardW = (usableWidth - totalPad) / (columns + 1) * cardWidthRatio
             cardH = cardW * cardHeightRatio
 
             computeColumnX()
-//            repeat(columns) {
-//                columnX.add(curX)
-//                curX += colW + cardPadding
-//            }
-//            textPaint.textSize = cardW * 0.3f
         }
     }
 
@@ -264,18 +256,6 @@ private fun drawDragGhost(canvas: Canvas) {
             viewModel.drawFromStock()
         }
     }
-//    private fun handleTap(x: Float, y: Float): Boolean {
-//        val (type, _, _) = findStackAt(x, y)
-//
-//        if (type == StackType.STOCK) {
-//            viewModel.drawFromStock()
-//            invalidate()
-//            return true
-//        }
-//
-//        return false
-//    }
-
 
     private fun clearDragState() {
         dragStackType = null

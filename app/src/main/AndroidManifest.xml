@@ -55,7 +55,7 @@
         <activity
             android:name=".ui.GameActivity"
             android:exported="true"
-            android:screenOrientation="landscape"
+            android:screenOrientation="portrait"
             android:label="@string/game_title"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
