@@ -68,29 +68,6 @@ data class Game(
         }
     }
 
-//    /**
-//     * Draws one card from stock to waste.
-//     */
-//    fun drawFromStock(): Game {
-//        val newStockCards = stock.asList().toMutableList()
-//        val newWasteCards = waste.asList().toMutableList()
-//
-//        val drawn = stock.draw(1)
-//        if (drawn != null) {
-//            newWasteCards.addAll(drawn)
-//        } else {
-//            // Recycle waste back to stock when empty
-//            newStockCards.addAll(newWasteCards.map { it.copy(isFaceUp = false) })
-//            newWasteCards.clear()
-//        }
-//
-//        return copy(
-//            stock = Stock(newStockCards),
-//            waste = Waste().apply { newWasteCards.forEach { push(it) } },
-//            moves = moves + 1
-//        )
-//    }
-
     fun moveWasteToTableau(tableauIndex: Int): Game {
         val waste = this.waste
         val tableauPile = tableau.getOrNull(tableauIndex) ?: return this
@@ -109,90 +86,6 @@ data class Game(
         return this
     }
 
-    //    fun moveTableauToTableau(
-//        fromIndex: Int,
-//        cardIndex: Int,
-//        toIndex: Int
-//    ): Game {
-//        if (fromIndex == toIndex) return this
-//
-//        val fromPile = tableau[fromIndex]
-//        val toPile = tableau[toIndex]
-//
-//        val temp = mutableListOf<Card>()
-//
-//        // Pop cards until we reach the dragged card
-//        while (fromPile.size() > cardIndex) {
-//            val c = fromPile.pop() ?: break
-//            temp.add(c)
-//        }
-//
-//        if (temp.isEmpty()) {
-//            // Nothing moved — restore
-//            temp.reversed().forEach { fromPile.push(it) }
-//            return this
-//        }
-//
-//        val firstCard = temp.last()
-//
-//        // Test legality by trying to push
-//        if (!toPile.push(firstCard)) {
-//            // Illegal — restore source pile
-//            temp.reversed().forEach { fromPile.push(it) }
-//            return this
-//        }
-//
-//        // Legal — push remaining cards
-//        for (i in temp.size - 2 downTo 0) {
-//            toPile.push(temp[i])
-//        }
-//
-//        // Auto-flip source pile
-//        fromPile.peek()?.let {
-//            if (!it.isFaceUp) it.isFaceUp = true
-//        }
-//
-//        return this
-//    }
-//fun moveTableauToTableau(
-//    fromIndex: Int,
-//    cardIndex: Int,
-//    toIndex: Int
-//): Boolean {
-//    if (fromIndex == toIndex) return false
-//
-//    val fromPile = tableau[fromIndex]
-//    val toPile = tableau[toIndex]
-//
-//    val temp = mutableListOf<Card>()
-//
-//    while (fromPile.size() > cardIndex) {
-//        val c = fromPile.pop() ?: break
-//        temp.add(c)
-//    }
-//
-//    if (temp.isEmpty()) {
-//        temp.reversed().forEach { fromPile.push(it) }
-//        return false
-//    }
-//
-//    val firstCard = temp.last()
-//
-//    if (!toPile.push(firstCard)) {
-//        temp.reversed().forEach { fromPile.push(it) }
-//        return false
-//    }
-//
-//    for (i in temp.size - 2 downTo 0) {
-//        toPile.push(temp[i])
-//    }
-//
-//    fromPile.peek()?.let {
-//        if (!it.isFaceUp) it.isFaceUp = true
-//    }
-//
-//    return true
-//}
     fun moveTableauToTableau(
         fromIndex: Int,
         cardIndex: Int,
@@ -237,50 +130,6 @@ data class Game(
         return true
     }
 
-    //    fun moveTableauToFoundation(
-//        tableauIndex: Int,
-//        cardIndex: Int,
-//        foundationIndex: Int
-//    ): Boolean {
-////        val tableauPile = tableau.getOrNull(tableauIndex) ?: return this
-////        val foundationPile = foundations.getOrNull(foundationIndex) ?: return this
-////
-////        val card = tableauPile.peek() ?: return this
-////
-////        if (!foundationPile.push(card)) {
-////            return this
-////        }
-////
-////        tableauPile.pop()
-////
-////        // Auto-flip tableau
-////        tableauPile.peek()?.let {
-////            if (!it.isFaceUp) it.isFaceUp = true
-////        }
-////
-////        return this
-//        val fromPile = tableau[tableauIndex]
-//        val toPile = foundations[foundationIndex]
-//
-//        // MUST be top card
-//        if (cardIndex != fromPile.size() - 1) return false
-//
-//        val card = fromPile.peekAt(cardIndex) ?: return false
-//
-//        if (!toPile.canPush(card)) return false
-//
-//        // Remove exactly ONE card
-//        fromPile.popFrom(cardIndex)
-//
-//        toPile.push(card)
-//
-//        // Auto-flip source pile
-//        fromPile.peek()?.let {
-//            if (!it.isFaceUp) it.isFaceUp = true
-//        }
-//
-//        return true
-//    }
     fun moveTableauToFoundation(
         tableauIndex: Int,
         cardIndex: Int,
