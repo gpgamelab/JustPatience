@@ -35,15 +35,18 @@ This section tracks work currently in progress and upcoming improvements.
 - [X] Fix edge-case bug when dragging multiple stacked cards
 - [X] Improve win detection logic
 - [X] Add doubl tap to move card to foundation
-- [ ] Reduce display size of the cards
-- [ ] Add unit tests for move validation engine
+- [X] Reduce display size of the cards
+- [X] Add elapsed game time
+- [X] Fix move count logic
+- [X] Add simplified scoring
 
 ### ? Medium Priority
 - [ ] Add account login and creation with the backend server
 - [ ] Add sound effects
 - [ ] Add animation polish
-- [ ] Improve tablet layout support
-- [ ] Switch to portrait instead of landscape mode
+- [?] Improve tablet layout support
+- [X] Switch to portrait instead of landscape mode
+- [ ] Add unit tests for move validation engine
 
 ### ? Low Priority
 - [ ] Add dark mode toggle
