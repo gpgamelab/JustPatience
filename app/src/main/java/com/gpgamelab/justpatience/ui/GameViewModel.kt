@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -34,6 +36,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         .map { !it.isNullOrEmpty() }
     val gameTime = MutableStateFlow(0L)
 
+    private var timerJob: Job? = null
+
+
     // Exposed state
     private val _game = MutableStateFlow(Game.newGame())
     val game: StateFlow<Game> = _game
@@ -44,43 +49,71 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
+    private fun startTimer() {
+        stopTimer()
+        gameTime.value = 0
+
+
+        timerJob = viewModelScope.launch {
+            while (true) {
+                delay(1000)
+                gameTime.value += 1
+            }
+        }
+    }
+
+    fun stopTimer() {
+        timerJob?.cancel()
+    }
+
     fun undoLastMove(): Boolean {
         undo()
         return true
     }
 
     fun startNewGame() {
+        startTimer()
         viewModelScope.launch {
             _game.value = controller.newGameWithClearHistory()
             saveGame()
         }
     }
 
-    fun drawFromStock() {
-        viewModelScope.launch {
-            // 1️⃣ Normal draw
-            if (!_game.value.stock.isEmpty()) {
-                val card: Card =
-                    _game.value.stock.pop() ?: throw IllegalStateException("Stock pop failed")
-                card.isFaceUp = true
-                _game.value.waste.push(card)
-            } else {
-                // 2️⃣ Recycle waste → stock
-                if (!_game.value.waste.isEmpty()) {
-                    val recycled =
-                        _game.value.waste.take(_game.value.waste.size())
-                            ?: throw IllegalStateException("Waste take failed")
+fun drawFromStock() {
+    val game = _game.value
+    var moved = false
 
-                    recycled
-                        .reversed()
-                        .forEach { card ->
-                            card.isFaceUp = false
-                            _game.value.stock.push(card)
-                        }
+    // 1️⃣ Normal draw
+    if (!game.stock.isEmpty()) {
+        val card = game.stock.pop()
+            ?: throw IllegalStateException("Stock pop failed")
+
+        card.isFaceUp = true
+        game.waste.push(card)
+        moved = true
+
+    } else {
+        // 2️⃣ Recycle waste → stock
+        if (!game.waste.isEmpty()) {
+
+            val recycled = game.waste.take(game.waste.size())
+                ?: throw IllegalStateException("Waste take failed")
+
+            recycled
+                .reversed()
+                .forEach { card ->
+                    card.isFaceUp = false
+                    game.stock.push(card)
                 }
-            }
+
+            moved = true
         }
     }
+
+    if (moved) {
+        updateAfterMove(game)  // scoreDelta = 0 for simple scoring
+    }
+}
 
     fun attemptMove(
         sourceType: StackType,
@@ -110,8 +143,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun tryMoveWasteToTableau(index: Int) {
-        val current = _game.value
-        val updated = current.moveWasteToTableau(index)
+        val game = _game.value
+        val updated = game.moveWasteToTableau(index)
+
+        if (updated != game) {
+            updateAfterMove(game, scoreDelta = 5)   // simple scoring
+        }
+
         _game.value = updated
     }
 
@@ -120,16 +158,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         cardIndex: Int,
         toIndex: Int
     ): Boolean {
-        return _game.value.moveTableauToTableau(fromIndex, cardIndex, toIndex)
-    }
+        val game = _game.value
+        val moved = game.moveTableauToTableau(fromIndex, cardIndex, toIndex)
 
+        if (moved) {
+            updateAfterMove(game)   // scoreDelta = 0 for simple scoring
+        }
+
+        return moved
+    }
     fun tryAutoMoveWasteToFoundation(): Boolean {
         val game = _game.value
 
         for (i in game.foundations.indices) {
             val moved = game.moveWasteToFoundation(i)
             if (moved) {
-                updateAfterMove(game)
+                updateAfterMove(game, scoreDelta = 10)
                 return true
             }
         }
@@ -155,7 +199,7 @@ fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
             i
         )
         if (moved) {
-            updateAfterMove(game)
+            updateAfterMove(game, scoreDelta = 10)
             return true
         }
     }
@@ -168,7 +212,7 @@ fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
         val moved = game.moveWasteToFoundation(index)
 
         if (moved) {
-            updateAfterMove(game)
+            updateAfterMove(game, scoreDelta = 10)
         }
 
         return moved
@@ -188,17 +232,18 @@ fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
         )
 
         if (moved) {
-            updateAfterMove(game)
+            updateAfterMove(game, scoreDelta = 10)
         }
 
         return moved
     }
 
-    private fun updateAfterMove(game: Game) {
+    private fun updateAfterMove(game: Game, scoreDelta: Int = 0) {
         if (game.isWinCondition()) {
-            _game.value = game.copy(status = GameStatus.WON)
+            stopTimer()
+            _game.value = game.copy(status = GameStatus.WON, score = game.score + scoreDelta,moves = game.moves + 1)
         } else {
-            _game.value = game
+            _game.value = game.copy(score = game.score + scoreDelta,moves = game.moves + 1)
         }
     }
 

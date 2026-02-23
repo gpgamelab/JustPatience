@@ -42,13 +42,24 @@ class GameActivity : AppCompatActivity() {
         // Optional manager (no heavy rendering here)
         uiManager = CardStackUIManager(this, binding.root, viewModel)
 
+
         lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                viewModel.game.collect { g ->
-                    binding.tvScore.text = getString(R.string.score_format, g.score)
-                    binding.tvMoves.text = getString(R.string.moves_format, g.moves)
-                    binding.gameBoardView.postInvalidateOnAnimation()
-                    if (g.status == GameStatus.WON) showGameEndDialog(true)
+
+                launch {
+                    viewModel.game.collect { g ->
+                        binding.tvScore.text = getString(R.string.score_format, g.score)
+                        binding.tvMoves.text = getString(R.string.moves_format, g.moves)
+                        binding.gameBoardView.postInvalidateOnAnimation()
+
+                        if (g.status == GameStatus.WON) showGameEndDialog(true)
+                    }
+                }
+
+                launch {
+                    viewModel.gameTime.collect { seconds ->
+                        binding.tvTime.text = formatTime(seconds)
+                    }
                 }
             }
         }
@@ -57,6 +68,12 @@ class GameActivity : AppCompatActivity() {
         binding.btnUndo.setOnClickListener { viewModel.undo() }
         binding.btnNewGame.setOnClickListener { viewModel.startNewGame() }
         binding.btnRestart.setOnClickListener { showRestartDialog() }
+    }
+
+    private fun formatTime(seconds: Long): String {
+        val minutes = seconds / 60
+        val secs = seconds % 60
+        return String.format("%02d:%02d", minutes, secs)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
