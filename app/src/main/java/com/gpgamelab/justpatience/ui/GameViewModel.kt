@@ -79,41 +79,41 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-fun drawFromStock() {
-    val game = _game.value
-    var moved = false
+    fun drawFromStock() {
+        val game = _game.value
+        var moved = false
 
-    // 1️⃣ Normal draw
-    if (!game.stock.isEmpty()) {
-        val card = game.stock.pop()
-            ?: throw IllegalStateException("Stock pop failed")
+        // 1️⃣ Normal draw
+        if (!game.stock.isEmpty()) {
+            val card = game.stock.pop()
+                ?: throw IllegalStateException("Stock pop failed")
 
-        card.isFaceUp = true
-        game.waste.push(card)
-        moved = true
-
-    } else {
-        // 2️⃣ Recycle waste → stock
-        if (!game.waste.isEmpty()) {
-
-            val recycled = game.waste.take(game.waste.size())
-                ?: throw IllegalStateException("Waste take failed")
-
-            recycled
-                .reversed()
-                .forEach { card ->
-                    card.isFaceUp = false
-                    game.stock.push(card)
-                }
-
+            card.isFaceUp = true
+            game.waste.push(card)
             moved = true
+
+        } else {
+            // 2️⃣ Recycle waste → stock
+            if (!game.waste.isEmpty()) {
+
+                val recycled = game.waste.take(game.waste.size())
+                    ?: throw IllegalStateException("Waste take failed")
+
+                recycled
+                    .reversed()
+                    .forEach { card ->
+                        card.isFaceUp = false
+                        game.stock.push(card)
+                    }
+
+                moved = true
+            }
+        }
+
+        if (moved) {
+            updateAfterMove(game)  // scoreDelta = 0 for simple scoring
         }
     }
-
-    if (moved) {
-        updateAfterMove(game)  // scoreDelta = 0 for simple scoring
-    }
-}
 
     fun attemptMove(
         sourceType: StackType,
@@ -167,6 +167,7 @@ fun drawFromStock() {
 
         return moved
     }
+
     fun tryAutoMoveWasteToFoundation(): Boolean {
         val game = _game.value
 
@@ -180,32 +181,32 @@ fun drawFromStock() {
         return false
     }
 
-fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
-    val game = _game.value
-    val pile = game.tableau[tableauIndex]
+    fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
+        val game = _game.value
+        val pile = game.tableau[tableauIndex]
 
-    if (pile.isEmpty()) return false
+        if (pile.isEmpty()) return false
 
-    val topIndex = pile.size() - 1
-    val topCard = pile.peek()
+        val topIndex = pile.size() - 1
+        val topCard = pile.peek()
 
-    // 🚨 IMPORTANT
-    if (topCard?.isFaceUp != true) return false
+        // 🚨 IMPORTANT
+        if (topCard?.isFaceUp != true) return false
 
-    for (i in game.foundations.indices) {
-        val moved = game.moveTableauToFoundation(
-            tableauIndex,
-            topIndex,
-            i
-        )
-        if (moved) {
-            updateAfterMove(game, scoreDelta = 10)
-            return true
+        for (i in game.foundations.indices) {
+            val moved = game.moveTableauToFoundation(
+                tableauIndex,
+                topIndex,
+                i
+            )
+            if (moved) {
+                updateAfterMove(game, scoreDelta = 10)
+                return true
+            }
         }
-    }
 
-    return false
-}
+        return false
+    }
 
     fun tryMoveWasteToFoundation(index: Int): Boolean {
         val game = _game.value
@@ -241,9 +242,13 @@ fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
     private fun updateAfterMove(game: Game, scoreDelta: Int = 0) {
         if (game.isWinCondition()) {
             stopTimer()
-            _game.value = game.copy(status = GameStatus.WON, score = game.score + scoreDelta,moves = game.moves + 1)
+            _game.value = game.copy(
+                status = GameStatus.WON,
+                score = game.score + scoreDelta,
+                moves = game.moves + 1
+            )
         } else {
-            _game.value = game.copy(score = game.score + scoreDelta,moves = game.moves + 1)
+            _game.value = game.copy(score = game.score + scoreDelta, moves = game.moves + 1)
         }
     }
 

@@ -50,6 +50,7 @@ data class Card(
      */
     fun isSameColor(other: Card): Boolean =
         this.recto.hasSameColor(other.recto)
+
     fun isOppositeColor(other: Card): Boolean =
         isSameColor(other).not()
 }

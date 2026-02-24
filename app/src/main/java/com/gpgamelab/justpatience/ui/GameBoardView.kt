@@ -114,36 +114,36 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         drawDragGhost(canvas)
     }
 
-private fun drawDragGhost(canvas: Canvas) {
-    if (!isDragging) return
+    private fun drawDragGhost(canvas: Canvas) {
+        if (!isDragging) return
 
-    val x = dragX - dragOffsetX
-    val y = dragY - dragOffsetY
+        val x = dragX - dragOffsetX
+        val y = dragY - dragOffsetY
 
-    when (dragStackType) {
+        when (dragStackType) {
 
-        StackType.TABLEAU -> {
-            val pile = viewModel.game.value.tableau[dragStackIndex]
-            var curY = y
+            StackType.TABLEAU -> {
+                val pile = viewModel.game.value.tableau[dragStackIndex]
+                var curY = y
 
-            pile.asList()
-                .drop(dragCardIndex)
-                .forEach { card ->
-                    val rect = RectF(x, curY, x + cardW, curY + cardH)
-                    drawCard(canvas, card, rect)
-                    curY += cardW * 0.4f
-                }
+                pile.asList()
+                    .drop(dragCardIndex)
+                    .forEach { card ->
+                        val rect = RectF(x, curY, x + cardW, curY + cardH)
+                        drawCard(canvas, card, rect)
+                        curY += cardW * 0.4f
+                    }
+            }
+
+            StackType.WASTE -> {
+                val card = viewModel.game.value.waste.peek() ?: return
+                val rect = RectF(x, y, x + cardW, y + cardH)
+                drawCard(canvas, card, rect)
+            }
+
+            else -> Unit
         }
-
-        StackType.WASTE -> {
-            val card = viewModel.game.value.waste.peek() ?: return
-            val rect = RectF(x, y, x + cardW, y + cardH)
-            drawCard(canvas, card, rect)
-        }
-
-        else -> Unit
     }
-}
 
 
     private fun drawLoading(c: Canvas) {
@@ -158,7 +158,12 @@ private fun drawDragGhost(canvas: Canvas) {
         // Stock
         val stockRect = RectF(columnX[0], topY, columnX[0] + cardW, topY + cardH)
         val stock = viewModel.game.value.stock
-        if (!stock.isEmpty()) drawStockBack(canvas, stockRect) else canvas.drawRoundRect(stockRect, cardRadius, cardRadius, placeholderPaint)
+        if (!stock.isEmpty()) drawStockBack(canvas, stockRect) else canvas.drawRoundRect(
+            stockRect,
+            cardRadius,
+            cardRadius,
+            placeholderPaint
+        )
 
         // Waste
         val wasteRect = RectF(columnX[1], topY, columnX[1] + cardW, topY + cardH)
@@ -173,7 +178,8 @@ private fun drawDragGhost(canvas: Canvas) {
             val x = columnX[3 + i]
             val rect = RectF(x, topY, x + cardW, topY + cardH)
             canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
-            viewModel.game.value.foundations.getOrNull(i)?.peek()?.let { drawCard(canvas, it, rect) }
+            viewModel.game.value.foundations.getOrNull(i)?.peek()
+                ?.let { drawCard(canvas, it, rect) }
         }
     }
 
@@ -212,7 +218,12 @@ private fun drawDragGhost(canvas: Canvas) {
     }
 
     private fun drawCard(canvas: Canvas, card: Card, rect: RectF) {
-        val bitmap = assetResolver.resolve(currentSetId, card.recto.imagePath, rect.width().toInt(), rect.height().toInt())
+        val bitmap = assetResolver.resolve(
+            currentSetId,
+            card.recto.imagePath,
+            rect.width().toInt(),
+            rect.height().toInt()
+        )
 
         canvas.drawBitmap(
             bitmap,
@@ -225,7 +236,12 @@ private fun drawDragGhost(canvas: Canvas) {
     }
 
     private fun drawCardBack(canvas: Canvas, rect: RectF, verso: Verso) {
-        val bitmap = assetResolver.resolve(currentSetId, verso.imagePath, rect.width().toInt(), rect.height().toInt())
+        val bitmap = assetResolver.resolve(
+            currentSetId,
+            verso.imagePath,
+            rect.width().toInt(),
+            rect.height().toInt()
+        )
 
         canvas.drawBitmap(
             bitmap,
@@ -236,6 +252,7 @@ private fun drawDragGhost(canvas: Canvas) {
 
         canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
     }
+
     private fun drawStockBack(canvas: Canvas, rect: RectF) {
         val bitmap = assetResolver.resolve(
             currentSetId,
@@ -247,7 +264,7 @@ private fun drawDragGhost(canvas: Canvas) {
         canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
     }
 
-     private fun handleTap(x: Float, y: Float) {
+    private fun handleTap(x: Float, y: Float) {
         val (type, stackIndex, _) = findStackAt(x, y)
 
         when (type) {
@@ -317,8 +334,8 @@ private fun drawDragGhost(canvas: Canvas) {
     }
 
     private fun tableauYOffsetForIndex(
-    pile: TableauPile,
-    index: Int
+        pile: TableauPile,
+        index: Int
     ): Float {
         var y = 0f
 
@@ -418,10 +435,11 @@ private fun drawDragGhost(canvas: Canvas) {
                     val dy = abs(event.y - downY)
 
                     if (dx > touchSlop || dy > touchSlop) {
-                        if (dragStackType == StackType.TABLEAU || dragStackType == StackType.WASTE) {                            isDragging = true
+                        if (dragStackType == StackType.TABLEAU || dragStackType == StackType.WASTE) {
+                            isDragging = true
                             postInvalidateOnAnimation()
-                        } else
-                        {                            clearDragState()
+                        } else {
+                            clearDragState()
                         }
                     }
                 } else {

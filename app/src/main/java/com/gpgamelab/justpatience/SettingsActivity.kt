@@ -31,7 +31,7 @@ class SettingsActivity : AppCompatActivity() {
 //    private val authViewModel: AuthViewModel by viewModels()
 
 
-//    private lateinit var authViewModel: AuthViewModel
+    //    private lateinit var authViewModel: AuthViewModel
     private val authViewModel: AuthViewModel by viewModels()
 
     //    private lateinit var settingsViewModel: SettingsViewModel
@@ -193,13 +193,12 @@ class SettingsActivity : AppCompatActivity() {
             .setMessage(R.string.confirm_reset_stats_message)
             .setPositiveButton(R.string.reset) { _, _ ->
                 settingsViewModel.resetStats()
-                Toast.makeText(this, getString(R.string.stats_reset_success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.stats_reset_success), Toast.LENGTH_SHORT)
+                    .show()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
-
-
 
 
     private fun setupListeners() {
@@ -246,9 +245,6 @@ class SettingsActivity : AppCompatActivity() {
             .setNegativeButton(R.string.no, null)
             .show()
     }
-
-
-
 
 
 }

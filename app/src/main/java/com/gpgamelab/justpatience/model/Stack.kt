@@ -31,7 +31,8 @@ data class FullDeck(
     /** Randomly shuffles the deck multiple times based on deck size. */
     fun shuffle() {
         val deckSize = cards.size
-        val requiredShuffles = maxOf(3, kotlin.math.ceil(kotlin.math.sqrt(deckSize.toDouble())).toInt())
+        val requiredShuffles =
+            maxOf(3, kotlin.math.ceil(kotlin.math.sqrt(deckSize.toDouble())).toInt())
 
         repeat(requiredShuffles) {
             cards.shuffle()
@@ -55,14 +56,35 @@ private fun buildDeck(
         // Build the standard 52 cards
         for (suit in CardSuit.entries) {
             for (rank in StandardRank.entries) {
-                result.add(Card(rank, suit, Recto(rank, suit, faceImagePath(rank, suit), suit.defaultColor), Verso(defaultBackImagePath())))
+                result.add(
+                    Card(
+                        rank,
+                        suit,
+                        Recto(rank, suit, faceImagePath(rank, suit), suit.defaultColor),
+                        Verso(defaultBackImagePath())
+                    )
+                )
             }
         }
 
         // Optionally add Jokers
         if (includeJokers) {
-            result.add(Card(Joker, null, Recto(Joker, null, "drawable:j_li", CardColor.LIGHT), Verso(defaultBackImagePath())))
-            result.add(Card(Joker, null, Recto(Joker, null, "drawable:j_da", CardColor.DARK), Verso(defaultBackImagePath())))
+            result.add(
+                Card(
+                    Joker,
+                    null,
+                    Recto(Joker, null, "drawable:j_li", CardColor.LIGHT),
+                    Verso(defaultBackImagePath())
+                )
+            )
+            result.add(
+                Card(
+                    Joker,
+                    null,
+                    Recto(Joker, null, "drawable:j_da", CardColor.DARK),
+                    Verso(defaultBackImagePath())
+                )
+            )
         }
     }
 
@@ -88,6 +110,7 @@ private fun faceImagePath(rank: CardRank, suit: CardSuit?): String {
 
     return "drawable:${suitCode}_${rankCode}"
 }
+
 private fun defaultBackImagePath(): String =
     "drawable:b_0001"
 
@@ -134,6 +157,7 @@ sealed class CardStack(
     fun peekAt(index: Int): Card? {
         return if (index in cards.indices) cards[index] else null
     }
+
     fun popFrom(index: Int): Card? {
         return if (index in cards.indices) {
             cards.removeAt(index)
@@ -143,7 +167,7 @@ sealed class CardStack(
 
 class Stock(cards: MutableList<Card>) : CardStack(StackType.STOCK, cards) {
 
-//    override fun canPush(card: Card): Boolean = false       // No pushing during play
+    //    override fun canPush(card: Card): Boolean = false       // No pushing during play
 //    override fun canPush(cards: List<Card>): Boolean = false
     override fun canPop(): Boolean = cards.isNotEmpty()
 

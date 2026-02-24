@@ -17,7 +17,7 @@ class AndroidAssetResolver(
     private val context: Context
 ) : AssetResolver {
 
-//    private val bitmapCache = mutableMapOf<String, Bitmap>()
+    //    private val bitmapCache = mutableMapOf<String, Bitmap>()
     private val cache = mutableMapOf<CacheKey, Bitmap>()
 
     override fun resolve(
@@ -71,6 +71,7 @@ class AndroidAssetResolver(
             path.startsWith("drawable:") -> {
                 "drawable" to path.removePrefix("drawable:")
             }
+
             else -> {
                 throw AssetResolutionException("Unknown imagePath scheme: $path")
             }

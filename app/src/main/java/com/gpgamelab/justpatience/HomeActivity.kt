@@ -82,8 +82,21 @@ class HomeActivity : AppCompatActivity() {
         cardStackUIManager.initViews(
             stockId = R.id.stock_pile_container,
             wasteId = R.id.waste_pile_container,
-            foundationIds = listOf(R.id.foundation_pile_0, R.id.foundation_pile_1, R.id.foundation_pile_2, R.id.foundation_pile_3),
-            tableauIds = listOf(R.id.tableau_pile_0, R.id.tableau_pile_1, R.id.tableau_pile_2, R.id.tableau_pile_3, R.id.tableau_pile_4, R.id.tableau_pile_5, R.id.tableau_pile_6)
+            foundationIds = listOf(
+                R.id.foundation_pile_0,
+                R.id.foundation_pile_1,
+                R.id.foundation_pile_2,
+                R.id.foundation_pile_3
+            ),
+            tableauIds = listOf(
+                R.id.tableau_pile_0,
+                R.id.tableau_pile_1,
+                R.id.tableau_pile_2,
+                R.id.tableau_pile_3,
+                R.id.tableau_pile_4,
+                R.id.tableau_pile_5,
+                R.id.tableau_pile_6
+            )
         )
     }
 
@@ -127,7 +140,8 @@ class HomeActivity : AppCompatActivity() {
                     if (game.status == com.gpgamelab.justpatience.model.GameStatus.WON) {
                         // Calculate the duration in seconds since the game started.
                         // game.savedGameTime holds the start timestamp (System.currentTimeMillis()).
-                        val gameDurationSeconds = (System.currentTimeMillis() - game.savedGameTime) / 1000L
+                        val gameDurationSeconds =
+                            (System.currentTimeMillis() - game.savedGameTime) / 1000L
 
                         // Pass the calculated duration to the dialog function.
                         showWinDialog(game.score, gameDurationSeconds)
@@ -203,9 +217,11 @@ class HomeActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     val success = viewModel.loadSavedGame()
                     if (success) {
-                        Toast.makeText(this@HomeActivity, R.string.game_loaded, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@HomeActivity, R.string.game_loaded, Toast.LENGTH_SHORT)
+                            .show()
                     } else {
-                        Toast.makeText(this@HomeActivity, R.string.load_error, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@HomeActivity, R.string.load_error, Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
             }

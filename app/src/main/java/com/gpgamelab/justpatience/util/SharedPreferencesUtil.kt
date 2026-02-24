@@ -5,7 +5,8 @@ import android.content.SharedPreferences
 
 // This utility class handles settings state for SFX and Music
 class SharedPreferencesUtil(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
         private const val PREFS_NAME = "game_settings"

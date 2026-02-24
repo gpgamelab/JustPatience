@@ -37,6 +37,6 @@ class CardStackUIManager(
     /**
      * Utility used by the legacy drag code: given a Card, tells where it currently is.
      */
-    fun findStackForCard(card: Card) : Pair<StackType, Int>? =
+    fun findStackForCard(card: Card): Pair<StackType, Int>? =
         viewModel.findStackContainingCard(card)
 }

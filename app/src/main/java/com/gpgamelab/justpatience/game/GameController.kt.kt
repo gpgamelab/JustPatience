@@ -106,9 +106,13 @@ class GameController {
             StackType.TABLEAU -> {
                 // need to use asList() and compute sublist by index
                 val srcList = source.asList()
-                if (cardIndexInSource < 0 || cardIndexInSource >= srcList.size) return Pair(game, false)
+                if (cardIndexInSource < 0 || cardIndexInSource >= srcList.size) return Pair(
+                    game,
+                    false
+                )
                 srcList.subList(cardIndexInSource, srcList.size)
             }
+
             else -> {
                 // only top card
                 val top = source.peek() ?: return Pair(game, false)
@@ -127,6 +131,7 @@ class GameController {
                 // push onto target: target.push(cards) available
                 target.push(removed)
             }
+
             else -> {
                 // pop the single card
                 val card = source.pop() ?: return Pair(game, false)
@@ -151,7 +156,17 @@ class GameController {
         scoreDelta += scoreForMove(sourceType, target.type)
 
         // Record move for undo
-        moveHistory.addLast(Move.CardMove(cardsToMove, sourceType, sourceIndex, target.type, targetIndex, flipped, scoreDelta))
+        moveHistory.addLast(
+            Move.CardMove(
+                cardsToMove,
+                sourceType,
+                sourceIndex,
+                target.type,
+                targetIndex,
+                flipped,
+                scoreDelta
+            )
+        )
 
         // Build new Game with updated stacks (stacks are mutated in place in our model), so return updated values
         val updatedGame = game.copy(
@@ -185,8 +200,14 @@ class GameController {
                     it.isFaceUp = false
                     game.stock.push(it)
                 }
-                return game.copy(stock = game.stock, waste = game.waste, moves = game.moves + 1, score = maxOf(0, game.score - 5))
+                return game.copy(
+                    stock = game.stock,
+                    waste = game.waste,
+                    moves = game.moves + 1,
+                    score = maxOf(0, game.score - 5)
+                )
             }
+
             is Move.StockReset -> {
                 // Move the cards from stock back to waste (they were moved reversed)
                 last.wasteCards.forEach {
@@ -197,8 +218,14 @@ class GameController {
                     it.isFaceUp = true
                     game.waste.push(it)
                 }
-                return game.copy(stock = game.stock, waste = game.waste, moves = game.moves + 1, score = game.score + 100)
+                return game.copy(
+                    stock = game.stock,
+                    waste = game.waste,
+                    moves = game.moves + 1,
+                    score = game.score + 100
+                )
             }
+
             is Move.CardMove -> {
                 // Reverse card move: remove from target, add back to source
                 val targetStack = when (last.targetType) {
@@ -241,7 +268,10 @@ class GameController {
                     sourceStack.peek()?.isFaceUp = false
                 }
 
-                return game.copy(moves = game.moves + 1, score = maxOf(0, game.score - last.scoreDelta))
+                return game.copy(
+                    moves = game.moves + 1,
+                    score = maxOf(0, game.score - last.scoreDelta)
+                )
             }
         }
     }
@@ -268,6 +298,7 @@ class GameController {
                     }
                 }
             }
+
             StackType.TABLEAU -> {
                 when (targetTop) {
                     null -> topToMove.recto.rank is StandardRank && topToMove.recto.rank == StandardRank.KING
@@ -278,6 +309,7 @@ class GameController {
                     }
                 }
             }
+
             else -> false
         }
     }

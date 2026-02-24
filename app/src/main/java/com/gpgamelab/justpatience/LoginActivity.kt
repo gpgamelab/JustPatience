@@ -61,7 +61,8 @@ class LoginActivity : AppCompatActivity() {
                     authViewModel.register(UserRegistrationRequest(username, password))
                 }
             } else {
-                Toast.makeText(this, "Please enter both username and password.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter both username and password.", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -104,7 +105,8 @@ class LoginActivity : AppCompatActivity() {
         // Observer 2: Error Messages
         authViewModel.error.observe(this) { errorMessage ->
             if (errorMessage != null) {
-                Toast.makeText(this, "Authentication Error: $errorMessage", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Authentication Error: $errorMessage", Toast.LENGTH_LONG)
+                    .show()
                 Log.e("Auth", "Error: $errorMessage")
                 // Clear the error after showing it
                 // authViewModel._error.value = null // Not accessible, rely on next network call to clear
@@ -119,7 +121,11 @@ class LoginActivity : AppCompatActivity() {
 
                 // In a real app, you would navigate to the main game screen here.
                 // For now, we'll just show a Toast and navigate to a placeholder screen (Home or Settings).
-                Toast.makeText(this, "Welcome, ${authResponse.username}! Proceeding to game...", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this,
+                    "Welcome, ${authResponse.username}! Proceeding to game...",
+                    Toast.LENGTH_LONG
+                ).show()
                 Log.i("Auth", "Login Successful. Token: ${authResponse.authToken}")
 
                 // Example navigation to Home/Main Game Activity
@@ -138,11 +144,17 @@ class LoginActivity : AppCompatActivity() {
                         Log.d("Auth", "Token flow detected: User is authenticated. Token present.")
                         // If token is present, navigate directly to the main activity/home screen
                         // This handles auto-login on app start.
-                        val intent = Intent(this@LoginActivity, SettingsActivity::class.java) // Placeholder for now
+                        val intent = Intent(
+                            this@LoginActivity,
+                            SettingsActivity::class.java
+                        ) // Placeholder for now
                         startActivity(intent)
                         finish() // Prevent going back to login
                     } else {
-                        Log.d("Auth", "Token flow detected: User is unauthenticated. Token missing.")
+                        Log.d(
+                            "Auth",
+                            "Token flow detected: User is unauthenticated. Token missing."
+                        )
                         binding.tvTitle.text = "Just Patience Login"
                     }
                 }

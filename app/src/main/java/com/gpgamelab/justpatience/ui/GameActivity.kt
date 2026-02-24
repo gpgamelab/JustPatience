@@ -86,7 +86,13 @@ class GameActivity : AppCompatActivity() {
             R.id.action_new_game -> viewModel.startNewGame()
             R.id.action_restart -> showRestartDialog()
             R.id.action_undo -> viewModel.undo()
-            R.id.action_settings -> startActivity(Intent(this, com.gpgamelab.justpatience.SettingsActivity::class.java))
+            R.id.action_settings -> startActivity(
+                Intent(
+                    this,
+                    com.gpgamelab.justpatience.SettingsActivity::class.java
+                )
+            )
+
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -105,7 +111,13 @@ class GameActivity : AppCompatActivity() {
         if (isWin) {
             AlertDialog.Builder(this)
                 .setTitle(R.string.win_dialog_title)
-                .setMessage(getString(R.string.win_dialog_message, viewModel.game.value.score, viewModel.game.value.moves))
+                .setMessage(
+                    getString(
+                        R.string.win_dialog_message,
+                        viewModel.game.value.score,
+                        viewModel.game.value.moves
+                    )
+                )
                 .setPositiveButton(R.string.new_game_button_text) { _, _ -> viewModel.startNewGame() }
                 .setNeutralButton(android.R.string.cancel, null)
                 .show()

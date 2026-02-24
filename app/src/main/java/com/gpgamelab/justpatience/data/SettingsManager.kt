@@ -166,9 +166,12 @@ class SettingsManager(private val context: Context) {
     suspend fun recordGameWin(score: Int) {
         dataStore.edit { preferences ->
             // Update counts and total score
-            preferences[PreferencesKeys.GAMES_PLAYED] = (preferences[PreferencesKeys.GAMES_PLAYED] ?: 0) + 1
-            preferences[PreferencesKeys.GAMES_WON] = (preferences[PreferencesKeys.GAMES_WON] ?: 0) + 1
-            preferences[PreferencesKeys.TOTAL_SCORE] = (preferences[PreferencesKeys.TOTAL_SCORE] ?: 0) + score
+            preferences[PreferencesKeys.GAMES_PLAYED] =
+                (preferences[PreferencesKeys.GAMES_PLAYED] ?: 0) + 1
+            preferences[PreferencesKeys.GAMES_WON] =
+                (preferences[PreferencesKeys.GAMES_WON] ?: 0) + 1
+            preferences[PreferencesKeys.TOTAL_SCORE] =
+                (preferences[PreferencesKeys.TOTAL_SCORE] ?: 0) + score
 
             // Update high scores (Deserialization/Serialization logic)
             val highScoresJson = preferences[PreferencesKeys.HIGH_SCORES_JSON] ?: "[]"
@@ -188,7 +191,8 @@ class SettingsManager(private val context: Context) {
 
     suspend fun recordGameLoss() {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.GAMES_PLAYED] = (preferences[PreferencesKeys.GAMES_PLAYED] ?: 0) + 1
+            preferences[PreferencesKeys.GAMES_PLAYED] =
+                (preferences[PreferencesKeys.GAMES_PLAYED] ?: 0) + 1
         }
     }
 
@@ -205,7 +209,11 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.SAVED_GAME_STATE_JSON]
         }
         .catch { exception ->
-            if (exception is IOException) { emit(null) } else { throw exception }
+            if (exception is IOException) {
+                emit(null)
+            } else {
+                throw exception
+            }
         }
 
     suspend fun clearSavedGame() {
