@@ -1,9 +1,12 @@
 package com.gpgamelab.justpatience.ui
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
@@ -48,13 +51,16 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // Board and Card dimensions.
     private val BOARD_WIDTH_FRACTION = 0.70f
-    private val BOARD_SHIFT_LEFT_PX = 300f
+    private val BOARD_SHIFT_LEFT_PX = 150f
+    private val BOARD_SHIFT_DOWN_PX = 120f
 
     private val cardWidthRatio = 1.0f
     private val cardHeightRatio = 2.0f
     private val cardRadius = 20f
     private val cardPadding = 16f
     private val tableauOffset = 40f
+
+    private var boardStartY = 0f
 
     private var cardW = 0f
     private var cardH = 0f
@@ -74,6 +80,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var downX = 0f
     private var downY = 0f
     private var isDragging = false
+    private var tabletopBitmap: Bitmap? = null
+
+    init {
+        tabletopBitmap = BitmapFactory.decodeResource(
+            resources,
+            R.drawable.tabletop_green_card_border_p_01
+        )
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -86,6 +100,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             cardH = cardW * cardHeightRatio
 
             computeColumnX()
+            computeBoardStartY(h)
         }
     }
 
@@ -104,14 +119,35 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
+    private fun computeBoardStartY(viewHeight: Int) {
+
+        val topRowHeight = cardH
+        val tableauTopSpacing = cardPadding + tableauOffset
+
+        val estimatedBoardHeight =
+            topRowHeight +
+                    tableauTopSpacing +
+                    (cardH + 6 * cardW * 0.4f)  // rough estimate of tallest tableau
+
+        boardStartY = (viewHeight - estimatedBoardHeight) / 6f
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        drawTabletop(canvas)
         if (!::viewModel.isInitialized) {
             drawLoading(canvas); return
         }
         drawTopRow(canvas)
         drawTableau(canvas)
         drawDragGhost(canvas)
+    }
+
+    private fun drawTabletop(canvas: Canvas) {
+        tabletopBitmap?.let { bitmap ->
+            val destRect = RectF(0F, 0F, width.toFloat(), height.toFloat())
+            canvas.drawBitmap(bitmap, null, destRect, null)
+        }
     }
 
     private fun drawDragGhost(canvas: Canvas) {
@@ -154,7 +190,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun drawTopRow(canvas: Canvas) {
-        val topY = cardPadding
+        val topY = boardStartY + cardPadding
         // Stock
         val stockRect = RectF(columnX[0], topY, columnX[0] + cardW, topY + cardH)
         val stock = viewModel.game.value.stock
@@ -184,7 +220,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun drawTableau(canvas: Canvas) {
-        val startY = cardPadding + cardH + cardPadding + tableauOffset
+        val startY = boardStartY + cardPadding + cardH + cardPadding + tableauOffset
         viewModel.game.value.tableau.forEachIndexed { colIdx, pile ->
             val x = columnX[colIdx]
             var y = startY
@@ -297,7 +333,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         cardIndex: Int
     ): RectF {
 
-        val topY = cardPadding
+        val topY = boardStartY + cardPadding
         val startTableauY = topY + cardH + cardPadding + tableauOffset
 
         return when (type) {
@@ -394,7 +430,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     dragCardIndex = dragStartIndex
 
                     val startY =
-                        cardPadding + cardH + cardPadding + tableauOffset
+                        boardStartY + cardPadding + cardH + cardPadding + tableauOffset
 
                     val cardTopY =
                         startY + tableauYOffsetForIndex(pile, dragCardIndex)
@@ -455,7 +491,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 if (isDragging) {
 
                     // 1️⃣ FOUNDATION DROP (highest priority)
-                    val topY = cardPadding
+                    val topY = boardStartY + cardPadding
                     val foundationStartX = columnX[3]
 
                     for (i in viewModel.game.value.foundations.indices) {
@@ -485,7 +521,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
                     // 2️⃣ TABLEAU DROP (only if foundation failed)
                     if (!moveSucceeded) {
-                        val startY = cardPadding + cardH + cardPadding + tableauOffset
+                        val startY = boardStartY + cardPadding + cardH + cardPadding + tableauOffset
 
                         columnX.forEachIndexed { index, colX ->
                             val rect = RectF(colX, startY, colX + cardW, height.toFloat())
@@ -539,7 +575,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun findStackAt(x: Float, y: Float): Triple<StackType?, Int, Int> {
-        val topY = cardPadding
+        val topY = boardStartY + cardPadding
         val topBottom = topY + cardH
         if (y in topY..topBottom) {
             for (i in 0 until columns) {
@@ -609,7 +645,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun hitTestTableau(x: Float, y: Float): Int? {
-        val startY = cardPadding + cardH + cardPadding + tableauOffset
+        val startY = boardStartY + cardPadding + cardH + cardPadding + tableauOffset
 
         columnX.forEachIndexed { index, colX ->
             val rect = RectF(

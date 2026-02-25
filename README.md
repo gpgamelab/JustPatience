@@ -44,9 +44,11 @@ This section tracks work currently in progress and upcoming improvements.
 - [ ] Add account login and creation with the backend server
 - [ ] Add sound effects
 - [ ] Add animation polish
-- [?] Improve tablet layout support
+- [X] Improve tablet layout support
 - [X] Switch to portrait instead of landscape mode
 - [ ] Add unit tests for move validation engine
+- [ ] Add logic to undo moves (w/small undo history)
+- [X] Add background (desktop or table) image
 
 ### ? Low Priority
 - [ ] Add dark mode toggle
