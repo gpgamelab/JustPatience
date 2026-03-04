@@ -40,6 +40,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val undoStack = ArrayDeque<Game>()
     private val redoStack = ArrayDeque<Game>()
+    private var initialGameState: Game? = null  // Store the game state at the start of the hand
 
     // Exposed state
     private val _game = MutableStateFlow(Game.newGame())
@@ -94,9 +95,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         redoStack.clear()
         startTimer()
         viewModelScope.launch {
-            _game.value = controller.newGameWithClearHistory()
+            val newGame = controller.newGameWithClearHistory()
+            initialGameState = newGame
+            _game.value = newGame
             saveGame()
         }
+    }
+
+    fun restartGame() {
+        val initial = initialGameState ?: return
+        undoStack.clear()
+        redoStack.clear()
+        _game.value = initial
+        updateUndoRedoState()
+        saveGame()
     }
 
     fun drawFromStock() {
