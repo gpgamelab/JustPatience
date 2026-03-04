@@ -1,6 +1,7 @@
 package com.gpgamelab.justpatience.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -42,6 +43,22 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var lastTapTime = 0L
     private val doubleTapTimeout = 300L
 
+    // Orientation-aware dimensions and offsets
+    private var isLandscape = false
+    private var BOARD_WIDTH_FRACTION = 0.70f
+    private var BOARD_SHIFT_LEFT_PX = 150f
+    private var BOARD_SHIFT_DOWN_PX = 120f
+
+    // Portrait-specific offsets
+    private val PORTRAIT_BOARD_WIDTH_FRACTION = 0.70f
+    private val PORTRAIT_BOARD_SHIFT_LEFT_PX = 150f
+    private val PORTRAIT_BOARD_SHIFT_DOWN_PX = 120f
+
+    // Landscape-specific offsets (estimates - can be adjusted later)
+    private val LANDSCAPE_BOARD_WIDTH_FRACTION = 0.90f  // Use more of the width
+    private val LANDSCAPE_BOARD_SHIFT_LEFT_PX = 40f     // Less left shift (landscape is wider)
+    private val LANDSCAPE_BOARD_SHIFT_DOWN_PX = 20f     // Less top shift (landscape is shorter)
+
     private val cardPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; style = Paint.Style.FILL }
     private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -54,11 +71,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val textPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 48f; textAlign = Paint.Align.CENTER }
 
-    // Board and Card dimensions.
-    private val BOARD_WIDTH_FRACTION = 0.70f
-    private val BOARD_SHIFT_LEFT_PX = 150f
-    private val BOARD_SHIFT_DOWN_PX = 120f
-
+    // Board and Card dimensions
     private val cardWidthRatio = 1.0f
     private val cardHeightRatio = 2.0f
     private val cardRadius = 20f
@@ -88,10 +101,41 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var tabletopBitmap: Bitmap? = null
 
     init {
-        tabletopBitmap = BitmapFactory.decodeResource(
-            resources,
-            R.drawable.tabletop_green_card_border_p_01
-        )
+        // Detect current orientation
+        isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        updateOffsetsForOrientation()
+        loadTabletopImage()
+    }
+
+    private fun updateOffsetsForOrientation() {
+        if (isLandscape) {
+            BOARD_WIDTH_FRACTION = LANDSCAPE_BOARD_WIDTH_FRACTION
+            BOARD_SHIFT_LEFT_PX = LANDSCAPE_BOARD_SHIFT_LEFT_PX
+            BOARD_SHIFT_DOWN_PX = LANDSCAPE_BOARD_SHIFT_DOWN_PX
+        } else {
+            BOARD_WIDTH_FRACTION = PORTRAIT_BOARD_WIDTH_FRACTION
+            BOARD_SHIFT_LEFT_PX = PORTRAIT_BOARD_SHIFT_LEFT_PX
+            BOARD_SHIFT_DOWN_PX = PORTRAIT_BOARD_SHIFT_DOWN_PX
+        }
+    }
+
+    private fun loadTabletopImage() {
+        tabletopBitmap = try {
+            val resourceId = if (isLandscape) {
+                resources.getIdentifier("tabletop_green_card_border_l_01", "drawable", context.packageName)
+            } else {
+                resources.getIdentifier("tabletop_green_card_border_p_01", "drawable", context.packageName)
+            }
+
+            if (resourceId != 0) {
+                BitmapFactory.decodeResource(resources, resourceId)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.w("GameBoardView", "Failed to load tabletop image: ${e.message}")
+            null
+        }
     }
 
     fun bindToViewModel(lifecycleOwner: LifecycleOwner) {
@@ -103,6 +147,20 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     invalidate()
                 }
             }
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        // Detect orientation change
+        val newIsLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (newIsLandscape != isLandscape) {
+            isLandscape = newIsLandscape
+            updateOffsetsForOrientation()
+            loadTabletopImage()
+            // Trigger recalculation of board dimensions
+            invalidate()
         }
     }
 
