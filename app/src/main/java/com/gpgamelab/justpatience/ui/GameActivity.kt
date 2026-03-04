@@ -71,6 +71,7 @@ class GameActivity : AppCompatActivity() {
         binding.btnRedo.setOnClickListener { viewModel.redo() }
         binding.btnNewGame.setOnClickListener { viewModel.startNewGame() }
         binding.btnRestart.setOnClickListener { showRestartDialog() }
+        binding.btnStats.setOnClickListener { showStatsDialog() }
     }
 
     @SuppressLint("DefaultLocale")
@@ -126,6 +127,10 @@ class GameActivity : AppCompatActivity() {
                 .setNeutralButton(android.R.string.cancel, null)
                 .show()
         }
+    }
+
+    private fun showStatsDialog() {
+        StatsDialogFragment.newInstance().show(supportFragmentManager, "stats_dialog")
     }
 
     override fun onPause() {

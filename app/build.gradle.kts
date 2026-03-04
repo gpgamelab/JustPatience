@@ -72,6 +72,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2") // For repeatOnLifecycle
     implementation("androidx.activity:activity-ktx:1.8.2") // For 'by viewModels()'
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2") // For 'by viewModels()' in fragments
 
     // --- Required for TokenManager (DataStore) ---
     implementation("androidx.datastore:datastore-preferences:1.0.0")
@@ -91,6 +92,9 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    // --- RecyclerView ---
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     // If you need analytics later, uncomment this:
     // implementation("com.google.firebase:firebase-analytics")

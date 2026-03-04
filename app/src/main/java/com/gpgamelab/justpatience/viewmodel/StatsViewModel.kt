@@ -6,10 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.gpgamelab.justpatience.data.GameRecord
 import com.gpgamelab.justpatience.data.GameStatsManager
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 /**
  * ViewModel for displaying game statistics and history.
@@ -54,7 +53,7 @@ class StatsViewModel(application: Application) : AndroidViewModel(application) {
         val seconds = timeMs / 1000
         val minutes = seconds / 60
         val secs = seconds % 60
-        return String.format("%02d:%02d", minutes, secs)
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, secs)
     }
 }
 
