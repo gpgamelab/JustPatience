@@ -1,5 +1,6 @@
 package com.gpgamelab.justpatience.ui
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -38,6 +39,7 @@ class GameActivity : AppCompatActivity() {
 
         // Wire AssetResolver into GameBoardView
         binding.gameBoardView.assetResolver = AndroidAssetResolver(this)
+        binding.gameBoardView.bindToViewModel(this)
 
         // Optional manager (no heavy rendering here)
         uiManager = CardStackUIManager(this, binding.root, viewModel)
@@ -71,6 +73,7 @@ class GameActivity : AppCompatActivity() {
         binding.btnRestart.setOnClickListener { showRestartDialog() }
     }
 
+    @SuppressLint("DefaultLocale")
     private fun formatTime(seconds: Long): String {
         val minutes = seconds / 60
         val secs = seconds % 60

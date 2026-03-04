@@ -32,7 +32,7 @@ data class FullDeck(
     fun shuffle() {
         val deckSize = cards.size
         val requiredShuffles =
-            maxOf(3, kotlin.math.ceil(kotlin.math.sqrt(deckSize.toDouble())).toInt())
+            maxOf(10, kotlin.math.ceil(kotlin.math.sqrt(deckSize.toDouble())).toInt())
 
         repeat(requiredShuffles) {
             cards.shuffle()
@@ -129,14 +129,15 @@ sealed class CardStack(
 
     open fun push(card: Card): Boolean {
         return if (canPush(card)) {
-            cards.add(card)
+            cards.add(card.copy())
             true
         } else false
     }
 
     open fun push(cards: List<Card>): Boolean {
         return if (canPush(cards)) {
-            this.cards.addAll(cards)
+            val copiedCards = cards.map { it.copy() }.toMutableList()
+            this.cards.addAll(copiedCards)
             true
         } else false
     }
@@ -178,8 +179,8 @@ class Stock(cards: MutableList<Card>) : CardStack(StackType.STOCK, cards) {
         take(count)
 
     override fun deepCopy(): Stock {
-        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
-        var newTableauPile = Stock(copiedCards)
+        val copiedCards = cards.map { it.copy() }.toMutableList()
+        val newTableauPile = Stock(copiedCards)
 
         return newTableauPile
     }
@@ -193,13 +194,13 @@ class Waste : CardStack(StackType.WASTE) {
     override fun canPop(): Boolean = cards.isNotEmpty()
 
     override fun push(card: Card): Boolean {
-        card.isFaceUp = true
-        return super.push(card)
+        val newCard = card.copy(isFaceUp = true)
+        return super.push(newCard)
     }
 
     override fun deepCopy(): Waste {
-        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
-        var newWaste = Waste()
+        val copiedCards = cards.map { it.copy() }.toMutableList()
+        val newWaste = Waste()
 
         copiedCards.forEach { card ->
             newWaste.push(card)
@@ -237,8 +238,8 @@ class FoundationPile(
     }
 
     override fun deepCopy(): FoundationPile {
-        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
-        var newFoundationPile = FoundationPile()
+        val copiedCards = cards.map { it.copy() }.toMutableList()
+        val newFoundationPile = FoundationPile()
 
         copiedCards.forEach { card ->
             newFoundationPile.push(card)
@@ -268,6 +269,12 @@ class TableauPile(
     // Getter
     fun getDealInProgressStatus(): Boolean {
         return dealInProgress
+    }
+
+    fun replaceTop(card: Card) {
+        if (cards.isNotEmpty()) {
+            cards[cards.lastIndex] = card
+        }
     }
 
     override fun canPush(card: Card): Boolean {
@@ -301,8 +308,7 @@ class TableauPile(
     }
 
     override fun push(card: Card): Boolean {
-//        card.isFaceUp = false
-        return super.push(card)
+        return super.push(card.copy())
     }
 
     override fun take(count: Int): List<Card>? {
@@ -311,8 +317,8 @@ class TableauPile(
     }
 
     override fun deepCopy(): TableauPile {
-        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
-        var newTableauPile = TableauPile()
+        val copiedCards = cards.map { it.copy() }.toMutableList()
+        val newTableauPile = TableauPile()
 
         copiedCards.forEach { card ->
             newTableauPile.push(card)

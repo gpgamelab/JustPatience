@@ -14,6 +14,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.gpgamelab.justpatience.assets.AssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.model.Card
@@ -21,6 +25,7 @@ import com.gpgamelab.justpatience.model.CardSuit
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.model.TableauPile
 import com.gpgamelab.justpatience.model.Verso
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -87,6 +92,18 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             resources,
             R.drawable.tabletop_green_card_border_p_01
         )
+    }
+
+    fun bindToViewModel(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycleScope.launch {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.game.collect {
+                    // Game state changed → redraw
+                    clearDragState()
+                    invalidate()
+                }
+            }
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

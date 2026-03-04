@@ -28,46 +28,44 @@ class GameController {
         g
     }
 
-    suspend fun drawFromStock(game: Game): Game = mutex.withLock {
-        // Work on copies where needed (Game is a data class)
-        val stock = game.stock
-        val waste = game.waste
-
-        // If stock has cards, draw one to waste
-        val drawn = stock.draw(1)
-        if (drawn != null && drawn.isNotEmpty()) {
-            drawn.forEach { it.isFaceUp = true }
-            drawn.forEach { waste.push(it) }
-
-//            moveHistory.addLast(Move.Draw(drawn))
-            return game.copy(
-                stock = stock,
-                waste = waste,
-                moves = game.moves + 1,
-                score = game.score + 5
-            )
-        } else {
-            // Reset: move all waste back to stock (face-down), preserving order
-            val wasteCards = waste.asList().toList()
-            if (wasteCards.isEmpty()) return game // nothing to do
-
-            // clear waste, put reversed into stock face down
-            wasteCards.reversed().forEach {
-                it.isFaceUp = false
-                stock.push(it)
-            }
-            waste.take(wasteCards.size) // remove them from waste (take returns, but also removes)
-
-//            moveHistory.addLast(Move.StockReset(wasteCards))
-            // optional scoring rule: penalty for reset
-            return game.copy(
-                stock = stock,
-                waste = waste,
-                moves = game.moves + 1,
-                score = maxOf(0, game.score - 100)
-            )
-        }
-    }
+//    suspend fun drawFromStock(game: Game): Game = mutex.withLock {
+//        // Work on copies where needed (Game is a data class)
+//        val stock = game.stock
+//        val waste = game.waste
+//
+//        // If stock has cards, draw one to waste
+//        val drawn = stock.draw(1)
+//        if (drawn != null && drawn.isNotEmpty()) {
+//            drawn.forEach { waste.push(it.copy(isFaceUp = true)) }
+//
+////            moveHistory.addLast(Move.Draw(drawn))
+//            return game.copy(
+//                stock = stock,
+//                waste = waste,
+//                moves = game.moves + 1,
+//                score = game.score + 5
+//            )
+//        } else {
+//            // Reset: move all waste back to stock (face-down), preserving order
+//            val wasteCards = waste.asList().toList()
+//            if (wasteCards.isEmpty()) return game // nothing to do
+//
+//            // clear waste, put reversed into stock face down
+//            wasteCards.reversed().forEach {
+//                stock.push(it.copy(isFaceUp = false))
+//            }
+//            waste.take(wasteCards.size) // remove them from waste (take returns, but also removes)
+//
+////            moveHistory.addLast(Move.StockReset(wasteCards))
+//            // optional scoring rule: penalty for reset
+//            return game.copy(
+//                stock = stock,
+//                waste = waste,
+//                moves = game.moves + 1,
+//                score = maxOf(0, game.score - 100)
+//            )
+//        }
+//    }
 
     /**
      * Attempt moving cards from a source stack to a target stack.
@@ -142,13 +140,12 @@ class GameController {
 
         // After removing from tableau, flip new top card if face-down
         var scoreDelta = 0
-        var flipped = false
         if (sourceType == StackType.TABLEAU) {
             val src = source as TableauPile
             val newTop = src.peek()
             if (newTop != null && !newTop.isFaceUp) {
-                newTop.isFaceUp = true
-                flipped = true
+                val flippedCard = src.pop() ?: return Pair(game, false)
+                src.push(flippedCard.copy(isFaceUp = true))
                 scoreDelta += 5
             }
         }

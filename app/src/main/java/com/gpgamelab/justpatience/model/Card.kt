@@ -12,7 +12,7 @@ data class Card(
     val suit: CardSuit?, // Null for Joker
     val recto: Recto,
     val verso: Verso,
-    var isFaceUp: Boolean = false
+    val isFaceUp: Boolean = false
 ) {
 
     /** True for ranks Ace–10 in the standard deck. */
@@ -54,13 +54,13 @@ data class Card(
     fun isOppositeColor(other: Card): Boolean =
         isSameColor(other).not()
 
-    fun deepCopy(): Card {
-        return Card(
-            rank = this.rank,
-            suit = this.suit,
-            recto = this.recto,
-            verso = this.verso,
-            isFaceUp = this.isFaceUp
-        )
-    }
+//    fun deepCopy(): Card {
+//        return Card(
+//            rank = this.rank,
+//            suit = this.suit,
+//            recto = this.recto,
+//            verso = this.verso,
+//            isFaceUp = this.isFaceUp
+//        )
+//    }
 }

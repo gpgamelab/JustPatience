@@ -1,5 +1,5 @@
 package com.gpgamelab.justpatience.model
 
 data class Verso(
-    var imagePath: String
+    val imagePath: String
 )

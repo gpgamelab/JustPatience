@@ -43,6 +43,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     // Exposed state
     private val _game = MutableStateFlow(Game.newGame())
+
     val game: StateFlow<Game> = _game
 
     init {
@@ -107,9 +108,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (!game.stock.isEmpty()) {
             val card = game.stock.pop()
                 ?: throw IllegalStateException("Stock pop failed")
-
-            card.isFaceUp = true
-            game.waste.push(card)
+            game.waste.push(card.copy(isFaceUp = true))
             moved = true
 
         } else {
@@ -122,8 +121,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 recycled
                     .reversed()
                     .forEach { card ->
-                        card.isFaceUp = false
-                        game.stock.push(card)
+                        game.stock.push(card.copy(isFaceUp = false))
                     }
 
                 moved = true
@@ -261,18 +259,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         cardIndex: Int,
         foundationIndex: Int
     ): Boolean {
-        val snapshot = _game.value.deepCopy()
-        val game = _game.value
-        val moved = game.moveTableauToFoundation(
+        val currentGame = _game.value
+        val newGame = currentGame.deepCopy()
+
+        val moved = newGame.moveTableauToFoundation(
             tableauIndex,
             cardIndex,
             foundationIndex
         )
 
         if (moved) {
-            undoStack.addLast(snapshot)
+            undoStack.addLast(currentGame.deepCopy())
             redoStack.clear()
-            updateAfterMove(game, scoreDelta = 10)
+
+            updateAfterMove(newGame, scoreDelta = 10)
+
+            _game.value = newGame
         }
 
         return moved
@@ -291,29 +293,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    //    fun undo() {
-    //        viewModelScope.launch {
-    //            try {
-    //                _game.value = controller.undo(_game.value)
-    //                saveGameIfInProgress()
-    //            } catch (t: Throwable) {
-    //                Log.w("GameViewModel", "undo failed: ${t.message}")
-    //            }
-    //        }
-    //    }
     fun undo() {
-        Log.w("GameViewModel", "ZYZZX undo tapped")
 
         if (undoStack.isNotEmpty()) {
-            Log.w("GameViewModel", "ZYZZX undoStack is not empty")
             val current = _game.value.deepCopy()
 
             redoStack.addLast(current)
             _game.value = undoStack.removeLast().deepCopy()
 
-            Log.w("GameViewModel", "ZYZZX undoStack popd to _game.vale")
-        } else {
-            Log.w("GameViewModel", "ZYZZX undoStack is empty")
         }
     }
 

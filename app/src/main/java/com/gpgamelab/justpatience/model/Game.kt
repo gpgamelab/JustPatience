@@ -1,6 +1,5 @@
 package com.gpgamelab.justpatience.model
 
-import android.util.Log
 import java.io.Serializable
 
 /**
@@ -43,8 +42,7 @@ data class Game(
             for (pile in 0 until 7) {
                 for (cardIndex in 0..pile) {
                     val card = fullDeck.cards[index++]
-                    card.isFaceUp = (cardIndex == pile) // Last card face-up
-                    tableauPiles[pile].push(card)
+                    tableauPiles[pile].push(card.copy(isFaceUp = (cardIndex == pile)))
                 }
             }
             for (pile in 0 until 7) {
@@ -110,10 +108,12 @@ data class Game(
         toPile.push(seq)
 
         // Auto-flip
-        fromPile.peek()?.let {
-            if (!it.isFaceUp) it.isFaceUp = true
+        fromPile.peek()?.let { top ->
+            if (!top.isFaceUp) {
+                val flipped = top.copy(isFaceUp = true)
+                fromPile.replaceTop(flipped)
+            }
         }
-
         return true
     }
 
@@ -150,10 +150,12 @@ data class Game(
         toPile.push(card)
 
         // Auto-flip
-        fromPile.peek()?.let {
-            if (!it.isFaceUp) it.isFaceUp = true
+        fromPile.peek()?.let { top ->
+            if (!top.isFaceUp) {
+                val flipped = top.copy(isFaceUp = true)
+                fromPile.replaceTop(flipped)
+            }
         }
-
         return true
     }
 
@@ -197,8 +199,7 @@ data class Game(
 
         // Reverse order (top waste card becomes last stock card)
         recycled.reversed().forEach { card ->
-            card.isFaceUp = false
-            stock.push(card)
+            stock.push(card.copy(isFaceUp = false))
         }
 
         return true

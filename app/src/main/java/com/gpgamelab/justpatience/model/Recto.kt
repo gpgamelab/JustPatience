@@ -3,10 +3,10 @@ package com.gpgamelab.justpatience.model
 import com.gpgamelab.justpatience.model.CardSuit.CardColor
 
 data class Recto(
-    var rank: CardRank,
-    var suit: CardSuit?, // Null for Joker
-    var imagePath: String,
-    var colorProfile: CardColor
+    val rank: CardRank,
+    val suit: CardSuit?, // Null for Joker
+    val imagePath: String,
+    val colorProfile: CardColor
 ) {
     // get the suit color; a Joker has no suit color
     val suitColor: CardSuit.CardColor?
