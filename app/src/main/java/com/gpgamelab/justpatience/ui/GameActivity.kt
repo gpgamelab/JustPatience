@@ -66,6 +66,7 @@ class GameActivity : AppCompatActivity() {
 
         // Simple button hookups (if present in layout)
         binding.btnUndo.setOnClickListener { viewModel.undo() }
+        binding.btnRedo.setOnClickListener { viewModel.redo() }
         binding.btnNewGame.setOnClickListener { viewModel.startNewGame() }
         binding.btnRestart.setOnClickListener { showRestartDialog() }
     }

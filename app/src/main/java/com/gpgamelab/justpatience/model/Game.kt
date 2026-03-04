@@ -204,4 +204,21 @@ data class Game(
         return true
     }
 
+    fun deepCopy(): Game {
+
+        val newTableau = tableau.map { it.deepCopy() }.toMutableList()
+        val newFoundations = foundations.map { it.deepCopy() }.toMutableList()
+
+        return Game(
+            stock = stock.deepCopy(),
+            waste = waste.deepCopy(),
+            tableau = newTableau,
+            foundations = newFoundations,
+            status = status,
+            score = score,
+            moves = moves,
+            savedGameTime = savedGameTime
+        )
+    }
 }
+

@@ -121,6 +121,8 @@ sealed class CardStack(
     open val type: StackType,
     protected open val cards: MutableList<Card> = mutableListOf()
 ) {
+    abstract fun deepCopy(): CardStack
+
     open fun canPush(card: Card): Boolean = true
     open fun canPush(cards: List<Card>): Boolean = cards.size == 1 && canPush(cards.first())
     open fun canPop(): Boolean = cards.isNotEmpty()
@@ -174,6 +176,13 @@ class Stock(cards: MutableList<Card>) : CardStack(StackType.STOCK, cards) {
     /** Draws one card (or more if your rules allow it) */
     fun draw(count: Int = 1): List<Card>? =
         take(count)
+
+    override fun deepCopy(): Stock {
+        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
+        var newTableauPile = Stock(copiedCards)
+
+        return newTableauPile
+    }
 }
 
 class Waste : CardStack(StackType.WASTE) {
@@ -186,6 +195,17 @@ class Waste : CardStack(StackType.WASTE) {
     override fun push(card: Card): Boolean {
         card.isFaceUp = true
         return super.push(card)
+    }
+
+    override fun deepCopy(): Waste {
+        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
+        var newWaste = Waste()
+
+        copiedCards.forEach { card ->
+            newWaste.push(card)
+        }
+
+        return newWaste
     }
 }
 
@@ -214,6 +234,17 @@ class FoundationPile(
     override fun canPush(cards: List<Card>): Boolean {
         // Foundations never accept multiple cards
         return false
+    }
+
+    override fun deepCopy(): FoundationPile {
+        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
+        var newFoundationPile = FoundationPile()
+
+        copiedCards.forEach { card ->
+            newFoundationPile.push(card)
+        }
+
+        return newFoundationPile
     }
 }
 
@@ -277,5 +308,16 @@ class TableauPile(
     override fun take(count: Int): List<Card>? {
         val seq = super.take(count) ?: return null
         return if (isValidSequence(seq)) seq else null
+    }
+
+    override fun deepCopy(): TableauPile {
+        val copiedCards = cards.map { it.deepCopy() }.toMutableList()
+        var newTableauPile = TableauPile()
+
+        copiedCards.forEach { card ->
+            newTableauPile.push(card)
+        }
+
+        return newTableauPile
     }
 }

@@ -106,7 +106,7 @@
             android:textColor="@color/colorPrimary"
             app:strokeColor="@color/colorPrimary" />
 
-        <Button
+        <!-- Button
             android:id="@+id/btn_undo"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
@@ -114,7 +114,39 @@
             android:text="@string/undo_button_text"
             android:layout_marginEnd="8dp"
             android:textColor="@color/secondary_button_color"
-            app:strokeColor="@color/secondary_button_color" />
+            app:strokeColor="@color/secondary_button_color" / -->
+
+<!--        <ImageButton
+            android:id="@+id/btnUndo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/Undo_Red"
+            android:background="@null" />
+
+        <ImageButton
+            android:id="@+id/btnRedo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/Redo_Blue"
+            android:background="@null" />-->
+
+        <ImageButton
+            android:id="@+id/btnUndo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/undo_red"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true" />
+
+        <ImageButton
+            android:id="@+id/btnRedo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/redo_blue"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true" />
 
         <Button
             android:id="@+id/btn_restart"

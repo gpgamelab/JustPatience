@@ -53,4 +53,14 @@ data class Card(
 
     fun isOppositeColor(other: Card): Boolean =
         isSameColor(other).not()
+
+    fun deepCopy(): Card {
+        return Card(
+            rank = this.rank,
+            suit = this.suit,
+            recto = this.recto,
+            verso = this.verso,
+            isFaceUp = this.isFaceUp
+        )
+    }
 }
