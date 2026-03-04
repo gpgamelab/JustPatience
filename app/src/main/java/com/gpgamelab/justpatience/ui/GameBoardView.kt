@@ -59,6 +59,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val LANDSCAPE_BOARD_SHIFT_LEFT_PX = 40f     // Less left shift (landscape is wider)
     private val LANDSCAPE_BOARD_SHIFT_DOWN_PX = 20f     // Less top shift (landscape is shorter)
 
+    // Card size multipliers for different orientations
+    private var CARD_SIZE_MULTIPLIER = 1.0f  // Will be updated based on orientation
+    private val PORTRAIT_CARD_SIZE_MULTIPLIER = 1.0f   // Full size in portrait
+    private val LANDSCAPE_CARD_SIZE_MULTIPLIER = 0.5f  // 50% size in landscape (2x smaller)
+
     private val cardPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; style = Paint.Style.FILL }
     private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -112,10 +117,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             BOARD_WIDTH_FRACTION = LANDSCAPE_BOARD_WIDTH_FRACTION
             BOARD_SHIFT_LEFT_PX = LANDSCAPE_BOARD_SHIFT_LEFT_PX
             BOARD_SHIFT_DOWN_PX = LANDSCAPE_BOARD_SHIFT_DOWN_PX
+            CARD_SIZE_MULTIPLIER = LANDSCAPE_CARD_SIZE_MULTIPLIER
         } else {
             BOARD_WIDTH_FRACTION = PORTRAIT_BOARD_WIDTH_FRACTION
             BOARD_SHIFT_LEFT_PX = PORTRAIT_BOARD_SHIFT_LEFT_PX
             BOARD_SHIFT_DOWN_PX = PORTRAIT_BOARD_SHIFT_DOWN_PX
+            CARD_SIZE_MULTIPLIER = PORTRAIT_CARD_SIZE_MULTIPLIER
         }
     }
 
@@ -171,7 +178,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             columnX.clear()
             val usableWidth = w * BOARD_WIDTH_FRACTION
             val totalPad = cardPadding * (columns + 1)
-            cardW = (usableWidth - totalPad) / (columns + 1) * cardWidthRatio
+            cardW = (usableWidth - totalPad) / (columns + 1) * cardWidthRatio * CARD_SIZE_MULTIPLIER
             cardH = cardW * cardHeightRatio
 
             computeColumnX()
