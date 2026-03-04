@@ -66,97 +66,109 @@ data class Game(
         }
     }
 
-    fun moveWasteToTableau(tableauIndex: Int): Game {
-        val waste = this.waste
-        val tableauPile = tableau.getOrNull(tableauIndex) ?: return this
-
-        val card = waste.peek() ?: return this
+    fun moveWasteToTableau(tableauIndex: Int): Game? {
+        val wasteCard = this.waste.peek() ?: return null
+        val tableauPile = tableau.getOrNull(tableauIndex) ?: return null
 
         // Let TableauPile decide if the move is legal
-        if (!tableauPile.canPush(card)) {
-            return this
+        if (!tableauPile.canPush(wasteCard)) {
+            return null
         }
 
-        // Mutate via CardStack API ONLY
-        val moved = waste.pop() ?: return this
-        tableauPile.push(moved)
+        // ✅ Create new immutable stacks
+        val (newWaste, _) = this.waste.withCardPopped()
+        val newTableau = tableau.toMutableList()
+        newTableau[tableauIndex] = tableauPile.withCardsAdded(listOf(wasteCard))
 
-        return this
+        return this.copy(
+            waste = newWaste,
+            tableau = newTableau
+        )
     }
 
     fun moveTableauToTableau(
         fromIndex: Int,
         cardIndex: Int,
         toIndex: Int
-    ): Boolean {
-        if (fromIndex == toIndex) return false
+    ): Game? {
+        if (fromIndex == toIndex) return null
 
-        val fromPile = tableau[fromIndex]
-        val toPile = tableau[toIndex]
+        val fromPile = tableau.getOrNull(fromIndex) ?: return null
+        val toPile = tableau.getOrNull(toIndex) ?: return null
 
         val count = fromPile.size() - cardIndex
-        if (count <= 0) return false
+        if (count <= 0) return null
 
         // 🔒 PEEK FIRST — NO MUTATION
         val seq = fromPile.asList().takeLast(count)
 
-        if (!fromPile.isValidSequence(seq)) return false
-        if (!toPile.canPush(seq)) return false
+        if (!fromPile.isValidSequence(seq)) return null
+        if (!toPile.canPush(seq)) return null
 
-        // ✅ NOW MUTATE (SAFE)
-        fromPile.take(count)
-        toPile.push(seq)
+        // ✅ Create new immutable stacks
+        val (newFromPile, _) = fromPile.withCardsRemoved(count)
+        val newTableau = tableau.toMutableList()
+        newTableau[fromIndex] = newFromPile
+        newTableau[toIndex] = toPile.withCardsAdded(seq)
 
         // Auto-flip
-        fromPile.peek()?.let { top ->
-            if (!top.isFaceUp) {
-                val flipped = top.copy(isFaceUp = true)
-                fromPile.replaceTop(flipped)
-            }
-        }
-        return true
+        val flippedFromPile = newFromPile.withTopCardFlipped()
+        newTableau[fromIndex] = flippedFromPile
+
+        return this.copy(tableau = newTableau)
     }
 
-    fun moveWasteToFoundation(foundationIndex: Int): Boolean {
-        val foundationPile = foundations.getOrNull(foundationIndex) ?: return false
-        val card = waste.peek() ?: return false
+    fun moveWasteToFoundation(foundationIndex: Int): Game? {
+        val foundationPile = foundations.getOrNull(foundationIndex) ?: return null
+        val card = waste.peek() ?: return null
 
         // push() validates suit + rank progression
-        if (!foundationPile.push(card)) {
-            return false
+        if (!foundationPile.canPush(card)) {
+            return null
         }
 
-        waste.pop()
-        return true
+        // ✅ Create new immutable stacks
+        val (newWaste, _) = this.waste.withCardPopped()
+        val newFoundations = foundations.toMutableList()
+        newFoundations[foundationIndex] = foundationPile.withCardAdded(card)
+
+        return this.copy(
+            waste = newWaste,
+            foundations = newFoundations
+        )
     }
 
     fun moveTableauToFoundation(
         tableauIndex: Int,
         cardIndex: Int,
         foundationIndex: Int
-    ): Boolean {
-
-        val fromPile = tableau[tableauIndex]
-        val toPile = foundations[foundationIndex]
+    ): Game? {
+        val fromPile = tableau.getOrNull(tableauIndex) ?: return null
+        val toPile = foundations.getOrNull(foundationIndex) ?: return null
 
         // MUST be top card
-        if (cardIndex != fromPile.size() - 1) return false
+        if (cardIndex != fromPile.size() - 1) return null
 
-        val card = fromPile.peekAt(cardIndex) ?: return false
+        val card = fromPile.peekAt(cardIndex) ?: return null
 
-        if (!toPile.canPush(card)) return false
+        if (!toPile.canPush(card)) return null
 
-        fromPile.popFrom(cardIndex)
-        toPile.push(card)
+        // ✅ Create new immutable stacks
+        val (newFromPile, _) = fromPile.withCardsRemoved(1)
+        val newFoundations = foundations.toMutableList()
+        newFoundations[foundationIndex] = toPile.withCardAdded(card)
+
+        val newTableau = tableau.toMutableList()
+        newTableau[tableauIndex] = newFromPile
 
         // Auto-flip
-        fromPile.peek()?.let { top ->
-            if (!top.isFaceUp) {
-                val flipped = top.copy(isFaceUp = true)
-                fromPile.replaceTop(flipped)
-            }
-        }
-        return true
+        val flippedFromPile = newFromPile.withTopCardFlipped()
+        newTableau[tableauIndex] = flippedFromPile
+
+        return this.copy(
+            tableau = newTableau,
+            foundations = newFoundations
+        )
     }
 
     /**
@@ -192,17 +204,20 @@ data class Game(
         return "${suitChar}_${rankCode}"
     }
 
-    fun recycleWasteToStock(): Boolean {
-        if (!stock.isEmpty() || waste.isEmpty()) return false
+    fun recycleWasteToStock(): Game? {
+        if (!stock.isEmpty() || waste.isEmpty()) return null
 
-        val recycled = waste.take(waste.size()) ?: return false
+        val (newWaste, recycled) = waste.withAllCardsTaken()
+        if (recycled == null) return null
 
         // Reverse order (top waste card becomes last stock card)
-        recycled.reversed().forEach { card ->
-            stock.push(card.copy(isFaceUp = false))
-        }
+        val cardsToStock = recycled.reversed().map { it.copy(isFaceUp = false) }
+        val newStock = stock.withCardsAdded(cardsToStock)
 
-        return true
+        return this.copy(
+            stock = newStock,
+            waste = newWaste
+        )
     }
 
     fun deepCopy(): Game {
