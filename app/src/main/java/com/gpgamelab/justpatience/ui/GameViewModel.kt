@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.gpgamelab.justpatience.data.GameStatsManager
 import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.TokenManager
 import com.gpgamelab.justpatience.game.GameController
@@ -30,6 +31,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val settingsManager = SettingsManager(application.applicationContext)
     private val tokenManager = TokenManager(application.applicationContext)
     private val repository = GameRepository(settingsManager, tokenManager)
+    private val statsManager = GameStatsManager(application.applicationContext)
     private val gson = Gson()
     private val controller = GameController()
     val hasSavedGame = repository.getCurrentGameState()
@@ -293,13 +295,35 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private fun updateAfterMove(game: Game, scoreDelta: Int = 0): Game {
         return if (game.isWinCondition()) {
             stopTimer()
-            game.copy(
+            val updatedGame = game.copy(
                 status = GameStatus.WON,
                 score = game.score + scoreDelta,
                 moves = game.moves + 1
             )
+            // Record the win in stats
+            recordGameCompletion(updatedGame, isWin = true)
+            updatedGame
         } else {
             game.copy(score = game.score + scoreDelta, moves = game.moves + 1)
+        }
+    }
+
+    /**
+     * Record a completed game in the database.
+     * Called when a game is won.
+     */
+    private fun recordGameCompletion(game: Game, isWin: Boolean) {
+        viewModelScope.launch {
+            try {
+                statsManager.recordGame(
+                    score = game.score,
+                    moves = game.moves,
+                    timeMs = gameTime.value * 1000,  // Convert seconds to milliseconds
+                    isWin = isWin
+                )
+            } catch (e: Exception) {
+                Log.e("GameViewModel", "Failed to record game completion", e)
+            }
         }
     }
 

@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     // Apply the Google Services plugin to the app module
     id("com.google.gms.google-services")
+    // KSP plugin for annotation processing (required for Room)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -84,6 +86,11 @@ dependencies {
     // Firebase dependencies (versions are managed by the BOM)
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore") // <-- NEW: Required for GameRepository
+
+    // --- Room Database Dependencies ---
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // If you need analytics later, uncomment this:
     // implementation("com.google.firebase:firebase-analytics")
