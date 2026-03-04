@@ -30,37 +30,43 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 
 This section tracks work currently in progress and upcoming improvements.
 
-### ? High Priority
-- [X] Fix foundation pile put validation
-- [X] Fix edge-case bug when dragging multiple stacked cards
-- [X] Improve win detection logic
-- [X] Add doubl tap to move card to foundation
-- [X] Reduce display size of the cards
-- [X] Add elapsed game time
-- [X] Fix move count logic
-- [X] Add simplified scoring
-
-### ? Medium Priority
-- [ ] Add account login and creation with the backend server
-- [ ] Add sound effects
-- [ ] Add animation polish
-- [X] Improve tablet layout support
-- [X] Switch to portrait instead of landscape mode
+```
+PHASE 0: CORE DEVELOPER SUPPORT
 - [ ] Add unit tests for move validation engine
-- [X] Add logic to undo moves (undo history)
-- [X] Add logic to redo moves (redo history)
-- [X] Add background (desktop or table) image
-- [X] Add landscape and portrait display mode with automatic orientation detect
-- [X] Add statistics tracking
 
-### ? Low Priority
+PHASE 1: CORE UX FOUNDATION (Week 1-2)
+├─ 1. Home/Landing Page (non-game screen)
+├─ 2. Sound Effects Framework + Core SFX
+- [ ] Add sound effects
+├─ 3. Card Animations (flip, slide)
+- [ ] Add animation polish
+├─ 4. Loading Screen
+└─ 5. Complete Settings Page
+
+PHASE 2: ENGAGEMENT (Week 3-4)
+├─ 1. First-Time User Experience (Tutorial/Onboarding)
+├─ 2. Win Celebration Animation
+- [ ] Add animation polish
+├─ 3. Move Stats Button to Home Page
+└─ 4. Shopping Button (stub)
+- [ ] Add account login and creation with the backend server
 - [ ] Add dark mode toggle
-- [ ] Add alternative card themes
 
-### ? Wish list to be prioritized
+PHASE 3: MONETIZATION PREP (Week 5-6)
+├─ 1. Ad Framework Integration (Google Mobile Ads)
 - [ ] Add monitization with ribbon ads
 - [ ] Add monitization with full screen ads
+├─ 2. IAP Shopping Page (basic)
 - [ ] Add monitization with in app purchases
+└─ 3. Premium Feature Toggles
+
+PHASE 4: RETENTION FEATURES (Week 7+)
+├─ 1. Simple Achievement System
+├─ 2. Daily Challenges
+├─ 3. Performance Metrics Display
+└─ 4. Visual Themes/Customization
+- [ ] Add alternative card themes
+```
 
 ---
 
