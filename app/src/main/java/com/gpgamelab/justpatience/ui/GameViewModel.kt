@@ -108,8 +108,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (!game.stock.isEmpty()) {
             val (newStock, card) = game.stock.withCardPopped()
             if (card != null) {
-                val (updatedWaste, _) = game.waste.withCardPopped()
-                val newWaste = updatedWaste.withCardAdded(card.copy(isFaceUp = true))
+                val newWaste = game.waste.withCardAdded(card.copy(isFaceUp = true))
                 newGame = game.copy(stock = newStock, waste = newWaste)
                 moved = true
             }
@@ -153,14 +152,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (success) {
                     undoStack.addLast(game)
                     redoStack.clear()
-                    // Determine score delta based on target type
-                    val scoreDelta = when (targetType) {
-                        StackType.FOUNDATION -> 10
-                        StackType.TABLEAU -> 0
-                        else -> 0
-                    }
-                    val updatedWithScore = updateAfterMove(theUpdatedGame, scoreDelta)
-                    _game.value = updatedWithScore
+                    // Score is already applied by controller, just update move count
+                    val updatedWithMoves = theUpdatedGame.copy(moves = theUpdatedGame.moves + 1)
+                    _game.value = updatedWithMoves
                     saveGameIfInProgress()
                 }
             } catch (t: Throwable) {

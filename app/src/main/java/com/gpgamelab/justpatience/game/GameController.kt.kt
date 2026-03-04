@@ -122,64 +122,57 @@ class GameController {
         // Validate move using rules
         if (!isValidMove(cardsToMove, target)) return Pair(game, false)
 
-        // Execute move: remove from source and push to target
-        when (sourceType) {
-            StackType.TABLEAU -> {
-                val count = cardsToMove.size
-                val removed = (source as TableauPile).take(count) ?: return Pair(game, false)
-                // push onto target: target.push(cards) available
-                target.push(removed)
+        // Execute move using immutable Game methods
+        var updatedGame = game
+        var scoreDelta = 0
+
+        when {
+            // WASTE -> TABLEAU
+            sourceType == StackType.WASTE && targetType == StackType.TABLEAU -> {
+                val result = game.moveWasteToTableau(targetIndex)
+                if (result == null) return Pair(game, false)
+                updatedGame = result
+                scoreDelta = 5
+            }
+
+            // WASTE -> FOUNDATION
+            sourceType == StackType.WASTE && targetType == StackType.FOUNDATION -> {
+                val result = game.moveWasteToFoundation(targetIndex)
+                if (result == null) return Pair(game, false)
+                updatedGame = result
+                scoreDelta = 10
+            }
+
+            // TABLEAU -> TABLEAU
+            sourceType == StackType.TABLEAU && targetType == StackType.TABLEAU -> {
+                val result = game.moveTableauToTableau(sourceIndex, cardIndexInSource, targetIndex)
+                if (result == null) return Pair(game, false)
+                updatedGame = result
+                scoreDelta = 0
+            }
+
+            // TABLEAU -> FOUNDATION
+            sourceType == StackType.TABLEAU && targetType == StackType.FOUNDATION -> {
+                val result = game.moveTableauToFoundation(sourceIndex, cardIndexInSource, targetIndex)
+                if (result == null) return Pair(game, false)
+                updatedGame = result
+                scoreDelta = 10
             }
 
             else -> {
-                // pop the single card
-                val card = source.pop() ?: return Pair(game, false)
-                target.push(card)
+                return Pair(game, false)
             }
         }
 
-        // After removing from tableau, flip new top card if face-down
-        var scoreDelta = 0
-        if (sourceType == StackType.TABLEAU) {
-            val src = source as TableauPile
-            val newTop = src.peek()
-            if (newTop != null && !newTop.isFaceUp) {
-                val flippedCard = src.pop() ?: return Pair(game, false)
-                src.push(flippedCard.copy(isFaceUp = true))
-                scoreDelta += 5
-            }
-        }
-
-        // Score updates for destination
-        scoreDelta += scoreForMove(sourceType, target.type)
-
-//        // Record move for undo
-//        moveHistory.addLast(
-//            Move.CardMove(
-//                cardsToMove,
-//                sourceType,
-//                sourceIndex,
-//                target.type,
-//                targetIndex,
-//                flipped,
-//                scoreDelta
-//            )
-//        )
-
-        // Build new Game with updated stacks (stacks are mutated in place in our model), so return updated values
-        val updatedGame = game.copy(
-            stock = game.stock,
-            waste = game.waste,
-            tableau = game.tableau,
-            foundations = game.foundations,
-            moves = game.moves + 1,
-            score = maxOf(0, game.score + scoreDelta)
+        // Apply score update
+        var finalGame = updatedGame.copy(
+            score = maxOf(0, updatedGame.score + scoreDelta)
         )
 
         // If win condition met, mark won
-        val finalGame = if (checkWinCondition(updatedGame)) {
-            updatedGame.copy(status = GameStatus.WON)
-        } else updatedGame
+        if (finalGame.isWinCondition()) {
+            finalGame = finalGame.copy(status = GameStatus.WON)
+        }
 
         return Pair(finalGame, true)
     }
