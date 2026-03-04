@@ -127,8 +127,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (moved) {
             undoStack.addLast(game)
             redoStack.clear()
-            updateAfterMove(newGame)  // scoreDelta = 0 for simple scoring
-            _game.value = newGame
+            val updatedWithScore = updateAfterMove(newGame)  // scoreDelta = 0 for simple scoring
+            _game.value = updatedWithScore
         }
     }
 
@@ -141,8 +141,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             try {
+                val game = _game.value
                 val (theUpdatedGame, success) = controller.attemptMove(
-                    _game.value,
+                    game,
                     sourceType,
                     sourceIndex,
                     cardIndexInSource,
@@ -150,7 +151,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     targetIndex
                 )
                 if (success) {
-                    _game.value = theUpdatedGame
+                    undoStack.addLast(game)
+                    redoStack.clear()
+                    // Determine score delta based on target type
+                    val scoreDelta = when (targetType) {
+                        StackType.FOUNDATION -> 10
+                        StackType.TABLEAU -> 0
+                        else -> 0
+                    }
+                    val updatedWithScore = updateAfterMove(theUpdatedGame, scoreDelta)
+                    _game.value = updatedWithScore
                     saveGameIfInProgress()
                 }
             } catch (t: Throwable) {
@@ -166,8 +176,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (updated != null) {
             undoStack.addLast(game)
             redoStack.clear()
-            updateAfterMove(updated, scoreDelta = 5)   // simple scoring
-            _game.value = updated
+            val updatedWithScore = updateAfterMove(updated, scoreDelta = 5)   // simple scoring
+            _game.value = updatedWithScore
         }
     }
 
@@ -182,8 +192,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (updated != null) {
             undoStack.addLast(game)
             redoStack.clear()
-            updateAfterMove(updated)   // scoreDelta = 0 for simple scoring
-            _game.value = updated
+            val updatedWithScore = updateAfterMove(updated)   // scoreDelta = 0 for simple scoring
+            _game.value = updatedWithScore
             return true
         }
 
@@ -198,8 +208,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (updated != null) {
                 undoStack.addLast(game)
                 redoStack.clear()
-                updateAfterMove(updated, scoreDelta = 10)
-                _game.value = updated
+                val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
+                _game.value = updatedWithScore
                 return true
             }
         }
@@ -227,8 +237,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (updated != null) {
                 undoStack.addLast(game)
                 redoStack.clear()
-                updateAfterMove(updated, scoreDelta = 10)
-                _game.value = updated
+                val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
+                _game.value = updatedWithScore
                 return true
             }
         }
@@ -243,8 +253,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (updated != null) {
             undoStack.addLast(game)
             redoStack.clear()
-            updateAfterMove(updated, scoreDelta = 10)
-            _game.value = updated
+            val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
+            _game.value = updatedWithScore
             return true
         }
 
@@ -266,24 +276,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (updated != null) {
             undoStack.addLast(game)
             redoStack.clear()
-            updateAfterMove(updated, scoreDelta = 10)
-            _game.value = updated
+            val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
+            _game.value = updatedWithScore
             return true
         }
 
         return false
     }
 
-    private fun updateAfterMove(game: Game, scoreDelta: Int = 0) {
-        if (game.isWinCondition()) {
+    private fun updateAfterMove(game: Game, scoreDelta: Int = 0): Game {
+        return if (game.isWinCondition()) {
             stopTimer()
-            _game.value = game.copy(
+            game.copy(
                 status = GameStatus.WON,
                 score = game.score + scoreDelta,
                 moves = game.moves + 1
             )
         } else {
-            _game.value = game.copy(score = game.score + scoreDelta, moves = game.moves + 1)
+            game.copy(score = game.score + scoreDelta, moves = game.moves + 1)
         }
     }
 
