@@ -47,12 +47,14 @@ This section tracks work currently in progress and upcoming improvements.
 - [X] Improve tablet layout support
 - [X] Switch to portrait instead of landscape mode
 - [ ] Add unit tests for move validation engine
-- [ ] Add logic to undo moves (w/small undo history)
+- [X] Add logic to undo moves (undo history)
+- [X] Add logic to redo moves (redo history)
 - [X] Add background (desktop or table) image
+- [X] Add landscape and portrait display mode with automatic orientation detect
+- [X] Add statistics tracking
 
 ### ? Low Priority
 - [ ] Add dark mode toggle
-- [ ] Add statistics tracking
 - [ ] Add alternative card themes
 
 ### ? Wish list to be prioritized
