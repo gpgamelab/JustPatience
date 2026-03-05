@@ -63,6 +63,22 @@ class GameActivity : AppCompatActivity() {
                         binding.tvTime.text = formatTime(seconds)
                     }
                 }
+
+                launch {
+                    viewModel.canUndo.collect { canUndo ->
+                        binding.btnUndo.setImageResource(
+                            if (canUndo) R.drawable.undo_red else R.drawable.undo_gray
+                        )
+                    }
+                }
+
+                launch {
+                    viewModel.canRedo.collect { canRedo ->
+                        binding.btnRedo.setImageResource(
+                            if (canRedo) R.drawable.redo_blue else R.drawable.redo_gray
+                        )
+                    }
+                }
             }
         }
 

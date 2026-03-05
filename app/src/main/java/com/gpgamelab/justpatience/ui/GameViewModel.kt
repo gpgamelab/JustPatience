@@ -142,6 +142,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(newGame)  // scoreDelta = 0 for simple scoring
             _game.value = updatedWithScore
+            updateUndoRedoState()
         }
     }
 
@@ -170,6 +171,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     val updatedWithMoves = theUpdatedGame.copy(moves = theUpdatedGame.moves + 1)
                     _game.value = updatedWithMoves
                     saveGameIfInProgress()
+                    updateUndoRedoState()
                 }
             } catch (t: Throwable) {
                 Log.w("GameViewModel", "attemptMove failed: ${t.message}")
@@ -186,6 +188,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated, scoreDelta = 5)   // simple scoring
             _game.value = updatedWithScore
+            updateUndoRedoState()
         }
     }
 
@@ -202,6 +205,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated)   // scoreDelta = 0 for simple scoring
             _game.value = updatedWithScore
+            updateUndoRedoState()
             return true
         }
 
@@ -218,6 +222,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
                 _game.value = updatedWithScore
+                updateUndoRedoState()
                 return true
             }
         }
@@ -247,6 +252,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
                 _game.value = updatedWithScore
+                updateUndoRedoState()
                 return true
             }
         }
@@ -286,6 +292,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
             _game.value = updatedWithScore
+            updateUndoRedoState()
             return true
         }
 
@@ -409,6 +416,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             undoStack.addLast(game)
             redoStack.clear()
             _game.value = updated
+            updateUndoRedoState()
             return true
         }
 

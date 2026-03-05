@@ -134,19 +134,21 @@
             android:id="@+id/btnUndo"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/undo_red"
+            android:src="@drawable/undo_gray"
             android:background="@null"
             android:scaleType="fitCenter"
-            android:adjustViewBounds="true" />
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/action_undo" />
 
         <ImageButton
             android:id="@+id/btnRedo"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/redo_blue"
+            android:src="@drawable/redo_gray"
             android:background="@null"
             android:scaleType="fitCenter"
-            android:adjustViewBounds="true" />
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/action_redo" />
 
         <Button
             android:id="@+id/btn_restart"

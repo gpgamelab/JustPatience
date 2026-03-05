@@ -57,6 +57,7 @@
     <string name="save_and_exit">Save &amp; Exit</string>
     <string name="discard_and_exit">Discard &amp; Exit</string>
     <string name="action_undo">Undo</string>
+    <string name="action_redo">Redo</string>
     <string name="action_hint">Hint</string>
     <string name="restart_game_text">Restart</string>
     <string name="action_restart">Restart Game</string>
