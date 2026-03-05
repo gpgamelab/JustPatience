@@ -28,8 +28,6 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 
 ## ? Roadmap / TODO (Prioritized)
 
-:::writing{variant="standard" id="48291"} ##
-🗺 Roadmap / TODO (Prioritized) This section tracks work currently in progress and upcoming improvements.
 <details> <summary><strong>PHASE 0: CORE DEVELOPER SUPPORT</strong></summary> <br>
 - [ ] **Strengthen Move Validation Engine**
   - [ ] Add comprehensive unit tests for move validation logic </details>
