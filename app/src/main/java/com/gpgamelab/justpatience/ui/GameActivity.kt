@@ -88,6 +88,12 @@ class GameActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            android.R.id.home -> {
+                // Navigate back to home page
+                startActivity(Intent(this, HomeActivity::class.java))
+                finish()
+                return true
+            }
             R.id.action_new_game -> viewModel.startNewGame()
             R.id.action_restart -> showRestartDialog()
             R.id.action_undo -> viewModel.undo()

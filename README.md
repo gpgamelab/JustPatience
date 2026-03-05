@@ -32,9 +32,9 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 - [ ] **Strengthen Move Validation Engine**
   - [ ] Add comprehensive unit tests for move validation logic </details>
 <details> <summary><strong>PHASE 1: CORE UX FOUNDATION </strong></summary> <br>
-- [ ] **Home / Landing Page**
-  - [ ] Design non-game landing screen
-  - [ ] Implement navigation entry points
+- [X] **Home / Landing Page**
+  - [X] Design non-game landing screen
+  - [X] Implement navigation entry points
 - [ ] **Sound Effects Framework**
   - [ ] Implement audio system foundation
   - [ ] Add core sound effects
@@ -45,9 +45,9 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 - [ ] **Loading Experience**
   - [ ] Design loading screen
   - [ ] Implement loading state transitions
-- [ ] **Settings Page**
-  - [ ] Complete settings UI
-  - [ ] Connect settings to functional toggles </details>
+- [X] **Settings Page**
+  - [X] Complete settings UI
+  - [X] Connect settings to functional toggles </details>
 <details> <summary><strong>PHASE 2: ENGAGEMENT </strong></summary> <br>
 - [ ] **First-Time User Experience**
   - [ ] Design onboarding flow

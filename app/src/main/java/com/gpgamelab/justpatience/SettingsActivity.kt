@@ -2,20 +2,13 @@ package com.gpgamelab.justpatience
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.ViewModelProvider // Needed for ViewModel setup
 import com.gpgamelab.justpatience.databinding.ActivitySettingsBinding
 import com.gpgamelab.justpatience.viewmodel.AuthViewModel
 import com.gpgamelab.justpatience.viewmodel.SettingsViewModel
-import kotlinx.coroutines.launch
 
 /**
  * Activity for managing game settings, user statistics, and authentication actions (logout).
@@ -147,7 +140,12 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 2. Initialize ViewModels (Placeholder - adapt to your DI framework)
+        // 2. Setup the Toolbar with back button
+        setSupportActionBar(binding.settingsToolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Settings"
+
+        // 3. Initialize ViewModels (Placeholder - adapt to your DI framework)
         // Since I don't see your DI setup, I'll mock the initialization.
         // **YOU MUST replace this block with your actual ViewModel initialization.**
         // Example for testing/manual setup:
@@ -246,5 +244,14 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
 
-
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                // Navigate back to home page
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 }
