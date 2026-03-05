@@ -30,8 +30,6 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 
 This section tracks work currently in progress and upcoming improvements.
 
-
-
 :::writing{variant="standard" id="48291"} ## 🗺 Roadmap / TODO (Prioritized) This section tracks work currently in progress and upcoming improvements.
 --- <details> <summary><strong>PHASE 0: CORE DEVELOPER SUPPORT</strong></summary> <br>
 - [ ] **Strengthen Move Validation Engine**
@@ -91,79 +89,10 @@ This section tracks work currently in progress and upcoming improvements.
   - [ ] Design stats/performance display
   - [ ] Implement metrics tracking
 - [ ] **Themes & Customization**
-  - [ ] Add alternative card themes
+  - [ ] Add alternative face card themes
+  - [ ] Add alternative back card themes
+  - [ ] Add alternative tabletop themes
   - [ ] Implement theme selection system </details> :::
-
-ZYZZX
-
-
-
-
-
-
-
-
-ZYZZX  PROOF OF CONCEPT
-ZYZZX  - [ ] Main task
-ZYZZX    - [ ] Subtask 1
-ZYZZX    - [ ] Subtask 2
-ZYZZX      - [ ] Sub-subtask
-ZYZZX  - [x] Completed main task
-ZYZZX    - [x] Completed subtask
-ZYZZX    
-ZYZZX  PHASE 0: CORE DEVELOPER SUPPORT
-ZYZZX  - [ ] Add unit tests for move validation engine
-ZYZZX  
-ZYZZX  PHASE 1: CORE UX FOUNDATION (Week 1-2)
-ZYZZX  ├─ 1. Home/Landing Page (non-game screen)
-ZYZZX  ├─ 2. Sound Effects Framework + Core SFX
-ZYZZX  - [ ] Add sound effects
-ZYZZX  ├─ 3. Card Animations (flip, slide)
-ZYZZX  - [ ] Add animation polish
-ZYZZX  ├─ 4. Loading Screen
-ZYZZX  └─ 5. Complete Settings Page
-ZYZZX  
-ZYZZX  PHASE 2: ENGAGEMENT (Week 3-4)
-ZYZZX  ├─ 1. First-Time User Experience (Tutorial/Onboarding)
-ZYZZX  ├─ 2. Win Celebration Animation
-ZYZZX  - [ ] Add animation polish
-ZYZZX  ├─ 3. Move Stats Button to Home Page
-ZYZZX  └─ 4. Shopping Button (stub)
-ZYZZX  - [ ] Add account login and creation with the backend server
-ZYZZX  - [ ] Add dark mode toggle
-ZYZZX  
-ZYZZX  PHASE 3: MONETIZATION PREP (Week 5-6)
-ZYZZX  ├─ 1. Ad Framework Integration (Google Mobile Ads)
-ZYZZX  - [ ] Add monitization with ribbon ads
-ZYZZX  - [ ] Add monitization with full screen ads
-ZYZZX  ├─ 2. IAP Shopping Page (basic)
-ZYZZX  - [ ] Add monitization with in app purchases
-ZYZZX  └─ 3. Premium Feature Toggles
-ZYZZX  
-ZYZZX  PHASE 4: RETENTION FEATURES (Week 7+)
-ZYZZX  ├─ 1. Simple Achievement System
-ZYZZX  ├─ 2. Daily Challenges
-ZYZZX  ├─ 3. Performance Metrics Display
-ZYZZX  └─ 4. Visual Themes/Customization
-ZYZZX  - [ ] Add alternative card themes
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
