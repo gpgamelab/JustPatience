@@ -1,4 +1,4 @@
-````markdown
+
 # JustPatience
 
 An Android game written in **Kotlin** that lets you play classic solitaire (patience) on your mobile device.
@@ -30,43 +30,140 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 
 This section tracks work currently in progress and upcoming improvements.
 
-```
-PHASE 0: CORE DEVELOPER SUPPORT
-- [ ] Add unit tests for move validation engine
 
-PHASE 1: CORE UX FOUNDATION (Week 1-2)
-├─ 1. Home/Landing Page (non-game screen)
-├─ 2. Sound Effects Framework + Core SFX
-- [ ] Add sound effects
-├─ 3. Card Animations (flip, slide)
-- [ ] Add animation polish
-├─ 4. Loading Screen
-└─ 5. Complete Settings Page
 
-PHASE 2: ENGAGEMENT (Week 3-4)
-├─ 1. First-Time User Experience (Tutorial/Onboarding)
-├─ 2. Win Celebration Animation
-- [ ] Add animation polish
-├─ 3. Move Stats Button to Home Page
-└─ 4. Shopping Button (stub)
-- [ ] Add account login and creation with the backend server
-- [ ] Add dark mode toggle
+:::writing{variant="standard" id="48291"} ## 🗺 Roadmap / TODO (Prioritized) This section tracks work currently in progress and upcoming improvements.
+--- <details> <summary><strong>PHASE 0: CORE DEVELOPER SUPPORT</strong></summary> <br>
+- [ ] **Strengthen Move Validation Engine**
+  - [ ] Add comprehensive unit tests for move validation logic </details>
+--- <details> <summary><strong>PHASE 1: CORE UX FOUNDATION </strong></summary> <br>
+- [ ] **Home / Landing Page**
+  - [ ] Design non-game landing screen
+  - [ ] Implement navigation entry points
+- [ ] **Sound Effects Framework**
+  - [ ] Implement audio system foundation
+  - [ ] Add core sound effects
+- [ ] **Card Animations**
+  - [ ] Implement card flip animations
+  - [ ] Implement card slide animations
+  - [ ] Add animation polish and refinement
+- [ ] **Loading Experience**
+  - [ ] Design loading screen
+  - [ ] Implement loading state transitions
+- [ ] **Settings Page**
+  - [ ] Complete settings UI
+  - [ ] Connect settings to functional toggles </details>
+--- <details> <summary><strong>PHASE 2: ENGAGEMENT </strong></summary> <br>
+- [ ] **First-Time User Experience**
+  - [ ] Design onboarding flow
+  - [ ] Implement interactive tutorial
+- [ ] **Win Celebration**
+  - [ ] Implement win celebration animation
+  - [ ] Add animation polish and effects
+- [ ] **Home Screen Improvements**
+  - [ ] Move stats button to home page
+  - [ ] Add shopping button (stub)
+- [ ] **Account System**
+  - [ ] Implement account creation
+  - [ ] Implement account login
+  - [ ] Connect authentication to backend server
+- [ ] **Appearance Options**
+  - [ ] Add dark mode toggle </details>
+--- <details> <summary><strong>PHASE 3: MONETIZATION PREP </strong></summary> <br>
+- [ ] **Ad Framework Integration**
+  - [ ] Integrate Google Mobile Ads SDK
+  - [ ] Implement ribbon/banner ads
+  - [ ] Implement full-screen ads
+- [ ] **In-App Purchases (IAP)**
+  - [ ] Build basic shopping page
+  - [ ] Integrate in-app purchase monetization
+- [ ] **Premium Feature System**
+  - [ ] Implement premium feature toggles
+  - [ ] Gate premium features behind ads/IAP </details>
+--- <details> <summary><strong>PHASE 4: RETENTION FEATURES </strong></summary> <br>
+- [ ] **Achievement System**
+  - [ ] Design simple achievement framework
+  - [ ] Implement achievement tracking
+- [ ] **Daily Challenges**
+  - [ ] Design daily challenge logic
+  - [ ] Implement daily challenge UI
+- [ ] **Performance Metrics**
+  - [ ] Design stats/performance display
+  - [ ] Implement metrics tracking
+- [ ] **Themes & Customization**
+  - [ ] Add alternative card themes
+  - [ ] Implement theme selection system </details> :::
 
-PHASE 3: MONETIZATION PREP (Week 5-6)
-├─ 1. Ad Framework Integration (Google Mobile Ads)
-- [ ] Add monitization with ribbon ads
-- [ ] Add monitization with full screen ads
-├─ 2. IAP Shopping Page (basic)
-- [ ] Add monitization with in app purchases
-└─ 3. Premium Feature Toggles
+ZYZZX
 
-PHASE 4: RETENTION FEATURES (Week 7+)
-├─ 1. Simple Achievement System
-├─ 2. Daily Challenges
-├─ 3. Performance Metrics Display
-└─ 4. Visual Themes/Customization
-- [ ] Add alternative card themes
-```
+
+
+
+
+
+
+
+ZYZZX  PROOF OF CONCEPT
+ZYZZX  - [ ] Main task
+ZYZZX    - [ ] Subtask 1
+ZYZZX    - [ ] Subtask 2
+ZYZZX      - [ ] Sub-subtask
+ZYZZX  - [x] Completed main task
+ZYZZX    - [x] Completed subtask
+ZYZZX    
+ZYZZX  PHASE 0: CORE DEVELOPER SUPPORT
+ZYZZX  - [ ] Add unit tests for move validation engine
+ZYZZX  
+ZYZZX  PHASE 1: CORE UX FOUNDATION (Week 1-2)
+ZYZZX  ├─ 1. Home/Landing Page (non-game screen)
+ZYZZX  ├─ 2. Sound Effects Framework + Core SFX
+ZYZZX  - [ ] Add sound effects
+ZYZZX  ├─ 3. Card Animations (flip, slide)
+ZYZZX  - [ ] Add animation polish
+ZYZZX  ├─ 4. Loading Screen
+ZYZZX  └─ 5. Complete Settings Page
+ZYZZX  
+ZYZZX  PHASE 2: ENGAGEMENT (Week 3-4)
+ZYZZX  ├─ 1. First-Time User Experience (Tutorial/Onboarding)
+ZYZZX  ├─ 2. Win Celebration Animation
+ZYZZX  - [ ] Add animation polish
+ZYZZX  ├─ 3. Move Stats Button to Home Page
+ZYZZX  └─ 4. Shopping Button (stub)
+ZYZZX  - [ ] Add account login and creation with the backend server
+ZYZZX  - [ ] Add dark mode toggle
+ZYZZX  
+ZYZZX  PHASE 3: MONETIZATION PREP (Week 5-6)
+ZYZZX  ├─ 1. Ad Framework Integration (Google Mobile Ads)
+ZYZZX  - [ ] Add monitization with ribbon ads
+ZYZZX  - [ ] Add monitization with full screen ads
+ZYZZX  ├─ 2. IAP Shopping Page (basic)
+ZYZZX  - [ ] Add monitization with in app purchases
+ZYZZX  └─ 3. Premium Feature Toggles
+ZYZZX  
+ZYZZX  PHASE 4: RETENTION FEATURES (Week 7+)
+ZYZZX  ├─ 1. Simple Achievement System
+ZYZZX  ├─ 2. Daily Challenges
+ZYZZX  ├─ 3. Performance Metrics Display
+ZYZZX  └─ 4. Visual Themes/Customization
+ZYZZX  - [ ] Add alternative card themes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 
@@ -193,4 +290,3 @@ Please review that file for full licensing details.
 
 - Inspired by classic solitaire implementations
 - Thanks to the Android and Kotlin communities
-````
