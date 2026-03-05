@@ -28,13 +28,12 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 
 ## ? Roadmap / TODO (Prioritized)
 
-This section tracks work currently in progress and upcoming improvements.
-
-:::writing{variant="standard" id="48291"} ## 🗺 Roadmap / TODO (Prioritized) This section tracks work currently in progress and upcoming improvements.
---- <details> <summary><strong>PHASE 0: CORE DEVELOPER SUPPORT</strong></summary> <br>
+:::writing{variant="standard" id="48291"} ##
+🗺 Roadmap / TODO (Prioritized) This section tracks work currently in progress and upcoming improvements.
+<details> <summary><strong>PHASE 0: CORE DEVELOPER SUPPORT</strong></summary> <br>
 - [ ] **Strengthen Move Validation Engine**
   - [ ] Add comprehensive unit tests for move validation logic </details>
---- <details> <summary><strong>PHASE 1: CORE UX FOUNDATION </strong></summary> <br>
+<details> <summary><strong>PHASE 1: CORE UX FOUNDATION </strong></summary> <br>
 - [ ] **Home / Landing Page**
   - [ ] Design non-game landing screen
   - [ ] Implement navigation entry points
@@ -51,7 +50,7 @@ This section tracks work currently in progress and upcoming improvements.
 - [ ] **Settings Page**
   - [ ] Complete settings UI
   - [ ] Connect settings to functional toggles </details>
---- <details> <summary><strong>PHASE 2: ENGAGEMENT </strong></summary> <br>
+<details> <summary><strong>PHASE 2: ENGAGEMENT </strong></summary> <br>
 - [ ] **First-Time User Experience**
   - [ ] Design onboarding flow
   - [ ] Implement interactive tutorial
@@ -67,7 +66,7 @@ This section tracks work currently in progress and upcoming improvements.
   - [ ] Connect authentication to backend server
 - [ ] **Appearance Options**
   - [ ] Add dark mode toggle </details>
---- <details> <summary><strong>PHASE 3: MONETIZATION PREP </strong></summary> <br>
+<details> <summary><strong>PHASE 3: MONETIZATION PREP </strong></summary> <br>
 - [ ] **Ad Framework Integration**
   - [ ] Integrate Google Mobile Ads SDK
   - [ ] Implement ribbon/banner ads
@@ -78,7 +77,7 @@ This section tracks work currently in progress and upcoming improvements.
 - [ ] **Premium Feature System**
   - [ ] Implement premium feature toggles
   - [ ] Gate premium features behind ads/IAP </details>
---- <details> <summary><strong>PHASE 4: RETENTION FEATURES </strong></summary> <br>
+<details> <summary><strong>PHASE 4: RETENTION FEATURES </strong></summary> <br>
 - [ ] **Achievement System**
   - [ ] Design simple achievement framework
   - [ ] Implement achievement tracking
