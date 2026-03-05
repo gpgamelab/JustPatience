@@ -89,7 +89,7 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
   - [ ] Add alternative face card themes
   - [ ] Add alternative back card themes
   - [ ] Add alternative tabletop themes
-  - [ ] Implement theme selection system </details> :::
+  - [ ] Implement theme selection system </details>
 
 ---
 
