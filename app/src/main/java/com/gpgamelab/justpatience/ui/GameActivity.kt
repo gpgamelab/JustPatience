@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.gpgamelab.justpatience.ads.AdManager
 import com.gpgamelab.justpatience.assets.AndroidAssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.databinding.ActivityGameBinding
@@ -23,6 +24,9 @@ class GameActivity : AppCompatActivity() {
 
     // Optional helper UI manager (keeps minimal behavior; extend as needed)
     private lateinit var uiManager: CardStackUIManager
+
+    // Ad management
+    private lateinit var adManager: AdManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +47,11 @@ class GameActivity : AppCompatActivity() {
 
         // Optional manager (no heavy rendering here)
         uiManager = CardStackUIManager(this, binding.root, viewModel)
+
+        // Initialize and load banner ads
+        adManager = AdManager(this)
+        adManager.initializeAds()
+        adManager.loadBannerAd(binding.adView)
 
 
         lifecycleScope.launch {

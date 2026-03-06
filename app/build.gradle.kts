@@ -99,4 +99,7 @@ dependencies {
     // If you need analytics later, uncomment this:
     // implementation("com.google.firebase:firebase-analytics")
 
+    // --- Google Mobile Ads SDK ---
+    implementation("com.google.android.gms:play-services-ads:22.6.0")
+
 }

@@ -23,6 +23,13 @@
 
         <!-- NOTE: usesCleartextTraffic="true" is CRUCIAL: It allows local HTTP connection to 10.0.2.2 -->
 
+        <!-- Google Play Services Metadata for AdMob -->
+        <!-- Using Google's test application ID for development -->
+        <!-- Replace with your real AdMob App ID when ready for production -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
         <!-- 1. Login Activity -->
         <activity
             android:name=".LoginActivity" />
