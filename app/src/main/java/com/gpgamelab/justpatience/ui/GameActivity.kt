@@ -2,6 +2,7 @@ package com.gpgamelab.justpatience.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -52,6 +53,12 @@ class GameActivity : AppCompatActivity() {
         adManager = AdManager(this)
         adManager.initializeAds()
         adManager.loadBannerAd(binding.adView)
+        adManager.loadInterstitialAd()
+
+        // Show interstitial ad if started from home page
+        if (intent.getBooleanExtra("from_home", false)) {
+            adManager.setShowOnLoad(true)
+        }
 
 
         lifecycleScope.launch {
@@ -94,7 +101,7 @@ class GameActivity : AppCompatActivity() {
         // Simple button hookups (if present in layout)
         binding.btnUndo.setOnClickListener { viewModel.undo() }
         binding.btnRedo.setOnClickListener { viewModel.redo() }
-        binding.btnNewGame.setOnClickListener { viewModel.startNewGame() }
+        binding.btnNewGame.setOnClickListener { adManager.showInterstitialAd(); viewModel.startNewGame() }
         binding.btnRestart.setOnClickListener { showRestartDialog() }
         binding.btnStats.setOnClickListener { showStatsDialog() }
     }
@@ -119,7 +126,7 @@ class GameActivity : AppCompatActivity() {
                 finish()
                 return true
             }
-            R.id.action_new_game -> viewModel.startNewGame()
+            R.id.action_new_game -> { adManager.showInterstitialAd(); viewModel.startNewGame() }
             R.id.action_restart -> showRestartDialog()
             R.id.action_undo -> viewModel.undo()
             R.id.action_settings -> startActivity(
@@ -154,7 +161,7 @@ class GameActivity : AppCompatActivity() {
                         viewModel.game.value.moves
                     )
                 )
-                .setPositiveButton(R.string.new_game_button_text) { _, _ -> viewModel.startNewGame() }
+                .setPositiveButton(R.string.new_game_button_text) { _, _ -> adManager.showInterstitialAd(); viewModel.startNewGame() }
                 .setNeutralButton(android.R.string.cancel, null)
                 .show()
         }
@@ -167,5 +174,11 @@ class GameActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         viewModel.saveGame()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Reload interstitial ad when orientation changes to ensure proper sizing
+        adManager.loadInterstitialAd()
     }
 }

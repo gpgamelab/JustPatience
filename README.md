@@ -56,8 +56,8 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
   - [ ] Implement win celebration animation
   - [ ] Add animation polish and effects
 - [ ] **Home Screen Improvements**
-  - [ ] Move stats button to home page
-  - [ ] Add shopping button (stub)
+  - [• ] Move stats button to home page
+  - [• ] Add shopping button (stub)
 - [ ] **Account System**
   - [ ] Implement account creation
   - [ ] Implement account login
@@ -65,16 +65,16 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 - [ ] **Appearance Options**
   - [ ] Add dark mode toggle </details>
 <details> <summary><strong>PHASE 3: MONETIZATION PREP </strong></summary> <br>
-- [ ] **Ad Framework Integration**
-  - [ ] Integrate Google Mobile Ads SDK
-  - [ ] Implement ribbon/banner ads
+- [X] **Ad Framework Integration**
+  - [X] Integrate Google Mobile Ads SDK
+  - [X] Implement ribbon/banner ads
   - [ ] Implement full-screen ads
 - [ ] **In-App Purchases (IAP)**
   - [ ] Build basic shopping page
   - [ ] Integrate in-app purchase monetization
 - [ ] **Premium Feature System**
   - [ ] Implement premium feature toggles
-  - [ ] Gate premium features behind ads/IAP </details>
+  - [•] Gate premium features behind ads/IAP </details>
 <details> <summary><strong>PHASE 4: RETENTION FEATURES </strong></summary> <br>
 - [ ] **Achievement System**
   - [ ] Design simple achievement framework

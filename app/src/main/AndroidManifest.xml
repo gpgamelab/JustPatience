@@ -28,7 +28,7 @@
         <!-- Replace with your real AdMob App ID when ready for production -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-7092037186763886~5209725222" />
 
         <!-- 1. Login Activity -->
         <activity

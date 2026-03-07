@@ -59,7 +59,9 @@ class HomeActivity : AppCompatActivity() {
         try {
             findViewById<Button>(R.id.btn_play_game)?.setOnClickListener {
                 try {
-                    startActivity(Intent(this, GameActivity::class.java))
+                    val intent = Intent(this, GameActivity::class.java)
+                    intent.putExtra("from_home", true)
+                    startActivity(intent)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error starting GameActivity", e)
                 }
@@ -176,6 +178,8 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 }
+
+
 
 
 
