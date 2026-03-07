@@ -68,7 +68,7 @@ An Android game written in **Kotlin** that lets you play classic solitaire (pati
 - [X] **Ad Framework Integration**
   - [X] Integrate Google Mobile Ads SDK
   - [X] Implement ribbon/banner ads
-  - [ ] Implement full-screen ads
+  - [X] Implement full-screen/interstitial ads
 - [ ] **In-App Purchases (IAP)**
   - [ ] Build basic shopping page
   - [ ] Integrate in-app purchase monetization
