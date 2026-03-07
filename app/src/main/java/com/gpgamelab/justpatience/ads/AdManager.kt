@@ -19,6 +19,7 @@ class AdManager(private val context: Context) {
 
     private var mInterstitialAd: InterstitialAd? = null
     private var showOnLoad = false
+    private var adDismissedCallback: (() -> Unit)? = null
 
     companion object {
         private const val TAG = "AdManager"
@@ -126,6 +127,7 @@ class AdManager(private val context: Context) {
                     mInterstitialAd = null
                     // Load another ad for future use
                     loadInterstitialAd()
+                    adDismissedCallback?.invoke()
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
@@ -159,5 +161,13 @@ class AdManager(private val context: Context) {
     fun setShowOnLoad(show: Boolean) {
         showOnLoad = show
         Log.d(TAG, "Show on load set to: $show")
+    }
+
+    /**
+     * Set a callback to be invoked when the interstitial ad is dismissed.
+     * @param callback The callback to invoke
+     */
+    fun setAdDismissedCallback(callback: () -> Unit) {
+        adDismissedCallback = callback
     }
 }

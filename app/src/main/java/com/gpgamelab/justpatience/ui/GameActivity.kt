@@ -6,6 +6,8 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +30,10 @@ class GameActivity : AppCompatActivity() {
 
     // Ad management
     private lateinit var adManager: AdManager
+
+    // Ad enable flags for undo and redo
+    private var enableUndo = false
+    private var enableRedo = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,6 +66,7 @@ class GameActivity : AppCompatActivity() {
             adManager.setShowOnLoad(true)
         }
 
+        updateOverlayVisibility()
 
         lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
@@ -82,26 +89,40 @@ class GameActivity : AppCompatActivity() {
 
                 launch {
                     viewModel.canUndo.collect { canUndo ->
-                        binding.btnUndo.setImageResource(
+                        findViewById<ImageView>(R.id.undo_main)?.setImageResource(
                             if (canUndo) R.drawable.undo_red else R.drawable.undo_gray
                         )
+                        updateOverlayVisibility()
                     }
                 }
 
                 launch {
                     viewModel.canRedo.collect { canRedo ->
-                        binding.btnRedo.setImageResource(
+                        findViewById<ImageView>(R.id.redo_main)?.setImageResource(
                             if (canRedo) R.drawable.redo_blue else R.drawable.redo_gray
                         )
+                        updateOverlayVisibility()
                     }
                 }
             }
         }
 
         // Simple button hookups (if present in layout)
-        binding.btnUndo.setOnClickListener { viewModel.undo() }
-        binding.btnRedo.setOnClickListener { viewModel.redo() }
-        binding.btnNewGame.setOnClickListener { adManager.showInterstitialAd(); viewModel.startNewGame() }
+        binding.btnUndo.setOnClickListener {
+            if (!enableUndo) {
+                adManager.setAdDismissedCallback { enableUndo = true; updateOverlayVisibility() }
+                adManager.showInterstitialAd()
+            }
+            viewModel.undo()
+        }
+        binding.btnRedo.setOnClickListener {
+            if (!enableRedo) {
+                adManager.setAdDismissedCallback { enableRedo = true; updateOverlayVisibility() }
+                adManager.showInterstitialAd()
+            }
+            viewModel.redo()
+        }
+        binding.btnNewGame.setOnClickListener { adManager.showInterstitialAd(); enableUndo = false; enableRedo = false; updateOverlayVisibility(); viewModel.startNewGame() }
         binding.btnRestart.setOnClickListener { showRestartDialog() }
         binding.btnStats.setOnClickListener { showStatsDialog() }
     }
@@ -126,9 +147,15 @@ class GameActivity : AppCompatActivity() {
                 finish()
                 return true
             }
-            R.id.action_new_game -> { adManager.showInterstitialAd(); viewModel.startNewGame() }
+            R.id.action_new_game -> { adManager.showInterstitialAd(); enableUndo = false; enableRedo = false; updateOverlayVisibility(); viewModel.startNewGame() }
             R.id.action_restart -> showRestartDialog()
-            R.id.action_undo -> viewModel.undo()
+            R.id.action_undo -> {
+                if (!enableUndo) {
+                    adManager.setAdDismissedCallback { enableUndo = true; updateOverlayVisibility() }
+                    adManager.showInterstitialAd()
+                }
+                viewModel.undo()
+            }
             R.id.action_settings -> startActivity(
                 Intent(
                     this,
@@ -161,7 +188,7 @@ class GameActivity : AppCompatActivity() {
                         viewModel.game.value.moves
                     )
                 )
-                .setPositiveButton(R.string.new_game_button_text) { _, _ -> adManager.showInterstitialAd(); viewModel.startNewGame() }
+                .setPositiveButton(R.string.new_game_button_text) { _, _ -> adManager.showInterstitialAd(); enableUndo = false; enableRedo = false; updateOverlayVisibility(); viewModel.startNewGame() }
                 .setNeutralButton(android.R.string.cancel, null)
                 .show()
         }
@@ -180,5 +207,10 @@ class GameActivity : AppCompatActivity() {
         super.onConfigurationChanged(newConfig)
         // Reload interstitial ad when orientation changes to ensure proper sizing
         adManager.loadInterstitialAd()
+    }
+
+    private fun updateOverlayVisibility() {
+        findViewById<ImageView>(R.id.undo_overlay)?.visibility = if (enableUndo) View.GONE else View.VISIBLE
+        findViewById<ImageView>(R.id.redo_overlay)?.visibility = if (enableRedo) View.GONE else View.VISIBLE
     }
 }

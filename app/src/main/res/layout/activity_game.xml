@@ -129,25 +129,55 @@
             android:src="@drawable/Redo_Blue"
             android:background="@null" />-->
 
-        <ImageButton
+        <FrameLayout
             android:id="@+id/btnUndo"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/undo_gray"
-            android:background="@null"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/action_undo" />
+            android:background="?android:attr/selectableItemBackground">
 
-        <ImageButton
+            <ImageView
+                android:id="@+id/undo_main"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/undo_gray"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/action_undo" />
+
+            <ImageView
+                android:id="@+id/undo_overlay"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="top|start"
+                android:layout_margin="2dp"
+                android:src="@drawable/ic_play_ad_01" />
+
+        </FrameLayout>
+
+        <FrameLayout
             android:id="@+id/btnRedo"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/redo_gray"
-            android:background="@null"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/action_redo" />
+            android:background="?android:attr/selectableItemBackground">
+
+            <ImageView
+                android:id="@+id/redo_main"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/redo_gray"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/action_redo" />
+
+            <ImageView
+                android:id="@+id/redo_overlay"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="top|start"
+                android:layout_margin="2dp"
+                android:src="@drawable/ic_play_ad_01" />
+
+        </FrameLayout>
 
         <Button
             android:id="@+id/btn_restart"
