@@ -93,6 +93,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startNewGame() {
+        finalizeCurrentGameIfNeeded()
         undoStack.clear()
         redoStack.clear()
         startTimer()
@@ -317,9 +318,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * Record a completed game in the database.
-     * Called when a game is won.
+     * Only records if moves >= 5 and game hasn't been recorded yet.
+     * Called when a game is won, or when the game is abandoned with enough moves.
      */
     private fun recordGameCompletion(game: Game, isWin: Boolean) {
+        // Only record if game hasn't been recorded yet and player made at least 5 moves
+        if (game.moves < 5) {
+            return
+        }
+
         viewModelScope.launch {
             try {
                 statsManager.recordGame(
@@ -360,6 +367,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (_game.value.status == GameStatus.IN_PROGRESS) saveGame()
     }
 
+    // Record an in-progress game as a loss before replacing it with a new hand.
+    private fun finalizeCurrentGameIfNeeded() {
+        val current = _game.value
+        if (current.status == GameStatus.IN_PROGRESS) {
+            recordGameCompletion(current, isWin = false)
+        }
+    }
+
     fun saveGame() {
         viewModelScope.launch {
             try {
@@ -386,6 +401,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun stopGame() {
+        // Record the game if abandoned with enough moves
+        recordGameCompletion(_game.value, isWin = false)
         saveGame()
     }
 

@@ -18,6 +18,7 @@ import com.gpgamelab.justpatience.assets.AndroidAssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.databinding.ActivityGameBinding
 import com.gpgamelab.justpatience.model.GameStatus
+import com.gpgamelab.justpatience.data.GameStatsManager
 import kotlinx.coroutines.launch
 
 class GameActivity : AppCompatActivity() {
@@ -30,11 +31,16 @@ class GameActivity : AppCompatActivity() {
 
     // Ad management
     private lateinit var adManager: AdManager
+    private lateinit var statsManager: GameStatsManager
 
     // Ad enable flags for undo and redo
     private var enableUndo = false
     private var enableRedo = false
 
+    // Ad frequency counters
+    private var totalGamesPlayed: Int = 0
+    private var pendingHomeStartInterstitial: Boolean = false
+    private var handledHomeStartInterstitial: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,15 +67,24 @@ class GameActivity : AppCompatActivity() {
         adManager.loadBannerAd(binding.adView)
         adManager.loadInterstitialAd()
 
-        // Show interstitial ad if started from home page
-        if (intent.getBooleanExtra("from_home", false)) {
-            adManager.setShowOnLoad(true)
-        }
+        statsManager = GameStatsManager(applicationContext)
+
+        // Defer home-start ad decision until we read total games played.
+        pendingHomeStartInterstitial = intent.getBooleanExtra("from_home", false)
 
         updateOverlayVisibility()
 
         lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                launch {
+                    statsManager.getTotalGamesPlayed().collect { total ->
+                        totalGamesPlayed = total
+                        if (pendingHomeStartInterstitial && !handledHomeStartInterstitial) {
+                            maybeShowStartInterstitial()
+                            handledHomeStartInterstitial = true
+                        }
+                    }
+                }
 
                 launch {
                     viewModel.game.collect { g ->
@@ -122,7 +137,13 @@ class GameActivity : AppCompatActivity() {
             }
             viewModel.redo()
         }
-        binding.btnNewGame.setOnClickListener { adManager.showInterstitialAd(); enableUndo = false; enableRedo = false; updateOverlayVisibility(); viewModel.startNewGame() }
+        binding.btnNewGame.setOnClickListener {
+            maybeShowStartInterstitial()
+            enableUndo = false
+            enableRedo = false
+            updateOverlayVisibility()
+            viewModel.startNewGame()
+        }
         binding.btnRestart.setOnClickListener { showRestartDialog() }
         binding.btnStats.setOnClickListener { showStatsDialog() }
     }
@@ -147,7 +168,13 @@ class GameActivity : AppCompatActivity() {
                 finish()
                 return true
             }
-            R.id.action_new_game -> { adManager.showInterstitialAd(); enableUndo = false; enableRedo = false; updateOverlayVisibility(); viewModel.startNewGame() }
+            R.id.action_new_game -> {
+                maybeShowStartInterstitial()
+                enableUndo = false
+                enableRedo = false
+                updateOverlayVisibility()
+                viewModel.startNewGame()
+            }
             R.id.action_restart -> showRestartDialog()
             R.id.action_undo -> {
                 if (!enableUndo) {
@@ -188,7 +215,13 @@ class GameActivity : AppCompatActivity() {
                         viewModel.game.value.moves
                     )
                 )
-                .setPositiveButton(R.string.new_game_button_text) { _, _ -> adManager.showInterstitialAd(); enableUndo = false; enableRedo = false; updateOverlayVisibility(); viewModel.startNewGame() }
+                .setPositiveButton(R.string.new_game_button_text) { _, _ ->
+                    maybeShowStartInterstitial()
+                    enableUndo = false
+                    enableRedo = false
+                    updateOverlayVisibility()
+                    viewModel.startNewGame()
+                }
                 .setNeutralButton(android.R.string.cancel, null)
                 .show()
         }
@@ -200,13 +233,29 @@ class GameActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        viewModel.saveGame()
+        viewModel.stopGame()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         // Reload interstitial ad when orientation changes to ensure proper sizing
         adManager.loadInterstitialAd()
+    }
+
+    private fun shouldShowStartInterstitial(total: Int): Boolean {
+        return when {
+            total < 10 -> false
+            total <= 50 -> total % 5 == 0
+            else -> total % 4 == 0
+        }
+    }
+
+    private fun maybeShowStartInterstitial() {
+        if (!shouldShowStartInterstitial(totalGamesPlayed)) return
+
+        // Show immediately if loaded; otherwise show when load completes.
+        adManager.setShowOnLoad(true)
+        adManager.showInterstitialAd()
     }
 
     private fun updateOverlayVisibility() {
