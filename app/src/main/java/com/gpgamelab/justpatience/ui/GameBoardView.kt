@@ -217,13 +217,82 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val boardWidth =
             (cardW * columns) + (cardPadding * (columns - 1))
 
-        val startX = (width - boardWidth) / 2f - BOARD_SHIFT_LEFT_PX
+        var startX = (width - boardWidth) / 2f - BOARD_SHIFT_LEFT_PX
 
         var x = startX
         repeat(columns) {
             columnX.add(x)
             x += cardW + cardPadding
         }
+    }
+
+    private fun getTopRowY(): Float = boardStartY + cardPadding
+
+    private fun getTableauStartY(): Float {
+        if (!isLandscape) {
+            return getTopRowY() + cardH + cardPadding + tableauOffset
+        }
+
+        // In landscape, align tableau top with foundation pile 1 (and stock pile)
+        val foundationRect = getFoundationRect(0)
+        return foundationRect.top
+    }
+
+    private fun getStockRect(): RectF {
+        if (!isLandscape) {
+            val topY = getTopRowY()
+            val x = columnX[0]
+            return RectF(x, topY, x + cardW, topY + cardH)
+        }
+
+        // In landscape, position to the left of tableau, aligned with foundation pile 1
+        val tableauLeft = columnX.firstOrNull() ?: cardPadding
+        val x = tableauLeft - cardW - cardPadding
+
+        // Align with foundation pile 1's Y position
+        val foundationRect = getFoundationRect(0)
+        val y = foundationRect.top
+        return RectF(x, y, x + cardW, y + cardH)
+    }
+
+    private fun getWasteRect(): RectF {
+        if (!isLandscape) {
+            val topY = getTopRowY()
+            val x = columnX[1]
+            return RectF(x, topY, x + cardW, topY + cardH)
+        }
+
+        // In landscape, position to the left of tableau, aligned with foundation pile 2
+        val tableauLeft = columnX.firstOrNull() ?: cardPadding
+        val x = tableauLeft - cardW - cardPadding
+
+        // Align with foundation pile 2's Y position
+        val foundationRect = getFoundationRect(1)
+        val y = foundationRect.top
+        return RectF(x, y, x + cardW, y + cardH)
+    }
+
+    private fun getFoundationRect(index: Int): RectF {
+        if (!isLandscape) {
+            val topY = getTopRowY()
+            val x = columnX[3 + index]
+            return RectF(x, topY, x + cardW, topY + cardH)
+        }
+
+        // In landscape: position foundations to the right of tableau
+        val tableauRight = columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)
+        val x = tableauRight + cardPadding
+
+        // Calculate base Y independently to avoid circular dependency with getTableauStartY()
+        val topRowY = getTopRowY()
+        val baseY = topRowY + cardH + cardPadding + tableauOffset - (cardH * 0.38f)
+        val stepY = cardH * 0.88f  // Reduced to fit all piles on screen with equal gaps
+        // Adjustments: pile 1: -65%, pile 2: -40%, pile 3: -15%, pile 4: +15%
+        val pileAdjustmentFractions = floatArrayOf(-0.65f, -0.40f, -0.15f, 0.15f)
+        val pileAdjust = pileAdjustmentFractions.getOrElse(index) { 0f } * cardH
+        val y = baseY + (index * stepY) + pileAdjust
+
+        return RectF(x, y, x + cardW, y + cardH)
     }
 
     private fun computeBoardStartY(viewHeight: Int) {
@@ -298,9 +367,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun drawTopRow(canvas: Canvas) {
-        val topY = boardStartY + cardPadding
         // Stock
-        val stockRect = RectF(columnX[0], topY, columnX[0] + cardW, topY + cardH)
+        val stockRect = getStockRect()
         val stock = viewModel.game.value.stock
         if (!stock.isEmpty()) drawStockBack(canvas, stockRect) else canvas.drawRoundRect(
             stockRect,
@@ -310,17 +378,16 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         )
 
         // Waste
-        val wasteRect = RectF(columnX[1], topY, columnX[1] + cardW, topY + cardH)
+        val wasteRect = getWasteRect()
         val waste = viewModel.game.value.waste
         if (!waste.isEmpty() && !(isDragging && dragStackType == StackType.WASTE)) {
             waste.peek()?.let { drawCard(canvas, it, wasteRect) }
         } else
             canvas.drawRoundRect(wasteRect, cardRadius, cardRadius, placeholderPaint)
 
-        // Foundations at columns 3..6 (index 0..3)
+        // Foundations: portrait keeps top row placement; landscape moves them left of tableau.
         for (i in 0..3) {
-            val x = columnX[3 + i]
-            val rect = RectF(x, topY, x + cardW, topY + cardH)
+            val rect = getFoundationRect(i)
             canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
             viewModel.game.value.foundations.getOrNull(i)?.peek()
                 ?.let { drawCard(canvas, it, rect) }
@@ -328,7 +395,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun drawTableau(canvas: Canvas) {
-        val startY = boardStartY + cardPadding + cardH + cardPadding + tableauOffset
+        val startY = getTableauStartY()
         viewModel.game.value.tableau.forEachIndexed { colIdx, pile ->
             val x = columnX[colIdx]
             var y = startY
@@ -447,24 +514,20 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         cardIndex: Int
     ): RectF {
 
-        val topY = boardStartY + cardPadding
-        val startTableauY = topY + cardH + cardPadding + tableauOffset
+        val startTableauY = getTableauStartY()
 
         return when (type) {
 
             StackType.STOCK -> {
-                val x = columnX[0]
-                RectF(x, topY, x + cardW, topY + cardH)
+                getStockRect()
             }
 
             StackType.WASTE -> {
-                val x = columnX[1]
-                RectF(x, topY, x + cardW, topY + cardH)
+                getWasteRect()
             }
 
             StackType.FOUNDATION -> {
-                val x = columnX[3 + stackIndex]
-                RectF(x, topY, x + cardW, topY + cardH)
+                getFoundationRect(stackIndex)
             }
 
             StackType.TABLEAU -> {
@@ -543,8 +606,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     dragStackIndex = stackIndex
                     dragCardIndex = dragStartIndex
 
-                    val startY =
-                        boardStartY + cardPadding + cardH + cardPadding + tableauOffset
+                    val startY = getTableauStartY()
 
                     val cardTopY =
                         startY + tableauYOffsetForIndex(pile, dragCardIndex)
@@ -605,12 +667,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 if (isDragging) {
 
                     // 1️⃣ FOUNDATION DROP (highest priority)
-                    val topY = boardStartY + cardPadding
-                    val foundationStartX = columnX[3]
-
                     for (i in viewModel.game.value.foundations.indices) {
-                        val x = foundationStartX + i * (cardW + cardPadding)
-                        val rect = RectF(x, topY, x + cardW, topY + cardH)
+                        val rect = getFoundationRect(i)
 
                         if (rect.contains(event.x, event.y)) {
                             when (dragStackType) {
@@ -635,7 +693,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
                     // 2️⃣ TABLEAU DROP (only if foundation failed)
                     if (!moveSucceeded) {
-                        val startY = boardStartY + cardPadding + cardH + cardPadding + tableauOffset
+                        val startY = getTableauStartY()
 
                         columnX.forEachIndexed { index, colX ->
                             val rect = RectF(colX, startY, colX + cardW, height.toFloat())
@@ -689,22 +747,43 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun findStackAt(x: Float, y: Float): Triple<StackType?, Int, Int> {
-        val topY = boardStartY + cardPadding
-        val topBottom = topY + cardH
-        if (y in topY..topBottom) {
-            for (i in 0 until columns) {
-                val cx = columnX[i]
-                if (x in cx..(cx + cardW)) {
-                    return when (i) {
-                        0 -> Triple(StackType.STOCK, 0, -1)
-                        1 -> Triple(StackType.WASTE, 0, -1)
-                        in 3..6 -> Triple(StackType.FOUNDATION, i - 3, -1)
-                        else -> Triple(null, -1, -1)
+        // Check stock and waste first in landscape (they're in the left column)
+        if (isLandscape) {
+            if (getStockRect().contains(x, y)) {
+                return Triple(StackType.STOCK, 0, -1)
+            }
+            if (getWasteRect().contains(x, y)) {
+                return Triple(StackType.WASTE, 0, -1)
+            }
+        }
+
+        // Check foundations (in left column in landscape, top row in portrait)
+        for (i in viewModel.game.value.foundations.indices) {
+            if (getFoundationRect(i).contains(x, y)) {
+                return Triple(StackType.FOUNDATION, i, -1)
+            }
+        }
+
+        // In portrait mode, check stock and waste in top row
+        if (!isLandscape) {
+            val topY = getTopRowY()
+            val topBottom = topY + cardH
+            if (y in topY..topBottom) {
+                for (i in 0 until columns) {
+                    val cx = columnX[i]
+                    if (x in cx..(cx + cardW)) {
+                        return when (i) {
+                            0 -> Triple(StackType.STOCK, 0, -1)
+                            1 -> Triple(StackType.WASTE, 0, -1)
+                            else -> Triple(null, -1, -1)
+                        }
                     }
                 }
             }
         }
-        val startY = topBottom + cardPadding + tableauOffset
+
+        // Check tableau
+        val startY = getTableauStartY()
         if (y >= startY) {
             for (i in 0 until columns) {
                 val cx = columnX[i]
@@ -759,7 +838,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun hitTestTableau(x: Float, y: Float): Int? {
-        val startY = boardStartY + cardPadding + cardH + cardPadding + tableauOffset
+        val startY = getTableauStartY()
 
         columnX.forEachIndexed { index, colX ->
             val rect = RectF(

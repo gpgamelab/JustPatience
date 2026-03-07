@@ -53,8 +53,7 @@
         <activity
             android:name=".ui.GameActivity"
             android:exported="true"
-            android:label="@string/game_title"
-            android:configChanges="orientation|keyboardHidden|screenSize" />
+            android:label="@string/game_title" />
 
     </application>
 
