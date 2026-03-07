@@ -19,7 +19,19 @@
         android:gravity="center"
         android:layout_marginBottom="16dp" />
 
-    <!-- Summary Stats Section -->
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Summary Stats Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -188,15 +200,17 @@
         android:textColor="@color/text_color"
         android:layout_marginBottom="8dp" />
 
-    <!-- Game History RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerview_game_history"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginBottom="16dp" />
+            <!-- Game History RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerview_game_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
 
-    <!-- Buttons Row -->
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Buttons Row (outside scroll area) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

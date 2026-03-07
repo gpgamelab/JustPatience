@@ -43,6 +43,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val undoStack = ArrayDeque<Game>()
     private val redoStack = ArrayDeque<Game>()
     private var initialGameState: Game? = null  // Store the game state at the start of the hand
+    private var currentHandRecorded = false
 
     // Exposed state
     private val _game = MutableStateFlow(Game.newGame())
@@ -97,6 +98,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         undoStack.clear()
         redoStack.clear()
         startTimer()
+        currentHandRecorded = false
         viewModelScope.launch {
             val newGame = controller.newGameWithClearHistory()
             initialGameState = newGame
@@ -106,10 +108,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun restartGame() {
+        // Restart counts as abandoning the current hand.
+        finalizeCurrentGameIfNeeded()
+
         val initial = initialGameState ?: return
         undoStack.clear()
         redoStack.clear()
         _game.value = initial
+        currentHandRecorded = false
         updateUndoRedoState()
         saveGame()
     }
@@ -323,9 +329,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      */
     private fun recordGameCompletion(game: Game, isWin: Boolean) {
         // Only record if game hasn't been recorded yet and player made at least 5 moves
-        if (game.moves < 5) {
+        if (currentHandRecorded || game.moves < 5) {
             return
         }
+
+        currentHandRecorded = true
 
         viewModelScope.launch {
             try {
@@ -391,6 +399,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val saved = repository.getCurrentGameState().firstOrNull()
             if (!saved.isNullOrEmpty()) {
                 _game.value = gson.fromJson(saved, Game::class.java)
+                currentHandRecorded = false
                 true
             } else {
                 false
@@ -401,8 +410,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun stopGame() {
-        // Record the game if abandoned with enough moves
-        recordGameCompletion(_game.value, isWin = false)
+        // Record only if this hand is still in progress and eligible.
+        finalizeCurrentGameIfNeeded()
         saveGame()
     }
 

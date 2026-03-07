@@ -195,6 +195,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Stats"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:layout_marginEnd="8dp"
             android:textColor="@color/secondary_button_color"
             app:strokeColor="@color/secondary_button_color" />

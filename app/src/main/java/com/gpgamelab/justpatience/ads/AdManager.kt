@@ -118,31 +118,43 @@ class AdManager(private val context: Context) {
 
     /**
      * Show the interstitial ad if loaded.
+     * @return true if an ad was shown, false if no ad was ready
      */
-    fun showInterstitialAd() {
-        if (mInterstitialAd != null) {
-            mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                override fun onAdDismissedFullScreenContent() {
-                    Log.d(TAG, "Interstitial ad dismissed")
-                    mInterstitialAd = null
-                    // Load another ad for future use
-                    loadInterstitialAd()
-                    adDismissedCallback?.invoke()
-                }
-
-                override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
-                    Log.e(TAG, "Interstitial ad failed to show: ${adError.message}")
-                    mInterstitialAd = null
-                }
-
-                override fun onAdShowedFullScreenContent() {
-                    Log.d(TAG, "Interstitial ad showed full screen content")
-                }
-            }
-            mInterstitialAd?.show(context as android.app.Activity)
-        } else {
+    fun showInterstitialAd(onCompleted: (() -> Unit)? = null): Boolean {
+        val ad = mInterstitialAd
+        if (ad == null) {
             Log.d(TAG, "Interstitial ad not ready to show")
+            return false
         }
+
+        val completion = onCompleted ?: adDismissedCallback
+
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Interstitial ad dismissed")
+                mInterstitialAd = null
+                loadInterstitialAd()
+                completion?.invoke()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                Log.e(TAG, "Interstitial ad failed to show: ${adError.message}")
+                mInterstitialAd = null
+                loadInterstitialAd()
+                completion?.invoke()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Interstitial ad showed full screen content")
+            }
+        }
+
+        ad.show(context as android.app.Activity)
+        return true
+    }
+
+    fun showInterstitialAd() {
+        showInterstitialAd(null)
     }
 
     /**

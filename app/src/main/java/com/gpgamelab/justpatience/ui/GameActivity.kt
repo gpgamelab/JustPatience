@@ -4,9 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -20,6 +23,7 @@ import com.gpgamelab.justpatience.databinding.ActivityGameBinding
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.data.GameStatsManager
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 class GameActivity : AppCompatActivity() {
 
@@ -41,6 +45,7 @@ class GameActivity : AppCompatActivity() {
     private var totalGamesPlayed: Int = 0
     private var pendingHomeStartInterstitial: Boolean = false
     private var handledHomeStartInterstitial: Boolean = false
+    private var winDialogShowing: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,7 +95,6 @@ class GameActivity : AppCompatActivity() {
                     viewModel.game.collect { g ->
                         binding.tvScore.text = getString(R.string.score_format, g.score)
                         binding.tvMoves.text = getString(R.string.moves_format, g.moves)
-                        binding.gameBoardView.postInvalidateOnAnimation()
 
                         if (g.status == GameStatus.WON) showGameEndDialog(true)
                     }
@@ -124,18 +128,10 @@ class GameActivity : AppCompatActivity() {
 
         // Simple button hookups (if present in layout)
         binding.btnUndo.setOnClickListener {
-            if (!enableUndo) {
-                adManager.setAdDismissedCallback { enableUndo = true; updateOverlayVisibility() }
-                adManager.showInterstitialAd()
-            }
-            viewModel.undo()
+            handleUndoClick()
         }
         binding.btnRedo.setOnClickListener {
-            if (!enableRedo) {
-                adManager.setAdDismissedCallback { enableRedo = true; updateOverlayVisibility() }
-                adManager.showInterstitialAd()
-            }
-            viewModel.redo()
+            handleRedoClick()
         }
         binding.btnNewGame.setOnClickListener {
             maybeShowStartInterstitial()
@@ -146,6 +142,8 @@ class GameActivity : AppCompatActivity() {
         }
         binding.btnRestart.setOnClickListener { showRestartDialog() }
         binding.btnStats.setOnClickListener { showStatsDialog() }
+
+        applyResponsiveControlSizing()
     }
 
     @SuppressLint("DefaultLocale")
@@ -177,11 +175,7 @@ class GameActivity : AppCompatActivity() {
             }
             R.id.action_restart -> showRestartDialog()
             R.id.action_undo -> {
-                if (!enableUndo) {
-                    adManager.setAdDismissedCallback { enableUndo = true; updateOverlayVisibility() }
-                    adManager.showInterstitialAd()
-                }
-                viewModel.undo()
+                handleUndoClick()
             }
             R.id.action_settings -> startActivity(
                 Intent(
@@ -205,26 +199,28 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun showGameEndDialog(isWin: Boolean) {
-        if (isWin) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.win_dialog_title)
-                .setMessage(
-                    getString(
-                        R.string.win_dialog_message,
-                        viewModel.game.value.score,
-                        viewModel.game.value.moves
-                    )
+        if (!isWin || isFinishing || isDestroyed || winDialogShowing) return
+
+        winDialogShowing = true
+        AlertDialog.Builder(this)
+            .setTitle(R.string.win_dialog_title)
+            .setMessage(
+                getString(
+                    R.string.win_dialog_message,
+                    viewModel.game.value.score,
+                    viewModel.game.value.moves
                 )
-                .setPositiveButton(R.string.new_game_button_text) { _, _ ->
-                    maybeShowStartInterstitial()
-                    enableUndo = false
-                    enableRedo = false
-                    updateOverlayVisibility()
-                    viewModel.startNewGame()
-                }
-                .setNeutralButton(android.R.string.cancel, null)
-                .show()
-        }
+            )
+            .setPositiveButton(R.string.new_game_button_text) { _, _ ->
+                maybeShowStartInterstitial()
+                enableUndo = false
+                enableRedo = false
+                updateOverlayVisibility()
+                viewModel.startNewGame()
+            }
+            .setNeutralButton(android.R.string.cancel, null)
+            .setOnDismissListener { winDialogShowing = false }
+            .show()
     }
 
     private fun showStatsDialog() {
@@ -233,13 +229,22 @@ class GameActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        viewModel.stopGame()
+        // Avoid recording losses on transient pauses (ads, dialogs, rotation).
+        viewModel.saveGame()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (isFinishing) {
+            viewModel.stopGame()
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         // Reload interstitial ad when orientation changes to ensure proper sizing
         adManager.loadInterstitialAd()
+        applyResponsiveControlSizing()
     }
 
     private fun shouldShowStartInterstitial(total: Int): Boolean {
@@ -261,5 +266,93 @@ class GameActivity : AppCompatActivity() {
     private fun updateOverlayVisibility() {
         findViewById<ImageView>(R.id.undo_overlay)?.visibility = if (enableUndo) View.GONE else View.VISIBLE
         findViewById<ImageView>(R.id.redo_overlay)?.visibility = if (enableRedo) View.GONE else View.VISIBLE
+    }
+
+    private fun handleUndoClick() {
+        if (enableUndo) {
+            viewModel.undo()
+            return
+        }
+
+        val shown = adManager.showInterstitialAd {
+            enableUndo = true
+            updateOverlayVisibility()
+            viewModel.undo()
+        }
+
+        // If ad isn't ready, gracefully unlock once and continue gameplay.
+        if (!shown) {
+            enableUndo = true
+            updateOverlayVisibility()
+            viewModel.undo()
+            adManager.loadInterstitialAd()
+        }
+    }
+
+    private fun handleRedoClick() {
+        if (enableRedo) {
+            viewModel.redo()
+            return
+        }
+
+        val shown = adManager.showInterstitialAd {
+            enableRedo = true
+            updateOverlayVisibility()
+            viewModel.redo()
+        }
+
+        // If ad isn't ready, gracefully unlock once and continue gameplay.
+        if (!shown) {
+            enableRedo = true
+            updateOverlayVisibility()
+            viewModel.redo()
+            adManager.loadInterstitialAd()
+        }
+    }
+
+    private fun applyResponsiveControlSizing() {
+        val config = resources.configuration
+        val widthDp = config.screenWidthDp.toFloat()
+        val heightDp = config.screenHeightDp.toFloat()
+        val minDp = min(widthDp, heightDp)
+        val isLandscapeNow = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        val baseScale = (minDp / 360f).coerceIn(0.82f, 1.10f)
+        val orientationScale = if (isLandscapeNow) 0.88f else 1.0f
+        val scale = (baseScale * orientationScale).coerceIn(0.72f, 1.10f)
+
+        val controlTextSp = 14f * scale * 0.90f
+        val statsTextSp = controlTextSp * 0.90f // Keep STATS 10% smaller in all cases.
+
+        applyButtonScale(binding.btnNewGame, controlTextSp, scale)
+        applyButtonScale(binding.btnRestart, controlTextSp, scale)
+        applyButtonScale(binding.btnStats, statsTextSp, scale)
+
+        val iconSizePx = dpToPx(48f * scale)
+        val overlaySizePx = dpToPx(24f * scale)
+
+        resizeFrame(binding.btnUndo, iconSizePx, iconSizePx)
+        resizeFrame(binding.btnRedo, iconSizePx, iconSizePx)
+        resizeFrame(findViewById(R.id.undo_overlay), overlaySizePx, overlaySizePx)
+        resizeFrame(findViewById(R.id.redo_overlay), overlaySizePx, overlaySizePx)
+    }
+
+    private fun applyButtonScale(button: Button, textSp: Float, scale: Float) {
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSp)
+        button.minWidth = dpToPx(76f * scale)
+        val horizontal = dpToPx(12f * scale)
+        val vertical = dpToPx(6f * scale)
+        button.setPaddingRelative(horizontal, vertical, horizontal, vertical)
+    }
+
+    private fun resizeFrame(view: View, widthPx: Int, heightPx: Int) {
+        val lp = view.layoutParams ?: return
+        lp.width = widthPx
+        lp.height = heightPx
+        view.layoutParams = lp
+    }
+
+    private fun dpToPx(dp: Float): Int {
+        return (dp * resources.displayMetrics.density).toInt().coerceAtLeast(1)
     }
 }

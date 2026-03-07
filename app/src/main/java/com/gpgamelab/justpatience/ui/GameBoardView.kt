@@ -29,6 +29,7 @@ import com.gpgamelab.justpatience.model.Verso
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:b_0001"
 
@@ -62,7 +63,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     // Card size multipliers for different orientations
     private var CARD_SIZE_MULTIPLIER = 1.0f  // Will be updated based on orientation
     private val PORTRAIT_CARD_SIZE_MULTIPLIER = 1.0f   // Full size in portrait
-    private val LANDSCAPE_CARD_SIZE_MULTIPLIER = 0.5f  // 50% size in landscape (2x smaller)
+    private val LANDSCAPE_CARD_SIZE_MULTIPLIER = 0.72f  // Larger cards in landscape while still fitting
 
     private val cardPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; style = Paint.Style.FILL }
@@ -79,9 +80,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     // Board and Card dimensions
     private val cardWidthRatio = 1.0f
     private val cardHeightRatio = 2.0f
-    private val cardRadius = 20f
-    private val cardPadding = 16f
-    private val tableauOffset = 40f
+    private var cardRadius = 20f
+    private var cardPadding = 16f
+    private var tableauOffset = 40f
+
+    private val baseCardRadius = 20f
+    private val baseCardPadding = 16f
+    private val baseTableauOffset = 40f
 
     private var boardStartY = 0f
 
@@ -127,6 +132,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun loadTabletopImage() {
+        tabletopBitmap?.recycle()
         tabletopBitmap = try {
             val resourceId = if (isLandscape) {
                 resources.getIdentifier("tabletop_green_card_border_l_01", "drawable", context.packageName)
@@ -174,16 +180,35 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        if (w > 0) {
-            columnX.clear()
-            val usableWidth = w * BOARD_WIDTH_FRACTION
-            val totalPad = cardPadding * (columns + 1)
-            cardW = (usableWidth - totalPad) / (columns + 1) * cardWidthRatio * CARD_SIZE_MULTIPLIER
-            cardH = cardW * cardHeightRatio
+        if (w <= 0 || h <= 0) return
 
-            computeColumnX()
-            computeBoardStartY(h)
-        }
+        // Size cards from both width and height limits so narrow landscape layouts fit.
+        val widthLimitedCardW = calculateWidthLimitedCardWidth(w)
+        val heightLimitedCardW = calculateHeightLimitedCardWidth(h)
+
+        cardW = min(widthLimitedCardW, heightLimitedCardW).coerceAtLeast(28f)
+        cardH = cardW * cardHeightRatio
+
+        val spacingScale = (cardW / 70f).coerceIn(0.70f, 1.15f)
+        cardPadding = baseCardPadding * spacingScale
+        tableauOffset = baseTableauOffset * spacingScale
+        cardRadius = baseCardRadius * spacingScale
+
+        computeColumnX()
+        computeBoardStartY(h)
+    }
+
+    private fun calculateWidthLimitedCardWidth(viewWidth: Int): Float {
+        val usableWidth = viewWidth * BOARD_WIDTH_FRACTION
+        val totalPad = baseCardPadding * (columns + 1)
+        return ((usableWidth - totalPad) / (columns + 1)) * cardWidthRatio * CARD_SIZE_MULTIPLIER
+    }
+
+    private fun calculateHeightLimitedCardWidth(viewHeight: Int): Float {
+        val effectiveHeight = viewHeight * if (isLandscape) 0.95f else 0.92f
+        val cardHeightSlots = if (isLandscape) 3.60f else 4.85f
+        val heightBasedCardH = effectiveHeight / cardHeightSlots
+        return (heightBasedCardH / cardHeightRatio) * CARD_SIZE_MULTIPLIER
     }
 
     private fun computeColumnX() {
@@ -217,8 +242,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawTabletop(canvas)
-        if (!::viewModel.isInitialized) {
-            drawLoading(canvas); return
+        if (!::viewModel.isInitialized || cardW <= 0f || cardH <= 0f || columnX.size < columns) {
+            drawLoading(canvas)
+            return
         }
         drawTopRow(canvas)
         drawTableau(canvas)
@@ -336,11 +362,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun drawCard(canvas: Canvas, card: Card, rect: RectF) {
+        val targetW = max(1, rect.width().toInt())
+        val targetH = max(1, rect.height().toInt())
+
         val bitmap = assetResolver.resolve(
             currentSetId,
             card.recto.imagePath,
-            rect.width().toInt(),
-            rect.height().toInt()
+            targetW,
+            targetH
         )
 
         canvas.drawBitmap(
@@ -354,11 +383,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun drawCardBack(canvas: Canvas, rect: RectF, verso: Verso) {
+        val targetW = max(1, rect.width().toInt())
+        val targetH = max(1, rect.height().toInt())
+
         val bitmap = assetResolver.resolve(
             currentSetId,
             verso.imagePath,
-            rect.width().toInt(),
-            rect.height().toInt()
+            targetW,
+            targetH
         )
 
         canvas.drawBitmap(
@@ -375,8 +407,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val bitmap = assetResolver.resolve(
             currentSetId,
             DEFAULT_STOCK_BACK_IMAGE_PATH,
-            cardW.toInt(),
-            cardH.toInt()
+            max(1, cardW.toInt()),
+            max(1, cardH.toInt())
         )
         canvas.drawBitmap(bitmap, null, rect, null)
         canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
@@ -739,5 +771,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             if (rect.contains(x, y)) return index
         }
         return null
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        tabletopBitmap?.recycle()
+        tabletopBitmap = null
     }
 }
