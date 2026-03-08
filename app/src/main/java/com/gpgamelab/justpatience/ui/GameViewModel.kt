@@ -267,6 +267,38 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return false
     }
 
+    /**
+     * Auto-move all possible cards to foundations.
+     * Priority: tableau to foundation, then waste to foundation.
+     * Returns the number of moves made.
+     */
+    fun performAutoMove(): Int {
+        var moveCount = 0
+        var madeMoveThisPass = true
+
+        // Keep trying until no more moves can be made
+        while (madeMoveThisPass) {
+            madeMoveThisPass = false
+
+            // First try all tableau piles
+            for (tableauIndex in _game.value.tableau.indices) {
+                if (tryAutoMoveTableauTopToFoundation(tableauIndex)) {
+                    moveCount++
+                    madeMoveThisPass = true
+                    break // Restart the check from the beginning
+                }
+            }
+
+            // If no tableau moves, try waste
+            if (!madeMoveThisPass && tryAutoMoveWasteToFoundation()) {
+                moveCount++
+                madeMoveThisPass = true
+            }
+        }
+
+        return moveCount
+    }
+
     fun tryMoveWasteToFoundation(index: Int): Boolean {
         val game = _game.value
         val updated = game.moveWasteToFoundation(index)

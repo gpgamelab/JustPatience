@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -145,6 +146,12 @@ class GameActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btn_restart).setOnClickListener { handleRestartClick() }
         binding.btnStats.setOnClickListener { showStatsDialog() }
+        findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener {
+            val movesMade = viewModel.performAutoMove()
+            if (movesMade == 0) {
+                Toast.makeText(this, "No moves available", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         applyResponsiveControlSizing()
     }
@@ -354,6 +361,7 @@ class GameActivity : AppCompatActivity() {
         applyButtonScale(binding.btnNewGame, controlTextSp, scale)
         applyButtonScale(findViewById(R.id.btn_restart), controlTextSp, scale)
         applyButtonScale(binding.btnStats, statsTextSp, scale)
+        applyButtonScale(findViewById(R.id.btn_auto_move), controlTextSp, scale)
 
         val iconSizePx = dpToPx(48f * scale)
         val overlaySizePx = dpToPx(24f * scale)

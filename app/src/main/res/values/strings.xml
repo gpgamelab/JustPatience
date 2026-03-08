@@ -116,4 +116,6 @@
     <string name="about_privacy_title">Privacy</string>
     <string name="about_privacy_body">This is placeholder privacy content for now.\n\nWe collect only the minimum data needed to run core features (for example: local game state and statistics on your device). Ads may collect limited diagnostic or device data through ad providers.\n\nTODO: Replace this text with your final privacy policy wording before publication.</string>
 
+    <string name="auto_move_button_text">Auto</string>
+
 </resources>

@@ -184,6 +184,18 @@
             android:text="Stats"
             android:maxLines="1"
             android:ellipsize="end"
+            android:layout_marginBottom="6dp"
+            android:textColor="@color/secondary_button_color"
+            app:strokeColor="@color/secondary_button_color" />
+
+        <Button
+            android:id="@+id/btn_auto_move"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/auto_move_button_text"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:textColor="@color/secondary_button_color"
             app:strokeColor="@color/secondary_button_color" />
 
