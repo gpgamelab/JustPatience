@@ -40,6 +40,7 @@ class GameActivity : AppCompatActivity() {
     // Ad enable flags for undo and redo
     private var enableUndo = false
     private var enableRedo = false
+    private var enableRestart = false
 
     // Ad frequency counters
     private var totalGamesPlayed: Int = 0
@@ -138,10 +139,11 @@ class GameActivity : AppCompatActivity() {
             maybeShowStartInterstitial()
             enableUndo = false
             enableRedo = false
+            enableRestart = false
             updateOverlayVisibility()
             viewModel.startNewGame()
         }
-        binding.btnRestart.setOnClickListener { showRestartDialog() }
+        findViewById<Button>(R.id.btn_restart).setOnClickListener { handleRestartClick() }
         binding.btnStats.setOnClickListener { showStatsDialog() }
 
         applyResponsiveControlSizing()
@@ -171,6 +173,7 @@ class GameActivity : AppCompatActivity() {
                 maybeShowStartInterstitial()
                 enableUndo = false
                 enableRedo = false
+                enableRestart = false
                 updateOverlayVisibility()
                 viewModel.startNewGame()
             }
@@ -216,6 +219,7 @@ class GameActivity : AppCompatActivity() {
                 maybeShowStartInterstitial()
                 enableUndo = false
                 enableRedo = false
+                enableRestart = false
                 updateOverlayVisibility()
                 viewModel.startNewGame()
             }
@@ -267,6 +271,7 @@ class GameActivity : AppCompatActivity() {
     private fun updateOverlayVisibility() {
         findViewById<ImageView>(R.id.undo_overlay)?.visibility = if (enableUndo) View.GONE else View.VISIBLE
         findViewById<ImageView>(R.id.redo_overlay)?.visibility = if (enableRedo) View.GONE else View.VISIBLE
+        findViewById<ImageView>(R.id.restart_overlay)?.visibility = if (enableRestart) View.GONE else View.VISIBLE
     }
 
     private fun handleUndoClick() {
@@ -311,6 +316,27 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleRestartClick() {
+        if (enableRestart) {
+            showRestartDialog()
+            return
+        }
+
+        val shown = adManager.showRewardedAd {
+            enableRestart = true
+            updateOverlayVisibility()
+            showRestartDialog()
+        }
+
+        // If ad isn't ready, gracefully unlock once and continue gameplay.
+        if (!shown) {
+            enableRestart = true
+            updateOverlayVisibility()
+            showRestartDialog()
+            adManager.loadRewardedAd()
+        }
+    }
+
     private fun applyResponsiveControlSizing() {
         val config = resources.configuration
         val widthDp = config.screenWidthDp.toFloat()
@@ -326,7 +352,7 @@ class GameActivity : AppCompatActivity() {
         val statsTextSp = controlTextSp * 0.90f // Keep STATS 10% smaller in all cases.
 
         applyButtonScale(binding.btnNewGame, controlTextSp, scale)
-        applyButtonScale(binding.btnRestart, controlTextSp, scale)
+        applyButtonScale(findViewById(R.id.btn_restart), controlTextSp, scale)
         applyButtonScale(binding.btnStats, statsTextSp, scale)
 
         val iconSizePx = dpToPx(48f * scale)
@@ -336,6 +362,7 @@ class GameActivity : AppCompatActivity() {
         resizeFrame(binding.btnRedo, iconSizePx, iconSizePx)
         resizeFrame(findViewById(R.id.undo_overlay), overlaySizePx, overlaySizePx)
         resizeFrame(findViewById(R.id.redo_overlay), overlaySizePx, overlaySizePx)
+        resizeFrame(findViewById(R.id.restart_overlay), overlaySizePx, overlaySizePx)
     }
 
     private fun applyButtonScale(button: Button, textSp: Float, scale: Float) {
