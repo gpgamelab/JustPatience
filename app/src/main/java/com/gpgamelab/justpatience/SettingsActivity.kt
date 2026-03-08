@@ -16,14 +16,6 @@ import com.gpgamelab.justpatience.viewmodel.SettingsViewModel
  */
 class SettingsActivity : AppCompatActivity() {
 
-//    // Initialize View Binding
-//    private lateinit var binding: ActivitySettingsBinding
-//
-//    // Initialize ViewModels using delegates
-//    private val settingsViewModel: SettingsViewModel by viewModels()
-//    private val authViewModel: AuthViewModel by viewModels()
-
-
     //    private lateinit var authViewModel: AuthViewModel
     private val authViewModel: AuthViewModel by viewModels()
 
@@ -31,107 +23,6 @@ class SettingsActivity : AppCompatActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
 
     private lateinit var binding: ActivitySettingsBinding
-
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        // Use View Binding to inflate the layout
-//        binding = ActivitySettingsBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
-//
-//        // Setup the Toolbar
-//        val toolbar: Toolbar = binding.toolbar
-//        setSupportActionBar(toolbar)
-//        supportActionBar?.title = getString(R.string.title_settings)
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-//        toolbar.setNavigationOnClickListener { finish() }
-//
-//        // --- Event Listeners ---
-//
-//        // Toggling SFX Switch
-//        binding.switchSfx.setOnCheckedChangeListener { _, isChecked ->
-//            // Only call ViewModel if the change is from the user, not the initial observation update
-//            Log.d("SettingsActivity", "SFX Switch changed to $isChecked")
-//            settingsViewModel.toggleSound() // ViewModel handles the logic and persistence
-//        }
-//
-//        // Toggling Hints Switch
-//        binding.switchHints.setOnCheckedChangeListener { _, isChecked ->
-//            Log.d("SettingsActivity", "Hints Switch changed to $isChecked")
-//            settingsViewModel.toggleHints()
-//        }
-//
-//        // Listener for Logout button
-//        binding.btnSignOut.setOnClickListener { showLogoutDialog() }
-//
-//        // Listener for Reset Stats button
-//        binding.btnResetStats.setOnClickListener { showResetStatsDialog() }
-//
-//        // --- Data Observers ---
-//
-//        // Observe User Settings and update the UI controls
-//        lifecycleScope.launch {
-//            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                settingsViewModel.userSettings.collect { settings ->
-//                    settings?.let {
-//                        // Crucial: setChecked without triggering the listener on load/update
-//                        binding.switchSfx.isChecked = it.isSoundEnabled
-//                        binding.switchHints.isChecked = it.isHintsEnabled
-//                        Log.d("SettingsActivity", "UI updated: Sound=${it.isSoundEnabled}, Hints=${it.isHintsEnabled}")
-//                    }
-//                }
-//            }
-//        }
-//
-//        // Observe User Stats and update the TextViews
-//        lifecycleScope.launch {
-//            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                settingsViewModel.userStats.collect { stats ->
-//                    stats?.let {
-//                        binding.tvGamesPlayedValue.text = it.gamesPlayed.toString()
-//                        binding.tvGamesWonValue.text = it.gamesWon.toString()
-//                        binding.tvHighScoreValue.text = it.highScore.toString()
-//
-//                        val winRate = if (it.gamesPlayed > 0) (it.gamesWon.toDouble() / it.gamesPlayed * 100) else 0.0
-//                        binding.tvWinRateValue.text = getString(R.string.win_rate_format, String.format("%.1f", winRate))
-//                    }
-//                }
-//            }
-//        }
-//
-//        // Observe User Data (for login status)
-//        lifecycleScope.launch {
-//            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                settingsViewModel.userData.collect { userData ->
-//                    val statusText = if (userData?.isLoggedIn == true) {
-//                        getString(R.string.status_logged_in)
-//                    } else {
-//                        getString(R.string.status_guest_user)
-//                    }
-//                    binding.tvUserStatus.text = statusText
-//                    // Update logout button text/visibility if needed, based on isLoggedIn
-//                }
-//            }
-//        }
-//
-//        // Observe Logout Result from AuthViewModel
-//        lifecycleScope.launch {
-//            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                authViewModel.logoutStatus.collect { isLoggedOut ->
-//                    if (isLoggedOut) {
-//                        Toast.makeText(this@SettingsActivity, "Logged out successfully.", Toast.LENGTH_SHORT).show()
-//                        // Navigate back to LoginActivity
-//                        val intent = Intent(this@SettingsActivity, LoginActivity::class.java).apply {
-//                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-//                        }
-//                        startActivity(intent)
-//                        finish()
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

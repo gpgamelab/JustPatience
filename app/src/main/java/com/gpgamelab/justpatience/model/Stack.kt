@@ -170,8 +170,6 @@ sealed class CardStack(
 
 class Stock(cards: MutableList<Card>) : CardStack(StackType.STOCK, cards) {
 
-    //    override fun canPush(card: Card): Boolean = false       // No pushing during play
-//    override fun canPush(cards: List<Card>): Boolean = false
     override fun canPop(): Boolean = cards.isNotEmpty()
 
     /** Draws one card (or more if your rules allow it) */

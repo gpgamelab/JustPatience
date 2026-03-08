@@ -181,32 +181,6 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-//    private fun setAuthMode(isLogin: Boolean) {
-//        // Fix for 'login_title' (using the new resource)
-//        binding.tvTitle.text = getString(
-//            if (isLogin) R.string.login_title_text else R.string.register_title_text
-//        )
-//
-//        // Fix for 'login' (using R.string.login_button_text)
-//        binding.btnAuthenticate.text = getString(
-//            if (isLogin) R.string.login_title_text else R.string.register_title //
-//        )
-//
-//        // Use the existing switch strings
-//        binding.tvSwitchMode.text = getString(
-//            if (isLogin) R.string.switch_to_register else R.string.switch_to_login //
-//        )
-//
-//        // Show/Hide the email field for registration
-//        binding.tilEmail.visibility = if (isLogin) View.GONE else View.VISIBLE
-//
-//        // Fix for 'password' (using R.string.password_hint)
-//        binding.tilPassword.hint = getString(R.string.password_hint)
-//
-//        // Clear email on switch
-//        binding.etEmail.text?.clear()
-//    }
-
     private fun setAuthMode(isLogin: Boolean) {
         // Fix for 'login_title' (using the new resource)
         binding.tvTitle.text = getString(

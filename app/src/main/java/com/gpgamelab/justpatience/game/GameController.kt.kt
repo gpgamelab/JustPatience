@@ -16,56 +16,13 @@ import kotlinx.coroutines.sync.withLock
  */
 class GameController {
 
-    // Move history for undo (stores minimal info to reverse a move)
-//    private val moveHistory = ArrayDeque<Move>()
-
     // Mutex for thread-safety if called from multiple coroutines
     private val mutex = Mutex()
 
     suspend fun newGameWithClearHistory(): Game = mutex.withLock {
         val g = Game.newGame()
-//        moveHistory.clear()
         g
     }
-
-//    suspend fun drawFromStock(game: Game): Game = mutex.withLock {
-//        // Work on copies where needed (Game is a data class)
-//        val stock = game.stock
-//        val waste = game.waste
-//
-//        // If stock has cards, draw one to waste
-//        val drawn = stock.draw(1)
-//        if (drawn != null && drawn.isNotEmpty()) {
-//            drawn.forEach { waste.push(it.copy(isFaceUp = true)) }
-//
-////            moveHistory.addLast(Move.Draw(drawn))
-//            return game.copy(
-//                stock = stock,
-//                waste = waste,
-//                moves = game.moves + 1,
-//                score = game.score + 5
-//            )
-//        } else {
-//            // Reset: move all waste back to stock (face-down), preserving order
-//            val wasteCards = waste.asList().toList()
-//            if (wasteCards.isEmpty()) return game // nothing to do
-//
-//            // clear waste, put reversed into stock face down
-//            wasteCards.reversed().forEach {
-//                stock.push(it.copy(isFaceUp = false))
-//            }
-//            waste.take(wasteCards.size) // remove them from waste (take returns, but also removes)
-//
-////            moveHistory.addLast(Move.StockReset(wasteCards))
-//            // optional scoring rule: penalty for reset
-//            return game.copy(
-//                stock = stock,
-//                waste = waste,
-//                moves = game.moves + 1,
-//                score = maxOf(0, game.score - 100)
-//            )
-//        }
-//    }
 
     /**
      * Attempt moving cards from a source stack to a target stack.
@@ -102,8 +59,6 @@ class GameController {
         // Build list of cards to move
         val cardsToMove: List<Card> = when (sourceType) {
             StackType.TABLEAU -> {
-                // need to use asList() and compute sublist by index
-//                val srcList = source.asList()
                 val srcList = source.asList().toList()
                 if (cardIndexInSource < 0 || cardIndexInSource >= srcList.size) return Pair(
                     game,
@@ -176,96 +131,6 @@ class GameController {
 
         return Pair(finalGame, true)
     }
-
-//    suspend fun undo(game: Game): Game = mutex.withLock {
-//        val last = moveHistory.removeLastOrNull() ?: return game
-//        when (last) {
-//            is Move.Draw -> {
-//                // Move drawn cards back from waste to stock (face-down)
-//                val drawn = last.cards
-//                drawn.forEach {
-//                    // remove from waste (topmost)
-//                    if (game.waste.peek() == it) {
-//                        game.waste.pop()
-//                    }
-//                    it.isFaceUp = false
-//                    game.stock.push(it)
-//                }
-//                return game.copy(
-//                    stock = game.stock,
-//                    waste = game.waste,
-//                    moves = game.moves + 1,
-//                    score = maxOf(0, game.score - 5)
-//                )
-//            }
-//
-//            is Move.StockReset -> {
-//                // Move the cards from stock back to waste (they were moved reversed)
-//                last.wasteCards.forEach {
-//                    // remove from stock (top order) and push face-up to waste
-//                    if (game.stock.peek() == it) {
-//                        game.stock.pop()
-//                    }
-//                    it.isFaceUp = true
-//                    game.waste.push(it)
-//                }
-//                return game.copy(
-//                    stock = game.stock,
-//                    waste = game.waste,
-//                    moves = game.moves + 1,
-//                    score = game.score + 100
-//                )
-//            }
-//
-//            is Move.CardMove -> {
-//                // Reverse card move: remove from target, add back to source
-//                val targetStack = when (last.targetType) {
-//                    StackType.STOCK -> game.stock
-//                    StackType.WASTE -> game.waste
-//                    StackType.TABLEAU -> game.tableau.getOrNull(last.targetIndex)
-//                    StackType.FOUNDATION -> game.foundations.getOrNull(last.targetIndex)
-//                } ?: return game
-//
-//                val sourceStack = when (last.sourceType) {
-//                    StackType.STOCK -> game.stock
-//                    StackType.WASTE -> game.waste
-//                    StackType.TABLEAU -> game.tableau.getOrNull(last.sourceIndex)
-//                    StackType.FOUNDATION -> game.foundations.getOrNull(last.sourceIndex)
-//                } ?: return game
-//
-//                // remove last.cards.size from target (assumes they are at end)
-//                if (last.cards.size == 1) {
-//                    targetStack.pop()
-//                    sourceStack.push(last.cards.first())
-//                } else {
-//                    // For sequence moves, pop N from target and push back in order
-//                    val taken = (targetStack as? TableauPile)?.take(last.cards.size) ?: run {
-//                        // fallback: remove one-by-one if needed
-//                        last.cards.forEach { targetStack.pop() }
-//                        null
-//                    }
-//
-//                    if (taken != null) {
-//                        // push back onto source
-//                        taken.forEach { sourceStack.push(it) }
-//                    } else {
-//                        // best-effort: push the recorded cards back
-//                        last.cards.forEach { sourceStack.push(it) }
-//                    }
-//                }
-//
-//                // If flip was done during the original move, flip it back
-//                if (last.flipped && sourceStack is TableauPile) {
-//                    sourceStack.peek()?.isFaceUp = false
-//                }
-//
-//                return game.copy(
-//                    moves = game.moves + 1,
-//                    score = maxOf(0, game.score - last.scoreDelta)
-//                )
-//            }
-//        }
-//    }
 
     private fun checkWinCondition(game: Game): Boolean {
         // Win when all foundation piles have 13 cards

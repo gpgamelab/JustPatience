@@ -17,7 +17,6 @@ class AndroidAssetResolver(
     private val context: Context
 ) : AssetResolver {
 
-    //    private val bitmapCache = mutableMapOf<String, Bitmap>()
     private val cache = mutableMapOf<CacheKey, Bitmap>()
 
     override fun resolve(
@@ -89,79 +88,6 @@ class AndroidAssetResolver(
             context.packageName
         )
     }
-
-//    override fun resolve(
-//        setId: String,
-//        path: String,
-//        width: Int,
-//        height: Int
-//    ): Bitmap {
-//
-//        val key = CacheKey(setId, path, width, height)
-//
-//        cache[key]?.let { return it }
-//
-//        val resourceId = resolveResourceId(setId, path)
-//
-//        val original = BitmapFactory.decodeResource(context.resources, resourceId)
-//            ?: throw AssetResolutionException("Unable to decode resource: $path")
-//
-//        val scaled = Bitmap.createScaledBitmap(original, width, height, true)
-//
-//        cache[key] = scaled
-//
-//        return scaled
-//    }
-//
-//    private fun resolveResourceId(setId: String, path: String): Int {
-//        val futureFullName = "${setId}_$path"
-//        Log.d("AssetResolver", "ZYZZX Resolving futureFullName: $futureFullName")
-//        val fullName = "${path}"
-//        Log.d("AssetResolver", "ZYZZX Resolving path: $path")
-//        Log.d("AssetResolver", "ZYZZX Resolving fullName: $fullName")
-//        return context.resources.getIdentifier(
-//            fullName,
-//            "drawable",
-//            context.packageName
-//        )
-//    }
-
-    //    override fun resolve(imagePath: String, targetW: Int, targetH: Int): Bitmap {
-//        val resId = when {
-//            imagePath.startsWith("drawable:") -> {
-//                val name = imagePath.removePrefix("drawable:")
-//                context.resources.getIdentifier(name, "drawable", context.packageName)
-//            }
-//            else -> throw AssetResolutionException("Unknown imagePath scheme: $imagePath")
-//        }
-//
-//        if (resId == 0) {
-//            throw AssetResolutionException("Drawable not found for $imagePath")
-//        }
-//
-//        // 1️⃣ Decode bounds only
-//        val bounds = BitmapFactory.Options().apply {
-//            inJustDecodeBounds = true
-//        }
-//        BitmapFactory.decodeResource(context.resources, resId, bounds)
-//
-//        // 2️⃣ Calculate sampling
-//        val sampleSize = calculateInSampleSize(
-//            bounds.outWidth,
-//            bounds.outHeight,
-//            targetW,
-//            targetH
-//        )
-//
-//        // 3️⃣ Decode scaled bitmap
-//        val opts = BitmapFactory.Options().apply {
-//            inSampleSize = sampleSize
-//            inPreferredConfig = Bitmap.Config.ARGB_8888
-//        }
-//
-//        return BitmapFactory.decodeResource(context.resources, resId, opts)
-//            ?: throw AssetResolutionException("Failed to decode bitmap: $imagePath")
-//    }
 
     override fun purge(setId: String) {
         val keysToRemove = cache.keys.filter { it.setId == setId }
