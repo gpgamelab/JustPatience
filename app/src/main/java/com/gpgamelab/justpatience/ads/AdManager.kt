@@ -9,6 +9,8 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.google.android.gms.ads.FullScreenContentCallback
 
 /**
@@ -18,6 +20,7 @@ import com.google.android.gms.ads.FullScreenContentCallback
 class AdManager(private val context: Context) {
 
     private var mInterstitialAd: InterstitialAd? = null
+    private var mRewardedAd: RewardedAd? = null
     private var showOnLoad = false
     private var adDismissedCallback: (() -> Unit)? = null
 
@@ -28,8 +31,10 @@ class AdManager(private val context: Context) {
         // Test Ad Unit IDs (use these for development/testing)
         const val TEST_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
         const val TEST_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+        const val TEST_REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
         const val PRODUCTION_BANNER_AD_UNIT_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"
         const val PRODUCTION_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"
+        const val PRODUCTION_REWARDED_AD_UNIT_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"
 
         // For now, we'll use test ads
         private var isTestMode = true
@@ -155,6 +160,69 @@ class AdManager(private val context: Context) {
 
     fun showInterstitialAd() {
         showInterstitialAd(null)
+    }
+
+    /**
+     * Load a rewarded ad.
+     */
+    fun loadRewardedAd() {
+        try {
+            val adRequest = AdRequest.Builder().build()
+            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID
+
+            RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(rewardedAd: RewardedAd) {
+                    mRewardedAd = rewardedAd
+                    Log.d(TAG, "Rewarded ad loaded successfully")
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e(TAG, "Rewarded ad failed to load: ${loadAdError.message}")
+                    mRewardedAd = null
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load rewarded ad", e)
+        }
+    }
+
+    /**
+     * Show rewarded ad if available.
+     * @return true if ad was shown, false if unavailable.
+     */
+    fun showRewardedAd(onCompleted: (() -> Unit)? = null): Boolean {
+        val ad = mRewardedAd
+        if (ad == null) {
+            Log.d(TAG, "Rewarded ad not ready to show")
+            return false
+        }
+
+        val completion = onCompleted ?: adDismissedCallback
+
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad dismissed")
+                mRewardedAd = null
+                loadRewardedAd()
+                completion?.invoke()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                Log.e(TAG, "Rewarded ad failed to show: ${adError.message}")
+                mRewardedAd = null
+                loadRewardedAd()
+                completion?.invoke()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad showed full screen content")
+            }
+        }
+
+        ad.show(context as android.app.Activity) { rewardItem ->
+            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+        }
+        return true
     }
 
     /**

@@ -71,6 +71,7 @@ class GameActivity : AppCompatActivity() {
         adManager.initializeAds()
         adManager.loadBannerAd(binding.adView)
         adManager.loadInterstitialAd()
+        adManager.loadRewardedAd()
 
         statsManager = GameStatsManager(applicationContext)
 
@@ -274,7 +275,7 @@ class GameActivity : AppCompatActivity() {
             return
         }
 
-        val shown = adManager.showInterstitialAd {
+        val shown = adManager.showRewardedAd {
             enableUndo = true
             updateOverlayVisibility()
             viewModel.undo()
@@ -285,7 +286,7 @@ class GameActivity : AppCompatActivity() {
             enableUndo = true
             updateOverlayVisibility()
             viewModel.undo()
-            adManager.loadInterstitialAd()
+            adManager.loadRewardedAd()
         }
     }
 
@@ -295,7 +296,7 @@ class GameActivity : AppCompatActivity() {
             return
         }
 
-        val shown = adManager.showInterstitialAd {
+        val shown = adManager.showRewardedAd {
             enableRedo = true
             updateOverlayVisibility()
             viewModel.redo()
@@ -306,7 +307,7 @@ class GameActivity : AppCompatActivity() {
             enableRedo = true
             updateOverlayVisibility()
             viewModel.redo()
-            adManager.loadInterstitialAd()
+            adManager.loadRewardedAd()
         }
     }
 
