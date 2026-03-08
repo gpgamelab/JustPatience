@@ -49,6 +49,12 @@
         <!-- 3. Settings Activity -->
         <activity android:name=".SettingsActivity" android:exported="false" />
 
+        <!-- 3b. About Activity -->
+        <activity
+            android:name=".ui.AboutActivity"
+            android:exported="false"
+            android:label="@string/about_title" />
+
         <!-- 4. Game Activity: Main gameplay screen -->
         <activity
             android:name=".ui.GameActivity"

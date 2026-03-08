@@ -103,4 +103,17 @@
 
     <string name="zyzzx">Zyzzx</string>
 
+    <!-- About Page Strings -->
+    <string name="about_button_text">About</string>
+    <string name="about_title">About</string>
+    <string name="about_heading">About JustPatience</string>
+    <string name="about_summary">JustPatience is a modern solitaire experience built for quick play sessions and long relaxing runs. This About page uses sample content you can replace with your own branding and details later.</string>
+    <string name="about_version_title">App Version</string>
+    <string name="about_version_placeholder">Loading version...</string>
+    <string name="about_version_value_format">Version %1$s (Build %2$d)</string>
+    <string name="about_coming_features_title">Coming Features (Next 1-2 Releases)</string>
+    <string name="about_coming_features_list">- In-app purchases, including premium subscription to remove most ads\n- In-game store to buy content\n- Selectable tabletop backgrounds\n- Selectable card backs and card faces\n- Cool animations\n- Sound effects\n- Theme packs\n- And more</string>
+    <string name="about_additional_info_title">Additional Info (Example)</string>
+    <string name="about_additional_info_body">Developer: GP Game Lab\nContact: support@example.com\nWebsite: https://example.com\nPrivacy Policy: https://example.com/privacy\nTerms of Use: https://example.com/terms\n\nThank you for playing JustPatience! Your feedback helps shape future updates.</string>
+
 </resources>

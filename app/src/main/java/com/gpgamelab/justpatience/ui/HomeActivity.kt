@@ -98,6 +98,14 @@ class HomeActivity : AppCompatActivity() {
                     Log.e(TAG, "Error showing shop dialog", e)
                 }
             }
+
+            findViewById<Button>(R.id.btn_about)?.setOnClickListener {
+                try {
+                    startActivity(Intent(this, AboutActivity::class.java))
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error starting AboutActivity", e)
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error setting up listeners", e)
         }
@@ -178,17 +186,3 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

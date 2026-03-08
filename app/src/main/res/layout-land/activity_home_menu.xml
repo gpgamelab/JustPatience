@@ -246,6 +246,18 @@
                 app:strokeColor="@color/secondary_button_color" />
 
             <Button
+                android:id="@+id/btn_about"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/about_button_text"
+                android:textSize="14sp"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/secondary_button_color"
+                app:strokeColor="@color/secondary_button_color" />
+
+            <Button
                 android:id="@+id/btn_shop"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
