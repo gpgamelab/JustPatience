@@ -3,6 +3,7 @@ package com.gpgamelab.justpatience.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Menu
@@ -12,6 +13,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -48,6 +50,8 @@ class GameActivity : AppCompatActivity() {
     private var pendingHomeStartInterstitial: Boolean = false
     private var handledHomeStartInterstitial: Boolean = false
     private var winDialogShowing: Boolean = false
+    private var winCelebrationPlayed: Boolean = false
+    private var isWinVideoPlaying: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,7 +103,11 @@ class GameActivity : AppCompatActivity() {
                         binding.tvScore.text = getString(R.string.score_format, g.score)
                         binding.tvMoves.text = getString(R.string.moves_format, g.moves)
 
-                        if (g.status == GameStatus.WON) showGameEndDialog(true)
+                        if (g.status != GameStatus.WON) {
+                            winCelebrationPlayed = false
+                        } else {
+                            showWinCelebrationThenDialog()
+                        }
                     }
                 }
 
@@ -141,6 +149,7 @@ class GameActivity : AppCompatActivity() {
             enableUndo = false
             enableRedo = false
             enableRestart = false
+            winCelebrationPlayed = false
             updateOverlayVisibility()
             viewModel.startNewGame()
         }
@@ -181,6 +190,7 @@ class GameActivity : AppCompatActivity() {
                 enableUndo = false
                 enableRedo = false
                 enableRestart = false
+                winCelebrationPlayed = false
                 updateOverlayVisibility()
                 viewModel.startNewGame()
             }
@@ -227,6 +237,7 @@ class GameActivity : AppCompatActivity() {
                 enableUndo = false
                 enableRedo = false
                 enableRestart = false
+                winCelebrationPlayed = false
                 updateOverlayVisibility()
                 viewModel.startNewGame()
             }
@@ -242,12 +253,14 @@ class GameActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         // Avoid recording losses on transient pauses (ads, dialogs, rotation).
+        stopWinVideoPlayback()
         viewModel.saveGame()
     }
 
     override fun onStop() {
         super.onStop()
         if (isFinishing) {
+            stopWinVideoPlayback()
             viewModel.stopGame()
         }
     }
@@ -390,5 +403,91 @@ class GameActivity : AppCompatActivity() {
 
     private fun dpToPx(dp: Float): Int {
         return (dp * resources.displayMetrics.density).toInt().coerceAtLeast(1)
+    }
+
+    private fun showWinCelebrationThenDialog() {
+        if (isFinishing || isDestroyed || winDialogShowing || isWinVideoPlaying) return
+
+        if (winCelebrationPlayed) {
+            showGameEndDialog(true)
+            return
+        }
+
+        winCelebrationPlayed = true
+
+        val played = playWinVideo {
+            showGameEndDialog(true)
+        }
+
+        if (!played) {
+            showGameEndDialog(true)
+        }
+    }
+
+    private fun playWinVideo(onFinished: () -> Unit): Boolean {
+        // Weighted video selection: name to weight (higher = more likely)
+        // Weights: 50% chance for video_01, 30% for video_02, 20% for video_03
+        val weightedVideos = listOf(
+            "gpgameslab_solitaire_win_01" to 50,
+            "gpgameslab_solitaire_win_02" to 30,
+            "gpgameslab_solitaire_win_03" to 20
+        )
+
+        // Pick a weighted random video
+        val randomVideoName = weightedVideos.weightedRandom()
+        val resId = resources.getIdentifier(randomVideoName, "raw", packageName)
+
+        if (resId == 0) {
+            return false
+        }
+
+        val overlay = findViewById<FrameLayout>(R.id.win_video_overlay) ?: return false
+        val videoView = findViewById<VideoView>(R.id.win_video_view) ?: return false
+
+        isWinVideoPlaying = true
+        overlay.visibility = View.VISIBLE
+
+        val finishPlayback = {
+            stopWinVideoPlayback()
+            onFinished()
+        }
+
+        videoView.setOnCompletionListener { finishPlayback() }
+        videoView.setOnErrorListener { _, _, _ ->
+            finishPlayback()
+            true
+        }
+
+        videoView.setVideoURI(Uri.parse("android.resource://$packageName/$resId"))
+        videoView.start()
+        return true
+    }
+
+    private fun stopWinVideoPlayback() {
+        val overlay = findViewById<FrameLayout>(R.id.win_video_overlay)
+        val videoView = findViewById<VideoView>(R.id.win_video_view)
+
+        videoView?.stopPlayback()
+        overlay?.visibility = View.GONE
+        isWinVideoPlaying = false
+    }
+
+    /**
+     * Extension function for weighted random selection.
+     * Takes a list of (item, weight) pairs and returns a randomly selected item
+     * based on the weights.
+     */
+    private fun <T> List<Pair<T, Int>>.weightedRandom(): T {
+        val totalWeight = this.sumOf { it.second }
+        var random = (0 until totalWeight).random()
+
+        for ((item, weight) in this) {
+            if (random < weight) {
+                return item
+            }
+            random -= weight
+        }
+
+        return this.first().first // Fallback (should never reach here)
     }
 }
