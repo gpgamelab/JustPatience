@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,19 @@ plugins {
     id("com.google.gms.google-services")
     // KSP plugin for annotation processing (required for Room)
     alias(libs.plugins.ksp)
+}
+
+val useProductionAds = providers.gradleProperty("useProductionAds")
+    .map(String::toBoolean)
+    .orElse(false)
+    .get()
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+val hasReleaseKeystore = keystorePropertiesFile.exists()
+
+if (hasReleaseKeystore) {
+    FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
 
 android {
@@ -23,14 +39,41 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            resValue("string", "banner_ad_unit_id", "ca-app-pub-3940256099942544/6300978111")
+            resValue("bool", "use_test_ad_ids", "true")
+        }
         release {
+            val releaseBannerId = if (useProductionAds) {
+                "ca-app-pub-7092037186763886/6653974301"
+            } else {
+                "ca-app-pub-3940256099942544/6300978111"
+            }
+            resValue("string", "banner_ad_unit_id", releaseBannerId)
+            resValue("bool", "use_test_ad_ids", (!useProductionAds).toString())
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                logger.warn("keystore.properties not found; release is currently using debug signing")
+                signingConfigs.getByName("debug")
+            }
         }
     }
     compileOptions {

@@ -23,19 +23,25 @@ object AdConfig {
      * 2. Add your app and create a banner ad unit
      * 3. Replace the test ID below with your production ID
      */
-    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
-    
+//    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
+    const val BANNER_AD_UNIT_ID = "ca-app-pub-7092037186763886/6653974301"
+
     /**
      * Full-screen (Interstitial) Ad Unit ID - For future implementation
      * TEST UNIT ID (for development): ca-app-pub-3940256099942544/1033173712
      */
-    const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+//    const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+    const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-7092037186763886/9723495353"
     
     /**
      * Rewarded Ad Unit ID - For future implementation
      * TEST UNIT ID (for development): ca-app-pub-3940256099942544/5224354917
      */
-    const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+//    const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+    const val REWARDED_AD_UNIT_ID = "ca-app-pub-7092037186763886/6817625839"
+    const val REWARDED_AD_UNIT_ID_UndoBtn = "ca-app-pub-7092037186763886/8518224896"
+    const val REWARDED_AD_UNIT_ID_RedoBtn = "ca-app-pub-7092037186763886/5983415109"
+    const val REWARDED_AD_UNIT_ID_RestartBtn = "ca-app-pub-7092037186763886/8929288432"
     
     /**
      * Whether to use test ads during development

@@ -2,6 +2,7 @@ package com.gpgamelab.justpatience.ads
 
 import android.content.Context
 import android.util.Log
+import com.gpgamelab.justpatience.R
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -32,12 +33,21 @@ class AdManager(private val context: Context) {
         const val TEST_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
         const val TEST_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
         const val TEST_REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
-        const val PRODUCTION_BANNER_AD_UNIT_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"
-        const val PRODUCTION_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"
-        const val PRODUCTION_REWARDED_AD_UNIT_ID = "ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"
 
-        // For now, we'll use test ads
-        private var isTestMode = true
+        const val PRODUCTION_BANNER_AD_UNIT_ID = "ca-app-pub-7092037186763886/6653974301"
+        const val PRODUCTION_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-7092037186763886/9723495353"
+        const val PRODUCTION_REWARDED_AD_UNIT_ID = "ca-app-pub-7092037186763886/6817625839"
+        const val PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN = "ca-app-pub-7092037186763886/8518224896"
+        const val PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN = "ca-app-pub-7092037186763886/5983415109"
+        const val PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN = "ca-app-pub-7092037186763886/8929288432"
+
+        // Keep all ad types aligned with the current build unless explicitly overridden.
+        private var isTestMode = false
+    }
+
+    init {
+        isTestMode = context.resources.getBoolean(R.bool.use_test_ad_ids)
+        Log.d(TAG, "Ad mode initialized: ${if (isTestMode) "TEST" else "PRODUCTION"}")
     }
 
     /**
@@ -55,15 +65,10 @@ class AdManager(private val context: Context) {
 
     /**
      * Load a banner ad into the provided AdView.
-     * @param adView The AdView to load the ad into
+     * @param adView The XML AdView to load
      */
     fun loadBannerAd(adView: AdView) {
         try {
-            val adRequest = AdRequest.Builder().build()
-
-            // adUnitId is set in XML, so no need to set here
-            adView.loadAd(adRequest)
-
             adView.adListener = object : AdListener() {
                 override fun onAdLoaded() {
                     Log.d(TAG, "Banner ad loaded successfully")
@@ -86,7 +91,10 @@ class AdManager(private val context: Context) {
                 }
             }
 
-            Log.d(TAG, "Banner ad loading started")
+            val adRequest = AdRequest.Builder().build()
+            adView.loadAd(adRequest)
+
+            Log.d(TAG, "Banner ad loading started with XML unit ID: ${adView.adUnitId}")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load banner ad", e)
         }
@@ -185,6 +193,66 @@ class AdManager(private val context: Context) {
             Log.e(TAG, "Failed to load rewarded ad", e)
         }
     }
+    fun loadRewardedAdUndoBtn() {
+        try {
+            val adRequest = AdRequest.Builder().build()
+            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN
+
+            RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(rewardedAd: RewardedAd) {
+                    mRewardedAd = rewardedAd
+                    Log.d(TAG, "Rewarded ad loaded successfully")
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e(TAG, "Rewarded ad failed to load: ${loadAdError.message}")
+                    mRewardedAd = null
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load rewarded ad", e)
+        }
+    }
+    fun loadRewardedAdRedoBtn() {
+        try {
+            val adRequest = AdRequest.Builder().build()
+            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN
+
+            RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(rewardedAd: RewardedAd) {
+                    mRewardedAd = rewardedAd
+                    Log.d(TAG, "Rewarded ad loaded successfully")
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e(TAG, "Rewarded ad failed to load: ${loadAdError.message}")
+                    mRewardedAd = null
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load rewarded ad", e)
+        }
+    }
+    fun loadRewardedAdRestartBtn() {
+        try {
+            val adRequest = AdRequest.Builder().build()
+            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN
+
+            RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(rewardedAd: RewardedAd) {
+                    mRewardedAd = rewardedAd
+                    Log.d(TAG, "Rewarded ad loaded successfully")
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e(TAG, "Rewarded ad failed to load: ${loadAdError.message}")
+                    mRewardedAd = null
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load rewarded ad", e)
+        }
+    }
 
     /**
      * Show rewarded ad if available.
@@ -211,6 +279,108 @@ class AdManager(private val context: Context) {
                 Log.e(TAG, "Rewarded ad failed to show: ${adError.message}")
                 mRewardedAd = null
                 loadRewardedAd()
+                completion?.invoke()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad showed full screen content")
+            }
+        }
+
+        ad.show(context as android.app.Activity) { rewardItem ->
+            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+        }
+        return true
+    }
+    fun showRewardedAdUndoBtn(onCompleted: (() -> Unit)? = null): Boolean {
+        val ad = mRewardedAd
+        if (ad == null) {
+            Log.d(TAG, "Rewarded ad not ready to show")
+            return false
+        }
+
+        val completion = onCompleted ?: adDismissedCallback
+
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad dismissed")
+                mRewardedAd = null
+                loadRewardedAdUndoBtn()
+                completion?.invoke()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                Log.e(TAG, "Rewarded ad failed to show: ${adError.message}")
+                mRewardedAd = null
+                loadRewardedAdUndoBtn()
+                completion?.invoke()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad showed full screen content")
+            }
+        }
+
+        ad.show(context as android.app.Activity) { rewardItem ->
+            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+        }
+        return true
+    }
+    fun showRewardedAdRedoBtn(onCompleted: (() -> Unit)? = null): Boolean {
+        val ad = mRewardedAd
+        if (ad == null) {
+            Log.d(TAG, "Rewarded ad not ready to show")
+            return false
+        }
+
+        val completion = onCompleted ?: adDismissedCallback
+
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad dismissed")
+                mRewardedAd = null
+                loadRewardedAdRedoBtn()
+                completion?.invoke()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                Log.e(TAG, "Rewarded ad failed to show: ${adError.message}")
+                mRewardedAd = null
+                loadRewardedAdRedoBtn()
+                completion?.invoke()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad showed full screen content")
+            }
+        }
+
+        ad.show(context as android.app.Activity) { rewardItem ->
+            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+        }
+        return true
+    }
+    fun showRewardedAdRestartBtn(onCompleted: (() -> Unit)? = null): Boolean {
+        val ad = mRewardedAd
+        if (ad == null) {
+            Log.d(TAG, "Rewarded ad not ready to show")
+            return false
+        }
+
+        val completion = onCompleted ?: adDismissedCallback
+
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Rewarded ad dismissed")
+                mRewardedAd = null
+                loadRewardedAdRestartBtn()
+                completion?.invoke()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                Log.e(TAG, "Rewarded ad failed to show: ${adError.message}")
+                mRewardedAd = null
+                loadRewardedAdRestartBtn()
                 completion?.invoke()
             }
 

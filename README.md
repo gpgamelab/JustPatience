@@ -1,4 +1,3 @@
-
 # JustPatience
 
 An Android game written in **Kotlin** that lets you play classic solitaire (patience) on your mobile device.
@@ -160,11 +159,59 @@ com.gpgamelab.justpatience
 
 ## ? Release Builds
 
-To generate a signed APK or App Bundle:
+This project uses a local `keystore.properties` file for release signing.
 
-1. In Android Studio: **Build -> Generate Signed Bundle / APK**
-2. Follow the signing wizard steps.
-3. Securely store your keystore file.
+### 1) Configure local signing (one-time)
+
+From the project root:
+
+```bash
+cp keystore.properties.example keystore.properties
+```
+
+Edit `keystore.properties` with your real values:
+
+```properties
+storeFile=/absolute/path/to/your-release-keystore.jks
+storePassword=YOUR_STORE_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+keyPassword=YOUR_KEY_PASSWORD
+```
+
+Security notes:
+- `keystore.properties` is local-only and should not be committed.
+- Keep your `.jks` file backed up in a secure location.
+
+### 2) Build signed release artifacts
+
+From the project root:
+
+```bash
+./gradlew :app:assembleRelease
+./gradlew :app:bundleRelease
+```
+
+Outputs:
+- Signed APK: `app/build/outputs/apk/release/`
+- Signed AAB: `app/build/outputs/bundle/release/`
+
+If `keystore.properties` is missing, Gradle falls back to debug signing for the release variant, which is not suitable for Play Store publishing.
+
+## ? Pre-publish Checklist
+
+Before uploading to Google Play, verify all of the following:
+
+- [ ] **Package name is final** (`com.gnuparadigms.gameslab.justpatience`) and unchanged since internal testing.
+- [ ] **Version updated** in `app/build.gradle.kts` (`versionCode` incremented, `versionName` updated).
+- [ ] **Release signing is correct** (`./gradlew :app:signingReport` shows release store + alias, not debug).
+- [ ] **Release ads behavior confirmed** (`useProductionAds=true` only when you are ready for production ad IDs).
+- [ ] **Privacy policy available** (hosted URL preferred; About-page text can mirror it).
+- [ ] **Core device testing complete** (portrait/landscape, undo/redo/restart, stats, home/settings navigation).
+- [ ] **Monetization flow tested** (banner load, rewarded/interstitial trigger points, offline fallback behavior).
+- [ ] **Build final AAB** with:
+  - [ ] `./gradlew :app:bundleRelease`
+  - [ ] artifact present at `app/build/outputs/bundle/release/app-release.aab`
+- [ ] **Archive release metadata** (AAB hash, signing SHA-1/SHA-256, release notes, test checklist).
 
 ---
 

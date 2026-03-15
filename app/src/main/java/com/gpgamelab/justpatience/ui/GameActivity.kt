@@ -300,7 +300,7 @@ class GameActivity : AppCompatActivity() {
             return
         }
 
-        val shown = adManager.showRewardedAd {
+        val shown = adManager.showRewardedAdUndoBtn {
             enableUndo = true
             updateOverlayVisibility()
             viewModel.undo()
@@ -311,7 +311,7 @@ class GameActivity : AppCompatActivity() {
             enableUndo = true
             updateOverlayVisibility()
             viewModel.undo()
-            adManager.loadRewardedAd()
+            adManager.loadRewardedAdUndoBtn()
         }
     }
 
@@ -321,7 +321,7 @@ class GameActivity : AppCompatActivity() {
             return
         }
 
-        val shown = adManager.showRewardedAd {
+        val shown = adManager.showRewardedAdRedoBtn {
             enableRedo = true
             updateOverlayVisibility()
             viewModel.redo()
@@ -332,7 +332,7 @@ class GameActivity : AppCompatActivity() {
             enableRedo = true
             updateOverlayVisibility()
             viewModel.redo()
-            adManager.loadRewardedAd()
+            adManager.loadRewardedAdRedoBtn()
         }
     }
 
@@ -342,7 +342,7 @@ class GameActivity : AppCompatActivity() {
             return
         }
 
-        val shown = adManager.showRewardedAd {
+        val shown = adManager.showRewardedAdRestartBtn {
             enableRestart = true
             updateOverlayVisibility()
             showRestartDialog()
@@ -353,7 +353,7 @@ class GameActivity : AppCompatActivity() {
             enableRestart = true
             updateOverlayVisibility()
             showRestartDialog()
-            adManager.loadRewardedAd()
+            adManager.loadRewardedAdRestartBtn()
         }
     }
 
@@ -372,18 +372,18 @@ class GameActivity : AppCompatActivity() {
         val statsTextSp = controlTextSp * 0.90f // Keep STATS 10% smaller in all cases.
 
         applyButtonScale(binding.btnNewGame, controlTextSp, scale)
-        applyButtonScale(findViewById(R.id.btn_restart), controlTextSp, scale)
+        findViewById<Button?>(R.id.btn_restart)?.let { applyButtonScale(it, controlTextSp, scale) }
         applyButtonScale(binding.btnStats, statsTextSp, scale)
-        applyButtonScale(findViewById(R.id.btn_auto_move), controlTextSp, scale)
+        findViewById<Button?>(R.id.btn_auto_move)?.let { applyButtonScale(it, controlTextSp, scale) }
 
         val iconSizePx = dpToPx(48f * scale)
         val overlaySizePx = dpToPx(24f * scale)
 
         resizeFrame(binding.btnUndo, iconSizePx, iconSizePx)
         resizeFrame(binding.btnRedo, iconSizePx, iconSizePx)
-        resizeFrame(findViewById(R.id.undo_overlay), overlaySizePx, overlaySizePx)
-        resizeFrame(findViewById(R.id.redo_overlay), overlaySizePx, overlaySizePx)
-        resizeFrame(findViewById(R.id.restart_overlay), overlaySizePx, overlaySizePx)
+        findViewById<View?>(R.id.undo_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
+        findViewById<View?>(R.id.redo_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
+        findViewById<View?>(R.id.restart_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
     }
 
     private fun applyButtonScale(button: Button, textSp: Float, scale: Float) {

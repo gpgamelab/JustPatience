@@ -31,3 +31,8 @@ local.properties
 /.idea/vcs.xml
 /.idea/.name
 /.idea/.gitignore
+
+# Local release signing secrets
+/keystore.properties
+/*.jks
+/*.keystore
