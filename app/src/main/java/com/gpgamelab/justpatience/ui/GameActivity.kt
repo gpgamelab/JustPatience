@@ -365,19 +365,18 @@ class GameActivity : AppCompatActivity() {
         val isLandscapeNow = config.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         val baseScale = (minDp / 360f).coerceIn(0.82f, 1.10f)
-        val orientationScale = if (isLandscapeNow) 0.88f else 1.0f
+        val orientationScale = if (isLandscapeNow) 0.88f else 0.95f
         val scale = (baseScale * orientationScale).coerceIn(0.72f, 1.10f)
 
-        val controlTextSp = 14f * scale * 0.90f
-        val statsTextSp = controlTextSp * 0.90f // Keep STATS 10% smaller in all cases.
+        val controlTextSp = 8f * scale * 0.90f
 
         applyButtonScale(binding.btnNewGame, controlTextSp, scale)
         findViewById<Button?>(R.id.btn_restart)?.let { applyButtonScale(it, controlTextSp, scale) }
-        applyButtonScale(binding.btnStats, statsTextSp, scale)
+        applyButtonScale(binding.btnStats, controlTextSp, scale)
         findViewById<Button?>(R.id.btn_auto_move)?.let { applyButtonScale(it, controlTextSp, scale) }
 
-        val iconSizePx = dpToPx(48f * scale)
-        val overlaySizePx = dpToPx(24f * scale)
+        val iconSizePx = dpToPx(40f * scale)
+        val overlaySizePx = dpToPx(8f * scale)
 
         resizeFrame(binding.btnUndo, iconSizePx, iconSizePx)
         resizeFrame(binding.btnRedo, iconSizePx, iconSizePx)
