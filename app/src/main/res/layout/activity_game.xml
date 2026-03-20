@@ -88,7 +88,7 @@
     <LinearLayout
         android:id="@+id/control_buttons_layout"
         android:layout_width="0dp"
-        android:layout_height="40dp"
+        android:layout_height="80dp"
         android:orientation="horizontal"
         android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/adView"
@@ -99,7 +99,7 @@
             android:id="@+id/btn_new_game"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="50dp"
-            android:layout_height="40dp"
+            android:layout_height="80dp"
             android:layout_marginEnd="2dp"
             android:text="@string/new_game_button_text"
             android:textColor="@color/colorPrimary"
@@ -132,13 +132,13 @@
         <FrameLayout
             android:id="@+id/btnUndo"
             android:layout_width="32dp"
-            android:layout_height="40dp"
+            android:layout_height="80dp"
             android:background="?android:attr/selectableItemBackground">
 
             <ImageView
                 android:id="@+id/undo_main"
                 android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_height="72dp"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/action_undo"
@@ -159,13 +159,13 @@
         <FrameLayout
             android:id="@+id/btnRedo"
             android:layout_width="32dp"
-            android:layout_height="40dp"
+            android:layout_height="80dp"
             android:background="?android:attr/selectableItemBackground">
 
             <ImageView
                 android:id="@+id/redo_main"
                 android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_height="72dp"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/action_redo"
@@ -193,7 +193,7 @@
                 android:id="@+id/btn_restart"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="70dp"
-                android:layout_height="40dp"
+                android:layout_height="80dp"
                 android:text="@string/restart_game_text"
                 android:textColor="@color/secondary_button_color"
                 app:strokeColor="@color/secondary_button_color" />
@@ -212,7 +212,7 @@
             android:id="@+id/btn_stats"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="56dp"
-            android:layout_height="40dp"
+            android:layout_height="80dp"
             android:layout_marginEnd="2dp"
             android:ellipsize="end"
             android:maxLines="1"
@@ -224,7 +224,7 @@
             android:id="@+id/btn_auto_move"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="50dp"
-            android:layout_height="40dp"
+            android:layout_height="80dp"
             android:layout_marginEnd="2dp"
             android:ellipsize="end"
             android:maxLines="1"

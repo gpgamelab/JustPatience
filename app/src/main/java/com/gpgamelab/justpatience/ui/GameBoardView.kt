@@ -51,8 +51,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var BOARD_SHIFT_DOWN_PX = 120f
 
     // Portrait-specific offsets
-    private val PORTRAIT_BOARD_WIDTH_FRACTION = 0.70f
-    private val PORTRAIT_BOARD_SHIFT_LEFT_PX = 150f
+    private val PORTRAIT_BOARD_WIDTH_FRACTION = 0.75f
+    private val PORTRAIT_BOARD_SHIFT_LEFT_PX = 0f
     private val PORTRAIT_BOARD_SHIFT_DOWN_PX = 120f
 
     // Landscape-specific offsets (estimates - can be adjusted later)
@@ -78,7 +78,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 48f; textAlign = Paint.Align.CENTER }
 
     // Board and Card dimensions
-    private val cardWidthRatio = 1.0f
+    private val cardWidthRatio = 1.5f
     private val cardHeightRatio = 2.0f
     private var cardRadius = 20f
     private var cardPadding = 16f
@@ -135,9 +135,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         tabletopBitmap?.recycle()
         tabletopBitmap = try {
             val resourceId = if (isLandscape) {
-                resources.getIdentifier("tabletop_green_card_border_l_01", "drawable", context.packageName)
+                resources.getIdentifier("tabletop_green_felt_01_320x500_l", "drawable", context.packageName)
             } else {
-                resources.getIdentifier("tabletop_green_card_border_p_01", "drawable", context.packageName)
+                resources.getIdentifier("tabletop_green_felt_01_320x500_p", "drawable", context.packageName)
             }
 
             if (resourceId != 0) {
