@@ -237,8 +237,8 @@ class GameActivity : AppCompatActivity() {
     private fun shouldShowStartInterstitial(total: Int): Boolean {
         return when {
             total < 10 -> false
-            total <= 50 -> total % 5 == 0
-            else -> total % 4 == 0
+            total <= 30 -> total % 3 == 0
+            else -> total % 2 == 0
         }
     }
 
