@@ -24,6 +24,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+private const val CARD_MOVE_ANIMATION_MS = 250L
+
 /**
  * ViewModel that holds the current Game state and provides actions for UI.
  * Calls the GameController (rules engine) for all moves.
@@ -36,6 +38,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val statsManager = GameStatsManager(application.applicationContext)
     private val gson = Gson()
     private val controller = GameController()
+    
+    // Reference for scheduling card move animations
+    var gameBoardView: GameBoardView? = null
     val hasSavedGame = repository.getCurrentGameState()
         .map { !it.isNullOrEmpty() }
     val gameTime = MutableStateFlow(0L)
@@ -371,6 +376,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         for (i in game.foundations.indices) {
             val updated = game.moveWasteToFoundation(i)
             if (updated != null) {
+                // Animate the move
+                animateCardMove(
+                    card = game.waste.peek(),
+                    sourceStackType = StackType.WASTE,
+                    sourceIndex = 0,
+                    sourceCardIndex = -1,
+                    destStackType = StackType.FOUNDATION,
+                    destIndex = i
+                )
+
                 undoStack.addLast(game)
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
@@ -401,6 +416,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 i
             )
             if (updated != null) {
+                // Animate the move
+                animateCardMove(
+                    card = topCard,
+                    sourceStackType = StackType.TABLEAU,
+                    sourceIndex = tableauIndex,
+                    sourceCardIndex = topIndex,
+                    destStackType = StackType.FOUNDATION,
+                    destIndex = i
+                )
+
                 undoStack.addLast(game)
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
@@ -414,11 +439,43 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * Schedule a card animation for an auto move.
+     * GameBoardView must be set for this to work.
+     */
+    private fun animateCardMove(
+        card: Card?,
+        sourceStackType: StackType,
+        sourceIndex: Int,
+        sourceCardIndex: Int,
+        destStackType: StackType,
+        destIndex: Int
+    ) {
+        if (card == null || gameBoardView == null) return
+
+        val view = gameBoardView ?: return
+        
+        // Get source and destination rects
+        val sourceRect = view.getCardRectForAnimation(sourceStackType, sourceIndex, sourceCardIndex)
+            ?: return
+        val destRect = view.getCardRectForAnimation(destStackType, destIndex, -1)
+            ?: return
+
+        // Schedule the animation
+        view.scheduleCardAnimation(
+            card = card,
+            startRect = sourceRect,
+            endRect = destRect,
+            destStackType = destStackType,
+            destStackIndex = destIndex
+        )
+    }
+
+    /**
      * Auto-move all possible cards to foundations.
      * Priority: tableau to foundation, then waste to foundation.
      * Returns the number of moves made.
      */
-    fun performAutoMove(): Int {
+    suspend fun performAutoMove(): Int {
         var moveCount = 0
         var madeMoveThisPass = true
 
@@ -431,6 +488,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (tryAutoMoveTableauTopToFoundation(tableauIndex)) {
                     moveCount++
                     madeMoveThisPass = true
+                    delay(CARD_MOVE_ANIMATION_MS)
                     break // Restart the check from the beginning
                 }
             }
@@ -439,6 +497,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (!madeMoveThisPass && tryAutoMoveWasteToFoundation()) {
                 moveCount++
                 madeMoveThisPass = true
+                delay(CARD_MOVE_ANIMATION_MS)
             }
         }
 

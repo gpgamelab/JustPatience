@@ -59,6 +59,9 @@ class GameActivity : AppCompatActivity() {
 
         // Wire viewModel into GameBoardView
         binding.gameBoardView.viewModel = viewModel
+        
+        // Wire GameBoardView back into viewModel for animation scheduling
+        viewModel.gameBoardView = binding.gameBoardView
 
         // Wire AssetResolver into GameBoardView
         binding.gameBoardView.assetResolver = AndroidAssetResolver(this)
@@ -169,10 +172,17 @@ class GameActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btn_restart).setOnClickListener { handleRestartClick() }
         binding.btnStats.setOnClickListener { showStatsDialog() }
-        findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener {
-            val movesMade = viewModel.performAutoMove()
-            if (movesMade == 0) {
-                Toast.makeText(this, "No moves available", Toast.LENGTH_SHORT).show()
+        findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
+            buttonView.isEnabled = false
+            lifecycleScope.launch {
+                try {
+                    val movesMade = viewModel.performAutoMove()
+                    if (movesMade == 0) {
+                        Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
+                    }
+                } finally {
+                    buttonView.isEnabled = true
+                }
             }
         }
 

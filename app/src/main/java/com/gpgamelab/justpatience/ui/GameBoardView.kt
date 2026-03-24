@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import android.os.SystemClock
 
 private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:b_0001"
 
@@ -118,6 +119,16 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var isDragging = false
     private var tabletopBitmap: Bitmap? = null
 
+    // animation state for auto moves
+    private var animationCard: Card? = null
+    private var animationStartRect: RectF? = null
+    private var animationEndRect: RectF? = null
+    private var animationDestStackType: StackType? = null
+    private var animationDestStackIndex: Int = -1
+    private var animationStartTimeMs: Long = 0
+    private val ANIMATION_DURATION_MS = 250L
+    private var isAnimating = false
+
     init {
         // Detect current orientation
         isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -188,6 +199,70 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 }
             }
         }
+    }
+
+    /**
+     * Get rect for a card at a specific position.
+     * Used for calculating animation source positions.
+     */
+    fun getCardRectForAnimation(
+        stackType: StackType,
+        stackIndex: Int,
+        cardIndex: Int
+    ): RectF? {
+        return when (stackType) {
+            StackType.STOCK -> getStockRect()
+            StackType.WASTE -> getWasteRect()
+            StackType.FOUNDATION -> getFoundationRect(stackIndex)
+            StackType.TABLEAU -> {
+                val x = columnX.getOrNull(stackIndex) ?: return null
+                var y = getTableauStartY()
+                val pile = viewModel.game.value.tableau.getOrNull(stackIndex) ?: return null
+                val cards = pile.asList()
+                for (i in 0 until cardIndex.coerceAtMost(cards.size - 1)) {
+                    y += if (cards[i].isFaceUp) cardW * 0.4f else cardW * 0.1f
+                }
+                RectF(x, y, x + cardW, y + cardH)
+            }
+        }
+    }
+
+    /**
+     * Schedule a card move animation from startRect to endRect.
+     * Used by auto-move and auto-foundation moves.
+     */
+    fun scheduleCardAnimation(
+        card: Card,
+        startRect: RectF,
+        endRect: RectF,
+        destStackType: StackType,
+        destStackIndex: Int
+    ) {
+        animationCard = card
+        animationStartRect = RectF(startRect)
+        animationEndRect = RectF(endRect)
+        animationDestStackType = destStackType
+        animationDestStackIndex = destStackIndex
+        animationStartTimeMs = SystemClock.elapsedRealtime()
+        isAnimating = true
+        postInvalidateOnAnimation()
+    }
+
+    private fun isAnimationActive(): Boolean = isAnimating && SystemClock.elapsedRealtime() - animationStartTimeMs < ANIMATION_DURATION_MS
+
+    private fun clearAnimationState() {
+        isAnimating = false
+        animationCard = null
+        animationStartRect = null
+        animationEndRect = null
+        animationDestStackType = null
+        animationDestStackIndex = -1
+    }
+
+    private fun isAnimatingIntoFoundation(index: Int): Boolean {
+        return isAnimationActive() &&
+            animationDestStackType == StackType.FOUNDATION &&
+            animationDestStackIndex == index
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -361,6 +436,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         drawTopRow(canvas)
         drawTableau(canvas)
         drawDragGhost(canvas)
+        drawAnimatedCard(canvas)
     }
 
     private fun drawTabletop(canvas: Canvas) {
@@ -401,6 +477,65 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
+    private fun drawAnimatedCard(canvas: Canvas) {
+        if (!isAnimationActive()) {
+            clearAnimationState()
+            return
+        }
+
+        val card = animationCard ?: return
+        val startRect = animationStartRect ?: return
+        val endRect = animationEndRect ?: return
+
+        val elapsedMs = SystemClock.elapsedRealtime() - animationStartTimeMs
+        val progress = (elapsedMs.toFloat() / ANIMATION_DURATION_MS).coerceIn(0f, 1f)
+        val eased = easeInOutCubic(progress)
+
+        // Move along a curve: linear base path + parabolic upward lift.
+        val baseRect = RectF(
+            lerp(startRect.left, endRect.left, eased),
+            lerp(startRect.top, endRect.top, eased),
+            lerp(startRect.right, endRect.right, eased),
+            lerp(startRect.bottom, endRect.bottom, eased)
+        )
+
+        val dx = endRect.centerX() - startRect.centerX()
+        val dy = endRect.centerY() - startRect.centerY()
+        val distance = kotlin.math.hypot(dx, dy)
+
+        // Keep the current arc for short moves, then scale it up as travel distance grows.
+        val baselineArcHeight = (distance * 0.14f).coerceIn(cardH * 0.10f, cardH * 0.42f)
+        val shortestMoveDistance = (cardW * 1.20f).coerceAtLeast(1f)
+        val longMoveRange = (cardW * 4.5f).coerceAtLeast(1f)
+        val longMoveProgress = ((distance - shortestMoveDistance) / longMoveRange).coerceIn(0f, 1f)
+        val dramaticMultiplier = 1f + (longMoveProgress * longMoveProgress) * 1.45f
+        val arcHeight = (baselineArcHeight * dramaticMultiplier).coerceIn(cardH * 0.10f, cardH * 0.82f)
+        val arcLift = -4f * arcHeight * eased * (1f - eased)
+
+        val interpolatedRect = RectF(
+            baseRect.left,
+            baseRect.top + arcLift,
+            baseRect.right,
+            baseRect.bottom + arcLift
+        )
+
+        drawCard(canvas, card, interpolatedRect)
+
+        // Keep redrawing while animating
+        if (progress < 1f) {
+            postInvalidateOnAnimation()
+        }
+    }
+
+    private fun lerp(start: Float, end: Float, t: Float): Float = start + (end - start) * t
+
+    private fun easeInOutCubic(t: Float): Float {
+        return if (t < 0.5f) {
+            4f * t * t * t
+        } else {
+            1f - ((-2f * t + 2f) * (-2f * t + 2f) * (-2f * t + 2f)) / 2f
+        }
+    }
 
     private fun drawLoading(c: Canvas) {
         textPaint.color = Color.GRAY
@@ -432,8 +567,18 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         for (i in 0..3) {
             val rect = getFoundationRect(i)
             canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
-            viewModel.game.value.foundations.getOrNull(i)?.peek()
-                ?.let { drawCard(canvas, it, rect) }
+
+            val foundationPile = viewModel.game.value.foundations.getOrNull(i) ?: continue
+            val cards = foundationPile.asList()
+            if (cards.isEmpty()) continue
+
+            val cardToDraw = if (isAnimatingIntoFoundation(i)) {
+                cards.getOrNull(cards.lastIndex - 1)
+            } else {
+                cards.last()
+            }
+
+            cardToDraw?.let { drawCard(canvas, it, rect) }
         }
 
         // Labels above stock and waste piles.
@@ -637,6 +782,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // touch handling for drag & drop
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        // Block all input while animation is running
+        if (isAnimationActive()) {
+            return true  // Consume the event but don't process it
+        }
+
         when (event.actionMasked) {
 
             MotionEvent.ACTION_DOWN -> {
