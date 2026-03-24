@@ -21,13 +21,15 @@ class GameStatsManager(context: Context) {
      * @param timeMs The game duration in milliseconds
      * @param isWin Whether the game was won
      * @param playerName Display name captured from settings (nullable)
+     * @param cardsDraw Number of cards drawn per stock draw (1, 3, or any integer)
      */
     suspend fun recordGame(
         score: Int,
         moves: Int,
         timeMs: Long,
         isWin: Boolean,
-        playerName: String?
+        playerName: String?,
+        cardsDraw: Int? = null
     ) {
         val now = System.currentTimeMillis()
         val dateString = formatTimestamp(now)
@@ -39,7 +41,8 @@ class GameStatsManager(context: Context) {
             timeMs = timeMs,
             isWin = isWin,
             timestamp = now,
-            dateString = dateString
+            dateString = dateString,
+            cardsDraw = cardsDraw
         )
 
         dao.insertGameRecord(record)

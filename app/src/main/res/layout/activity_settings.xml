@@ -54,10 +54,9 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/settings_player_name_hint"
                 android:inputType="textPersonName"
-                android:textColor="@android:color/black"
-                android:textColorHint="@android:color/darker_gray"
-                android:background="@android:drawable/edit_text"
-                android:padding="8dp"
+                android:textColor="@color/text_color"
+                android:textColorHint="@color/text_color_secondary"
+                android:background="@drawable/bg_settings_input"
                 android:maxLines="1"
                 android:imeOptions="actionDone" />
 

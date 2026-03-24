@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,6 +39,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         .map { !it.isNullOrEmpty() }
     val gameTime = MutableStateFlow(0L)
 
+    // Current draw size setting (1 or 3, defaults to 1)
+    private var currentDrawSize = 1
+
     private var timerJob: Job? = null
 
     private val undoStack = ArrayDeque<Game>()
@@ -53,7 +57,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     init {
 
         startNewGame()
+        observeDrawSizeSetting()
 
+    }
+
+    private fun observeDrawSizeSetting() {
+        viewModelScope.launch {
+            settingsManager.gamePlaySettingsFlow.collect { settings ->
+                currentDrawSize = settings.drawSize
+            }
+        }
     }
 
     private fun startTimer() {
@@ -125,12 +138,27 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         var moved = false
         var newGame = game
 
-        // 1️⃣ Normal draw
+        // Determine how many cards to draw (0 defaults to 1)
+        val drawCount = if (currentDrawSize <= 0) 1 else currentDrawSize
+
+        // 1️⃣ Normal draw - draw multiple cards if configured
         if (!game.stock.isEmpty()) {
-            val (newStock, card) = game.stock.withCardPopped()
-            if (card != null) {
-                val newWaste = game.waste.withCardAdded(card.copy(isFaceUp = true))
-                newGame = game.copy(stock = newStock, waste = newWaste)
+            var currentStock = game.stock
+            var currentWaste = game.waste
+            var cardsDrawn = 0
+
+            repeat(drawCount) {
+                if (currentStock.isEmpty()) return@repeat
+                val (newStock, card) = currentStock.withCardPopped()
+                currentStock = newStock
+                if (card != null) {
+                    currentWaste = currentWaste.withCardAdded(card.copy(isFaceUp = true))
+                    cardsDrawn++
+                }
+            }
+
+            if (cardsDrawn > 0) {
+                newGame = game.copy(stock = currentStock, waste = currentWaste)
                 moved = true
             }
         } else {
@@ -369,13 +397,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             try {
-                val playerName = settingsManager.gamePlaySettingsFlow.firstOrNull()?.playerDisplayName
+                val settings = settingsManager.gamePlaySettingsFlow.firstOrNull()
+                val playerName = settings?.playerDisplayName
+                val cardsDraw = settings?.drawSize
                 statsManager.recordGame(
                     score = game.score,
                     moves = game.moves,
                     timeMs = gameTime.value * 1000,  // Convert seconds to milliseconds
                     isWin = isWin,
-                    playerName = playerName
+                    playerName = playerName,
+                    cardsDraw = cardsDraw
                 )
             } catch (e: Exception) {
                 Log.e("GameViewModel", "Failed to record game completion", e)

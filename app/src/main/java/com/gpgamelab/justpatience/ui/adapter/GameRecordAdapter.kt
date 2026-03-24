@@ -23,6 +23,7 @@ class GameRecordAdapter(
             binding.tvGameScore.text = record.score.toString()
             binding.tvGameMoves.text = record.moves.toString()
             binding.tvGameTime.text = onFormatTime(record.timeMs)
+            binding.tvGameCardsDraw.text = (record.cardsDraw ?: 1).toString()
             binding.tvGameStatus.text = if (record.isWin) "Won" else "Lost"
             binding.tvGameStatus.setTextColor(
                 if (record.isWin)
