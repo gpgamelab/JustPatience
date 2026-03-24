@@ -96,6 +96,7 @@ class SettingsActivity : AppCompatActivity() {
         updateRecycleButtonsEnabled(!settings.infiniteRecycles)
 
         // Appearance
+        binding.switchTimer.isChecked = settings.showGameTimer
         binding.switchCardAnimations.isChecked = settings.showCardAnimations
         binding.switchWinAnimation.isChecked = settings.showWinAnimation
 
@@ -149,6 +150,10 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Appearance
+        binding.switchTimer.setOnCheckedChangeListener { _, checked ->
+            if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
+            saveSettings(currentSettings.copy(showGameTimer = checked))
+        }
         binding.switchCardAnimations.setOnCheckedChangeListener { _, checked ->
             if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
             saveSettings(currentSettings.copy(showCardAnimations = checked))

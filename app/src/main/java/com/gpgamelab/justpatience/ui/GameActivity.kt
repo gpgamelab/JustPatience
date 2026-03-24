@@ -111,6 +111,12 @@ class GameActivity : AppCompatActivity() {
                 }
 
                 launch {
+                    viewModel.showGameTimer.collect { shouldShow ->
+                        binding.tvTime.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                    }
+                }
+
+                launch {
                     viewModel.canUndo.collect { canUndo ->
                         findViewById<ImageView>(R.id.undo_main)?.setImageResource(
                             if (canUndo) R.drawable.undo_red else R.drawable.undo_gray

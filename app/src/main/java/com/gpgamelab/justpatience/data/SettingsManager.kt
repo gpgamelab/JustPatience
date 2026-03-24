@@ -57,6 +57,7 @@ class SettingsManager(private val context: Context) {
         val INFINITE_RECYCLES = booleanPreferencesKey("infinite_recycles")
         val SHOW_CARD_ANIMATIONS = booleanPreferencesKey("show_card_animations")
         val SHOW_WIN_ANIMATION = booleanPreferencesKey("show_win_animation")
+        val SHOW_GAME_TIMER = booleanPreferencesKey("show_game_timer")
         val MUTE_MUSIC = booleanPreferencesKey("mute_music")
         val MUTE_CARD_SOUND = booleanPreferencesKey("mute_card_sound")
         val MUTE_WIN_SOUND = booleanPreferencesKey("mute_win_sound")
@@ -78,6 +79,7 @@ class SettingsManager(private val context: Context) {
         val infiniteRecycles: Boolean = false,
         val showCardAnimations: Boolean = true,
         val showWinAnimation: Boolean = true,
+        val showGameTimer: Boolean = true,
         val muteMusic: Boolean = false,
         val muteCardSound: Boolean = false,
         val muteWinSound: Boolean = false,
@@ -305,6 +307,7 @@ class SettingsManager(private val context: Context) {
                 infiniteRecycles = preferences[PreferencesKeys.INFINITE_RECYCLES] ?: false,
                 showCardAnimations = preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] ?: true,
                 showWinAnimation = preferences[PreferencesKeys.SHOW_WIN_ANIMATION] ?: true,
+                showGameTimer = preferences[PreferencesKeys.SHOW_GAME_TIMER] ?: true,
                 muteMusic = preferences[PreferencesKeys.MUTE_MUSIC] ?: false,
                 muteCardSound = preferences[PreferencesKeys.MUTE_CARD_SOUND] ?: false,
                 muteWinSound = preferences[PreferencesKeys.MUTE_WIN_SOUND] ?: false,
@@ -321,6 +324,7 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.INFINITE_RECYCLES] = settings.infiniteRecycles
             preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] = settings.showCardAnimations
             preferences[PreferencesKeys.SHOW_WIN_ANIMATION] = settings.showWinAnimation
+            preferences[PreferencesKeys.SHOW_GAME_TIMER] = settings.showGameTimer
             preferences[PreferencesKeys.MUTE_MUSIC] = settings.muteMusic
             preferences[PreferencesKeys.MUTE_CARD_SOUND] = settings.muteCardSound
             preferences[PreferencesKeys.MUTE_WIN_SOUND] = settings.muteWinSound

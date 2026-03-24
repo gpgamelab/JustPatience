@@ -54,7 +54,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _isInfiniteRecycles = MutableStateFlow(false)
     val isInfiniteRecycles: StateFlow<Boolean> = _isInfiniteRecycles
 
+    private val _showGameTimer = MutableStateFlow(true)
+    val showGameTimer: StateFlow<Boolean> = _showGameTimer
+
     private var timerJob: Job? = null
+    private var isTimerRunning = false
+    private var hasRegisteredFirstMove = false
 
     private val undoStack = ArrayDeque<Game>()
     private val redoStack = ArrayDeque<Game>()
@@ -125,7 +130,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val newGame = controller.newGameWithClearHistory()
         initialGameState = newGame
         _game.value = newGame
-        startTimer()
+        resetTimerForNewHand()
         saveGame()
     }
 
@@ -139,6 +144,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _drawCountForDisplay.value = normalizeDrawCount(currentDrawSize)
                 _recycleLimitForDisplay.value = currentRecycleLimit
                 _isInfiniteRecycles.value = currentInfiniteRecycles
+                _showGameTimer.value = settings.showGameTimer
             }
         }
     }
@@ -159,11 +165,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return game.recycleCountUsed < currentRecycleLimit
     }
 
-    private fun startTimer() {
-        stopTimer()
-        gameTime.value = 0
-
-
+    private fun startTimerIfNeeded() {
+        if (isTimerRunning) return
+        isTimerRunning = true
         timerJob = viewModelScope.launch {
             while (true) {
                 delay(1000)
@@ -172,7 +176,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun startTimerOnFirstSuccessfulMoveIfNeeded() {
+        if (!hasRegisteredFirstMove) {
+            hasRegisteredFirstMove = true
+        }
+        startTimerIfNeeded()
+    }
+
+    private fun resetTimerForNewHand() {
+        stopTimer()
+        gameTime.value = 0
+        hasRegisteredFirstMove = false
+    }
+
     fun stopTimer() {
+        isTimerRunning = false
         timerJob?.cancel()
     }
 
@@ -200,7 +218,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         finalizeCurrentGameIfNeeded()
         undoStack.clear()
         redoStack.clear()
-        startTimer()
+        resetTimerForNewHand()
         currentHandRecorded = false
         viewModelScope.launch {
             val newGame = controller.newGameWithClearHistory()
@@ -218,6 +236,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         undoStack.clear()
         redoStack.clear()
         _game.value = initial
+        resetTimerForNewHand()
         currentHandRecorded = false
         updateUndoRedoState()
         saveGame()
@@ -294,6 +313,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     redoStack.clear()
                     // Score is already applied by controller, just update move count
                     val updatedWithMoves = theUpdatedGame.copy(moves = theUpdatedGame.moves + 1)
+                    startTimerOnFirstSuccessfulMoveIfNeeded()
                     _game.value = updatedWithMoves
                     saveGameIfInProgress()
                     updateUndoRedoState()
@@ -457,6 +477,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun updateAfterMove(game: Game, scoreDelta: Int = 0): Game {
+        startTimerOnFirstSuccessfulMoveIfNeeded()
         return if (game.isWinCondition()) {
             stopTimer()
             val updatedGame = game.copy(
@@ -617,6 +638,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (updated != null) {
             undoStack.addLast(game)
             redoStack.clear()
+            startTimerOnFirstSuccessfulMoveIfNeeded()
             _game.value = updated.copy(recycleCountUsed = game.recycleCountUsed + 1)
             updateUndoRedoState()
             return true
