@@ -76,6 +76,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
     private val textPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 48f; textAlign = Paint.Align.CENTER }
+    private val pileLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textAlign = Paint.Align.CENTER
+        textSize = 30f
+        style = Paint.Style.FILL
+        setShadowLayer(6f, 0f, 2f, Color.BLACK)
+    }
 
     // Board and Card dimensions
     private val cardWidthRatio = 1.5f
@@ -154,10 +161,23 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     fun bindToViewModel(lifecycleOwner: LifecycleOwner) {
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.game.collect {
-                    // Game state changed → redraw
-                    clearDragState()
-                    invalidate()
+                launch {
+                    viewModel.game.collect {
+                        // Game state changed -> redraw
+                        clearDragState()
+                        invalidate()
+                    }
+                }
+
+                // Redraw labels when draw/recycle settings change.
+                launch {
+                    viewModel.drawCountForDisplay.collect { invalidate() }
+                }
+                launch {
+                    viewModel.recycleLimitForDisplay.collect { invalidate() }
+                }
+                launch {
+                    viewModel.isInfiniteRecycles.collect { invalidate() }
                 }
             }
         }
@@ -196,6 +216,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         computeColumnX()
         computeBoardStartY(h)
+
+        // Keep pile labels legible across phone/tablet sizes.
+        pileLabelPaint.textSize = (cardW * 0.22f).coerceIn(22f, 40f)
     }
 
     private fun calculateWidthLimitedCardWidth(viewWidth: Int): Float {
@@ -392,6 +415,34 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             viewModel.game.value.foundations.getOrNull(i)?.peek()
                 ?.let { drawCard(canvas, it, rect) }
         }
+
+        // Labels above stock and waste piles.
+        drawTopPileLabels(canvas, stockRect, wasteRect)
+    }
+
+    private fun drawTopPileLabels(canvas: Canvas, stockRect: RectF, wasteRect: RectF) {
+        val drawCount = viewModel.getDrawCountLabelValue()
+        val drawLabel = resources.getQuantityString(R.plurals.stock_draw_label, drawCount, drawCount)
+
+        val remainingRecycles = viewModel.getRemainingRecycleCount()
+        val recycleLabel = if (remainingRecycles == null) {
+            context.getString(R.string.recycle_remaining_unlimited)
+        } else {
+            context.getString(R.string.recycle_remaining_format, remainingRecycles)
+        }
+
+        drawLabelAboveRect(canvas, stockRect, drawLabel)
+        val recycleLabelColor = if (remainingRecycles == 0) Color.RED else Color.WHITE
+        drawLabelAboveRect(canvas, wasteRect, recycleLabel, recycleLabelColor)
+    }
+
+    private fun drawLabelAboveRect(canvas: Canvas, rect: RectF, label: String, color: Int = Color.WHITE) {
+        val density = resources.displayMetrics.density
+        val labelBottomY = (rect.top - (6f * density)).coerceAtLeast(pileLabelPaint.textSize + 2f)
+        val previousColor = pileLabelPaint.color
+        pileLabelPaint.color = color
+        canvas.drawText(label, rect.centerX(), labelBottomY, pileLabelPaint)
+        pileLabelPaint.color = previousColor
     }
 
     private fun drawTableau(canvas: Canvas) {

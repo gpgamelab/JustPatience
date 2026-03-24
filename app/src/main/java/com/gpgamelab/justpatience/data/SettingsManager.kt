@@ -13,7 +13,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 
 // --- File-Level DataStore Initialization ---
@@ -61,6 +63,10 @@ class SettingsManager(private val context: Context) {
         val ORIENTATION_LOCK = stringPreferencesKey("orientation_lock")         // "device", "portrait", "landscape"
         val BOARD_LAYOUT = stringPreferencesKey("board_layout")                 // "right_hand", "left_hand"
         val PLAYER_DISPLAY_NAME = stringPreferencesKey("player_display_name")
+
+        // Session tracking: true while an IN_PROGRESS game is saved; false after normal game end.
+        // If still true on next cold start it means the process was killed mid-session.
+        val GAME_SESSION_ACTIVE = booleanPreferencesKey("game_session_active")
     }
 
     /**
@@ -249,6 +255,35 @@ class SettingsManager(private val context: Context) {
     suspend fun clearSavedGame() {
         dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.SAVED_GAME_STATE_JSON)
+        }
+    }
+
+    // --- Session-Active Flag ---
+
+    /**
+     * Synchronously checks whether a game session was still active when the process last stopped.
+     * Intended for use in ViewModel.init() only; a brief runBlocking read is acceptable here
+     * because DataStore dispatches I/O on its own thread and won't deadlock the main thread.
+     *
+     * Returns true  → the process was killed while an IN_PROGRESS game was saved
+     *         false → the game ended normally or no session had been started yet
+     */
+    fun isGameSessionActive(): Boolean = runBlocking {
+        try {
+            dataStore.data.first()[PreferencesKeys.GAME_SESSION_ACTIVE] ?: false
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Sets or clears the game-session-active flag.
+     *   true  → an IN_PROGRESS game is currently saved (set each time the game is persisted)
+     *   false → the game ended (win / recorded loss / explicit user exit)
+     */
+    suspend fun setGameSessionActive(active: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[PreferencesKeys.GAME_SESSION_ACTIVE] = active
         }
     }
 

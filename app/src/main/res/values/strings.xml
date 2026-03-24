@@ -143,4 +143,12 @@
     <string name="settings_board_layout_right">Right Hand (default)</string>
     <string name="settings_board_layout_left">Left Hand</string>
 
+    <!-- Board pile labels -->
+    <plurals name="stock_draw_label">
+        <item quantity="one">%d card</item>
+        <item quantity="other">%d cards</item>
+    </plurals>
+    <string name="recycle_remaining_format">%1$d remaining</string>
+    <string name="recycle_remaining_unlimited">Unlimited</string>
+
 </resources>

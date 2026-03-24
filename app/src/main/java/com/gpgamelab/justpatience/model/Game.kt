@@ -23,7 +23,8 @@ data class Game(
     val status: GameStatus,
     val score: Int,
     val moves: Int,
-    val savedGameTime: Long
+    val savedGameTime: Long,
+    val recycleCountUsed: Int = 0
 ) : Serializable {
 
     companion object {
@@ -61,7 +62,8 @@ data class Game(
                 status = GameStatus.IN_PROGRESS,
                 score = 0,
                 moves = 0,
-                savedGameTime = System.currentTimeMillis()
+                savedGameTime = System.currentTimeMillis(),
+                recycleCountUsed = 0
             )
         }
     }
@@ -233,8 +235,8 @@ data class Game(
             status = status,
             score = score,
             moves = moves,
-            savedGameTime = savedGameTime
+            savedGameTime = savedGameTime,
+            recycleCountUsed = recycleCountUsed
         )
     }
 }
-

@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * ViewModel that holds the current Game state and provides actions for UI.
@@ -39,8 +40,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         .map { !it.isNullOrEmpty() }
     val gameTime = MutableStateFlow(0L)
 
-    // Current draw size setting (1 or 3, defaults to 1)
+    // Current draw size setting (supports any positive integer, <=0 defaults to 1)
     private var currentDrawSize = 1
+    private var currentRecycleLimit = 3
+    private var currentInfiniteRecycles = false
+
+    private val _drawCountForDisplay = MutableStateFlow(1)
+    val drawCountForDisplay: StateFlow<Int> = _drawCountForDisplay
+
+    private val _recycleLimitForDisplay = MutableStateFlow(3)
+    val recycleLimitForDisplay: StateFlow<Int> = _recycleLimitForDisplay
+
+    private val _isInfiniteRecycles = MutableStateFlow(false)
+    val isInfiniteRecycles: StateFlow<Boolean> = _isInfiniteRecycles
 
     private var timerJob: Job? = null
 
@@ -55,18 +67,96 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val game: StateFlow<Game> = _game
 
     init {
-
-        startNewGame()
+        // Detect whether the process was killed while a game was in progress in the background.
+        // isGameSessionActive() is a brief blocking DataStore read – safe from the main thread
+        // because DataStore dispatches I/O independently and won't deadlock here.
+        val sessionWasInterrupted = settingsManager.isGameSessionActive()
+        if (sessionWasInterrupted) {
+            // Process was killed mid-session. Record the abandoned game as a loss, then
+            // start fresh. We do NOT call startNewGame() here because that would call
+            // finalizeCurrentGameIfNeeded() on the empty in-memory game (0 moves), not
+            // on the saved game we need to inspect.
+            viewModelScope.launch {
+                checkAndRecordAbandonedGame()
+                startNewGameInternal()
+            }
+        } else {
+            startNewGame()
+        }
         observeDrawSizeSetting()
+    }
 
+    /**
+     * Called on first init when the session-active flag was still set, indicating the process
+     * was killed while a game was in progress in the background.
+     *
+     * Loads the persisted game JSON, and if it represents an IN_PROGRESS game with enough
+     * moves to be meaningful (>= 5), records it as an abandoned loss.
+     * Always clears the session-active flag when done so the next cold start is clean.
+     */
+    private suspend fun checkAndRecordAbandonedGame() {
+        try {
+            val savedJson = repository.getCurrentGameState().firstOrNull()
+            if (!savedJson.isNullOrEmpty()) {
+                val abandonedGame = gson.fromJson(savedJson, Game::class.java)
+                if (abandonedGame.status == GameStatus.IN_PROGRESS) {
+                    Log.d("GameViewModel",
+                        "Abandoned session detected (moves=${abandonedGame.moves}); recording as loss.")
+                    recordGameCompletionInternal(abandonedGame, isWin = false)
+                }
+                // If status == WON the game was already recorded; nothing to do.
+            }
+        } catch (t: Throwable) {
+            Log.w("GameViewModel", "checkAndRecordAbandonedGame failed: ${t.message}")
+        } finally {
+            // Always clear the flag so we don't double-record on the next cold start.
+            settingsManager.setGameSessionActive(false)
+        }
+    }
+
+    /**
+     * Core new-game setup used when init already handled the abandoned-game check.
+     * Skips finalizeCurrentGameIfNeeded() to avoid double-recording.
+     */
+    private suspend fun startNewGameInternal() {
+        undoStack.clear()
+        redoStack.clear()
+        currentHandRecorded = false
+        val newGame = controller.newGameWithClearHistory()
+        initialGameState = newGame
+        _game.value = newGame
+        startTimer()
+        saveGame()
     }
 
     private fun observeDrawSizeSetting() {
         viewModelScope.launch {
             settingsManager.gamePlaySettingsFlow.collect { settings ->
                 currentDrawSize = settings.drawSize
+                currentRecycleLimit = settings.recycleCount.coerceAtLeast(0)
+                currentInfiniteRecycles = settings.infiniteRecycles
+
+                _drawCountForDisplay.value = normalizeDrawCount(currentDrawSize)
+                _recycleLimitForDisplay.value = currentRecycleLimit
+                _isInfiniteRecycles.value = currentInfiniteRecycles
             }
         }
+    }
+
+    private fun normalizeDrawCount(rawDrawCount: Int): Int {
+        return if (rawDrawCount <= 0) 1 else rawDrawCount
+    }
+
+    fun getDrawCountLabelValue(): Int = _drawCountForDisplay.value
+
+    fun getRemainingRecycleCount(): Int? {
+        if (currentInfiniteRecycles) return null
+        return (currentRecycleLimit - _game.value.recycleCountUsed).coerceAtLeast(0)
+    }
+
+    private fun canRecycleWaste(game: Game): Boolean {
+        if (currentInfiniteRecycles) return true
+        return game.recycleCountUsed < currentRecycleLimit
     }
 
     private fun startTimer() {
@@ -138,8 +228,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         var moved = false
         var newGame = game
 
-        // Determine how many cards to draw (0 defaults to 1)
-        val drawCount = if (currentDrawSize <= 0) 1 else currentDrawSize
+        // Determine how many cards to draw (<=0 defaults to 1)
+        val drawCount = normalizeDrawCount(currentDrawSize)
 
         // 1️⃣ Normal draw - draw multiple cards if configured
         if (!game.stock.isEmpty()) {
@@ -162,11 +252,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 moved = true
             }
         } else {
-            // 2️⃣ Recycle waste → stock
-            if (!game.waste.isEmpty()) {
+            // Recycle waste -> stock only if recycle limit allows it.
+            if (!game.waste.isEmpty() && canRecycleWaste(game)) {
                 val recycled = game.recycleWasteToStock()
                 if (recycled != null) {
-                    newGame = recycled
+                    newGame = recycled.copy(recycleCountUsed = game.recycleCountUsed + 1)
                     moved = true
                 }
             }
@@ -382,43 +472,44 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private suspend fun recordGameCompletionInternal(game: Game, isWin: Boolean) {
+        // Only record if game hasn't been recorded yet and player made at least 5 moves
+        if (currentHandRecorded || game.moves < 5) return
+
+        currentHandRecorded = true
+
+        try {
+            val settings = settingsManager.gamePlaySettingsFlow.firstOrNull()
+            val playerName = settings?.playerDisplayName
+            val cardsDraw = settings?.drawSize
+            statsManager.recordGame(
+                score = game.score,
+                moves = game.moves,
+                timeMs = gameTime.value * 1000,  // Convert seconds to milliseconds
+                isWin = isWin,
+                playerName = playerName,
+                cardsDraw = cardsDraw
+            )
+        } catch (e: Exception) {
+            Log.e("GameViewModel", "Failed to record game completion", e)
+            currentHandRecorded = false
+        }
+    }
+
     /**
      * Record a completed game in the database.
      * Only records if moves >= 5 and game hasn't been recorded yet.
      * Called when a game is won, or when the game is abandoned with enough moves.
      */
     private fun recordGameCompletion(game: Game, isWin: Boolean) {
-        // Only record if game hasn't been recorded yet and player made at least 5 moves
-        if (currentHandRecorded || game.moves < 5) {
-            return
-        }
-
-        currentHandRecorded = true
-
         viewModelScope.launch {
-            try {
-                val settings = settingsManager.gamePlaySettingsFlow.firstOrNull()
-                val playerName = settings?.playerDisplayName
-                val cardsDraw = settings?.drawSize
-                statsManager.recordGame(
-                    score = game.score,
-                    moves = game.moves,
-                    timeMs = gameTime.value * 1000,  // Convert seconds to milliseconds
-                    isWin = isWin,
-                    playerName = playerName,
-                    cardsDraw = cardsDraw
-                )
-            } catch (e: Exception) {
-                Log.e("GameViewModel", "Failed to record game completion", e)
-            }
+            recordGameCompletionInternal(game, isWin)
         }
     }
 
     fun undo() {
-
         if (undoStack.isNotEmpty()) {
             val current = _game.value
-
             redoStack.addLast(current)
             _game.value = undoStack.removeLast()
             updateUndoRedoState()
@@ -429,9 +520,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (redoStack.isEmpty()) return
 
         val current = _game.value
-
         undoStack.addLast(current)
-
         _game.value = redoStack.removeLast()
         updateUndoRedoState()
     }
@@ -451,8 +540,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun saveGame() {
         viewModelScope.launch {
             try {
-                val json = gson.toJson(_game.value)
+                val gameToSave = _game.value
+                val json = gson.toJson(gameToSave)
                 repository.saveCurrentGameState(json)
+                // Mirror session state: true while an in-progress game exists in storage,
+                // false once the game has reached a terminal state.
+                settingsManager.setGameSessionActive(gameToSave.status == GameStatus.IN_PROGRESS)
             } catch (t: Throwable) {
                 Log.w("GameViewModel", "saveGame failed: ${t.message}")
             }
@@ -475,9 +568,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun stopGame() {
-        // Record only if this hand is still in progress and eligible.
-        finalizeCurrentGameIfNeeded()
-        saveGame()
+        val current = _game.value
+
+        // runBlocking ensures the record + save + flag-clear all complete before the ViewModel
+        // is torn down when the Activity finishes (back-press / explicit exit).
+        runBlocking {
+            if (current.status == GameStatus.IN_PROGRESS) {
+                recordGameCompletionInternal(current, isWin = false)
+            }
+            // Persist final state and clear the session flag in the same block so there is
+            // no window where the process could die between the two operations.
+            try {
+                val json = gson.toJson(current)
+                repository.saveCurrentGameState(json)
+            } catch (t: Throwable) {
+                Log.w("GameViewModel", "stopGame save failed: ${t.message}")
+            }
+            settingsManager.setGameSessionActive(false)
+        }
     }
 
     /**
@@ -501,12 +609,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun tryRecycleWasteToStock(): Boolean {
         val game = _game.value
+
+        if (!canRecycleWaste(game)) return false
+
         val updated = game.recycleWasteToStock()
 
         if (updated != null) {
             undoStack.addLast(game)
             redoStack.clear()
-            _game.value = updated
+            _game.value = updated.copy(recycleCountUsed = game.recycleCountUsed + 1)
             updateUndoRedoState()
             return true
         }
