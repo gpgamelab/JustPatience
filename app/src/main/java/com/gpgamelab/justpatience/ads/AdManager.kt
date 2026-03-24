@@ -12,6 +12,8 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback
 import com.google.android.gms.ads.FullScreenContentCallback
 
 /**
@@ -22,6 +24,7 @@ class AdManager(private val context: Context) {
 
     private var mInterstitialAd: InterstitialAd? = null
     private var mRewardedAd: RewardedAd? = null
+    private var mRewardedInterstitialAd: RewardedInterstitialAd? = null
     private var showOnLoad = false
     private var adDismissedCallback: (() -> Unit)? = null
 
@@ -33,6 +36,7 @@ class AdManager(private val context: Context) {
         const val TEST_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
         const val TEST_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
         const val TEST_REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+        const val TEST_REWARDED_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/5354046379"
 
         const val PRODUCTION_BANNER_AD_UNIT_ID = "ca-app-pub-7092037186763886/6653974301"
         const val PRODUCTION_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-7092037186763886/9723495353"
@@ -40,6 +44,8 @@ class AdManager(private val context: Context) {
         const val PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN = "ca-app-pub-7092037186763886/8518224896"
         const val PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN = "ca-app-pub-7092037186763886/5983415109"
         const val PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN = "ca-app-pub-7092037186763886/8929288432"
+        // TODO: Replace with your Rewarded Interstitial ad unit ID.
+        const val PRODUCTION_REWARDED_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-7092037186763886/6817625839"
 
         // Keep all ad types aligned with the current build unless explicitly overridden.
         private var isTestMode = false
@@ -255,6 +261,39 @@ class AdManager(private val context: Context) {
     }
 
     /**
+     * Load a rewarded interstitial ad (used in the post-win dialog flow).
+     */
+    fun loadRewardedInterstitialAd() {
+        try {
+            val adRequest = AdRequest.Builder().build()
+            val adUnitId = if (isTestMode) {
+                TEST_REWARDED_INTERSTITIAL_AD_UNIT_ID
+            } else {
+                PRODUCTION_REWARDED_INTERSTITIAL_AD_UNIT_ID
+            }
+
+            RewardedInterstitialAd.load(
+                context,
+                adUnitId,
+                adRequest,
+                object : RewardedInterstitialAdLoadCallback() {
+                    override fun onAdLoaded(rewardedInterstitialAd: RewardedInterstitialAd) {
+                        mRewardedInterstitialAd = rewardedInterstitialAd
+                        Log.d(TAG, "Rewarded interstitial ad loaded successfully")
+                    }
+
+                    override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                        Log.e(TAG, "Rewarded interstitial ad failed to load: ${loadAdError.message}")
+                        mRewardedInterstitialAd = null
+                    }
+                }
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load rewarded interstitial ad", e)
+        }
+    }
+
+    /**
      * Show rewarded ad if available.
      * @return true if ad was shown, false if unavailable.
      */
@@ -391,6 +430,52 @@ class AdManager(private val context: Context) {
 
         ad.show(context as android.app.Activity) { rewardItem ->
             Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+        }
+        return true
+    }
+
+    /**
+     * Show rewarded interstitial ad if available.
+     *
+     * @param onCompleted Called when ad flow finishes (dismissed or failed to show).
+     * @param onUserEarnedReward Called when the SDK reports reward earned.
+     * @return true if ad was shown, false if unavailable.
+     */
+    fun showRewardedInterstitialAd(
+        onCompleted: (() -> Unit)? = null,
+        onUserEarnedReward: (() -> Unit)? = null
+    ): Boolean {
+        val ad = mRewardedInterstitialAd
+        if (ad == null) {
+            Log.d(TAG, "Rewarded interstitial ad not ready to show")
+            return false
+        }
+
+        val completion = onCompleted ?: adDismissedCallback
+
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d(TAG, "Rewarded interstitial ad dismissed")
+                mRewardedInterstitialAd = null
+                loadRewardedInterstitialAd()
+                completion?.invoke()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                Log.e(TAG, "Rewarded interstitial ad failed to show: ${adError.message}")
+                mRewardedInterstitialAd = null
+                loadRewardedInterstitialAd()
+                completion?.invoke()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d(TAG, "Rewarded interstitial ad showed full screen content")
+            }
+        }
+
+        ad.show(context as android.app.Activity) { rewardItem ->
+            Log.d(TAG, "User earned rewarded-interstitial reward: ${rewardItem.amount} ${rewardItem.type}")
+            onUserEarnedReward?.invoke()
         }
         return true
     }

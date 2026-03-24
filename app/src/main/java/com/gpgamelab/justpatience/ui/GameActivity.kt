@@ -49,6 +49,7 @@ class GameActivity : AppCompatActivity() {
     private var winDialogShowing: Boolean = false
     private var winCelebrationPlayed: Boolean = false
     private var isWinVideoPlaying: Boolean = false
+    private var hasShownWinRewardedInterstitialForCurrentWin: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +72,7 @@ class GameActivity : AppCompatActivity() {
         adManager.loadBannerAd(binding.adView)
         adManager.loadInterstitialAd()
         adManager.loadRewardedAd()
+        adManager.loadRewardedInterstitialAd()
 
         statsManager = GameStatsManager(applicationContext)
 
@@ -98,6 +100,7 @@ class GameActivity : AppCompatActivity() {
 
                         if (g.status != GameStatus.WON) {
                             winCelebrationPlayed = false
+                            hasShownWinRewardedInterstitialForCurrentWin = false
                         } else {
                             showWinCelebrationThenDialog()
                         }
@@ -144,11 +147,16 @@ class GameActivity : AppCompatActivity() {
             handleRedoClick()
         }
         binding.btnNewGame.setOnClickListener {
-            maybeShowStartInterstitial()
+            // If the current game is in-progress it will be finalized (recorded) inside
+            // startNewGame(), but that write is async so totalGamesPlayed is still the
+            // pre-record value here.  Pass +1 so the threshold check is accurate.
+            val pending = if (viewModel.game.value.status == GameStatus.IN_PROGRESS) 1 else 0
+            maybeShowStartInterstitial(pending)
             enableUndo = false
             enableRedo = false
             enableRestart = false
             winCelebrationPlayed = false
+            hasShownWinRewardedInterstitialForCurrentWin = false
             updateOverlayVisibility()
             viewModel.startNewGame()
         }
@@ -185,7 +193,7 @@ class GameActivity : AppCompatActivity() {
         if (!isWin || isFinishing || isDestroyed || winDialogShowing) return
 
         winDialogShowing = true
-        AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
             .setTitle(R.string.win_dialog_title)
             .setMessage(
                 getString(
@@ -200,12 +208,30 @@ class GameActivity : AppCompatActivity() {
                 enableRedo = false
                 enableRestart = false
                 winCelebrationPlayed = false
+                hasShownWinRewardedInterstitialForCurrentWin = false
                 updateOverlayVisibility()
                 viewModel.startNewGame()
             }
-            .setNeutralButton(android.R.string.cancel, null)
+            .setNeutralButton(R.string.continue_without_reward, null)
             .setOnDismissListener { winDialogShowing = false }
-            .show()
+
+        if (!hasShownWinRewardedInterstitialForCurrentWin) {
+            builder.setNegativeButton(R.string.watch_optional_ad) { _, _ ->
+                val shown = adManager.showRewardedInterstitialAd(
+                    onCompleted = { showGameEndDialog(true) }
+                )
+
+                if (shown) {
+                    hasShownWinRewardedInterstitialForCurrentWin = true
+                } else {
+                    Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
+                    adManager.loadRewardedInterstitialAd()
+                    binding.root.post { showGameEndDialog(true) }
+                }
+            }
+        }
+
+        builder.show()
     }
 
     private fun showStatsDialog() {
@@ -242,8 +268,14 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    private fun maybeShowStartInterstitial() {
-        if (!shouldShowStartInterstitial(totalGamesPlayed)) return
+    /**
+     * @param pendingRecordCount Pass 1 when the current in-progress game is about to be
+     * finalized (recorded) by the action that triggered this call (e.g. pressing New Game
+     * mid-game).  That recording is async, so totalGamesPlayed is still the pre-record value
+     * at this point; adding 1 corrects for the stale count so the threshold check is accurate.
+     */
+    private fun maybeShowStartInterstitial(pendingRecordCount: Int = 0) {
+        if (!shouldShowStartInterstitial(totalGamesPlayed + pendingRecordCount)) return
 
         // Show immediately if loaded; otherwise show when load completes.
         adManager.setShowOnLoad(true)

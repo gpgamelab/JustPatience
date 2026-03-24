@@ -88,6 +88,9 @@
     <string name="win_message">You solved the game with a final score of %1$d in %2$s! Well done!</string>
     <string name="win_dialog_message">You solved the puzzle!\nFinal Score: %1$d | Total Moves: %2$d</string>
     <string name="continue_playing">View Board</string>
+    <string name="watch_optional_ad">Watch Optional Ad</string>
+    <string name="continue_without_reward">Continue</string>
+    <string name="optional_ad_not_ready">Ad not ready right now.</string>
 
     <string name="switch_to_register">Don\'t have an account? Register</string>
     <string name="login_title_text">User Login</string>
