@@ -1,13 +1,10 @@
 package com.gpgamelab.justpatience.ui
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
@@ -57,10 +54,6 @@ class GameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.app_name)
 
         // Wire viewModel into GameBoardView
         binding.gameBoardView.viewModel = viewModel
@@ -172,43 +165,6 @@ class GameActivity : AppCompatActivity() {
         return String.format("%02d:%02d", minutes, secs)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_game, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                // Navigate back to home page
-                startActivity(Intent(this, HomeActivity::class.java))
-                finish()
-                return true
-            }
-            R.id.action_new_game -> {
-                maybeShowStartInterstitial()
-                enableUndo = false
-                enableRedo = false
-                enableRestart = false
-                winCelebrationPlayed = false
-                updateOverlayVisibility()
-                viewModel.startNewGame()
-            }
-            R.id.action_restart -> showRestartDialog()
-            R.id.action_undo -> {
-                handleUndoClick()
-            }
-            R.id.action_settings -> startActivity(
-                Intent(
-                    this,
-                    com.gpgamelab.justpatience.SettingsActivity::class.java
-                )
-            )
-
-            else -> return super.onOptionsItemSelected(item)
-        }
-        return true
-    }
 
     private fun showRestartDialog() {
         AlertDialog.Builder(this)

@@ -7,21 +7,7 @@
     android:background="@color/background_color"
     tools:context=".ui.GameActivity">
 
-    <!-- 1. Toolbar for Navigation and Menu -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/toolbar_color"
-        android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:titleTextColor="@color/text_color" />
-
-    <!-- 2. Game Info Panel (Score, Moves, Time) -->
+    <!-- 1. Game Info Panel (Score, Moves, Time) -->
     <LinearLayout
         android:id="@+id/game_info_panel"
         android:layout_width="0dp"
@@ -35,7 +21,7 @@
         android:paddingBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        app:layout_constraintTop_toTopOf="parent">
 
         <!-- Score -->
         <TextView
@@ -74,7 +60,7 @@
             tools:text="Time: 0:35" />
     </LinearLayout>
 
-    <!-- 3. Main Content Area: Game Board on Left, Controls on Right -->
+    <!-- 2. Main Content Area: Game Board on Left, Controls on Right -->
     <com.gpgamelab.justpatience.ui.GameBoardView
         android:id="@+id/game_board_view"
         android:layout_width="0dp"
@@ -84,7 +70,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/game_info_panel" />
 
-    <!-- 4. Control Buttons Panel (Right Side) -->
+    <!-- 3. Control Buttons Panel (Right Side) -->
     <LinearLayout
         android:id="@+id/control_buttons_layout"
         android:layout_width="wrap_content"
@@ -201,7 +187,7 @@
 
     </LinearLayout>
 
-    <!-- 5. Banner Ad (at the very bottom, below game board and controls) -->
+    <!-- 4. Banner Ad (at the very bottom, below game board and controls) -->
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
         android:layout_width="match_parent"

@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 data class GameRecord(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    val playerName: String? = null,
     val score: Int,
     val moves: Int,
     val timeMs: Long,  // Game duration in milliseconds

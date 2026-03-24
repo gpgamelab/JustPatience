@@ -29,7 +29,135 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Title for Theme Settings -->
+            <!-- ===== PLAYER ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_player"
+                android:textColor="@color/text_color_secondary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_player_name_label"
+                android:textColor="@color/text_color"
+                android:textSize="14sp"
+                android:paddingBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edit_player_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/settings_player_name_hint"
+                android:inputType="textPersonName"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"
+                android:background="@android:drawable/edit_text"
+                android:padding="8dp"
+                android:maxLines="1"
+                android:imeOptions="actionDone" />
+
+            <!-- ===== GAME PLAY ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_gameplay"
+                android:textColor="@color/text_color_secondary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingTop="24dp"
+                android:paddingBottom="8dp" />
+
+            <!-- Draw Size -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_draw_size_label"
+                android:textColor="@color/text_color"
+                android:textSize="16sp"
+                android:paddingBottom="4dp" />
+
+            <RadioGroup
+                android:id="@+id/radio_group_draw_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/radio_draw_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_draw_1"
+                    android:textColor="@color/text_color"
+                    android:layout_marginEnd="24dp" />
+
+                <RadioButton
+                    android:id="@+id/radio_draw_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_draw_3"
+                    android:textColor="@color/text_color" />
+            </RadioGroup>
+
+            <!-- Recycle Waste Pile -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_recycle_label"
+                android:textColor="@color/text_color"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <Button
+                    android:id="@+id/btn_recycle_minus"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="−"
+                    android:textSize="18sp"
+                    android:padding="0dp"
+                    android:backgroundTint="@color/secondary_button_color" />
+
+                <TextView
+                    android:id="@+id/text_recycle_count"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textColor="@color/text_color"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_recycle_plus"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="+"
+                    android:textSize="18sp"
+                    android:padding="0dp"
+                    android:backgroundTint="@color/secondary_button_color" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_infinite_recycles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/settings_recycle_unlimited"
+                    android:textColor="@color/text_color"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- ===== APPEARANCE ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -37,10 +165,9 @@
                 android:textColor="@color/text_color_secondary"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"/>
+                android:paddingTop="24dp"
+                android:paddingBottom="8dp" />
 
-            <!-- Option: Show Card Hints -->
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/switch_hints"
                 android:layout_width="match_parent"
@@ -50,9 +177,8 @@
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
                 android:textSize="16sp"
-                android:checked="true"/>
+                android:checked="true" />
 
-            <!-- Option: Show Timer -->
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/switch_timer"
                 android:layout_width="match_parent"
@@ -62,45 +188,113 @@
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
                 android:textSize="16sp"
-                android:checked="true"/>
+                android:checked="true" />
 
-            <!-- Title for Account Settings -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_card_animations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_card_animations"
+                android:textColor="@color/text_color"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="16sp"
+                android:checked="true" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_win_animation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_win_animation"
+                android:textColor="@color/text_color"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="16sp"
+                android:checked="true" />
+
+            <!-- ===== SOUND ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Account"
+                android:text="@string/settings_section_sound"
                 android:textColor="@color/text_color_secondary"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:paddingTop="24dp"
-                android:paddingBottom="8dp"/>
+                android:paddingBottom="8dp" />
 
-            <!-- Button: Logout -->
-            <Button
-                android:id="@+id/logoutButton"
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_mute_music"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/logout_title"
-                android:textColor="@android:color/white"
-                android:backgroundTint="@color/logout_button_color"
-                android:layout_marginTop="8dp"
-                android:padding="12dp"
-                app:cornerRadius="8dp"/>
-
-            <!-- Button: Reset High Score -->
-            <Button
-                android:id="@+id/resetStatsButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/reset_high_score"
+                android:text="@string/settings_mute_music"
                 android:textColor="@color/text_color"
-                android:backgroundTint="@color/secondary_button_color"
-                android:layout_marginTop="16dp"
-                android:padding="12dp"
-                app:cornerRadius="8dp"/>
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="16sp" />
 
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_mute_card_sound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_mute_card_sound"
+                android:textColor="@color/text_color"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="16sp" />
 
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_mute_win_sound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_mute_win_sound"
+                android:textColor="@color/text_color"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textSize="16sp" />
 
+            <!-- ===== DISPLAY ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_section_display"
+                android:textColor="@color/text_color_secondary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingTop="24dp"
+                android:paddingBottom="8dp" />
+
+            <!-- Screen Orientation Lock -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_orientation_label"
+                android:textColor="@color/text_color"
+                android:textSize="16sp"
+                android:paddingBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinner_orientation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/text_color"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Board Layout -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_board_layout_label"
+                android:textColor="@color/text_color"
+                android:textSize="16sp"
+                android:paddingBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinner_board_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/text_color"
+                android:layout_marginBottom="16dp" />
 
         </LinearLayout>
     </ScrollView>

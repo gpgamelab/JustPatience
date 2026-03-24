@@ -20,12 +20,20 @@ class GameStatsManager(context: Context) {
      * @param moves The number of moves made
      * @param timeMs The game duration in milliseconds
      * @param isWin Whether the game was won
+     * @param playerName Display name captured from settings (nullable)
      */
-    suspend fun recordGame(score: Int, moves: Int, timeMs: Long, isWin: Boolean) {
+    suspend fun recordGame(
+        score: Int,
+        moves: Int,
+        timeMs: Long,
+        isWin: Boolean,
+        playerName: String?
+    ) {
         val now = System.currentTimeMillis()
         val dateString = formatTimestamp(now)
 
         val record = GameRecord(
+            playerName = playerName?.trim()?.takeIf { it.isNotEmpty() },
             score = score,
             moves = moves,
             timeMs = timeMs,

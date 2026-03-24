@@ -19,6 +19,7 @@ class GameRecordAdapter(
 
         fun bind(record: GameRecord) {
             binding.tvGameDate.text = record.dateString
+            binding.tvGamePlayerName.text = record.playerName?.takeIf { it.isNotBlank() } ?: "N/A"
             binding.tvGameScore.text = record.score.toString()
             binding.tvGameMoves.text = record.moves.toString()
             binding.tvGameTime.text = onFormatTime(record.timeMs)

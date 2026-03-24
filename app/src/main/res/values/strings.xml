@@ -72,7 +72,7 @@
     <string name="exit_to_home">Exit to Home</string>
     <string name="try_again_button_text">Try Again</string>
 
-    <string name="new_game_title">Start New Game</string>
+    <string name="new_game_title">New Game</string>
     <string name="new_game_message">Starting a new game will save your current progress, or overwrite it if no save slot is available. Continue?</string>
     <string name="game_started">New game started!</string>
 
@@ -117,5 +117,30 @@
     <string name="about_privacy_body">This is placeholder privacy content for now.\n\nWe collect only the minimum data needed to run core features (for example: local game state and statistics on your device). Ads may collect limited diagnostic or device data through ad providers.\n\nTODO: Replace this text with your final privacy policy wording before publication.</string>
 
     <string name="auto_move_button_text">Auto</string>
+
+    <!-- Settings Sections -->
+    <string name="settings_section_player">Player</string>
+    <string name="settings_player_name_label">Display Name</string>
+    <string name="settings_player_name_hint">Enter your name</string>
+    <string name="settings_section_gameplay">Game Play</string>
+    <string name="settings_draw_size_label">Draw Cards</string>
+    <string name="settings_draw_1">Draw 1</string>
+    <string name="settings_draw_3">Draw 3</string>
+    <string name="settings_recycle_label">Waste Pile Recycles</string>
+    <string name="settings_recycle_unlimited">Unlimited</string>
+    <string name="settings_card_animations">Show Card Move Animations</string>
+    <string name="settings_win_animation">Show WIN Animation</string>
+    <string name="settings_section_sound">Sound</string>
+    <string name="settings_mute_music">Mute Game Music</string>
+    <string name="settings_mute_card_sound">Mute Card Move Sound</string>
+    <string name="settings_mute_win_sound">Mute WIN Sound</string>
+    <string name="settings_section_display">Display</string>
+    <string name="settings_orientation_label">Screen Orientation Lock</string>
+    <string name="settings_orientation_device">Device Default</string>
+    <string name="settings_orientation_portrait">Portrait</string>
+    <string name="settings_orientation_landscape">Landscape</string>
+    <string name="settings_board_layout_label">Board Layout</string>
+    <string name="settings_board_layout_right">Right Hand (default)</string>
+    <string name="settings_board_layout_left">Left Hand</string>
 
 </resources>

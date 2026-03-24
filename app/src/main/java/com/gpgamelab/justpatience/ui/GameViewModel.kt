@@ -369,11 +369,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             try {
+                val playerName = settingsManager.gamePlaySettingsFlow.firstOrNull()?.playerDisplayName
                 statsManager.recordGame(
                     score = game.score,
                     moves = game.moves,
                     timeMs = gameTime.value * 1000,  // Convert seconds to milliseconds
-                    isWin = isWin
+                    isWin = isWin,
+                    playerName = playerName
                 )
             } catch (e: Exception) {
                 Log.e("GameViewModel", "Failed to record game completion", e)

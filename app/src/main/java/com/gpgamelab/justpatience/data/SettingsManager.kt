@@ -48,7 +48,37 @@ class SettingsManager(private val context: Context) {
 
         // Saved Game State
         val SAVED_GAME_STATE_JSON = stringPreferencesKey("saved_game_state_json")
+
+        // Game Play Settings
+        val DRAW_SIZE = intPreferencesKey("draw_size")                          // 1 or 3
+        val RECYCLE_COUNT = intPreferencesKey("recycle_count")                  // 0..99
+        val INFINITE_RECYCLES = booleanPreferencesKey("infinite_recycles")
+        val SHOW_CARD_ANIMATIONS = booleanPreferencesKey("show_card_animations")
+        val SHOW_WIN_ANIMATION = booleanPreferencesKey("show_win_animation")
+        val MUTE_MUSIC = booleanPreferencesKey("mute_music")
+        val MUTE_CARD_SOUND = booleanPreferencesKey("mute_card_sound")
+        val MUTE_WIN_SOUND = booleanPreferencesKey("mute_win_sound")
+        val ORIENTATION_LOCK = stringPreferencesKey("orientation_lock")         // "device", "portrait", "landscape"
+        val BOARD_LAYOUT = stringPreferencesKey("board_layout")                 // "right_hand", "left_hand"
+        val PLAYER_DISPLAY_NAME = stringPreferencesKey("player_display_name")
     }
+
+    /**
+     * All user-configurable game-play and display settings.
+     */
+    data class GamePlaySettings(
+        val drawSize: Int = 1,
+        val recycleCount: Int = 3,
+        val infiniteRecycles: Boolean = false,
+        val showCardAnimations: Boolean = true,
+        val showWinAnimation: Boolean = true,
+        val muteMusic: Boolean = false,
+        val muteCardSound: Boolean = false,
+        val muteWinSound: Boolean = false,
+        val orientationLock: String = "device",
+        val boardLayout: String = "right_hand",
+        val playerDisplayName: String = ""
+    )
 
     // --- Data Classes ---
 
@@ -219,6 +249,49 @@ class SettingsManager(private val context: Context) {
     suspend fun clearSavedGame() {
         dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.SAVED_GAME_STATE_JSON)
+        }
+    }
+
+    // --- Game Play Settings Flow ---
+
+    val gamePlaySettingsFlow: Flow<GamePlaySettings> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                Log.e("SettingsManager", "Error reading game play settings.", exception)
+                emit(androidx.datastore.preferences.core.emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            GamePlaySettings(
+                drawSize = preferences[PreferencesKeys.DRAW_SIZE] ?: 1,
+                recycleCount = preferences[PreferencesKeys.RECYCLE_COUNT] ?: 3,
+                infiniteRecycles = preferences[PreferencesKeys.INFINITE_RECYCLES] ?: false,
+                showCardAnimations = preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] ?: true,
+                showWinAnimation = preferences[PreferencesKeys.SHOW_WIN_ANIMATION] ?: true,
+                muteMusic = preferences[PreferencesKeys.MUTE_MUSIC] ?: false,
+                muteCardSound = preferences[PreferencesKeys.MUTE_CARD_SOUND] ?: false,
+                muteWinSound = preferences[PreferencesKeys.MUTE_WIN_SOUND] ?: false,
+                orientationLock = preferences[PreferencesKeys.ORIENTATION_LOCK] ?: "device",
+                boardLayout = preferences[PreferencesKeys.BOARD_LAYOUT] ?: "right_hand",
+                playerDisplayName = preferences[PreferencesKeys.PLAYER_DISPLAY_NAME] ?: ""
+            )
+        }
+
+    suspend fun saveGamePlaySettings(settings: GamePlaySettings) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DRAW_SIZE] = settings.drawSize
+            preferences[PreferencesKeys.RECYCLE_COUNT] = settings.recycleCount
+            preferences[PreferencesKeys.INFINITE_RECYCLES] = settings.infiniteRecycles
+            preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] = settings.showCardAnimations
+            preferences[PreferencesKeys.SHOW_WIN_ANIMATION] = settings.showWinAnimation
+            preferences[PreferencesKeys.MUTE_MUSIC] = settings.muteMusic
+            preferences[PreferencesKeys.MUTE_CARD_SOUND] = settings.muteCardSound
+            preferences[PreferencesKeys.MUTE_WIN_SOUND] = settings.muteWinSound
+            preferences[PreferencesKeys.ORIENTATION_LOCK] = settings.orientationLock
+            preferences[PreferencesKeys.BOARD_LAYOUT] = settings.boardLayout
+            preferences[PreferencesKeys.PLAYER_DISPLAY_NAME] = settings.playerDisplayName
         }
     }
 }
