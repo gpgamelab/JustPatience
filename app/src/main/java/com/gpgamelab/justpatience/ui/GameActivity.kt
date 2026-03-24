@@ -50,6 +50,7 @@ class GameActivity : AppCompatActivity() {
     private var winCelebrationPlayed: Boolean = false
     private var isWinVideoPlaying: Boolean = false
     private var hasShownWinRewardedInterstitialForCurrentWin: Boolean = false
+    private var showWinAnimation: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +117,12 @@ class GameActivity : AppCompatActivity() {
                 launch {
                     viewModel.showGameTimer.collect { shouldShow ->
                         binding.tvTime.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                    }
+                }
+
+                launch {
+                    viewModel.showWinAnimation.collect { enabled ->
+                        showWinAnimation = enabled
                     }
                 }
 
@@ -401,7 +408,7 @@ class GameActivity : AppCompatActivity() {
     private fun showWinCelebrationThenDialog() {
         if (isFinishing || isDestroyed || winDialogShowing || isWinVideoPlaying) return
 
-        if (winCelebrationPlayed) {
+        if (!showWinAnimation || winCelebrationPlayed) {
             showGameEndDialog(true)
             return
         }

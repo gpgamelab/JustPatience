@@ -57,6 +57,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _showGameTimer = MutableStateFlow(true)
     val showGameTimer: StateFlow<Boolean> = _showGameTimer
 
+    private val _showWinAnimation = MutableStateFlow(true)
+    val showWinAnimation: StateFlow<Boolean> = _showWinAnimation
+
     private var timerJob: Job? = null
     private var isTimerRunning = false
     private var hasRegisteredFirstMove = false
@@ -145,6 +148,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _recycleLimitForDisplay.value = currentRecycleLimit
                 _isInfiniteRecycles.value = currentInfiniteRecycles
                 _showGameTimer.value = settings.showGameTimer
+                _showWinAnimation.value = settings.showWinAnimation
             }
         }
     }
