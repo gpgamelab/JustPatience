@@ -60,6 +60,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _showWinAnimation = MutableStateFlow(true)
     val showWinAnimation: StateFlow<Boolean> = _showWinAnimation
 
+    private val _isMirroredLayout = MutableStateFlow(false)
+    val isMirroredLayout: StateFlow<Boolean> = _isMirroredLayout
+
     private var timerJob: Job? = null
     private var isTimerRunning = false
     private var hasRegisteredFirstMove = false
@@ -149,6 +152,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _isInfiniteRecycles.value = currentInfiniteRecycles
                 _showGameTimer.value = settings.showGameTimer
                 _showWinAnimation.value = settings.showWinAnimation
+                _isMirroredLayout.value = settings.boardLayout == "left_hand"
             }
         }
     }

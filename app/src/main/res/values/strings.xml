@@ -22,7 +22,7 @@
 
     <!-- General Status Strings -->
     <string name="status_guest_user">Guest User</string>
-    <string name="status_loading">Loading Status...</string>
+    <string name="status_loading">Loading Status…</string>
     <string name="not_applicable">N/A</string>
 
     <!-- Stats Strings -->
@@ -110,9 +110,9 @@
     <string name="about_heading">About JustPatience</string>
     <string name="about_summary">JustPatience is a modern solitaire experience built for quick play sessions and long relaxing runs. This About page uses sample content you can replace with your own branding and details later.</string>
     <string name="about_version_title">App Version</string>
-    <string name="about_version_placeholder">Loading version...</string>
+    <string name="about_version_placeholder">Loading version…</string>
     <string name="about_version_value_format">Version %1$s (Build %2$d)</string>
-    <string name="about_coming_features_title">Coming Features (Next 1-2 Releases)</string>
+    <string name="about_coming_features_title">Coming Features (Next 1–2 Releases)</string>
     <string name="about_coming_features_list">- In-app purchases, including premium subscription to remove most ads\n- In-game store to buy content\n- Selectable tabletop backgrounds\n- Selectable card backs and card faces\n- Cool animations\n- Sound effects\n- Theme packs\n- And more</string>
     <string name="about_additional_info_title">Additional Info (Example)</string>
     <string name="about_additional_info_body">Organization: GNU Paradigms - Games Lab\nContact: support@example.com\nWebsite: https://example.com\nTerms of Use: https://example.com/terms\n\nThank you for playing JustPatience! Your feedback helps shape future updates.</string>
@@ -143,8 +143,8 @@
     <string name="settings_orientation_portrait">Portrait</string>
     <string name="settings_orientation_landscape">Landscape</string>
     <string name="settings_board_layout_label">Board Layout</string>
-    <string name="settings_board_layout_right">Right Hand (default)</string>
-    <string name="settings_board_layout_left">Left Hand</string>
+    <string name="settings_board_layout_right">Classic (Draw Pile Left)</string>
+    <string name="settings_board_layout_left">Mirrored (Draw Pile Right)</string>
 
     <!-- Board pile labels -->
     <plurals name="stock_draw_label">

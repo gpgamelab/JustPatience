@@ -46,6 +46,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // Orientation-aware dimensions and offsets
     private var isLandscape = false
+    private var isMirrored = false
     private var BOARD_WIDTH_FRACTION = 0.70f
     private var BOARD_SHIFT_LEFT_PX = 150f
     private var BOARD_SHIFT_DOWN_PX = 120f
@@ -179,6 +180,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 launch {
                     viewModel.isInfiniteRecycles.collect { invalidate() }
                 }
+                launch {
+                    viewModel.isMirroredLayout.collect { mirrored ->
+                        isMirrored = mirrored
+                        invalidate()
+                    }
+                }
             }
         }
     }
@@ -264,53 +271,66 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun getStockRect(): RectF {
         if (!isLandscape) {
             val topY = getTopRowY()
-            val x = columnX[0]
+            // Mirrored: stock is at the far-right column (col 6); Classic: col 0
+            val x = if (isMirrored) columnX[6] else columnX[0]
             return RectF(x, topY, x + cardW, topY + cardH)
         }
 
-        // In landscape, position to the left of tableau, aligned with foundation pile 1
-        val tableauLeft = columnX.firstOrNull() ?: cardPadding
-        val x = tableauLeft - cardW - cardPadding
-
-        // Align with foundation pile 1's Y position
+        // Landscape: stock is outside the tableau columns
         val foundationRect = getFoundationRect(0)
         val y = foundationRect.top
+        val x = if (isMirrored) {
+            // Mirrored: stock to the RIGHT of tableau
+            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + cardPadding
+        } else {
+            // Classic: stock to the LEFT of tableau
+            (columnX.firstOrNull() ?: cardPadding) - cardW - cardPadding
+        }
         return RectF(x, y, x + cardW, y + cardH)
     }
 
     private fun getWasteRect(): RectF {
         if (!isLandscape) {
             val topY = getTopRowY()
-            val x = columnX[1]
+            // Mirrored: waste is at col 5; Classic: col 1
+            val x = if (isMirrored) columnX[5] else columnX[1]
             return RectF(x, topY, x + cardW, topY + cardH)
         }
 
-        // In landscape, position to the left of tableau, aligned with foundation pile 2
-        val tableauLeft = columnX.firstOrNull() ?: cardPadding
-        val x = tableauLeft - cardW - cardPadding
-
-        // Align with foundation pile 2's Y position
+        // Landscape: waste is outside the tableau columns
         val foundationRect = getFoundationRect(1)
         val y = foundationRect.top
+        val x = if (isMirrored) {
+            // Mirrored: waste to the RIGHT of tableau (same X column as mirrored stock)
+            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + cardPadding
+        } else {
+            // Classic: waste to the LEFT of tableau (same X column as classic stock)
+            (columnX.firstOrNull() ?: cardPadding) - cardW - cardPadding
+        }
         return RectF(x, y, x + cardW, y + cardH)
     }
 
     private fun getFoundationRect(index: Int): RectF {
         if (!isLandscape) {
             val topY = getTopRowY()
-            val x = columnX[3 + index]
+            // Mirrored: foundations at col 0-3; Classic: col 3-6
+            val x = if (isMirrored) columnX[index] else columnX[3 + index]
             return RectF(x, topY, x + cardW, topY + cardH)
         }
 
-        // In landscape: position foundations to the right of tableau
-        val tableauRight = columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)
-        val x = tableauRight + cardPadding
+        // Landscape: foundations are outside the tableau columns
+        val x = if (isMirrored) {
+            // Mirrored: foundations to the LEFT of tableau
+            (columnX.firstOrNull() ?: cardPadding) - cardW - cardPadding
+        } else {
+            // Classic: foundations to the RIGHT of tableau
+            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + cardPadding
+        }
 
-        // Calculate base Y independently to avoid circular dependency with getTableauStartY()
+        // Y position: vertically stacked with equal gaps (same formula for both layouts)
         val topRowY = getTopRowY()
         val baseY = topRowY + cardH + cardPadding + tableauOffset - (cardH * 0.38f)
-        val stepY = cardH * 0.88f  // Reduced to fit all piles on screen with equal gaps
-        // Adjustments: pile 1: -65%, pile 2: -40%, pile 3: -15%, pile 4: +15%
+        val stepY = cardH * 0.88f
         val pileAdjustmentFractions = floatArrayOf(-0.65f, -0.40f, -0.15f, 0.15f)
         val pileAdjust = pileAdjustmentFractions.getOrElse(index) { 0f } * cardH
         val y = baseY + (index * stepY) + pileAdjust
@@ -815,22 +835,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
         }
 
-        // In portrait mode, check stock and waste in top row
+        // In portrait mode, check stock and waste in top row using their actual rects
         if (!isLandscape) {
-            val topY = getTopRowY()
-            val topBottom = topY + cardH
-            if (y in topY..topBottom) {
-                for (i in 0 until columns) {
-                    val cx = columnX[i]
-                    if (x in cx..(cx + cardW)) {
-                        return when (i) {
-                            0 -> Triple(StackType.STOCK, 0, -1)
-                            1 -> Triple(StackType.WASTE, 0, -1)
-                            else -> Triple(null, -1, -1)
-                        }
-                    }
-                }
-            }
+            if (getStockRect().contains(x, y)) return Triple(StackType.STOCK, 0, -1)
+            if (getWasteRect().contains(x, y)) return Triple(StackType.WASTE, 0, -1)
         }
 
         // Check tableau
