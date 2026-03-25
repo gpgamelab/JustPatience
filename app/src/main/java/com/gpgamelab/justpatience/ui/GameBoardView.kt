@@ -25,6 +25,7 @@ import com.gpgamelab.justpatience.model.Card
 import com.gpgamelab.justpatience.model.CardSuit
 import com.gpgamelab.justpatience.model.HintDisplayState
 import com.gpgamelab.justpatience.model.HintPhase
+import com.gpgamelab.justpatience.model.SingleClickGlowState
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.model.TableauPile
 import com.gpgamelab.justpatience.model.Verso
@@ -134,6 +135,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     // hint glow state (driven by GameViewModel.hintDisplayState)
     private var hintDisplayState: HintDisplayState? = null
 
+    // single-click glow state (shows all valid destinations simultaneously)
+    private var singleClickGlowState: SingleClickGlowState? = null
+
     private val hintGlowSourcePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ContextCompat.getColor(context, R.color.hint_glow_source_color)
         style = Paint.Style.STROKE
@@ -216,6 +220,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 launch {
                     viewModel.hintDisplayState.collect { state ->
                         hintDisplayState = state
+                        invalidate()
+                    }
+                }
+                launch {
+                    viewModel.singleClickGlowState.collect { state ->
+                        singleClickGlowState = state
                         invalidate()
                     }
                 }
@@ -464,6 +474,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         drawTopRow(canvas)
         drawTableau(canvas)
         drawHintGlows(canvas)
+        drawSingleClickGlows(canvas)
         drawDragGhost(canvas)
         drawAnimatedCard(canvas)
     }
@@ -625,6 +636,41 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             StackType.TABLEAU -> {
                 val x = columnX.getOrNull(move.destStackIndex) ?: return null
                 val pile = viewModel.game.value.tableau.getOrNull(move.destStackIndex) ?: return null
+                var y = getTableauStartY()
+                for (card in pile.asList()) {
+                    y += if (card.isFaceUp) cardW * 0.4f else cardW * 0.1f
+                }
+                RectF(x, y, x + cardW, y + cardH)
+            }
+            else -> null
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Single-click glow drawing (destination disambiguation)
+    // ─────────────────────────────────────────────────────────────
+
+    private fun drawSingleClickGlows(canvas: Canvas) {
+        val glowState = singleClickGlowState ?: return
+
+        // Draw source card glow
+        getSourceGlowRect(glowState)?.let { drawGlowRing(canvas, it, hintGlowSourcePaint) }
+
+        // Draw all destination glows simultaneously
+        for (dest in glowState.destinations) {
+            getDestinationGlowRect(dest)?.let { drawGlowRing(canvas, it, hintGlowDestPaint) }
+        }
+    }
+
+    private fun getSourceGlowRect(glowState: SingleClickGlowState): RectF? =
+        getCardRectForAnimation(glowState.sourceStackType, glowState.sourceStackIndex, glowState.sourceCardIndex)
+
+    private fun getDestinationGlowRect(dest: com.gpgamelab.justpatience.model.GlowDestination): RectF? {
+        return when (dest.destStackType) {
+            StackType.FOUNDATION -> getFoundationRect(dest.destStackIndex)
+            StackType.TABLEAU -> {
+                val x = columnX.getOrNull(dest.destStackIndex) ?: return null
+                val pile = viewModel.game.value.tableau.getOrNull(dest.destStackIndex) ?: return null
                 var y = getTableauStartY()
                 for (card in pile.asList()) {
                     y += if (card.isFaceUp) cardW * 0.4f else cardW * 0.1f
@@ -804,14 +850,17 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
 
             StackType.WASTE -> {
-                viewModel.tryAutoMoveWasteToFoundation()
+                viewModel.handleSingleClickOnWaste()
             }
 
             StackType.TABLEAU -> {
-                viewModel.tryAutoMoveTableauTopToFoundation(stackIndex)
+                viewModel.handleSingleClickOnTableau(stackIndex)
             }
 
-            else -> {}
+            else -> {
+                // Tap on empty space → dismiss any glow
+                viewModel.clearSingleClickGlow()
+            }
         }
     }
 

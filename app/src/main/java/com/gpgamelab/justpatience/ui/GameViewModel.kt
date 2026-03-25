@@ -12,9 +12,11 @@ import com.gpgamelab.justpatience.game.GameController
 import com.gpgamelab.justpatience.model.Card
 import com.gpgamelab.justpatience.model.Game
 import com.gpgamelab.justpatience.model.GameStatus
+import com.gpgamelab.justpatience.model.GlowDestination
 import com.gpgamelab.justpatience.model.HintDisplayState
 import com.gpgamelab.justpatience.model.HintMove
 import com.gpgamelab.justpatience.model.HintPhase
+import com.gpgamelab.justpatience.model.SingleClickGlowState
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.repository.GameRepository
 import kotlinx.coroutines.flow.firstOrNull
@@ -82,6 +84,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private var hintInactivityJob: Job? = null
     private var hintCycleJob: Job? = null
+
+    // Single-click destination glows (independent of hint system)
+    private val _singleClickGlowState = MutableStateFlow<SingleClickGlowState?>(null)
+    val singleClickGlowState: StateFlow<SingleClickGlowState?> = _singleClickGlowState
 
     private var timerJob: Job? = null
     private var isTimerRunning = false
@@ -318,6 +324,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         if (moved) {
+            clearSingleClickGlow()
             undoStack.addLast(game)
             redoStack.clear()
             val updatedWithScore = updateAfterMove(newGame)  // scoreDelta = 0 for simple scoring
@@ -365,6 +372,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.moveWasteToTableau(index)
 
         if (updated != null) {
+            clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
@@ -383,6 +391,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.moveTableauToTableau(fromIndex, cardIndex, toIndex)
 
         if (updated != null) {
+            clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
@@ -409,6 +418,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     destStackType = StackType.FOUNDATION,
                     destIndex = i
                 )
+                clearSingleClickGlow()
                 resetHintTimer()
                 undoStack.addLast(game)
                 redoStack.clear()
@@ -443,6 +453,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     destStackType = StackType.FOUNDATION,
                     destIndex = i
                 )
+                clearSingleClickGlow()
                 resetHintTimer()
                 undoStack.addLast(game)
                 redoStack.clear()
@@ -607,6 +618,123 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return moves
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // Single-click glow system (independent from hints)
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Single-click on waste card:
+     * - If can move to foundation only → move immediately
+     * - If can move to tableau only → move immediately
+     * - If can move to both → move to tableau immediately
+     * - If can move to multiple tableaus → show glow destinations, don't move
+     */
+    fun handleSingleClickOnWaste() {
+        val game = _game.value
+        val wasteCard = game.waste.peek() ?: return
+
+        // Collect valid destinations
+        val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
+        val tableauDests = (0..6).filter { game.moveWasteToTableau(it) != null }
+
+        when {
+            // Can move to foundation only → move there
+            canFoundation && tableauDests.isEmpty() -> {
+                for (i in game.foundations.indices) {
+                    if (tryMoveWasteToFoundation(i)) return
+                }
+            }
+            // Can move to exactly one tableau and no foundation → move there
+            tableauDests.size == 1 && !canFoundation -> {
+                tryMoveWasteToTableau(tableauDests[0])
+            }
+            // Can move to one tableau + foundation exists → move to tableau
+            tableauDests.size == 1 && canFoundation -> {
+                tryMoveWasteToTableau(tableauDests[0])
+            }
+            // Can move to multiple tableaus → show glows
+            tableauDests.size > 1 -> {
+                val dests = tableauDests.map { GlowDestination(StackType.TABLEAU, it) }
+                _singleClickGlowState.value = SingleClickGlowState(
+                    sourceStackType = StackType.WASTE,
+                    sourceStackIndex = 0,
+                    sourceCardIndex = -1,
+                    destinations = dests
+                )
+            }
+        }
+    }
+
+    /**
+     * Single-click on tableau card at [cardIndex]:
+     * - If can move to exactly one tableau and no foundation → move immediately
+     * - If can move to multiple tableaus OR to foundation → show all tableau destination glows
+     */
+    fun handleSingleClickOnTableau(tableauIndex: Int) {
+        val game = _game.value
+        val pile = game.tableau.getOrNull(tableauIndex) ?: return
+        val cards = pile.asList()
+
+        // Find the top face-up card
+        var topFaceUpIndex = -1
+        for (i in cards.indices.reversed()) {
+            if (cards[i].isFaceUp) {
+                topFaceUpIndex = i
+                break
+            }
+        }
+        if (topFaceUpIndex < 0) return
+
+        // Check tableau destinations (any face-up card can go)
+        val tableauDests = (0..6).filter { destIdx ->
+            destIdx != tableauIndex && game.moveTableauToTableau(tableauIndex, topFaceUpIndex, destIdx) != null
+        }
+
+        // Check foundation destination (only top face-up card)
+        val canFoundation = (0..3).any { foundIdx ->
+            game.moveTableauToFoundation(tableauIndex, topFaceUpIndex, foundIdx) != null
+        }
+
+        when {
+            // Can move to exactly one tableau and no foundation → move immediately
+            tableauDests.size == 1 && !canFoundation -> {
+                tryMoveTableauToTableau(tableauIndex, topFaceUpIndex, tableauDests[0])
+            }
+            // Can move to foundation only → move immediately
+            canFoundation && tableauDests.isEmpty() -> {
+                for (i in game.foundations.indices) {
+                    if (tryMoveTableauToFoundation(tableauIndex, topFaceUpIndex, i)) return
+                }
+            }
+            // Multiple destinations (tableau or foundation) → show all destination glows
+            tableauDests.isNotEmpty() || canFoundation -> {
+                val dests = mutableListOf<GlowDestination>()
+                // Add all valid tableau destinations
+                dests.addAll(tableauDests.map { GlowDestination(StackType.TABLEAU, it) })
+                // Add foundation destination(s) if available
+                if (canFoundation) {
+                    for (foundIdx in game.foundations.indices) {
+                        if (game.moveTableauToFoundation(tableauIndex, topFaceUpIndex, foundIdx) != null) {
+                            dests.add(GlowDestination(StackType.FOUNDATION, foundIdx))
+                            break  // Only one foundation can accept a given card
+                        }
+                    }
+                }
+                _singleClickGlowState.value = SingleClickGlowState(
+                    sourceStackType = StackType.TABLEAU,
+                    sourceStackIndex = tableauIndex,
+                    sourceCardIndex = topFaceUpIndex,
+                    destinations = dests
+                )
+            }
+        }
+    }
+
+    /** Clear single-click glow display (called on any player action or when dismissing). */
+    fun clearSingleClickGlow() {
+        _singleClickGlowState.value = null
+    }
+
     /**
      * Auto-move all possible cards to foundations.
      * Priority: tableau to foundation, then waste to foundation.
@@ -649,6 +777,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.moveWasteToFoundation(index)
 
         if (updated != null) {
+            clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
@@ -669,6 +798,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.moveTableauToFoundation(tableauIndex, cardIndex, foundationIndex)
 
         if (updated != null) {
+            clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
@@ -842,6 +972,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.recycleWasteToStock()
 
         if (updated != null) {
+            clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
