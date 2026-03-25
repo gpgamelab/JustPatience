@@ -62,6 +62,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _showGameTimer = MutableStateFlow(true)
     val showGameTimer: StateFlow<Boolean> = _showGameTimer
 
+    private val _showCardAnimations = MutableStateFlow(true)
+    val showCardAnimations: StateFlow<Boolean> = _showCardAnimations
+
     private val _showWinAnimation = MutableStateFlow(true)
     val showWinAnimation: StateFlow<Boolean> = _showWinAnimation
 
@@ -155,6 +158,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _drawCountForDisplay.value = normalizeDrawCount(currentDrawSize)
                 _recycleLimitForDisplay.value = currentRecycleLimit
                 _isInfiniteRecycles.value = currentInfiniteRecycles
+                _showCardAnimations.value = settings.showCardAnimations
                 _showGameTimer.value = settings.showGameTimer
                 _showWinAnimation.value = settings.showWinAnimation
                 _isMirroredLayout.value = settings.boardLayout == "left_hand"
@@ -450,7 +454,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         destStackType: StackType,
         destIndex: Int
     ) {
-        if (card == null || gameBoardView == null) return
+        if (!_showCardAnimations.value || card == null || gameBoardView == null) return
 
         val view = gameBoardView ?: return
         
@@ -488,7 +492,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (tryAutoMoveTableauTopToFoundation(tableauIndex)) {
                     moveCount++
                     madeMoveThisPass = true
-                    delay(CARD_MOVE_ANIMATION_MS)
+                    if (_showCardAnimations.value) {
+                        delay(CARD_MOVE_ANIMATION_MS)
+                    }
                     break // Restart the check from the beginning
                 }
             }
@@ -497,7 +503,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (!madeMoveThisPass && tryAutoMoveWasteToFoundation()) {
                 moveCount++
                 madeMoveThisPass = true
-                delay(CARD_MOVE_ANIMATION_MS)
+                if (_showCardAnimations.value) {
+                    delay(CARD_MOVE_ANIMATION_MS)
+                }
             }
         }
 
