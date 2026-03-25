@@ -44,8 +44,7 @@ class AdManager(private val context: Context) {
         const val PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN = "ca-app-pub-7092037186763886/8518224896"
         const val PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN = "ca-app-pub-7092037186763886/5983415109"
         const val PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN = "ca-app-pub-7092037186763886/8929288432"
-        // TODO: Replace with your Rewarded Interstitial ad unit ID.
-        const val PRODUCTION_REWARDED_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-7092037186763886/6817625839"
+        const val PRODUCTION_REWARDED_INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-7092037186763886/1488840165"
 
         // Keep all ad types aligned with the current build unless explicitly overridden.
         private var isTestMode = false
