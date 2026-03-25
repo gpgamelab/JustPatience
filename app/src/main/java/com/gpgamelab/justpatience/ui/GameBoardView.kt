@@ -23,6 +23,8 @@ import com.gpgamelab.justpatience.assets.AssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.model.Card
 import com.gpgamelab.justpatience.model.CardSuit
+import com.gpgamelab.justpatience.model.HintDisplayState
+import com.gpgamelab.justpatience.model.HintPhase
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.model.TableauPile
 import com.gpgamelab.justpatience.model.Verso
@@ -129,6 +131,20 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val ANIMATION_DURATION_MS = 250L
     private var isAnimating = false
 
+    // hint glow state (driven by GameViewModel.hintDisplayState)
+    private var hintDisplayState: HintDisplayState? = null
+
+    private val hintGlowSourcePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.hint_glow_source_color)
+        style = Paint.Style.STROKE
+        strokeWidth = 3f
+    }
+    private val hintGlowDestPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.hint_glow_destination_color)
+        style = Paint.Style.STROKE
+        strokeWidth = 3f
+    }
+
     init {
         // Detect current orientation
         isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -197,6 +213,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                         invalidate()
                     }
                 }
+                launch {
+                    viewModel.hintDisplayState.collect { state ->
+                        hintDisplayState = state
+                        invalidate()
+                    }
+                }
             }
         }
     }
@@ -238,6 +260,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         destStackType: StackType,
         destStackIndex: Int
     ) {
+        if (::viewModel.isInitialized) viewModel.pauseHintTimerForNonPlayerActivity()
         animationCard = card
         animationStartRect = RectF(startRect)
         animationEndRect = RectF(endRect)
@@ -251,12 +274,17 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun isAnimationActive(): Boolean = isAnimating && SystemClock.elapsedRealtime() - animationStartTimeMs < ANIMATION_DURATION_MS
 
     private fun clearAnimationState() {
+        val wasAnimating = isAnimating
         isAnimating = false
         animationCard = null
         animationStartRect = null
         animationEndRect = null
         animationDestStackType = null
         animationDestStackIndex = -1
+        // Only resume hint timer when we're finishing a real animation, not on cold calls.
+        if (wasAnimating && ::viewModel.isInitialized) {
+            viewModel.resumeHintTimerAfterNonPlayerActivity()
+        }
     }
 
     private fun isAnimatingIntoFoundation(index: Int): Boolean {
@@ -435,6 +463,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
         drawTopRow(canvas)
         drawTableau(canvas)
+        drawHintGlows(canvas)
         drawDragGhost(canvas)
         drawAnimatedCard(canvas)
     }
@@ -478,7 +507,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun drawAnimatedCard(canvas: Canvas) {
+        // Fast-exit: no animation was ever scheduled, nothing to do.
+        if (!isAnimating) return
+
         if (!isAnimationActive()) {
+            // Animation just finished – transition out cleanly (this triggers resume of hint timer).
             clearAnimationState()
             return
         }
@@ -534,6 +567,71 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             4f * t * t * t
         } else {
             1f - ((-2f * t + 2f) * (-2f * t + 2f) * (-2f * t + 2f)) / 2f
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Hint glow drawing
+    // ─────────────────────────────────────────────────────────────
+
+    private fun drawHintGlows(canvas: Canvas) {
+        val state = hintDisplayState ?: return
+        val move  = state.move
+
+        val showSource = state.phase == HintPhase.SOURCE_ONLY || state.phase == HintPhase.SOURCE_AND_DEST
+        val showDest   = state.phase == HintPhase.SOURCE_AND_DEST || state.phase == HintPhase.DEST_ONLY
+
+        if (showSource) {
+            getHintSourceRect(move)?.let { drawGlowRing(canvas, it, hintGlowSourcePaint) }
+        }
+        if (showDest) {
+            getHintDestRect(move)?.let { drawGlowRing(canvas, it, hintGlowDestPaint) }
+        }
+    }
+
+    /**
+     * Draw a layered glow ring around [rect].
+     * Four concentric strokes with increasing opacity simulate a bloom/blur glow.
+     * Works on hardware-accelerated canvas (no BlurMaskFilter needed).
+     */
+    private fun drawGlowRing(canvas: Canvas, rect: RectF, basePaint: Paint) {
+        val expansions = floatArrayOf(16f, 11f, 7f, 3f)
+        val alphas     = intArrayOf(55, 110, 175, 255)
+        val strokeWidths = floatArrayOf(5f, 5f, 4f, 3f)
+        val savedAlpha = basePaint.alpha
+
+        for (i in expansions.indices) {
+            val exp = expansions[i]
+            val r = RectF(rect.left - exp, rect.top - exp, rect.right + exp, rect.bottom + exp)
+            basePaint.alpha = alphas[i]
+            basePaint.strokeWidth = strokeWidths[i]
+            canvas.drawRoundRect(r, cardRadius + exp, cardRadius + exp, basePaint)
+        }
+        basePaint.alpha = savedAlpha
+    }
+
+    /** Returns the rect of the source card in a hint move. */
+    private fun getHintSourceRect(move: com.gpgamelab.justpatience.model.HintMove): RectF? =
+        getCardRectForAnimation(move.sourceStackType, move.sourceStackIndex, move.sourceCardIndex)
+
+    /**
+     * Returns the rect at the destination of a hint move.
+     * For FOUNDATION: the fixed pile rect.
+     * For TABLEAU: the position immediately on top of any existing cards (drop zone).
+     */
+    private fun getHintDestRect(move: com.gpgamelab.justpatience.model.HintMove): RectF? {
+        return when (move.destStackType) {
+            StackType.FOUNDATION -> getFoundationRect(move.destStackIndex)
+            StackType.TABLEAU -> {
+                val x = columnX.getOrNull(move.destStackIndex) ?: return null
+                val pile = viewModel.game.value.tableau.getOrNull(move.destStackIndex) ?: return null
+                var y = getTableauStartY()
+                for (card in pile.asList()) {
+                    y += if (card.isFaceUp) cardW * 0.4f else cardW * 0.1f
+                }
+                RectF(x, y, x + cardW, y + cardH)
+            }
+            else -> null
         }
     }
 
@@ -782,6 +880,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // touch handling for drag & drop
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        // Any touch = player activity → reset the hint inactivity timer
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            if (::viewModel.isInitialized) viewModel.resetHintTimer()
+        }
+
         // Block all input while animation is running
         if (isAnimationActive()) {
             return true  // Consume the event but don't process it

@@ -24,6 +24,10 @@
     <color name="logout_button_color">#FF5252</color> <!-- Bright Red for warning/logout -->
     <color name="secondary_button_color">#00BCD4</color> <!-- Cyan/Teal for secondary action -->
 
+    <!-- Hint glow ring colors (dramatic, colorblind-friendly, high contrast on green felt) -->
+    <color name="hint_glow_source_color">#FFB300</color>       <!-- vivid amber – source card -->
+    <color name="hint_glow_destination_color">#00E5FF</color>  <!-- electric cyan – destination -->
+
     <!-- Custom App Colors -->
     <color name="dark_surface_color">#3A3A3A</color>
     <color name="colorPrimary">#4CAF50</color> <!-- A nice green for the toolbar -->

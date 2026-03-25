@@ -58,6 +58,8 @@ class SettingsManager(private val context: Context) {
         val SHOW_CARD_ANIMATIONS = booleanPreferencesKey("show_card_animations")
         val SHOW_WIN_ANIMATION = booleanPreferencesKey("show_win_animation")
         val SHOW_GAME_TIMER = booleanPreferencesKey("show_game_timer")
+        val SHOW_HINTS = booleanPreferencesKey("show_hints")
+        val HINT_DELAY_SECONDS = intPreferencesKey("hint_delay_seconds")
         val MUTE_MUSIC = booleanPreferencesKey("mute_music")
         val MUTE_CARD_SOUND = booleanPreferencesKey("mute_card_sound")
         val MUTE_WIN_SOUND = booleanPreferencesKey("mute_win_sound")
@@ -77,6 +79,8 @@ class SettingsManager(private val context: Context) {
         val drawSize: Int = 1,
         val recycleCount: Int = 3,
         val infiniteRecycles: Boolean = false,
+        val showHints: Boolean = true,
+        val hintDelaySeconds: Int = 5,
         val showCardAnimations: Boolean = true,
         val showWinAnimation: Boolean = true,
         val showGameTimer: Boolean = true,
@@ -305,6 +309,8 @@ class SettingsManager(private val context: Context) {
                 drawSize = preferences[PreferencesKeys.DRAW_SIZE] ?: 1,
                 recycleCount = preferences[PreferencesKeys.RECYCLE_COUNT] ?: 3,
                 infiniteRecycles = preferences[PreferencesKeys.INFINITE_RECYCLES] ?: false,
+                showHints = preferences[PreferencesKeys.SHOW_HINTS] ?: true,
+                hintDelaySeconds = preferences[PreferencesKeys.HINT_DELAY_SECONDS] ?: 5,
                 showCardAnimations = preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] ?: true,
                 showWinAnimation = preferences[PreferencesKeys.SHOW_WIN_ANIMATION] ?: true,
                 showGameTimer = preferences[PreferencesKeys.SHOW_GAME_TIMER] ?: true,
@@ -322,6 +328,8 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.DRAW_SIZE] = settings.drawSize
             preferences[PreferencesKeys.RECYCLE_COUNT] = settings.recycleCount
             preferences[PreferencesKeys.INFINITE_RECYCLES] = settings.infiniteRecycles
+            preferences[PreferencesKeys.SHOW_HINTS] = settings.showHints
+            preferences[PreferencesKeys.HINT_DELAY_SECONDS] = settings.hintDelaySeconds
             preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] = settings.showCardAnimations
             preferences[PreferencesKeys.SHOW_WIN_ANIMATION] = settings.showWinAnimation
             preferences[PreferencesKeys.SHOW_GAME_TIMER] = settings.showGameTimer

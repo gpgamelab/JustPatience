@@ -255,11 +255,19 @@ class GameActivity : AppCompatActivity() {
         StatsDialogFragment.newInstance().show(supportFragmentManager, "stats_dialog")
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Player has returned – restart the hint inactivity countdown from scratch.
+        viewModel.resumeHintTimerAfterNonPlayerActivity()
+    }
+
     override fun onPause() {
         super.onPause()
         // Avoid recording losses on transient pauses (ads, dialogs, rotation).
         stopWinVideoPlayback()
         viewModel.saveGame()
+        // Pause hints while the activity is not in foreground (ad overlay, etc.).
+        viewModel.pauseHintTimerForNonPlayerActivity()
     }
 
     override fun onStop() {

@@ -132,6 +132,7 @@
     <string name="settings_recycle_label">Waste Pile Recycles</string>
     <string name="settings_recycle_unlimited">Unlimited</string>
     <string name="settings_show_game_timer">Show Game Timer</string>
+    <string name="settings_hint_delay_label">Hint delay (seconds)</string>
     <string name="settings_card_animations">Show Card Move Animations</string>
     <string name="settings_win_animation">Show WIN Animation</string>
     <string name="settings_advanced_section_title">Advanced Settings</string>

@@ -12,6 +12,9 @@ import com.gpgamelab.justpatience.game.GameController
 import com.gpgamelab.justpatience.model.Card
 import com.gpgamelab.justpatience.model.Game
 import com.gpgamelab.justpatience.model.GameStatus
+import com.gpgamelab.justpatience.model.HintDisplayState
+import com.gpgamelab.justpatience.model.HintMove
+import com.gpgamelab.justpatience.model.HintPhase
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.repository.GameRepository
 import kotlinx.coroutines.flow.firstOrNull
@@ -70,6 +73,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _isMirroredLayout = MutableStateFlow(false)
     val isMirroredLayout: StateFlow<Boolean> = _isMirroredLayout
+
+    // Hint system
+    private val _showHints = MutableStateFlow(true)
+    private val _hintDelaySeconds = MutableStateFlow(5)
+    private val _hintDisplayState = MutableStateFlow<HintDisplayState?>(null)
+    val hintDisplayState: StateFlow<HintDisplayState?> = _hintDisplayState
+
+    private var hintInactivityJob: Job? = null
+    private var hintCycleJob: Job? = null
 
     private var timerJob: Job? = null
     private var isTimerRunning = false
@@ -162,6 +174,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _showGameTimer.value = settings.showGameTimer
                 _showWinAnimation.value = settings.showWinAnimation
                 _isMirroredLayout.value = settings.boardLayout == "left_hand"
+
+                val prevShowHints = _showHints.value
+                _showHints.value = settings.showHints
+                _hintDelaySeconds.value = settings.hintDelaySeconds
+                if (!settings.showHints && prevShowHints) {
+                    pauseHintTimerForNonPlayerActivity()
+                }
             }
         }
     }
@@ -233,6 +252,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startNewGame() {
         finalizeCurrentGameIfNeeded()
+        pauseHintTimerForNonPlayerActivity()
         undoStack.clear()
         redoStack.clear()
         resetTimerForNewHand()
@@ -246,9 +266,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun restartGame() {
-        // Restart counts as abandoning the current hand.
         finalizeCurrentGameIfNeeded()
-
+        pauseHintTimerForNonPlayerActivity()
         val initial = initialGameState ?: return
         undoStack.clear()
         redoStack.clear()
@@ -346,9 +365,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.moveWasteToTableau(index)
 
         if (updated != null) {
+            resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
-            val updatedWithScore = updateAfterMove(updated, scoreDelta = 5)   // simple scoring
+            val updatedWithScore = updateAfterMove(updated, scoreDelta = 5)
             _game.value = updatedWithScore
             updateUndoRedoState()
         }
@@ -363,9 +383,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.moveTableauToTableau(fromIndex, cardIndex, toIndex)
 
         if (updated != null) {
+            resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
-            val updatedWithScore = updateAfterMove(updated)   // scoreDelta = 0 for simple scoring
+            val updatedWithScore = updateAfterMove(updated)
             _game.value = updatedWithScore
             updateUndoRedoState()
             return true
@@ -380,7 +401,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         for (i in game.foundations.indices) {
             val updated = game.moveWasteToFoundation(i)
             if (updated != null) {
-                // Animate the move
                 animateCardMove(
                     card = game.waste.peek(),
                     sourceStackType = StackType.WASTE,
@@ -389,7 +409,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     destStackType = StackType.FOUNDATION,
                     destIndex = i
                 )
-
+                resetHintTimer()
                 undoStack.addLast(game)
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
@@ -410,17 +430,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val topIndex = pile.size() - 1
         val topCard = pile.peek()
 
-        // 🚨 IMPORTANT
         if (topCard?.isFaceUp != true) return false
 
         for (i in game.foundations.indices) {
-            val updated = game.moveTableauToFoundation(
-                tableauIndex,
-                topIndex,
-                i
-            )
+            val updated = game.moveTableauToFoundation(tableauIndex, topIndex, i)
             if (updated != null) {
-                // Animate the move
                 animateCardMove(
                     card = topCard,
                     sourceStackType = StackType.TABLEAU,
@@ -429,7 +443,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     destStackType = StackType.FOUNDATION,
                     destIndex = i
                 )
-
+                resetHintTimer()
                 undoStack.addLast(game)
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
@@ -474,20 +488,138 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // Hint system
+    // ─────────────────────────────────────────────────────────────
+
+    companion object {
+        private const val HINT_PHASE_DURATION_MS = 1000L
+    }
+
+    /**
+     * Called on any detectable player activity (touch, undo, redo, draw, move…).
+     * Cancels any running hint display, then re-arms the inactivity countdown.
+     */
+    fun resetHintTimer() {
+        hintInactivityJob?.cancel()
+        hintCycleJob?.cancel()
+        _hintDisplayState.value = null
+
+        if (!_showHints.value) return
+        if (_game.value.status != GameStatus.IN_PROGRESS) return
+
+        hintInactivityJob = viewModelScope.launch {
+            delay(_hintDelaySeconds.value * 1000L)
+            startHintCycle()
+        }
+    }
+
+    /**
+     * Pause hint timers during non-player activity (ad, animation, win dialog…).
+     * Call [resumeHintTimerAfterNonPlayerActivity] when control returns to the player.
+     */
+    fun pauseHintTimerForNonPlayerActivity() {
+        hintInactivityJob?.cancel()
+        hintCycleJob?.cancel()
+        _hintDisplayState.value = null
+    }
+
+    /** Re-arms the inactivity countdown from scratch after non-player activity ends. */
+    fun resumeHintTimerAfterNonPlayerActivity() {
+        resetHintTimer()
+    }
+
+    private fun startHintCycle() {
+        hintCycleJob?.cancel()
+        hintCycleJob = viewModelScope.launch {
+            val moves = computeLegalMoves()
+            if (moves.isEmpty()) return@launch
+
+            for (move in moves) {
+                // Phase 1 – source card glows alone (1 s)
+                _hintDisplayState.value = HintDisplayState(move, HintPhase.SOURCE_ONLY)
+                delay(HINT_PHASE_DURATION_MS)
+
+                // Phase 2 – source + destination glow together (1 s)
+                _hintDisplayState.value = HintDisplayState(move, HintPhase.SOURCE_AND_DEST)
+                delay(HINT_PHASE_DURATION_MS)
+
+                // Phase 3 – only destination glows (1 s)
+                _hintDisplayState.value = HintDisplayState(move, HintPhase.DEST_ONLY)
+                delay(HINT_PHASE_DURATION_MS)
+            }
+
+            _hintDisplayState.value = null
+        }
+    }
+
+    /**
+     * Computes every legal move available in the current game state.
+     * Order: waste→foundation, waste→tableau, tableau→foundation, tableau→tableau.
+     */
+    private fun computeLegalMoves(): List<HintMove> {
+        val game = _game.value
+        val moves = mutableListOf<HintMove>()
+
+        // ── Waste → Foundation ───────────────────────────────────
+        if (game.waste.peek() != null) {
+            for (fi in game.foundations.indices) {
+                if (game.moveWasteToFoundation(fi) != null) {
+                    moves.add(HintMove(StackType.WASTE, 0, -1, StackType.FOUNDATION, fi))
+                    break // Only one foundation accepts a given card
+                }
+            }
+
+            // ── Waste → Tableau ──────────────────────────────────
+            for (ti in game.tableau.indices) {
+                if (game.moveWasteToTableau(ti) != null) {
+                    moves.add(HintMove(StackType.WASTE, 0, -1, StackType.TABLEAU, ti))
+                }
+            }
+        }
+
+        // ── Tableau → Foundation / Tableau ──────────────────────
+        for (fromIdx in game.tableau.indices) {
+            val cards = game.tableau[fromIdx].asList()
+            for (cardIdx in cards.indices) {
+                if (!cards[cardIdx].isFaceUp) continue
+
+                // Top card → Foundation
+                if (cardIdx == cards.lastIndex) {
+                    for (fi in game.foundations.indices) {
+                        if (game.moveTableauToFoundation(fromIdx, cardIdx, fi) != null) {
+                            moves.add(HintMove(StackType.TABLEAU, fromIdx, cardIdx, StackType.FOUNDATION, fi))
+                            break
+                        }
+                    }
+                }
+
+                // Any face-up card (+ sequence below) → another Tableau pile
+                for (toIdx in game.tableau.indices) {
+                    if (toIdx == fromIdx) continue
+                    if (game.moveTableauToTableau(fromIdx, cardIdx, toIdx) != null) {
+                        moves.add(HintMove(StackType.TABLEAU, fromIdx, cardIdx, StackType.TABLEAU, toIdx))
+                    }
+                }
+            }
+        }
+
+        return moves
+    }
+
     /**
      * Auto-move all possible cards to foundations.
      * Priority: tableau to foundation, then waste to foundation.
      * Returns the number of moves made.
      */
     suspend fun performAutoMove(): Int {
+        pauseHintTimerForNonPlayerActivity()
         var moveCount = 0
         var madeMoveThisPass = true
 
-        // Keep trying until no more moves can be made
         while (madeMoveThisPass) {
             madeMoveThisPass = false
 
-            // First try all tableau piles
             for (tableauIndex in _game.value.tableau.indices) {
                 if (tryAutoMoveTableauTopToFoundation(tableauIndex)) {
                     moveCount++
@@ -495,11 +627,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     if (_showCardAnimations.value) {
                         delay(CARD_MOVE_ANIMATION_MS)
                     }
-                    break // Restart the check from the beginning
+                    break
                 }
             }
 
-            // If no tableau moves, try waste
             if (!madeMoveThisPass && tryAutoMoveWasteToFoundation()) {
                 moveCount++
                 madeMoveThisPass = true
@@ -509,6 +640,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
+        resumeHintTimerAfterNonPlayerActivity()
         return moveCount
     }
 
@@ -517,6 +649,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.moveWasteToFoundation(index)
 
         if (updated != null) {
+            resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
@@ -533,13 +666,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         foundationIndex: Int
     ): Boolean {
         val game = _game.value
-        val updated = game.moveTableauToFoundation(
-            tableauIndex,
-            cardIndex,
-            foundationIndex
-        )
+        val updated = game.moveTableauToFoundation(tableauIndex, cardIndex, foundationIndex)
 
         if (updated != null) {
+            resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
@@ -605,6 +735,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun undo() {
         if (undoStack.isNotEmpty()) {
+            resetHintTimer()
             val current = _game.value
             redoStack.addLast(current)
             _game.value = undoStack.removeLast()
@@ -614,7 +745,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun redo() {
         if (redoStack.isEmpty()) return
-
+        resetHintTimer()
         val current = _game.value
         undoStack.addLast(current)
         _game.value = redoStack.removeLast()
@@ -711,6 +842,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val updated = game.recycleWasteToStock()
 
         if (updated != null) {
+            resetHintTimer()
             undoStack.addLast(game)
             redoStack.clear()
             startTimerOnFirstSuccessfulMoveIfNeeded()
