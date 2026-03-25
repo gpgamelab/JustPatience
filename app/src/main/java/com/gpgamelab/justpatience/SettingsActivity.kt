@@ -1,6 +1,5 @@
 package com.gpgamelab.justpatience
 
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
@@ -23,16 +22,6 @@ class SettingsActivity : AppCompatActivity() {
     private var recycleCount = 3
     private var settingsLoaded = false
     private var isBindingUi = false
-
-    // Orientation spinner values (display → internal key)
-    private val orientationLabels by lazy {
-        listOf(
-            getString(R.string.settings_orientation_device),
-            getString(R.string.settings_orientation_portrait),
-            getString(R.string.settings_orientation_landscape)
-        )
-    }
-    private val orientationKeys = listOf("device", "portrait", "landscape")
 
     // Board layout spinner values
     private val boardLayoutLabels by lazy {
@@ -58,10 +47,6 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        val orientationAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, orientationLabels)
-        orientationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerOrientation.adapter = orientationAdapter
-
         val boardAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, boardLayoutLabels)
         boardAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerBoardLayout.adapter = boardAdapter
@@ -104,10 +89,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchMuteMusic.isChecked = settings.muteMusic
         binding.switchMuteCardSound.isChecked = settings.muteCardSound
         binding.switchMuteWinSound.isChecked = settings.muteWinSound
-
-        // Orientation
-        val orientationIndex = orientationKeys.indexOf(settings.orientationLock).coerceAtLeast(0)
-        binding.spinnerOrientation.setSelection(orientationIndex, false)
 
         // Board layout
         val boardIndex = boardLayoutKeys.indexOf(settings.boardLayout).coerceAtLeast(0)
@@ -177,18 +158,6 @@ class SettingsActivity : AppCompatActivity() {
             saveSettings(currentSettings.copy(muteWinSound = checked))
         }
 
-        // Orientation spinner
-        binding.spinnerOrientation.onItemSelectedListener =
-            object : android.widget.AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                    if (isBindingUi || !settingsLoaded) return
-                    val key = orientationKeys[position]
-                    saveSettings(currentSettings.copy(orientationLock = key))
-                    applyOrientationLock(key)
-                }
-                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-            }
-
         // Board layout spinner
         binding.spinnerBoardLayout.onItemSelectedListener =
             object : android.widget.AdapterView.OnItemSelectedListener {
@@ -212,6 +181,11 @@ class SettingsActivity : AppCompatActivity() {
             if (isBindingUi || !settingsLoaded) return@setOnFocusChangeListener
             if (!hasFocus) savePlayerName()
         }
+
+        binding.advancedHeader.setOnClickListener {
+            val expanded = binding.advancedContent.visibility == android.view.View.VISIBLE
+            setAdvancedExpanded(!expanded)
+        }
     }
 
     private fun savePlayerName() {
@@ -233,12 +207,11 @@ class SettingsActivity : AppCompatActivity() {
         settingsViewModel.saveGamePlaySettings(settings)
     }
 
-    private fun applyOrientationLock(key: String) {
-        requestedOrientation = when (key) {
-            "portrait" -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            "landscape" -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            else -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
+    private fun setAdvancedExpanded(expanded: Boolean) {
+        binding.advancedContent.visibility =
+            if (expanded) android.view.View.VISIBLE else android.view.View.GONE
+        binding.advancedToggle.text =
+            if (expanded) getString(R.string.settings_advanced_collapse) else getString(R.string.settings_advanced_expand)
     }
 
     override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
@@ -257,5 +230,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onPause()
         // Final safety net for keyboard dismiss/home gesture/navigation away.
         savePlayerName()
+        // Always reset to collapsed when leaving this page.
+        setAdvancedExpanded(false)
     }
 }

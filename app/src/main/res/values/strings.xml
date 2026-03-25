@@ -131,8 +131,12 @@
     <string name="settings_draw_3">Draw 3</string>
     <string name="settings_recycle_label">Waste Pile Recycles</string>
     <string name="settings_recycle_unlimited">Unlimited</string>
+    <string name="settings_show_game_timer">Show Game Timer</string>
     <string name="settings_card_animations">Show Card Move Animations</string>
     <string name="settings_win_animation">Show WIN Animation</string>
+    <string name="settings_advanced_section_title">Advanced Settings</string>
+    <string name="settings_advanced_expand">Expand</string>
+    <string name="settings_advanced_collapse">Collapse</string>
     <string name="settings_section_sound">Sound</string>
     <string name="settings_mute_music">Mute Game Music</string>
     <string name="settings_mute_card_sound">Mute Card Move Sound</string>
