@@ -40,4 +40,5 @@
     <color name="card_placeholder">#7F7F7F</color>
     <color name="card_background">#5F5F5F</color>
 
+    <color name="ic_launcher_logo_background">#1E4A8A</color>
 </resources>
