@@ -852,6 +852,25 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun handleTap(x: Float, y: Float) {
+        // ── Glow-destination intercept ────────────────────────────
+        // When multiple destinations are highlighted, the next tap either:
+        //   • lands inside a destination rect  → execute the move there
+        //   • lands anywhere else              → dismiss the glow (player chose to do something else)
+        val glowState = singleClickGlowState
+        if (glowState != null) {
+            for (dest in glowState.destinations) {
+                val destRect = getDestinationGlowRect(dest)
+                if (destRect != null && destRect.contains(x, y)) {
+                    executeSingleClickGlowMove(glowState, dest)
+                    return
+                }
+            }
+            // Tapped outside every destination → dismiss
+            viewModel.clearSingleClickGlow()
+            return
+        }
+
+        // ── Normal tap handling (no glow active) ─────────────────
         val (type, stackIndex, _) = findStackAt(x, y)
 
         when (type) {
@@ -872,6 +891,36 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 viewModel.clearSingleClickGlow()
             }
         }
+    }
+
+    /**
+     * Execute the glow-destination move chosen by the player.
+     * The tryMove* methods already call clearSingleClickGlow() on success;
+     * we also clear on failure so the player never gets stuck with stale glows.
+     */
+    private fun executeSingleClickGlowMove(
+        glowState: SingleClickGlowState,
+        dest: com.gpgamelab.justpatience.model.GlowDestination
+    ) {
+        val moved = when (glowState.sourceStackType) {
+            StackType.WASTE -> when (dest.destStackType) {
+                StackType.TABLEAU    -> { viewModel.tryMoveWasteToTableau(dest.destStackIndex); true }
+                StackType.FOUNDATION -> viewModel.tryMoveWasteToFoundation(dest.destStackIndex)
+                else -> false
+            }
+            StackType.TABLEAU -> when (dest.destStackType) {
+                StackType.TABLEAU    -> viewModel.tryMoveTableauToTableau(
+                    glowState.sourceStackIndex, glowState.sourceCardIndex, dest.destStackIndex
+                )
+                StackType.FOUNDATION -> viewModel.tryMoveTableauToFoundation(
+                    glowState.sourceStackIndex, glowState.sourceCardIndex, dest.destStackIndex
+                )
+                else -> false
+            }
+            else -> false
+        }
+        // Safety-net: clear glow if the move somehow didn't clear it
+        if (!moved) viewModel.clearSingleClickGlow()
     }
 
     private fun clearDragState() {
