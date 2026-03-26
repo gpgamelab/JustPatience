@@ -76,6 +76,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _isMirroredLayout = MutableStateFlow(false)
     val isMirroredLayout: StateFlow<Boolean> = _isMirroredLayout
 
+    private val _allowFoundationToTableauDrag = MutableStateFlow(false)
+    val allowFoundationToTableauDrag: StateFlow<Boolean> = _allowFoundationToTableauDrag
+
     // Hint system
     private val _showHints = MutableStateFlow(true)
     private val _hintDelaySeconds = MutableStateFlow(5)
@@ -180,6 +183,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _showGameTimer.value = settings.showGameTimer
                 _showWinAnimation.value = settings.showWinAnimation
                 _isMirroredLayout.value = settings.boardLayout == "left_hand"
+                _allowFoundationToTableauDrag.value = settings.allowFoundationToTableauDrag
 
                 val prevShowHints = _showHints.value
                 _showHints.value = settings.showHints
@@ -389,6 +393,29 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     ): Boolean {
         val game = _game.value
         val updated = game.moveTableauToTableau(fromIndex, cardIndex, toIndex)
+
+        if (updated != null) {
+            clearSingleClickGlow()
+            resetHintTimer()
+            undoStack.addLast(game)
+            redoStack.clear()
+            val updatedWithScore = updateAfterMove(updated)
+            _game.value = updatedWithScore
+            updateUndoRedoState()
+            return true
+        }
+
+        return false
+    }
+
+    fun tryMoveFoundationToTableau(
+        foundationIndex: Int,
+        tableauIndex: Int
+    ): Boolean {
+        if (!_allowFoundationToTableauDrag.value) return false
+
+        val game = _game.value
+        val updated = game.moveFoundationToTableau(foundationIndex, tableauIndex)
 
         if (updated != null) {
             clearSingleClickGlow()

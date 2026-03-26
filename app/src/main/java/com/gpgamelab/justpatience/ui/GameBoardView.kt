@@ -513,6 +513,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 drawCard(canvas, card, rect)
             }
 
+            StackType.FOUNDATION -> {
+                val card = viewModel.game.value.foundations
+                    .getOrNull(dragStackIndex)
+                    ?.peek() ?: return
+                val rect = RectF(x, y, x + cardW, y + cardH)
+                drawCard(canvas, card, rect)
+            }
+
             else -> Unit
         }
     }
@@ -717,6 +725,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             if (cards.isEmpty()) continue
 
             val cardToDraw = if (isAnimatingIntoFoundation(i)) {
+                cards.getOrNull(cards.lastIndex - 1)
+            } else if (isDragging && dragStackType == StackType.FOUNDATION && dragStackIndex == i) {
                 cards.getOrNull(cards.lastIndex - 1)
             } else {
                 cards.last()
@@ -1003,6 +1013,19 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     } else {
                         clearDragState()
                     }
+                } else if (stackType == StackType.FOUNDATION && viewModel.allowFoundationToTableauDrag.value) {
+                    val foundation = viewModel.game.value.foundations.getOrNull(stackIndex)
+                    if (foundation != null && !foundation.isEmpty()) {
+                        dragStackType = StackType.FOUNDATION
+                        dragStackIndex = stackIndex
+                        dragCardIndex = foundation.size() - 1 // top card only
+
+                        val cardRect = getCardRect(StackType.FOUNDATION, stackIndex, dragCardIndex)
+                        dragOffsetX = event.x - cardRect.left
+                        dragOffsetY = event.y - cardRect.top
+                    } else {
+                        clearDragState()
+                    }
                 } else {
                     clearDragState()
                 }
@@ -1020,7 +1043,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     val dy = abs(event.y - downY)
 
                     if (dx > touchSlop || dy > touchSlop) {
-                        if (dragStackType == StackType.TABLEAU || dragStackType == StackType.WASTE) {
+                        if (dragStackType == StackType.TABLEAU || dragStackType == StackType.WASTE || dragStackType == StackType.FOUNDATION) {
                             isDragging = true
                             postInvalidateOnAnimation()
                         } else {
@@ -1084,6 +1107,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                                         moveSucceeded = viewModel.tryMoveTableauToTableau(
                                             dragStackIndex,
                                             dragCardIndex,
+                                            index
+                                        )
+                                    }
+
+                                    StackType.FOUNDATION -> {
+                                        moveSucceeded = viewModel.tryMoveFoundationToTableau(
+                                            dragStackIndex,
                                             index
                                         )
                                     }

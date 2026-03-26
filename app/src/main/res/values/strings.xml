@@ -150,6 +150,7 @@
     <string name="settings_board_layout_label">Board Layout</string>
     <string name="settings_board_layout_right">Classic (Draw Pile Left)</string>
     <string name="settings_board_layout_left">Mirrored (Draw Pile Right)</string>
+    <string name="settings_allow_foundation_to_tableau_drag">Allow drag from foundation to tableau</string>
 
     <!-- Board pile labels -->
     <plurals name="stock_draw_label">

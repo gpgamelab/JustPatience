@@ -173,6 +173,31 @@ data class Game(
         )
     }
 
+    fun moveFoundationToTableau(
+        foundationIndex: Int,
+        tableauIndex: Int
+    ): Game? {
+        val fromPile = foundations.getOrNull(foundationIndex) ?: return null
+        val toPile = tableau.getOrNull(tableauIndex) ?: return null
+
+        val card = fromPile.peek() ?: return null
+        if (!toPile.canPush(card)) return null
+
+        val (newFoundationPile, removedCard) = fromPile.withCardRemoved()
+        if (removedCard == null) return null
+
+        val newFoundations = foundations.toMutableList()
+        newFoundations[foundationIndex] = newFoundationPile
+
+        val newTableau = tableau.toMutableList()
+        newTableau[tableauIndex] = toPile.withCardsAdded(listOf(removedCard))
+
+        return this.copy(
+            foundations = newFoundations,
+            tableau = newTableau
+        )
+    }
+
     /**
      * Convenience: checks whether all foundation piles are complete.
      */

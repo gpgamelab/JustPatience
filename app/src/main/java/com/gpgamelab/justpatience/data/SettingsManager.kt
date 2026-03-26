@@ -57,6 +57,7 @@ class SettingsManager(private val context: Context) {
         val INFINITE_RECYCLES = booleanPreferencesKey("infinite_recycles")
         val SHOW_CARD_ANIMATIONS = booleanPreferencesKey("show_card_animations")
         val SHOW_WIN_ANIMATION = booleanPreferencesKey("show_win_animation")
+        val ALLOW_FOUNDATION_TO_TABLEAU_DRAG = booleanPreferencesKey("allow_foundation_to_tableau_drag")
         val SHOW_GAME_TIMER = booleanPreferencesKey("show_game_timer")
         val SHOW_HINTS = booleanPreferencesKey("show_hints")
         val HINT_DELAY_SECONDS = intPreferencesKey("hint_delay_seconds")
@@ -83,6 +84,7 @@ class SettingsManager(private val context: Context) {
         val hintDelaySeconds: Int = 5,
         val showCardAnimations: Boolean = true,
         val showWinAnimation: Boolean = true,
+        val allowFoundationToTableauDrag: Boolean = false,
         val showGameTimer: Boolean = true,
         val muteMusic: Boolean = false,
         val muteCardSound: Boolean = false,
@@ -313,6 +315,7 @@ class SettingsManager(private val context: Context) {
                 hintDelaySeconds = preferences[PreferencesKeys.HINT_DELAY_SECONDS] ?: 5,
                 showCardAnimations = preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] ?: true,
                 showWinAnimation = preferences[PreferencesKeys.SHOW_WIN_ANIMATION] ?: true,
+                allowFoundationToTableauDrag = preferences[PreferencesKeys.ALLOW_FOUNDATION_TO_TABLEAU_DRAG] ?: false,
                 showGameTimer = preferences[PreferencesKeys.SHOW_GAME_TIMER] ?: true,
                 muteMusic = preferences[PreferencesKeys.MUTE_MUSIC] ?: false,
                 muteCardSound = preferences[PreferencesKeys.MUTE_CARD_SOUND] ?: false,
@@ -332,6 +335,7 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.HINT_DELAY_SECONDS] = settings.hintDelaySeconds
             preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] = settings.showCardAnimations
             preferences[PreferencesKeys.SHOW_WIN_ANIMATION] = settings.showWinAnimation
+            preferences[PreferencesKeys.ALLOW_FOUNDATION_TO_TABLEAU_DRAG] = settings.allowFoundationToTableauDrag
             preferences[PreferencesKeys.SHOW_GAME_TIMER] = settings.showGameTimer
             preferences[PreferencesKeys.MUTE_MUSIC] = settings.muteMusic
             preferences[PreferencesKeys.MUTE_CARD_SOUND] = settings.muteCardSound

@@ -90,6 +90,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchTimer.isChecked = settings.showGameTimer
         binding.switchCardAnimations.isChecked = settings.showCardAnimations
         binding.switchWinAnimation.isChecked = settings.showWinAnimation
+        binding.switchFoundationToTableau.isChecked = settings.allowFoundationToTableauDrag
 
         // Sound
         binding.switchMuteMusic.isChecked = settings.muteMusic
@@ -172,6 +173,10 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchWinAnimation.setOnCheckedChangeListener { _, checked ->
             if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
             saveSettings(currentSettings.copy(showWinAnimation = checked))
+        }
+        binding.switchFoundationToTableau.setOnCheckedChangeListener { _, checked ->
+            if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
+            saveSettings(currentSettings.copy(allowFoundationToTableauDrag = checked))
         }
 
         // Sound
