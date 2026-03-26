@@ -77,9 +77,9 @@ class SettingsManager(private val context: Context) {
      * All user-configurable game-play and display settings.
      */
     data class GamePlaySettings(
-        val drawSize: Int = 1,
+        val drawSize: Int = 3,
         val recycleCount: Int = 3,
-        val infiniteRecycles: Boolean = false,
+        val infiniteRecycles: Boolean = true,
         val showHints: Boolean = true,
         val hintDelaySeconds: Int = 5,
         val showCardAnimations: Boolean = true,
@@ -318,9 +318,9 @@ class SettingsManager(private val context: Context) {
         }
         .map { preferences ->
             GamePlaySettings(
-                drawSize = preferences[PreferencesKeys.DRAW_SIZE] ?: 1,
+                drawSize = preferences[PreferencesKeys.DRAW_SIZE] ?: 3,
                 recycleCount = preferences[PreferencesKeys.RECYCLE_COUNT] ?: 3,
-                infiniteRecycles = preferences[PreferencesKeys.INFINITE_RECYCLES] ?: false,
+                infiniteRecycles = preferences[PreferencesKeys.INFINITE_RECYCLES] ?: true,
                 showHints = preferences[PreferencesKeys.SHOW_HINTS] ?: true,
                 hintDelaySeconds = preferences[PreferencesKeys.HINT_DELAY_SECONDS] ?: 5,
                 showCardAnimations = preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] ?: true,

@@ -107,6 +107,14 @@
 
     <!-- About Page Strings -->
     <string name="about_button_text">About</string>
+    <string name="how_to_play_button_text">How to Play</string>
+    <string name="how_to_play_title">How to Play</string>
+    <string name="how_to_play_heading">How to Play Solitaire</string>
+    <string name="how_to_play_summary">Learn classic Klondike rules first, then review the optional settings available in JustPatience.</string>
+    <string name="how_to_play_classic_title">Classic Klondike Rules</string>
+    <string name="how_to_play_classic_body">Goal: move all 52 cards to the 4 foundation piles (one suit per foundation, Ace to King).\n\nSetup: 7 tableau piles. Pile 1 has 1 card, pile 2 has 2 cards, up to pile 7 with 7 cards. Only the top card in each pile starts face up.\n\nTableau moves: build downward in alternating colors (red on black, black on red). You can move runs of face-up cards together. Empty tableau spaces can only be filled by a King (or a run starting with a King).\n\nStock and waste: tap the stock to draw cards to the waste. In classic play, draw 3 cards at a time and recycle the waste back to stock when empty.\n\nFoundations: start with an Ace, then build up by suit in order A-2-3-...-Q-K.\n\nWin condition: all cards are moved to the foundations.</string>
+    <string name="how_to_play_adjustments_title">JustPatience Gameplay Adjustments</string>
+    <string name="how_to_play_adjustments_body">Default rule settings now match classic style: Draw 3 cards and Unlimited waste recycles.\n\nIn Settings, you can customize gameplay:\n- Draw 1 or Draw 3\n- Limited recycle count or Unlimited recycles\n- Allow drag from foundation back to tableau (assistive rule)\n\nYou can also tune presentation and accessibility:\n- Hint visibility and hint delay\n- Timer display, card animations, and win animation\n- Board layout (classic or mirrored)\n- Sound toggles and player display name</string>
     <string name="about_title">About</string>
     <string name="about_heading">About JustPatience</string>
     <string name="about_summary">JustPatience is a modern solitaire experience built for quick play sessions and long relaxing runs. This About page uses sample content you can replace with your own branding and details later.</string>

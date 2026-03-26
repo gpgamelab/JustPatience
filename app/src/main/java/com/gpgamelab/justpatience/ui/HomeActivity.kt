@@ -115,6 +115,14 @@ class HomeActivity : AppCompatActivity() {
                     Log.e(TAG, "Error starting AboutActivity", e)
                 }
             }
+
+            findViewById<Button>(R.id.btn_how_to_play)?.setOnClickListener {
+                try {
+                    startActivity(Intent(this, HowToPlayActivity::class.java))
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error starting HowToPlayActivity", e)
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error setting up listeners", e)
         }

@@ -55,6 +55,11 @@
             android:exported="false"
             android:label="@string/about_title" />
 
+        <activity
+            android:name=".ui.HowToPlayActivity"
+            android:exported="false"
+            android:label="@string/how_to_play_title" />
+
         <!-- 4. Game Activity: Main gameplay screen -->
         <activity
             android:name=".ui.GameActivity"
