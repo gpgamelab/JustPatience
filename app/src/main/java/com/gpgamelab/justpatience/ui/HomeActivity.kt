@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +28,7 @@ private const val TAG = "HomeActivity"
 class HomeActivity : AppCompatActivity() {
 
     private val viewModel: HomeViewModel by viewModels()
+    private var hasGameInProgress: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +61,10 @@ class HomeActivity : AppCompatActivity() {
         try {
             findViewById<Button>(R.id.btn_play_game)?.setOnClickListener {
                 try {
+                    Log.d(TAG, "Play clicked: launching GameActivity with force_new_game=true")
                     val intent = Intent(this, GameActivity::class.java)
                     intent.putExtra("from_home", true)
+                    intent.putExtra("force_new_game", true)
                     startActivity(intent)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error starting GameActivity", e)
@@ -69,7 +73,12 @@ class HomeActivity : AppCompatActivity() {
 
             findViewById<Button>(R.id.btn_continue_game)?.setOnClickListener {
                 try {
-                    startActivity(Intent(this, GameActivity::class.java))
+                    Log.d(TAG, "Continue clicked: hasGameInProgress=$hasGameInProgress")
+                    if (hasGameInProgress) {
+                        startActivity(Intent(this, GameActivity::class.java))
+                    } else {
+                        Toast.makeText(this, R.string.no_saved_game_to_continue, Toast.LENGTH_SHORT).show()
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error starting GameActivity from continue", e)
                 }
@@ -153,6 +162,22 @@ class HomeActivity : AppCompatActivity() {
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error collecting highest score", e)
+                    }
+                }
+
+                launch {
+                    try {
+                        viewModel.hasGameInProgress.collect { hasInProgress ->
+                            hasGameInProgress = hasInProgress
+                            Log.d(TAG, "hasGameInProgress updated: $hasInProgress")
+                            findViewById<Button>(R.id.btn_continue_game)?.apply {
+                                visibility = if (hasInProgress) View.VISIBLE else View.GONE
+                                isEnabled = hasInProgress
+                                alpha = 1.0f
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error collecting continue state", e)
                     }
                 }
 

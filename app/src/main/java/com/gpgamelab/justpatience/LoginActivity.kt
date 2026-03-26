@@ -126,7 +126,7 @@ class LoginActivity : AppCompatActivity() {
                     "Welcome, ${authResponse.username}! Proceeding to game...",
                     Toast.LENGTH_LONG
                 ).show()
-                Log.i("Auth", "Login Successful. Token: ${authResponse.authToken}")
+                Log.i("Auth", "Login Successful.")
 
                 // Example navigation to Home/Main Game Activity
                 val intent = Intent(this, SettingsActivity::class.java) // Placeholder for now

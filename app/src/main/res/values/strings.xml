@@ -91,6 +91,7 @@
     <string name="watch_optional_ad">Watch Optional Ad</string>
     <string name="continue_without_reward">Continue</string>
     <string name="optional_ad_not_ready">Ad not ready right now.</string>
+    <string name="no_saved_game_to_continue">No saved game to continue.</string>
 
     <string name="switch_to_register">Don\'t have an account? Register</string>
     <string name="login_title_text">User Login</string>

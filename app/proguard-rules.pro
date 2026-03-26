@@ -33,3 +33,10 @@
 -keep class okhttp3.** { *; }
 -keep class okio.** { *; }
 -keep class com.squareup.okhttp3.internal.publicsuffix.PublicSuffixDatabase { *; }
+
+# --- Strip verbose/debug log calls in release builds ---
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+}

@@ -973,9 +973,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         index: Int
     ): Float {
         var y = 0f
+        val cards = pile.asList()
 
         for (i in 0 until index) {
-            val card = pile.cards[i]
+            val card = cards[i]
             y += if (card.isFaceUp) {
                 cardW * 0.4f
             } else {

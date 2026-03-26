@@ -295,6 +295,16 @@ class SettingsManager(private val context: Context) {
         }
     }
 
+    fun getGameSessionActiveFlow(): Flow<Boolean> = dataStore.data
+        .map { prefs -> prefs[PreferencesKeys.GAME_SESSION_ACTIVE] ?: false }
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(false)
+            } else {
+                throw exception
+            }
+        }
+
     // --- Game Play Settings Flow ---
 
     val gamePlaySettingsFlow: Flow<GamePlaySettings> = dataStore.data

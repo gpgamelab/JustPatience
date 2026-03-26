@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.Button
@@ -26,6 +27,10 @@ import kotlinx.coroutines.launch
 import kotlin.math.min
 
 class GameActivity : AppCompatActivity() {
+
+    companion object {
+        private const val GAME_LAUNCH_TAG = "GameLaunch"
+    }
 
     private lateinit var binding: ActivityGameBinding
     private val viewModel: GameViewModel by viewModels()
@@ -51,6 +56,7 @@ class GameActivity : AppCompatActivity() {
     private var isWinVideoPlaying: Boolean = false
     private var hasShownWinRewardedInterstitialForCurrentWin: Boolean = false
     private var showWinAnimation: Boolean = true
+    private var forceNewGameOnLaunch: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +88,17 @@ class GameActivity : AppCompatActivity() {
 
         // Defer home-start ad decision until we read total games played.
         pendingHomeStartInterstitial = intent.getBooleanExtra("from_home", false)
+        forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
+        Log.d(
+            GAME_LAUNCH_TAG,
+            "onCreate: from_home=$pendingHomeStartInterstitial force_new_game=$forceNewGameOnLaunch"
+        )
+
+        if (forceNewGameOnLaunch) {
+            // PLAY from Home should always begin a fresh hand.
+            Log.d(GAME_LAUNCH_TAG, "onCreate: forcing fresh game launch")
+            viewModel.startNewGame()
+        }
 
         updateOverlayVisibility()
 
@@ -263,6 +280,7 @@ class GameActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        Log.d(GAME_LAUNCH_TAG, "onPause: saving current game before background/home transition")
         // Avoid recording losses on transient pauses (ads, dialogs, rotation).
         stopWinVideoPlayback()
         viewModel.saveGame()
@@ -272,6 +290,7 @@ class GameActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        Log.d(GAME_LAUNCH_TAG, "onStop: isFinishing=$isFinishing")
         if (isFinishing) {
             stopWinVideoPlayback()
             viewModel.stopGame()

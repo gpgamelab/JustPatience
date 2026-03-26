@@ -3,9 +3,12 @@ package com.gpgamelab.justpatience.viewmodel
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.google.gson.Gson
 import com.gpgamelab.justpatience.data.GameStatsManager
 import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.TokenManager
+import com.gpgamelab.justpatience.model.Game
+import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.repository.GameRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -22,12 +25,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private var statsManager: GameStatsManager? = null
     private var repository: GameRepository? = null
+    private var settingsManager: SettingsManager? = null
+    private val gson = Gson()
 
     init {
         try {
-            val settingsManager = SettingsManager(application.applicationContext)
+            val settings = SettingsManager(application.applicationContext)
             val tokenManager = TokenManager(application.applicationContext)
-            repository = GameRepository(settingsManager, tokenManager)
+            repository = GameRepository(settings, tokenManager)
+            settingsManager = settings
             statsManager = GameStatsManager(application.applicationContext)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize managers", e)
@@ -59,8 +65,26 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Check if there's a game in progress that can be resumed.
      */
-    val hasGameInProgress: Flow<Boolean> = repository?.getCurrentGameState()
-        ?.map { !it.isNullOrEmpty() }
+    val hasGameInProgress: Flow<Boolean> = settingsManager?.getGameSessionActiveFlow()
+        ?.map { active ->
+            Log.d(TAG, "session flag hasGameInProgress=$active")
+            active
+        }
+        ?: kotlinx.coroutines.flow.flowOf(false)
+
+    // Optional fallback: parse save JSON if we ever need to repair session flag drift.
+    val hasGameInProgressFromSaveState: Flow<Boolean> = repository?.getCurrentGameState()
+        ?.map { json ->
+            if (json.isNullOrEmpty()) return@map false
+            try {
+                val inProgress = gson.fromJson(json, Game::class.java).status == GameStatus.IN_PROGRESS
+                Log.d(TAG, "save-state fallback hasGameInProgress=$inProgress jsonLength=${json.length}")
+                inProgress
+            } catch (_: Exception) {
+                Log.d(TAG, "save-state fallback parse failed")
+                false
+            }
+        }
         ?: kotlinx.coroutines.flow.flowOf(false)
 
     /**

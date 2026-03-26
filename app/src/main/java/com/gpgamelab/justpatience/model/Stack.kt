@@ -249,7 +249,7 @@ class Waste : CardStack(StackType.WASTE) {
 }
 
 class FoundationPile(
-    override val cards: MutableList<Card> = mutableListOf()
+    cards: MutableList<Card> = mutableListOf()
 ) : CardStack(StackType.FOUNDATION, cards) {
 
     override fun canPush(card: Card): Boolean {
@@ -278,20 +278,15 @@ class FoundationPile(
     // ✅ Immutable operations - return new FoundationPile instances
     fun withCardAdded(card: Card): FoundationPile {
         if (!canPush(card)) return this
-        val newPile = FoundationPile()
-        // Add existing cards directly
-        newPile.cards.addAll(cards.map { it.copy() })
-        // Add new card directly
-        newPile.cards.add(card)
-        return newPile
+        return FoundationPile(
+            (cards.map { it.copy() } + card).toMutableList()
+        )
     }
 
     fun withCardRemoved(): Pair<FoundationPile, Card?> {
         if (cards.isEmpty()) return Pair(this, null)
         val removed = cards.lastOrNull()
-        val newPile = FoundationPile()
-        // Add all cards except the last one
-        newPile.cards.addAll(cards.dropLast(1).map { it.copy() })
+        val newPile = FoundationPile(cards.dropLast(1).map { it.copy() }.toMutableList())
         return Pair(newPile, removed)
     }
 
@@ -308,7 +303,7 @@ class FoundationPile(
 }
 
 class TableauPile(
-    public override val cards: MutableList<Card> = mutableListOf()
+    cards: MutableList<Card> = mutableListOf()
 ) : CardStack(StackType.TABLEAU, cards) {
 
     // Private member variable (defaults to false)
@@ -377,12 +372,9 @@ class TableauPile(
     // ✅ Immutable operations - return new TableauPile instances
     fun withCardsAdded(cardsToAdd: List<Card>): TableauPile {
         if (!canPush(cardsToAdd)) return this
-        val newPile = TableauPile()
-        // Add existing cards directly without going through push()
-        newPile.cards.addAll(cards.map { it.copy() })
-        // Add new cards directly without going through push()
-        newPile.cards.addAll(cardsToAdd)
-        return newPile
+        return TableauPile(
+            (cards.map { it.copy() } + cardsToAdd).toMutableList()
+        )
     }
 
     fun withCardsRemoved(count: Int): Pair<TableauPile, List<Card>?> {
@@ -392,21 +384,17 @@ class TableauPile(
         // Validate sequence without mutating
         if (!isValidSequence(seq)) return Pair(this, null)
         // Create new pile with remaining cards
-        val newPile = TableauPile()
         val remainingCards = cards.dropLast(count)
-        newPile.cards.addAll(remainingCards.map { it.copy() })
+        val newPile = TableauPile(remainingCards.map { it.copy() }.toMutableList())
         return Pair(newPile, seq)
     }
 
     fun withTopCardFlipped(): TableauPile {
         val top = peek() ?: return this
         if (top.isFaceUp) return this
-        val newPile = TableauPile()
-        // Add all cards except the last one
-        newPile.cards.addAll(cards.dropLast(1).map { it.copy() })
-        // Add the flipped card
-        newPile.cards.add(top.copy(isFaceUp = true))
-        return newPile
+        return TableauPile(
+            (cards.dropLast(1).map { it.copy() } + top.copy(isFaceUp = true)).toMutableList()
+        )
     }
 
     override fun deepCopy(): TableauPile {

@@ -5,11 +5,20 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import com.gpgamelab.justpatience.data.GameStatsManager
 import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.TokenManager
 import com.gpgamelab.justpatience.game.GameController
 import com.gpgamelab.justpatience.model.Card
+import com.gpgamelab.justpatience.model.CardRank
 import com.gpgamelab.justpatience.model.Game
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.model.GlowDestination
@@ -18,6 +27,8 @@ import com.gpgamelab.justpatience.model.HintMove
 import com.gpgamelab.justpatience.model.HintPhase
 import com.gpgamelab.justpatience.model.SingleClickGlowState
 import com.gpgamelab.justpatience.model.StackType
+import com.gpgamelab.justpatience.model.StandardRank
+import com.gpgamelab.justpatience.model.Joker
 import com.gpgamelab.justpatience.repository.GameRepository
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -28,8 +39,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.lang.reflect.Type
+import java.util.Locale
 
 private const val CARD_MOVE_ANIMATION_MS = 250L
+private const val GAME_PERSIST_TAG = "GamePersist"
 
 /**
  * ViewModel that holds the current Game state and provides actions for UI.
@@ -41,7 +55,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val tokenManager = TokenManager(application.applicationContext)
     private val repository = GameRepository(settingsManager, tokenManager)
     private val statsManager = GameStatsManager(application.applicationContext)
-    private val gson = Gson()
+    private val gson: Gson = GsonBuilder()
+        .registerTypeAdapter(CardRank::class.java, CardRankAdapter())
+        .create()
     private val controller = GameController()
     
     // Reference for scheduling card move animations
@@ -107,51 +123,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val game: StateFlow<Game> = _game
 
     init {
-        // Detect whether the process was killed while a game was in progress in the background.
-        // isGameSessionActive() is a brief blocking DataStore read – safe from the main thread
-        // because DataStore dispatches I/O independently and won't deadlock here.
-        val sessionWasInterrupted = settingsManager.isGameSessionActive()
-        if (sessionWasInterrupted) {
-            // Process was killed mid-session. Record the abandoned game as a loss, then
-            // start fresh. We do NOT call startNewGame() here because that would call
-            // finalizeCurrentGameIfNeeded() on the empty in-memory game (0 moves), not
-            // on the saved game we need to inspect.
-            viewModelScope.launch {
-                checkAndRecordAbandonedGame()
+        // Startup behavior: if an in-progress game exists, resume it.
+        // Otherwise start a fresh hand.
+        viewModelScope.launch {
+            Log.d(GAME_PERSIST_TAG, "init: checking for saved game to resume")
+            val restored = loadSavedGame()
+            if (restored) {
+                Log.d(GAME_PERSIST_TAG, "init: resumed saved in-progress game ${summarizeGame(_game.value)}")
+                updateUndoRedoState()
+                resetHintTimer()
+            } else {
+                Log.d(GAME_PERSIST_TAG, "init: no resumable saved game found, starting fresh hand")
                 startNewGameInternal()
             }
-        } else {
-            startNewGame()
         }
         observeDrawSizeSetting()
-    }
-
-    /**
-     * Called on first init when the session-active flag was still set, indicating the process
-     * was killed while a game was in progress in the background.
-     *
-     * Loads the persisted game JSON, and if it represents an IN_PROGRESS game with enough
-     * moves to be meaningful (>= 5), records it as an abandoned loss.
-     * Always clears the session-active flag when done so the next cold start is clean.
-     */
-    private suspend fun checkAndRecordAbandonedGame() {
-        try {
-            val savedJson = repository.getCurrentGameState().firstOrNull()
-            if (!savedJson.isNullOrEmpty()) {
-                val abandonedGame = gson.fromJson(savedJson, Game::class.java)
-                if (abandonedGame.status == GameStatus.IN_PROGRESS) {
-                    Log.d("GameViewModel",
-                        "Abandoned session detected (moves=${abandonedGame.moves}); recording as loss.")
-                    recordGameCompletionInternal(abandonedGame, isWin = false)
-                }
-                // If status == WON the game was already recorded; nothing to do.
-            }
-        } catch (t: Throwable) {
-            Log.w("GameViewModel", "checkAndRecordAbandonedGame failed: ${t.message}")
-        } finally {
-            // Always clear the flag so we don't double-record on the next cold start.
-            settingsManager.setGameSessionActive(false)
-        }
     }
 
     /**
@@ -166,6 +152,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         initialGameState = newGame
         _game.value = newGame
         resetTimerForNewHand()
+        Log.d(GAME_PERSIST_TAG, "startNewGameInternal: created fresh hand ${summarizeGame(newGame)}")
         saveGame()
     }
 
@@ -261,6 +248,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startNewGame() {
+        Log.d(GAME_PERSIST_TAG, "startNewGame: requested while current=${summarizeGame(_game.value)}")
         finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
         undoStack.clear()
@@ -271,11 +259,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newGame = controller.newGameWithClearHistory()
             initialGameState = newGame
             _game.value = newGame
+            Log.d(GAME_PERSIST_TAG, "startNewGame: switched to fresh hand ${summarizeGame(newGame)}")
             saveGame()
         }
     }
 
     fun restartGame() {
+        Log.d(GAME_PERSIST_TAG, "restartGame: requested while current=${summarizeGame(_game.value)}")
         finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
         val initial = initialGameState ?: return
@@ -285,6 +275,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         resetTimerForNewHand()
         currentHandRecorded = false
         updateUndoRedoState()
+        Log.d(GAME_PERSIST_TAG, "restartGame: restored initial hand ${summarizeGame(initial)}")
         saveGame()
     }
 
@@ -362,7 +353,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     val updatedWithMoves = theUpdatedGame.copy(moves = theUpdatedGame.moves + 1)
                     startTimerOnFirstSuccessfulMoveIfNeeded()
                     _game.value = updatedWithMoves
-                    saveGameIfInProgress()
+                    saveGame()
                     updateUndoRedoState()
                 }
             } catch (t: Throwable) {
@@ -382,6 +373,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated, scoreDelta = 5)
             _game.value = updatedWithScore
+            saveGame()
             updateUndoRedoState()
         }
     }
@@ -401,6 +393,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated)
             _game.value = updatedWithScore
+            saveGame()
             updateUndoRedoState()
             return true
         }
@@ -424,6 +417,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated)
             _game.value = updatedWithScore
+            saveGame()
             updateUndoRedoState()
             return true
         }
@@ -451,6 +445,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
                 _game.value = updatedWithScore
+                saveGame()
                 updateUndoRedoState()
                 return true
             }
@@ -486,6 +481,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 redoStack.clear()
                 val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
                 _game.value = updatedWithScore
+                saveGame()
                 updateUndoRedoState()
                 return true
             }
@@ -810,6 +806,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
             _game.value = updatedWithScore
+            saveGame()
             return true
         }
 
@@ -831,6 +828,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
             _game.value = updatedWithScore
+            saveGame()
             updateUndoRedoState()
             return true
         }
@@ -896,6 +894,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val current = _game.value
             redoStack.addLast(current)
             _game.value = undoStack.removeLast()
+            saveGame()
             updateUndoRedoState()
         }
     }
@@ -906,6 +905,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val current = _game.value
         undoStack.addLast(current)
         _game.value = redoStack.removeLast()
+        saveGame()
         updateUndoRedoState()
     }
 
@@ -924,14 +924,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun saveGame() {
         viewModelScope.launch {
             try {
-                val gameToSave = _game.value
+                val gameToSave = _game.value.copy(savedGameTime = gameTime.value)
                 val json = gson.toJson(gameToSave)
                 repository.saveCurrentGameState(json)
                 // Mirror session state: true while an in-progress game exists in storage,
                 // false once the game has reached a terminal state.
                 settingsManager.setGameSessionActive(gameToSave.status == GameStatus.IN_PROGRESS)
+                Log.d(
+                    GAME_PERSIST_TAG,
+                    "saveGame: persisted ${summarizeGame(gameToSave)} jsonLength=${json.length} sessionActive=${gameToSave.status == GameStatus.IN_PROGRESS}"
+                )
             } catch (t: Throwable) {
                 Log.w("GameViewModel", "saveGame failed: ${t.message}")
+                Log.w(GAME_PERSIST_TAG, "saveGame failed for ${summarizeGame(_game.value)}: ${t.message}")
             }
         }
     }
@@ -939,37 +944,61 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun loadSavedGame(): Boolean {
         return try {
             val saved = repository.getCurrentGameState().firstOrNull()
+            Log.d(
+                GAME_PERSIST_TAG,
+                "loadSavedGame: rawSavedPresent=${!saved.isNullOrEmpty()} jsonLength=${saved?.length ?: 0}"
+            )
             if (!saved.isNullOrEmpty()) {
-                _game.value = gson.fromJson(saved, Game::class.java)
-                currentHandRecorded = false
-                true
+                val savedGame = gson.fromJson(saved, Game::class.java)
+                Log.d(GAME_PERSIST_TAG, "loadSavedGame: parsed ${summarizeGame(savedGame)}")
+                if (savedGame.status == GameStatus.IN_PROGRESS) {
+                    _game.value = savedGame
+                    gameTime.value = savedGame.savedGameTime
+                    hasRegisteredFirstMove = savedGame.savedGameTime > 0
+                    currentHandRecorded = false
+                    // Keep the session marker aligned with the resumed in-progress game.
+                    settingsManager.setGameSessionActive(true)
+                    Log.d(GAME_PERSIST_TAG, "loadSavedGame: resume accepted")
+                    true
+                } else {
+                    Log.d(GAME_PERSIST_TAG, "loadSavedGame: saved game not resumable because status=${savedGame.status}")
+                    false
+                }
             } else {
+                Log.d(GAME_PERSIST_TAG, "loadSavedGame: no saved JSON found")
                 false
             }
         } catch (t: Throwable) {
+            Log.w(GAME_PERSIST_TAG, "loadSavedGame failed: ${t.message}", t)
             false
         }
     }
 
     fun stopGame() {
         val current = _game.value
+        Log.d(GAME_PERSIST_TAG, "stopGame: activity finishing with current=${summarizeGame(current)}")
 
-        // runBlocking ensures the record + save + flag-clear all complete before the ViewModel
-        // is torn down when the Activity finishes (back-press / explicit exit).
+        // runBlocking ensures save + session-flag write complete before teardown.
+        // Leaving the game screen should preserve in-progress sessions for resume,
+        // not auto-record them as abandoned losses.
         runBlocking {
-            if (current.status == GameStatus.IN_PROGRESS) {
-                recordGameCompletionInternal(current, isWin = false)
-            }
-            // Persist final state and clear the session flag in the same block so there is
-            // no window where the process could die between the two operations.
             try {
-                val json = gson.toJson(current)
+                val gameToSave = current.copy(savedGameTime = gameTime.value)
+                val json = gson.toJson(gameToSave)
                 repository.saveCurrentGameState(json)
             } catch (t: Throwable) {
                 Log.w("GameViewModel", "stopGame save failed: ${t.message}")
             }
-            settingsManager.setGameSessionActive(false)
+            settingsManager.setGameSessionActive(current.status == GameStatus.IN_PROGRESS)
+            Log.d(
+                GAME_PERSIST_TAG,
+                "stopGame: sessionActive=${current.status == GameStatus.IN_PROGRESS} savedCurrent=${summarizeGame(current)}"
+            )
         }
+    }
+
+    private fun summarizeGame(game: Game): String {
+        return "status=${game.status}, moves=${game.moves}, score=${game.score}, stock=${game.stock.size()}, waste=${game.waste.size()}, recycle=${game.recycleCountUsed}"
     }
 
     /**
@@ -1005,6 +1034,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             startTimerOnFirstSuccessfulMoveIfNeeded()
             _game.value = updated.copy(recycleCountUsed = game.recycleCountUsed + 1)
+            saveGame()
             updateUndoRedoState()
             return true
         }
@@ -1012,3 +1042,67 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return false
     }
 }
+
+private class CardRankAdapter : JsonSerializer<CardRank>, JsonDeserializer<CardRank> {
+    override fun serialize(src: CardRank?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+        if (src == null) return JsonPrimitive("JOKER")
+        return when (src) {
+            Joker -> JsonPrimitive("JOKER")
+            is StandardRank -> JsonPrimitive(src.name)
+        }
+    }
+
+    override fun deserialize(
+        json: JsonElement?,
+        typeOfT: Type?,
+        context: JsonDeserializationContext?
+    ): CardRank {
+        if (json == null || json.isJsonNull) return Joker
+
+        if (json.isJsonPrimitive) {
+            val token = json.asString
+            return parseRankToken(token)
+        }
+
+        if (json.isJsonObject) {
+            val obj = json.asJsonObject
+
+            // Newer compact format fallback: rank token fields
+            if (obj.has("name")) {
+                return parseRankToken(obj.get("name").asString)
+            }
+            if (obj.has("abbreviation")) {
+                return parseRankToken(obj.get("abbreviation").asString)
+            }
+
+            // Legacy object-shaped fallback from earlier Gson writes
+            if (obj.has("sortOrder")) {
+                val sortOrder = obj.get("sortOrder").asInt
+                if (sortOrder == 0) return Joker
+                return StandardRank.entries.firstOrNull { it.sortOrder == sortOrder }
+                    ?: throw JsonParseException("Unknown rank sortOrder: $sortOrder")
+            }
+            if (obj.has("displayName")) {
+                return parseRankToken(obj.get("displayName").asString)
+            }
+        }
+
+        throw JsonParseException("Unsupported CardRank json: $json")
+    }
+
+    private fun parseRankToken(raw: String): CardRank {
+        val token = raw.trim().uppercase(Locale.US)
+        if (token == "JOKER" || token == "JK" || token == "0") return Joker
+
+        StandardRank.entries.firstOrNull { it.name == token }?.let { return it }
+        StandardRank.entries.firstOrNull { it.abbreviation.uppercase(Locale.US) == token }?.let { return it }
+
+        val numeric = token.toIntOrNull()
+        if (numeric != null) {
+            StandardRank.entries.firstOrNull { it.sortOrder == numeric }?.let { return it }
+        }
+
+        throw JsonParseException("Unknown CardRank token: $raw")
+    }
+}
+
