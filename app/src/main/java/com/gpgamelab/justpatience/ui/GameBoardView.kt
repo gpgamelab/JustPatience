@@ -286,6 +286,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private fun isAnimationActive(): Boolean = isAnimating && SystemClock.elapsedRealtime() - animationStartTimeMs < ANIMATION_DURATION_MS
 
+    /**
+     * Exposed to activity-level UI flow so win dialogs/overlays can wait
+     * until the final card animation is visible to the player.
+     */
+    fun isCardAnimationActive(): Boolean = isAnimationActive()
+
     private fun clearAnimationState() {
         val wasAnimating = isAnimating
         isAnimating = false

@@ -62,6 +62,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private var showWinAnimation: Boolean = true
     private var forceNewGameOnLaunch: Boolean = false
     private var gameMenuExpandState = GameMenuBottomSheetFragment.ExpandState()
+    private var pendingWinUiAfterAnimation: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,6 +129,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                         if (g.status != GameStatus.WON) {
                             winCelebrationPlayed = false
                             hasShownWinRewardedInterstitialForCurrentWin = false
+                            pendingWinUiAfterAnimation = false
                         } else {
                             showWinCelebrationThenDialog()
                         }
@@ -507,6 +509,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private fun showWinCelebrationThenDialog() {
         if (isFinishing || isDestroyed || winDialogShowing || isWinVideoPlaying) return
 
+        if (binding.gameBoardView.isCardAnimationActive()) {
+            if (!pendingWinUiAfterAnimation) {
+                pendingWinUiAfterAnimation = true
+                waitForBoardAnimationThenShowWinUi()
+            }
+            return
+        }
+
+        pendingWinUiAfterAnimation = false
+
         if (!showWinAnimation || winCelebrationPlayed) {
             showGameEndDialog(true)
             return
@@ -520,6 +532,27 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
         if (!played) {
             showGameEndDialog(true)
+        }
+    }
+
+    private fun waitForBoardAnimationThenShowWinUi() {
+        binding.gameBoardView.postOnAnimation {
+            if (isFinishing || isDestroyed) {
+                pendingWinUiAfterAnimation = false
+                return@postOnAnimation
+            }
+
+            if (viewModel.game.value.status != GameStatus.WON) {
+                pendingWinUiAfterAnimation = false
+                return@postOnAnimation
+            }
+
+            if (binding.gameBoardView.isCardAnimationActive()) {
+                waitForBoardAnimationThenShowWinUi()
+            } else {
+                pendingWinUiAfterAnimation = false
+                showWinCelebrationThenDialog()
+            }
         }
     }
 
