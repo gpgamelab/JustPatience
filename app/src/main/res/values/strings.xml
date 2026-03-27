@@ -207,4 +207,14 @@
     <string name="recycle_remaining_format">%1$d remaining</string>
     <string name="recycle_remaining_unlimited">Unlimited</string>
 
+    <string name="stats_summary_title">Statistics Summary</string>
+    <string name="stats_summary_draw_one">1 Card</string>
+    <string name="stats_summary_draw_three">3 Card</string>
+    <string name="stats_summary_games_played">Games Played</string>
+    <string name="stats_summary_games_won">Games Won</string>
+    <string name="stats_summary_win_rate">Win Rate</string>
+    <string name="stats_summary_highest_score">Highest Score</string>
+    <string name="stats_summary_average_time">Average Time</string>
+    <string name="close">Close</string>
+
 </resources>

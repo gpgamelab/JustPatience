@@ -283,7 +283,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         )
     }
 
-    override fun onGameMenuStatistics() {
+    override fun onGameMenuStatisticsSummary() {
+        StatsSummaryDialogFragment.newInstance().show(supportFragmentManager, "stats_summary_dialog")
+    }
+
+    override fun onGameMenuStatisticsHistory() {
         showStatsDialog()
     }
 
