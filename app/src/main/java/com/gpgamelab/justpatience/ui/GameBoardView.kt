@@ -121,6 +121,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var downY = 0f
     private var isDragging = false
     private var tabletopBitmap: Bitmap? = null
+    private val recycleIndicatorBitmap: Bitmap? by lazy(LazyThreadSafetyMode.NONE) {
+        BitmapFactory.decodeResource(resources, R.drawable.ic_recycle_green_512x512)
+    }
 
     // animation state for auto moves
     private var animationCard: Card? = null
@@ -700,12 +703,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         // Stock
         val stockRect = getStockRect()
         val stock = viewModel.game.value.stock
-        if (!stock.isEmpty()) drawStockBack(canvas, stockRect) else canvas.drawRoundRect(
-            stockRect,
-            cardRadius,
-            cardRadius,
-            placeholderPaint
-        )
+        if (!stock.isEmpty()) {
+            drawStockBack(canvas, stockRect)
+        } else {
+            drawEmptyStockPlaceholder(canvas, stockRect)
+        }
 
         // Waste
         val wasteRect = getWasteRect()
@@ -753,6 +755,30 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         drawLabelAboveRect(canvas, stockRect, drawLabel)
         val recycleLabelColor = if (remainingRecycles == 0) Color.RED else Color.WHITE
         drawLabelAboveRect(canvas, wasteRect, recycleLabel, recycleLabelColor)
+    }
+
+    private fun drawEmptyStockPlaceholder(canvas: Canvas, rect: RectF) {
+        canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
+
+        if (!shouldShowRecycleIndicator()) return
+
+        val bitmap = recycleIndicatorBitmap ?: return
+        val iconSize = min(rect.width(), rect.height()) * 0.58f
+        val iconRect = RectF(
+            rect.centerX() - iconSize / 2f,
+            rect.centerY() - iconSize / 2f,
+            rect.centerX() + iconSize / 2f,
+            rect.centerY() + iconSize / 2f
+        )
+        canvas.drawBitmap(bitmap, null, iconRect, null)
+    }
+
+    private fun shouldShowRecycleIndicator(): Boolean {
+        val game = viewModel.game.value
+        if (!game.stock.isEmpty() || game.waste.isEmpty()) return false
+
+        val remainingRecycles = viewModel.getRemainingRecycleCount()
+        return remainingRecycles == null || remainingRecycles > 0
     }
 
     private fun drawLabelAboveRect(canvas: Canvas, rect: RectF, label: String, color: Int = Color.WHITE) {
