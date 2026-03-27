@@ -194,16 +194,21 @@
 
         </FrameLayout>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_stats"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="56dp"
             android:layout_height="80dp"
             android:layout_marginEnd="2dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="Stats"
-            android:textColor="@color/secondary_button_color"
+            android:contentDescription="Stats"
+            android:text="MENU"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            app:icon="@drawable/ic_menu_green_512x512"
+            app:iconGravity="textTop"
+            app:iconPadding="-4px"
+            app:iconSize="48dp"
+            app:iconTint="@null"
             app:strokeColor="@color/secondary_button_color" />
 
         <Button
