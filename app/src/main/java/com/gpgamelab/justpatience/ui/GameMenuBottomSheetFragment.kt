@@ -27,6 +27,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
     interface Host {
         fun onGameMenuStatisticsSummary()
         fun onGameMenuStatisticsHistory()
+        fun onGameMenuResetStats()
         fun onGameMenuOpenAbout()
         fun onGameMenuOpenHowToPlay()
         fun onGameMenuOpenSettings()
@@ -123,6 +124,9 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_stats_history_row).setOnClickListener {
             dismissAndRun { host.onGameMenuStatisticsHistory() }
         }
+        view.findViewById<View>(R.id.menu_stats_reset_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuResetStats() }
+        }
         view.findViewById<View>(R.id.menu_how_to_play_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenHowToPlay() }
         }
@@ -218,3 +222,4 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 }
+

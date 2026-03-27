@@ -4,15 +4,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.gpgamelab.justpatience.data.GameRecord
+import com.gpgamelab.justpatience.data.SettingsManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gpgamelab.justpatience.databinding.DialogStatsBinding
 import com.gpgamelab.justpatience.ui.adapter.GameRecordAdapter
 import com.gpgamelab.justpatience.viewmodel.StatsViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -24,6 +26,10 @@ class StatsDialogFragment : DialogFragment() {
     private lateinit var binding: DialogStatsBinding
     private val statsViewModel: StatsViewModel by viewModels()
     private var adapter: GameRecordAdapter? = null
+    private lateinit var settingsManager: SettingsManager
+    private var selectedDrawCount: Int = 1
+    private var latestRecords: List<GameRecord> = emptyList()
+    private var hasAppliedInitialDrawSetting: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,9 +42,12 @@ class StatsDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        settingsManager = SettingsManager(requireContext().applicationContext)
 
         setupRecyclerView()
         setupListeners()
+        setupToggle()
+        applyCurrentDrawSetting()
         collectStats()
     }
 
@@ -50,9 +59,27 @@ class StatsDialogFragment : DialogFragment() {
         binding.btnClose.setOnClickListener {
             dismiss()
         }
+    }
 
-        binding.btnResetStats.setOnClickListener {
-            showResetConfirmationDialog()
+    private fun setupToggle() {
+        binding.toggleDrawCount.check(binding.btnDrawOne.id)
+        binding.toggleDrawCount.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            selectedDrawCount = if (checkedId == binding.btnDrawThree.id) 3 else 1
+            renderFilteredStats()
+        }
+    }
+
+    private fun applyCurrentDrawSetting() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (hasAppliedInitialDrawSetting) return@launch
+            val drawSize = settingsManager.gamePlaySettingsFlow.first().drawSize
+            selectedDrawCount = normalizeDrawCount(drawSize)
+            binding.toggleDrawCount.check(
+                if (selectedDrawCount == 3) binding.btnDrawThree.id else binding.btnDrawOne.id
+            )
+            hasAppliedInitialDrawSetting = true
+            renderFilteredStats()
         }
     }
 
@@ -60,66 +87,40 @@ class StatsDialogFragment : DialogFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 launch {
-                    statsViewModel.totalGamesPlayed.collect { games ->
-                        binding.tvGamesPlayed.text = games.toString()
-                    }
-                }
-
-                launch {
-                    statsViewModel.totalGamesWon.collect { wins ->
-                        binding.tvGamesWon.text = wins.toString()
-                    }
-                }
-
-                launch {
-                    statsViewModel.winRate.collect { rate ->
-                        binding.tvWinRate.text = String.format(Locale.getDefault(), "%.1f%%", rate)
-                    }
-                }
-
-                launch {
-                    statsViewModel.highestScore.collect { score ->
-                        binding.tvHighestScore.text = score?.toString() ?: "0"
-                    }
-                }
-
-                launch {
-                    statsViewModel.averageScore.collect { avg ->
-                        binding.tvAverageScore.text = avg?.let { String.format(Locale.getDefault(), "%.1f", it) } ?: "0"
-                    }
-                }
-
-                launch {
-                    statsViewModel.averageTimeMs.collect { timeMs ->
-                        binding.tvAverageTime.text = if (timeMs != null) {
-                            statsViewModel.formatTime(timeMs)
-                        } else {
-                            "00:00"
-                        }
-                    }
-                }
-
-                launch {
                     statsViewModel.allGameRecords.collect { records ->
-                        adapter = GameRecordAdapter(records) { timeMs ->
-                            statsViewModel.formatTime(timeMs)
-                        }
-                        binding.recyclerviewGameHistory.adapter = adapter
+                        latestRecords = records
+                        renderFilteredStats()
                     }
                 }
             }
         }
     }
 
-    private fun showResetConfirmationDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Reset Statistics")
-            .setMessage("Are you sure you want to delete all game history and statistics? This cannot be undone.")
-            .setPositiveButton("Yes") { _, _ ->
-                statsViewModel.resetAllStats()
-            }
-            .setNegativeButton("No", null)
-            .show()
+    private fun renderFilteredStats() {
+        val filtered = latestRecords.filter { normalizeDrawCount(it.cardsDraw) == selectedDrawCount }
+        val gamesPlayed = filtered.size
+        val gamesWon = filtered.count { it.isWin }
+        val winRate = if (gamesPlayed == 0) 0.0 else (gamesWon.toDouble() / gamesPlayed) * 100.0
+        val highestScore = filtered.maxOfOrNull { it.score } ?: 0
+        val averageScore = filtered.map { it.score }.average().let { if (it.isNaN()) null else it }
+        val averageTimeMs = filtered.map { it.timeMs }.average().let { if (it.isNaN()) null else it.toLong() }
+
+        binding.tvGamesPlayed.text = gamesPlayed.toString()
+        binding.tvGamesWon.text = gamesWon.toString()
+        binding.tvWinRate.text = String.format(Locale.getDefault(), "%.1f%%", winRate)
+        binding.tvHighestScore.text = highestScore.toString()
+        binding.tvAverageScore.text = averageScore?.let { String.format(Locale.getDefault(), "%.1f", it) } ?: "0"
+        binding.tvAverageTime.text = averageTimeMs?.let { statsViewModel.formatTime(it) } ?: "00:00"
+
+        adapter = GameRecordAdapter(filtered) { timeMs ->
+            statsViewModel.formatTime(timeMs)
+        }
+        binding.recyclerviewGameHistory.adapter = adapter
+    }
+
+    private fun normalizeDrawCount(cardsDraw: Int?): Int {
+        val normalized = cardsDraw ?: 1
+        return if (normalized >= 3) 3 else 1
     }
 
     override fun onStart() {
@@ -137,6 +138,3 @@ class StatsDialogFragment : DialogFragment() {
         }
     }
 }
-
-
-

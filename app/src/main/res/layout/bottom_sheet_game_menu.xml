@@ -132,6 +132,27 @@
                     android:textColor="#D7E8D7"
                     android:textSize="16sp" />
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menu_stats_reset_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="42dp"
+                android:orientation="horizontal"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/game_menu_stats_reset"
+                    android:textColor="#FF8A80"
+                    android:textSize="16sp" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Information section (collapsible) -->
@@ -523,6 +544,7 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
+
 
 
 

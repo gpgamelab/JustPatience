@@ -22,6 +22,7 @@ import com.gpgamelab.justpatience.ads.AdManager
 import com.gpgamelab.justpatience.assets.AndroidAssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.SettingsActivity
+import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.databinding.ActivityGameBinding
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.data.GameStatsManager
@@ -43,6 +44,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     // Ad management
     private lateinit var adManager: AdManager
     private lateinit var statsManager: GameStatsManager
+    private lateinit var settingsManager: SettingsManager
 
     // Ad enable flags for undo and redo
     private var enableUndo = false
@@ -88,6 +90,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         adManager.loadRewardedInterstitialAd()
 
         statsManager = GameStatsManager(applicationContext)
+        settingsManager = SettingsManager(applicationContext)
 
         // Defer home-start ad decision until we read total games played.
         pendingHomeStartInterstitial = intent.getBooleanExtra("from_home", false)
@@ -289,6 +292,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     override fun onGameMenuStatisticsHistory() {
         showStatsDialog()
+    }
+
+    override fun onGameMenuResetStats() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.confirm_reset_stats_title)
+            .setMessage(R.string.confirm_reset_stats_message)
+            .setPositiveButton(R.string.reset) { _, _ ->
+                lifecycleScope.launch {
+                    statsManager.deleteAllGameRecords()
+                    settingsManager.resetStats()
+                    Toast.makeText(this@GameActivity, R.string.stats_reset_success, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     override fun onGameMenuOpenAbout() {

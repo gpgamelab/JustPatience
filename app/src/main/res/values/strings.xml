@@ -134,6 +134,7 @@
     <string name="game_menu_statistics">Statistics</string>
     <string name="game_menu_stats_summary">Summary</string>
     <string name="game_menu_stats_history">Detailed Game History</string>
+    <string name="game_menu_stats_reset">Reset Statistics</string>
     <string name="game_menu_information">Information</string>
     <string name="game_menu_rate_us">Rate Us</string>
     <string name="game_menu_share_app">Share this App</string>
