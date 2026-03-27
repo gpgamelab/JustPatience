@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:overScrollMode="ifContentScrolls">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_color"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="20dp">
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="12dp"
+            android:background="@color/card_placeholder" />
+
+        <TextView
+            android:id="@+id/menu_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="@string/game_menu_title"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <!-- Remove Ads (disabled for now) -->
+        <LinearLayout
+            android:id="@+id/menu_remove_ads_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_menu_remove_ads"
+                android:textColor="#7F7F7F"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <!-- Statistics (collapsible) -->
+        <LinearLayout
+            android:id="@+id/menu_statistics_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/game_menu_statistics"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/menu_statistics_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▾"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_statistics_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/menu_stats_summary_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="42dp"
+                android:orientation="horizontal"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/game_menu_stats_summary"
+                    android:textColor="#D7E8D7"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menu_stats_history_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="42dp"
+                android:orientation="horizontal"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/game_menu_stats_history"
+                    android:textColor="#D7E8D7"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Information section (collapsible) -->
+        <LinearLayout
+            android:id="@+id/menu_information_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/game_menu_information"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/menu_information_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▾"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_information_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/menu_how_to_play_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="42dp"
+            android:orientation="horizontal"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/how_to_play_title"
+                android:textColor="#D7E8D7"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:enabled="false"
+            android:minHeight="42dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_menu_rate_us"
+                android:textColor="#7F7F7F"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:enabled="false"
+            android:minHeight="42dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_menu_share_app"
+                android:textColor="#7F7F7F"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:enabled="false"
+            android:minHeight="42dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_menu_contact_us"
+                android:textColor="#7F7F7F"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:enabled="false"
+            android:minHeight="42dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_menu_privacy_policy"
+                android:textColor="#7F7F7F"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:enabled="false"
+            android:minHeight="42dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_menu_terms_of_service"
+                android:textColor="#7F7F7F"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_about_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="42dp"
+            android:orientation="horizontal"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/about_title"
+                android:textColor="#D7E8D7"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Settings section (collapsible) -->
+        <LinearLayout
+            android:id="@+id/menu_settings_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/game_menu_settings"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/menu_settings_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▾"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_settings_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <!-- Common Settings (collapsible) -->
+        <LinearLayout
+            android:id="@+id/menu_settings_common_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="44dp"
+            android:orientation="horizontal"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/game_menu_common_settings"
+                android:textColor="#D7E8D7"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/menu_settings_common_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▾"
+                android:textColor="#D7E8D7"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_settings_common_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/menu_common_nickname_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="40dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_my_nickname" android:textColor="#CFE7CF" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_my_avatar" android:textColor="#7F7F7F" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/menu_common_draw_cards_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_draw_cards" android:textColor="#CFE7CF" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/menu_common_waste_recycles_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_waste_recycles" android:textColor="#CFE7CF" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/menu_common_show_hints_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_hints" android:textColor="#CFE7CF" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/menu_common_mute_music_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_mute_game_music" android:textColor="#CFE7CF" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/menu_common_mute_card_sounds_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_mute_card_movement_sounds" android:textColor="#CFE7CF" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/menu_common_mute_win_sound_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_mute_win_sound" android:textColor="#CFE7CF" android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_appearance" android:textColor="#7F7F7F" android:textSize="15sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Advanced Settings (collapsible) -->
+        <LinearLayout
+            android:id="@+id/menu_settings_advanced_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="44dp"
+            android:orientation="horizontal"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/settings_advanced_section_title"
+                android:textColor="#D7E8D7"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/menu_settings_advanced_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▾"
+                android:textColor="#D7E8D7"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_settings_advanced_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout android:id="@+id/menu_advanced_show_timer_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_game_timer" android:textColor="#CFE7CF" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_score" android:textColor="#7F7F7F" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_moves" android:textColor="#7F7F7F" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:id="@+id/menu_advanced_show_card_animations_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_card_movement_animations" android:textColor="#CFE7CF" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:id="@+id/menu_advanced_show_win_animation_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_win_animation" android:textColor="#CFE7CF" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:id="@+id/menu_advanced_board_layout_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_board_layout" android:textColor="#CFE7CF" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:id="@+id/menu_advanced_hint_delay_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_hint_delay" android:textColor="#CFE7CF" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_auto_complete" android:textColor="#7F7F7F" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_score_method" android:textColor="#7F7F7F" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_haptics" android:textColor="#7F7F7F" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_tap_to_move" android:textColor="#7F7F7F" android:textSize="15sp" /></LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_full_screen" android:textColor="#7F7F7F" android:textSize="15sp" /></LinearLayout>
+        </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_exit_app_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_menu_exit_app"
+                android:textColor="#FF8A80"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
+
+
+

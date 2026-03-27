@@ -1,6 +1,7 @@
 package com.gpgamelab.justpatience.ui
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
@@ -20,13 +21,14 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.gpgamelab.justpatience.ads.AdManager
 import com.gpgamelab.justpatience.assets.AndroidAssetResolver
 import com.gpgamelab.justpatience.R
+import com.gpgamelab.justpatience.SettingsActivity
 import com.gpgamelab.justpatience.databinding.ActivityGameBinding
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.data.GameStatsManager
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
-class GameActivity : AppCompatActivity() {
+class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     companion object {
         private const val GAME_LAUNCH_TAG = "GameLaunch"
@@ -57,6 +59,7 @@ class GameActivity : AppCompatActivity() {
     private var hasShownWinRewardedInterstitialForCurrentWin: Boolean = false
     private var showWinAnimation: Boolean = true
     private var forceNewGameOnLaunch: Boolean = false
+    private var gameMenuExpandState = GameMenuBottomSheetFragment.ExpandState()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -188,7 +191,7 @@ class GameActivity : AppCompatActivity() {
             viewModel.startNewGame()
         }
         findViewById<Button>(R.id.btn_restart).setOnClickListener { handleRestartClick() }
-        binding.btnStats.setOnClickListener { showStatsDialog() }
+        binding.btnStats.setOnClickListener { showGameMenu() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             buttonView.isEnabled = false
             lifecycleScope.launch {
@@ -270,6 +273,43 @@ class GameActivity : AppCompatActivity() {
 
     private fun showStatsDialog() {
         StatsDialogFragment.newInstance().show(supportFragmentManager, "stats_dialog")
+    }
+
+    private fun showGameMenu() {
+        if (supportFragmentManager.findFragmentByTag(GameMenuBottomSheetFragment.TAG) != null) return
+        GameMenuBottomSheetFragment.newInstance(gameMenuExpandState).show(
+            supportFragmentManager,
+            GameMenuBottomSheetFragment.TAG
+        )
+    }
+
+    override fun onGameMenuStatistics() {
+        showStatsDialog()
+    }
+
+    override fun onGameMenuOpenAbout() {
+        startActivity(Intent(this, AboutActivity::class.java))
+    }
+
+    override fun onGameMenuOpenHowToPlay() {
+        startActivity(Intent(this, HowToPlayActivity::class.java))
+    }
+
+    override fun onGameMenuOpenSettings() {
+        startActivity(Intent(this, SettingsActivity::class.java))
+    }
+
+    override fun onGameMenuExitApp() {
+        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(homeIntent)
+        finishAffinity()
+    }
+
+    override fun onGameMenuExpandStateChanged(state: GameMenuBottomSheetFragment.ExpandState) {
+        gameMenuExpandState = state
     }
 
     override fun onResume() {
