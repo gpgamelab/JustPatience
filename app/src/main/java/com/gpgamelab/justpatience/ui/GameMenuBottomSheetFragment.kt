@@ -33,6 +33,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuRateUs()
         fun onGameMenuShareApp()
         fun onGameMenuContactUs()
+        fun onGameMenuOpenPrivacyPolicy()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -142,6 +143,9 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_contact_us_row).setOnClickListener {
             dismissAndRun { host.onGameMenuContactUs() }
         }
+        view.findViewById<View>(R.id.menu_privacy_policy_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuOpenPrivacyPolicy() }
+        }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenAbout() }
         }
@@ -234,5 +238,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 }
+
 
 

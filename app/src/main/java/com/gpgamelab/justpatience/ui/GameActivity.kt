@@ -6,17 +6,22 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.ScrollView
+import android.widget.TextView
 import android.widget.Toast
 import android.widget.VideoView
+import androidx.annotation.RawRes
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.play.core.review.ReviewInfo
@@ -388,6 +393,36 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuOpenPrivacyPolicy() {
+        val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
+        val policyUrl = getString(R.string.privacy_policy_website_url)
+        val linkBlock = """
+            <p><b>${getString(R.string.privacy_policy_link_title)}</b><br>
+            <a href="$policyUrl">$policyUrl</a></p>
+        """.trimIndent()
+        val policyText = HtmlCompat.fromHtml(policyHtml + linkBlock, HtmlCompat.FROM_HTML_MODE_LEGACY)
+
+        val textView = TextView(this).apply {
+            text = policyText
+            movementMethod = LinkMovementMethod.getInstance()
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setPadding(40, 28, 40, 28)
+        }
+
+        val scrollView = ScrollView(this).apply {
+            addView(textView)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.privacy_policy_dialog_title)
+            .setView(scrollView)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.privacy_policy_open_website) { _, _ ->
+                openPrivacyPolicyWebsite(policyUrl)
+            }
+            .show()
+    }
+
     private fun buildContactUsBody(): String {
         val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}".trim()
         val androidVersion = "${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})"
@@ -403,6 +438,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             deviceName,
             localeTag
         )
+    }
+
+    private fun openPrivacyPolicyWebsite(url: String) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        if (browserIntent.resolveActivity(packageManager) != null) {
+            startActivity(browserIntent)
+        } else {
+            Toast.makeText(this, R.string.privacy_policy_open_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun readRawResourceText(@RawRes resId: Int): String {
+        return resources.openRawResource(resId).bufferedReader().use { it.readText() }
     }
 
     private fun openPlayStoreListing() {
