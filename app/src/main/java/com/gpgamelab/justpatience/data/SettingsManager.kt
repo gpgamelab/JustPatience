@@ -355,4 +355,10 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.PLAYER_DISPLAY_NAME] = settings.playerDisplayName
         }
     }
+
+    suspend fun setPlayerDisplayName(displayName: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PLAYER_DISPLAY_NAME] = displayName.trim()
+        }
+    }
 }

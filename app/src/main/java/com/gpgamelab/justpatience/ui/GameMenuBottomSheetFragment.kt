@@ -35,6 +35,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuContactUs()
         fun onGameMenuOpenPrivacyPolicy()
         fun onGameMenuOpenTermsOfService()
+        fun onGameMenuEditNickname()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -57,6 +58,18 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
         val host = activity as? Host ?: return
         var expandState = readExpandStateFromArgs()
+        val currentNickname = arguments?.getString(ARG_CURRENT_NICKNAME).orEmpty().trim()
+        if (currentNickname.isNotEmpty()) {
+            val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
+            nicknameLabel.text = getString(
+                R.string.game_menu_my_nickname_with_value,
+                formatNicknameForMenu(currentNickname)
+            )
+            nicknameLabel.contentDescription = getString(
+                R.string.game_menu_my_nickname_with_value,
+                currentNickname
+            )
+        }
 
         // Collapsible sections
         val statisticsHeader = view.findViewById<View>(R.id.menu_statistics_row)
@@ -150,13 +163,15 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_terms_of_service_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenTermsOfService() }
         }
+        view.findViewById<View>(R.id.menu_common_nickname_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuEditNickname() }
+        }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenAbout() }
         }
 
         // Existing settings screen handles current settings items.
         val settingsRows = intArrayOf(
-            R.id.menu_common_nickname_row,
             R.id.menu_common_draw_cards_row,
             R.id.menu_common_waste_recycles_row,
             R.id.menu_common_show_hints_row,
@@ -210,6 +225,12 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         arrow.text = if (expanded) "▴" else "▾"
     }
 
+    private fun formatNicknameForMenu(nickname: String): String {
+        val trimmed = nickname.trim()
+        if (trimmed.length <= MAX_MENU_NICKNAME_LENGTH) return trimmed
+        return trimmed.take(MAX_MENU_NICKNAME_LENGTH) + "..."
+    }
+
     private fun readExpandStateFromArgs(): ExpandState {
         val b = arguments ?: return ExpandState()
         return ExpandState(
@@ -228,8 +249,13 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_SETTINGS_EXPANDED = "arg_settings_expanded"
         private const val ARG_COMMON_EXPANDED = "arg_common_expanded"
         private const val ARG_ADVANCED_EXPANDED = "arg_advanced_expanded"
+        private const val ARG_CURRENT_NICKNAME = "arg_current_nickname"
+        private const val MAX_MENU_NICKNAME_LENGTH = 20
 
-        fun newInstance(state: ExpandState = ExpandState()): GameMenuBottomSheetFragment {
+        fun newInstance(
+            state: ExpandState = ExpandState(),
+            currentNickname: String = ""
+        ): GameMenuBottomSheetFragment {
             return GameMenuBottomSheetFragment().apply {
                 arguments = Bundle().apply {
                     putBoolean(ARG_STATISTICS_EXPANDED, state.statisticsExpanded)
@@ -237,11 +263,15 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_SETTINGS_EXPANDED, state.settingsExpanded)
                     putBoolean(ARG_COMMON_EXPANDED, state.commonExpanded)
                     putBoolean(ARG_ADVANCED_EXPANDED, state.advancedExpanded)
+                    putString(ARG_CURRENT_NICKNAME, currentNickname)
                 }
             }
         }
     }
 }
+
+
+
 
 
 

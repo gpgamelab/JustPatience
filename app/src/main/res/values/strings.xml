@@ -180,6 +180,11 @@ Locale: %7$s</string>
     <string name="game_menu_open_settings">Open Settings</string>
     <string name="game_menu_common_settings">Common Settings</string>
     <string name="game_menu_my_nickname">My Nickname</string>
+    <string name="game_menu_my_nickname_with_value">My Nickname: %1$s</string>
+    <string name="nickname_dialog_title">Set Nickname</string>
+    <string name="nickname_dialog_hint">Enter your nickname</string>
+    <string name="nickname_dialog_save">Save</string>
+    <string name="nickname_dialog_saved">Nickname updated.</string>
     <string name="game_menu_my_avatar">My Avatar</string>
     <string name="game_menu_draw_cards">Draw Cards</string>
     <string name="game_menu_waste_recycles">Waste Pile Recycles</string>

@@ -11,6 +11,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ScrollView
@@ -37,6 +38,7 @@ import com.gpgamelab.justpatience.databinding.ActivityGameBinding
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.data.GameStatsManager
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlin.math.min
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
@@ -279,11 +281,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun showGameMenu() {
-        if (supportFragmentManager.findFragmentByTag(GameMenuBottomSheetFragment.TAG) != null) return
-        GameMenuBottomSheetFragment.newInstance(gameMenuExpandState).show(
-            supportFragmentManager,
-            GameMenuBottomSheetFragment.TAG
-        )
+        lifecycleScope.launch {
+            if (supportFragmentManager.findFragmentByTag(GameMenuBottomSheetFragment.TAG) != null) return@launch
+            val currentNickname = settingsManager.gamePlaySettingsFlow.first().playerDisplayName
+            GameMenuBottomSheetFragment.newInstance(gameMenuExpandState, currentNickname).show(
+                supportFragmentManager,
+                GameMenuBottomSheetFragment.TAG
+            )
+        }
     }
 
     override fun onGameMenuStatisticsSummary() {
@@ -423,6 +428,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             .show()
     }
 
+    override fun onGameMenuEditNickname() {
+        lifecycleScope.launch {
+            val currentNickname = settingsManager.gamePlaySettingsFlow.first().playerDisplayName
+            showNicknameDialog(currentNickname)
+        }
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -468,6 +480,28 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             deviceName,
             localeTag
         )
+    }
+
+    private fun showNicknameDialog(currentNickname: String) {
+        val nicknameInput = EditText(this).apply {
+            hint = getString(R.string.nickname_dialog_hint)
+            setText(currentNickname)
+            setSelection(text.length)
+            setSingleLine()
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.nickname_dialog_title)
+            .setView(nicknameInput)
+            .setPositiveButton(R.string.nickname_dialog_save) { _, _ ->
+                val updatedNickname = nicknameInput.text?.toString()?.trim().orEmpty()
+                lifecycleScope.launch {
+                    settingsManager.setPlayerDisplayName(updatedNickname)
+                    Toast.makeText(this@GameActivity, R.string.nickname_dialog_saved, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun openPrivacyPolicyWebsite(url: String) {

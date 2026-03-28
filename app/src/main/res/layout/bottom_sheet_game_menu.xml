@@ -441,7 +441,7 @@
                 android:minHeight="40dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_my_nickname" android:textColor="#CFE7CF" android:textSize="15sp" />
+                <TextView android:id="@+id/menu_common_nickname_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_my_nickname" android:textColor="#CFE7CF" android:textSize="15sp" android:maxLines="1" android:ellipsize="end" />
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
@@ -559,6 +559,8 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
+
+
 
 
 
