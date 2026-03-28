@@ -225,17 +225,6 @@
                 android:visibility="gone"
                 android:enabled="false" />
 
-            <Button
-                android:id="@+id/btn_view_stats"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="View Full Statistics"
-                android:textSize="16sp"
-                android:padding="16dp"
-                android:layout_marginBottom="12dp"
-                android:textColor="@color/colorPrimary"
-                app:strokeColor="@color/colorPrimary" />
 
             <Button
                 android:id="@+id/btn_settings"
@@ -249,40 +238,6 @@
                 android:textColor="@color/secondary_button_color"
                 app:strokeColor="@color/secondary_button_color" />
 
-            <Button
-                android:id="@+id/btn_about"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/about_button_text"
-                android:textSize="16sp"
-                android:padding="16dp"
-                android:layout_marginBottom="12dp"
-                android:textColor="@color/secondary_button_color"
-                app:strokeColor="@color/secondary_button_color" />
-
-            <Button
-                android:id="@+id/btn_how_to_play"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/how_to_play_button_text"
-                android:textSize="16sp"
-                android:padding="16dp"
-                android:layout_marginBottom="12dp"
-                android:textColor="@color/secondary_button_color"
-                app:strokeColor="@color/secondary_button_color" />
-
-            <Button
-                android:id="@+id/btn_shop"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Shop (Coming Soon)"
-                android:textSize="16sp"
-                android:padding="16dp"
-                android:textColor="@color/secondary_button_color"
-                app:strokeColor="@color/secondary_button_color" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

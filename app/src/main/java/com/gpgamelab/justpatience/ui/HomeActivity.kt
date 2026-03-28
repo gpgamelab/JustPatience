@@ -88,35 +88,13 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
 
-            findViewById<Button>(R.id.btn_view_stats)?.setOnClickListener {
-                try {
-                    StatsDialogFragment.newInstance().show(supportFragmentManager, "stats_dialog")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error showing stats dialog", e)
-                }
-            }
+            // ...existing listeners...
 
             findViewById<Button>(R.id.btn_settings)?.setOnClickListener {
                 try {
                     startActivity(Intent(this, SettingsActivity::class.java))
                 } catch (e: Exception) {
                     Log.e(TAG, "Error starting SettingsActivity", e)
-                }
-            }
-
-            findViewById<Button>(R.id.btn_shop)?.setOnClickListener {
-                try {
-                    showShopComingSoon()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error showing shop dialog", e)
-                }
-            }
-
-            findViewById<Button>(R.id.btn_about)?.setOnClickListener {
-                try {
-                    startActivity(Intent(this, AboutActivity::class.java))
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error starting AboutActivity", e)
                 }
             }
 
@@ -207,18 +185,6 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
-    }
-
-    private fun showShopComingSoon() {
-        try {
-            AlertDialog.Builder(this)
-                .setTitle("Coming Soon")
-                .setMessage("The shop is coming in a future update!")
-                .setPositiveButton("OK", null)
-                .show()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error showing shop dialog", e)
         }
     }
 }
