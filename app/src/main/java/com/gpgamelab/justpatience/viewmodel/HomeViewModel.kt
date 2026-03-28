@@ -1,6 +1,7 @@
 package com.gpgamelab.justpatience.viewmodel
 
 import android.app.Application
+import android.content.pm.ApplicationInfo
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.google.gson.Gson
@@ -27,6 +28,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private var repository: GameRepository? = null
     private var settingsManager: SettingsManager? = null
     private val gson = Gson()
+    private val isDebugBuild: Boolean =
+        (application.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
     init {
         try {
@@ -67,7 +70,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
      */
     val hasGameInProgress: Flow<Boolean> = settingsManager?.getGameSessionActiveFlow()
         ?.map { active ->
-            Log.d(TAG, "session flag hasGameInProgress=$active")
+            if (isDebugBuild) {
+                Log.d(TAG, "session flag hasGameInProgress=$active")
+            }
             active
         }
         ?: kotlinx.coroutines.flow.flowOf(false)
@@ -78,10 +83,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             if (json.isNullOrEmpty()) return@map false
             try {
                 val inProgress = gson.fromJson(json, Game::class.java).status == GameStatus.IN_PROGRESS
-                Log.d(TAG, "save-state fallback hasGameInProgress=$inProgress jsonLength=${json.length}")
+                if (isDebugBuild) {
+                    Log.d(TAG, "save-state fallback hasGameInProgress=$inProgress jsonLength=${json.length}")
+                }
                 inProgress
             } catch (_: Exception) {
-                Log.d(TAG, "save-state fallback parse failed")
+                if (isDebugBuild) {
+                    Log.d(TAG, "save-state fallback parse failed")
+                }
                 false
             }
         }

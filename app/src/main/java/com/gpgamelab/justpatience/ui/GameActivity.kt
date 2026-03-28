@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.Button
@@ -30,10 +29,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.min
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
-
-    companion object {
-        private const val GAME_LAUNCH_TAG = "GameLaunch"
-    }
 
     private lateinit var binding: ActivityGameBinding
     private val viewModel: GameViewModel by viewModels()
@@ -96,11 +91,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         // Defer home-start ad decision until we read total games played.
         pendingHomeStartInterstitial = intent.getBooleanExtra("from_home", false)
         forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
-        Log.d(
-            GAME_LAUNCH_TAG,
-            "onCreate: from_home=$pendingHomeStartInterstitial force_new_game=$forceNewGameOnLaunch"
-        )
-
         // Launch mode is explicit: PLAY forces fresh deal, Continue attempts resume.
         viewModel.initializeForLaunch(forceNewGameOnLaunch)
 
@@ -341,7 +331,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     override fun onPause() {
         super.onPause()
-        Log.d(GAME_LAUNCH_TAG, "onPause: saving current game before background/home transition")
         // Avoid recording losses on transient pauses (ads, dialogs, rotation).
         stopWinVideoPlayback()
         viewModel.saveGame()
@@ -351,7 +340,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     override fun onStop() {
         super.onStop()
-        Log.d(GAME_LAUNCH_TAG, "onStop: isFinishing=$isFinishing")
         if (isFinishing) {
             stopWinVideoPlayback()
             viewModel.stopGame()

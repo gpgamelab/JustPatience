@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -43,7 +42,6 @@ import java.lang.reflect.Type
 import java.util.Locale
 
 private const val CARD_MOVE_ANIMATION_MS = 250L
-private const val GAME_PERSIST_TAG = "GamePersist"
 
 /**
  * ViewModel that holds the current Game state and provides actions for UI.
@@ -134,21 +132,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             if (forceNewGame) {
-                Log.d(GAME_PERSIST_TAG, "initializeForLaunch: force new game")
                 startNewGameInternal()
                 updateUndoRedoState()
                 resetHintTimer()
                 return@launch
             }
 
-            Log.d(GAME_PERSIST_TAG, "initializeForLaunch: checking for saved game to resume")
             val restored = loadSavedGame()
             if (restored) {
-                Log.d(GAME_PERSIST_TAG, "initializeForLaunch: resumed saved in-progress game ${summarizeGame(_game.value)}")
                 updateUndoRedoState()
                 resetHintTimer()
             } else {
-                Log.d(GAME_PERSIST_TAG, "initializeForLaunch: no resumable saved game found, starting fresh hand")
                 startNewGameInternal()
                 updateUndoRedoState()
                 resetHintTimer()
@@ -168,7 +162,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         initialGameState = newGame
         _game.value = newGame
         resetTimerForNewHand()
-        Log.d(GAME_PERSIST_TAG, "startNewGameInternal: created fresh hand ${summarizeGame(newGame)}")
         saveGame()
     }
 
@@ -264,7 +257,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startNewGame() {
-        Log.d(GAME_PERSIST_TAG, "startNewGame: requested while current=${summarizeGame(_game.value)}")
         finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
         undoStack.clear()
@@ -275,13 +267,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newGame = controller.newGameWithClearHistory()
             initialGameState = newGame
             _game.value = newGame
-            Log.d(GAME_PERSIST_TAG, "startNewGame: switched to fresh hand ${summarizeGame(newGame)}")
             saveGame()
         }
     }
 
     fun restartGame() {
-        Log.d(GAME_PERSIST_TAG, "restartGame: requested while current=${summarizeGame(_game.value)}")
         finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
         val initial = initialGameState ?: return
@@ -291,7 +281,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         resetTimerForNewHand()
         currentHandRecorded = false
         updateUndoRedoState()
-        Log.d(GAME_PERSIST_TAG, "restartGame: restored initial hand ${summarizeGame(initial)}")
         saveGame()
     }
 
@@ -946,13 +935,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 // Mirror session state: true while an in-progress game exists in storage,
                 // false once the game has reached a terminal state.
                 settingsManager.setGameSessionActive(gameToSave.status == GameStatus.IN_PROGRESS)
-                Log.d(
-                    GAME_PERSIST_TAG,
-                    "saveGame: persisted ${summarizeGame(gameToSave)} jsonLength=${json.length} sessionActive=${gameToSave.status == GameStatus.IN_PROGRESS}"
-                )
             } catch (t: Throwable) {
                 Log.w("GameViewModel", "saveGame failed: ${t.message}")
-                Log.w(GAME_PERSIST_TAG, "saveGame failed for ${summarizeGame(_game.value)}: ${t.message}")
             }
         }
     }
@@ -960,13 +944,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun loadSavedGame(): Boolean {
         return try {
             val saved = repository.getCurrentGameState().firstOrNull()
-            Log.d(
-                GAME_PERSIST_TAG,
-                "loadSavedGame: rawSavedPresent=${!saved.isNullOrEmpty()} jsonLength=${saved?.length ?: 0}"
-            )
             if (!saved.isNullOrEmpty()) {
                 val savedGame = gson.fromJson(saved, Game::class.java)
-                Log.d(GAME_PERSIST_TAG, "loadSavedGame: parsed ${summarizeGame(savedGame)}")
                 if (savedGame.status == GameStatus.IN_PROGRESS) {
                     _game.value = savedGame
                     gameTime.value = savedGame.savedGameTime
@@ -974,25 +953,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     currentHandRecorded = false
                     // Keep the session marker aligned with the resumed in-progress game.
                     settingsManager.setGameSessionActive(true)
-                    Log.d(GAME_PERSIST_TAG, "loadSavedGame: resume accepted")
                     true
                 } else {
-                    Log.d(GAME_PERSIST_TAG, "loadSavedGame: saved game not resumable because status=${savedGame.status}")
                     false
                 }
             } else {
-                Log.d(GAME_PERSIST_TAG, "loadSavedGame: no saved JSON found")
                 false
             }
         } catch (t: Throwable) {
-            Log.w(GAME_PERSIST_TAG, "loadSavedGame failed: ${t.message}", t)
+            Log.w("GameViewModel", "loadSavedGame failed: ${t.message}", t)
             false
         }
     }
 
     fun stopGame() {
         val current = _game.value
-        Log.d(GAME_PERSIST_TAG, "stopGame: activity finishing with current=${summarizeGame(current)}")
 
         // runBlocking ensures save + session-flag write complete before teardown.
         // Leaving the game screen should preserve in-progress sessions for resume,
@@ -1006,15 +981,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 Log.w("GameViewModel", "stopGame save failed: ${t.message}")
             }
             settingsManager.setGameSessionActive(current.status == GameStatus.IN_PROGRESS)
-            Log.d(
-                GAME_PERSIST_TAG,
-                "stopGame: sessionActive=${current.status == GameStatus.IN_PROGRESS} savedCurrent=${summarizeGame(current)}"
-            )
         }
-    }
-
-    private fun summarizeGame(game: Game): String {
-        return "status=${game.status}, moves=${game.moves}, score=${game.score}, stock=${game.stock.size()}, waste=${game.waste.size()}, recycle=${game.recycleCountUsed}"
     }
 
     /**

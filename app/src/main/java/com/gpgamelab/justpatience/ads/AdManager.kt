@@ -1,6 +1,7 @@
 package com.gpgamelab.justpatience.ads
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.gpgamelab.justpatience.R
 import com.google.android.gms.ads.MobileAds
@@ -27,6 +28,14 @@ class AdManager(private val context: Context) {
     private var mRewardedInterstitialAd: RewardedInterstitialAd? = null
     private var showOnLoad = false
     private var adDismissedCallback: (() -> Unit)? = null
+    private val isDebugBuild: Boolean =
+        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
+    private fun logDebug(message: String) {
+        if (isDebugBuild) {
+            Log.d(TAG, message)
+        }
+    }
 
     companion object {
         private const val TAG = "AdManager"
@@ -52,7 +61,7 @@ class AdManager(private val context: Context) {
 
     init {
         isTestMode = context.resources.getBoolean(R.bool.use_test_ad_ids)
-        Log.d(TAG, "Ad mode initialized: ${if (isTestMode) "TEST" else "PRODUCTION"}")
+        logDebug("Ad mode initialized: ${if (isTestMode) "TEST" else "PRODUCTION"}")
     }
 
     /**
@@ -62,7 +71,7 @@ class AdManager(private val context: Context) {
     fun initializeAds() {
         try {
             MobileAds.initialize(context)
-            Log.d(TAG, "Google Mobile Ads SDK initialized successfully")
+            logDebug("Google Mobile Ads SDK initialized successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Google Mobile Ads SDK", e)
         }
@@ -76,7 +85,7 @@ class AdManager(private val context: Context) {
         try {
             adView.adListener = object : AdListener() {
                 override fun onAdLoaded() {
-                    Log.d(TAG, "Banner ad loaded successfully")
+                    logDebug("Banner ad loaded successfully")
                 }
 
                 override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -84,22 +93,22 @@ class AdManager(private val context: Context) {
                 }
 
                 override fun onAdOpened() {
-                    Log.d(TAG, "Banner ad opened")
+                    logDebug("Banner ad opened")
                 }
 
                 override fun onAdClicked() {
-                    Log.d(TAG, "Banner ad clicked")
+                    logDebug("Banner ad clicked")
                 }
 
                 override fun onAdClosed() {
-                    Log.d(TAG, "Banner ad closed")
+                    logDebug("Banner ad closed")
                 }
             }
 
             val adRequest = AdRequest.Builder().build()
             adView.loadAd(adRequest)
 
-            Log.d(TAG, "Banner ad loading started with XML unit ID: ${adView.adUnitId}")
+            logDebug("Banner ad loading started with XML unit ID: ${adView.adUnitId}")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load banner ad", e)
         }
@@ -116,7 +125,7 @@ class AdManager(private val context: Context) {
             InterstitialAd.load(context, adUnitId, adRequest, object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     mInterstitialAd = interstitialAd
-                    Log.d(TAG, "Interstitial ad loaded successfully")
+                    logDebug("Interstitial ad loaded successfully")
 
                     if (showOnLoad) {
                         showInterstitialAd()
@@ -141,7 +150,7 @@ class AdManager(private val context: Context) {
     fun showInterstitialAd(onCompleted: (() -> Unit)? = null): Boolean {
         val ad = mInterstitialAd
         if (ad == null) {
-            Log.d(TAG, "Interstitial ad not ready to show")
+            logDebug("Interstitial ad not ready to show")
             return false
         }
 
@@ -149,7 +158,7 @@ class AdManager(private val context: Context) {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Interstitial ad dismissed")
+                logDebug("Interstitial ad dismissed")
                 mInterstitialAd = null
                 loadInterstitialAd()
                 completion?.invoke()
@@ -163,7 +172,7 @@ class AdManager(private val context: Context) {
             }
 
             override fun onAdShowedFullScreenContent() {
-                Log.d(TAG, "Interstitial ad showed full screen content")
+                logDebug("Interstitial ad showed full screen content")
             }
         }
 
@@ -186,7 +195,7 @@ class AdManager(private val context: Context) {
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
                     mRewardedAd = rewardedAd
-                    Log.d(TAG, "Rewarded ad loaded successfully")
+                    logDebug("Rewarded ad loaded successfully")
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -206,7 +215,7 @@ class AdManager(private val context: Context) {
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
                     mRewardedAd = rewardedAd
-                    Log.d(TAG, "Rewarded ad loaded successfully")
+                    logDebug("Rewarded ad loaded successfully")
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -226,7 +235,7 @@ class AdManager(private val context: Context) {
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
                     mRewardedAd = rewardedAd
-                    Log.d(TAG, "Rewarded ad loaded successfully")
+                    logDebug("Rewarded ad loaded successfully")
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -246,7 +255,7 @@ class AdManager(private val context: Context) {
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
                     mRewardedAd = rewardedAd
-                    Log.d(TAG, "Rewarded ad loaded successfully")
+                    logDebug("Rewarded ad loaded successfully")
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -278,7 +287,7 @@ class AdManager(private val context: Context) {
                 object : RewardedInterstitialAdLoadCallback() {
                     override fun onAdLoaded(rewardedInterstitialAd: RewardedInterstitialAd) {
                         mRewardedInterstitialAd = rewardedInterstitialAd
-                        Log.d(TAG, "Rewarded interstitial ad loaded successfully")
+                        logDebug("Rewarded interstitial ad loaded successfully")
                     }
 
                     override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -299,7 +308,7 @@ class AdManager(private val context: Context) {
     fun showRewardedAd(onCompleted: (() -> Unit)? = null): Boolean {
         val ad = mRewardedAd
         if (ad == null) {
-            Log.d(TAG, "Rewarded ad not ready to show")
+            logDebug("Rewarded ad not ready to show")
             return false
         }
 
@@ -307,7 +316,7 @@ class AdManager(private val context: Context) {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad dismissed")
+                logDebug("Rewarded ad dismissed")
                 mRewardedAd = null
                 loadRewardedAd()
                 completion?.invoke()
@@ -321,19 +330,19 @@ class AdManager(private val context: Context) {
             }
 
             override fun onAdShowedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad showed full screen content")
+                logDebug("Rewarded ad showed full screen content")
             }
         }
 
         ad.show(context as android.app.Activity) { rewardItem ->
-            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+            logDebug("User earned reward: ${rewardItem.amount} ${rewardItem.type}")
         }
         return true
     }
     fun showRewardedAdUndoBtn(onCompleted: (() -> Unit)? = null): Boolean {
         val ad = mRewardedAd
         if (ad == null) {
-            Log.d(TAG, "Rewarded ad not ready to show")
+            logDebug("Rewarded ad not ready to show")
             return false
         }
 
@@ -341,7 +350,7 @@ class AdManager(private val context: Context) {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad dismissed")
+                logDebug("Rewarded ad dismissed")
                 mRewardedAd = null
                 loadRewardedAdUndoBtn()
                 completion?.invoke()
@@ -355,19 +364,19 @@ class AdManager(private val context: Context) {
             }
 
             override fun onAdShowedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad showed full screen content")
+                logDebug("Rewarded ad showed full screen content")
             }
         }
 
         ad.show(context as android.app.Activity) { rewardItem ->
-            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+            logDebug("User earned reward: ${rewardItem.amount} ${rewardItem.type}")
         }
         return true
     }
     fun showRewardedAdRedoBtn(onCompleted: (() -> Unit)? = null): Boolean {
         val ad = mRewardedAd
         if (ad == null) {
-            Log.d(TAG, "Rewarded ad not ready to show")
+            logDebug("Rewarded ad not ready to show")
             return false
         }
 
@@ -375,7 +384,7 @@ class AdManager(private val context: Context) {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad dismissed")
+                logDebug("Rewarded ad dismissed")
                 mRewardedAd = null
                 loadRewardedAdRedoBtn()
                 completion?.invoke()
@@ -389,19 +398,19 @@ class AdManager(private val context: Context) {
             }
 
             override fun onAdShowedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad showed full screen content")
+                logDebug("Rewarded ad showed full screen content")
             }
         }
 
         ad.show(context as android.app.Activity) { rewardItem ->
-            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+            logDebug("User earned reward: ${rewardItem.amount} ${rewardItem.type}")
         }
         return true
     }
     fun showRewardedAdRestartBtn(onCompleted: (() -> Unit)? = null): Boolean {
         val ad = mRewardedAd
         if (ad == null) {
-            Log.d(TAG, "Rewarded ad not ready to show")
+            logDebug("Rewarded ad not ready to show")
             return false
         }
 
@@ -409,7 +418,7 @@ class AdManager(private val context: Context) {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad dismissed")
+                logDebug("Rewarded ad dismissed")
                 mRewardedAd = null
                 loadRewardedAdRestartBtn()
                 completion?.invoke()
@@ -423,12 +432,12 @@ class AdManager(private val context: Context) {
             }
 
             override fun onAdShowedFullScreenContent() {
-                Log.d(TAG, "Rewarded ad showed full screen content")
+                logDebug("Rewarded ad showed full screen content")
             }
         }
 
         ad.show(context as android.app.Activity) { rewardItem ->
-            Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+            logDebug("User earned reward: ${rewardItem.amount} ${rewardItem.type}")
         }
         return true
     }
@@ -446,7 +455,7 @@ class AdManager(private val context: Context) {
     ): Boolean {
         val ad = mRewardedInterstitialAd
         if (ad == null) {
-            Log.d(TAG, "Rewarded interstitial ad not ready to show")
+            logDebug("Rewarded interstitial ad not ready to show")
             return false
         }
 
@@ -454,7 +463,7 @@ class AdManager(private val context: Context) {
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Rewarded interstitial ad dismissed")
+                logDebug("Rewarded interstitial ad dismissed")
                 mRewardedInterstitialAd = null
                 loadRewardedInterstitialAd()
                 completion?.invoke()
@@ -468,12 +477,12 @@ class AdManager(private val context: Context) {
             }
 
             override fun onAdShowedFullScreenContent() {
-                Log.d(TAG, "Rewarded interstitial ad showed full screen content")
+                logDebug("Rewarded interstitial ad showed full screen content")
             }
         }
 
         ad.show(context as android.app.Activity) { rewardItem ->
-            Log.d(TAG, "User earned rewarded-interstitial reward: ${rewardItem.amount} ${rewardItem.type}")
+            logDebug("User earned rewarded-interstitial reward: ${rewardItem.amount} ${rewardItem.type}")
             onUserEarnedReward?.invoke()
         }
         return true
@@ -485,7 +494,7 @@ class AdManager(private val context: Context) {
      */
     fun setTestMode(testMode: Boolean) {
         isTestMode = testMode
-        Log.d(TAG, "Test mode set to: $testMode")
+        logDebug("Test mode set to: $testMode")
     }
 
     /**
@@ -494,7 +503,7 @@ class AdManager(private val context: Context) {
      */
     fun setShowOnLoad(show: Boolean) {
         showOnLoad = show
-        Log.d(TAG, "Show on load set to: $show")
+        logDebug("Show on load set to: $show")
     }
 
     /**

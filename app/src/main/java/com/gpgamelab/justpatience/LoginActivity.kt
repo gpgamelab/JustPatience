@@ -1,6 +1,7 @@
 package com.gpgamelab.justpatience
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -24,6 +25,9 @@ import com.gpgamelab.justpatience.viewmodel.AuthViewModel
  */
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
+    private val isDebugBuild: Boolean by lazy {
+        (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    }
 
     // Late-initialized property for ViewBinding
     private lateinit var binding: ActivityLoginBinding
@@ -126,7 +130,9 @@ class LoginActivity : AppCompatActivity() {
                     "Welcome, ${authResponse.username}! Proceeding to game...",
                     Toast.LENGTH_LONG
                 ).show()
-                Log.i("Auth", "Login Successful.")
+                if (isDebugBuild) {
+                    Log.i("Auth", "Login Successful.")
+                }
 
                 // Example navigation to Home/Main Game Activity
                 val intent = Intent(this, SettingsActivity::class.java) // Placeholder for now
@@ -141,7 +147,9 @@ class LoginActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 authViewModel.authToken.collect { token ->
                     if (token != null) {
-                        Log.d("Auth", "Token flow detected: User is authenticated. Token present.")
+                        if (isDebugBuild) {
+                            Log.d("Auth", "Token flow detected: User is authenticated. Token present.")
+                        }
                         // If token is present, navigate directly to the main activity/home screen
                         // This handles auto-login on app start.
                         val intent = Intent(
@@ -151,10 +159,12 @@ class LoginActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish() // Prevent going back to login
                     } else {
-                        Log.d(
-                            "Auth",
-                            "Token flow detected: User is unauthenticated. Token missing."
-                        )
+                        if (isDebugBuild) {
+                            Log.d(
+                                "Auth",
+                                "Token flow detected: User is unauthenticated. Token missing."
+                            )
+                        }
                         binding.tvTitle.text = "Just Patience Login"
                     }
                 }

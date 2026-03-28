@@ -1,6 +1,7 @@
 package com.gpgamelab.justpatience.ui
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -29,6 +30,9 @@ class HomeActivity : AppCompatActivity() {
 
     private val viewModel: HomeViewModel by viewModels()
     private var hasGameInProgress: Boolean = false
+    private val isDebugBuild: Boolean by lazy {
+        (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +54,9 @@ class HomeActivity : AppCompatActivity() {
                 setSupportActionBar(toolbar)
                 supportActionBar?.title = getString(R.string.app_name)
             } else {
-                Log.w(TAG, "Toolbar not found in layout")
+                if (isDebugBuild) {
+                    Log.w(TAG, "Toolbar not found in layout")
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error setting up toolbar", e)
@@ -61,7 +67,6 @@ class HomeActivity : AppCompatActivity() {
         try {
             findViewById<Button>(R.id.btn_play_game)?.setOnClickListener {
                 try {
-                    Log.d(TAG, "Play clicked: launching GameActivity with force_new_game=true")
                     val intent = Intent(this, GameActivity::class.java)
                     intent.putExtra("from_home", true)
                     intent.putExtra("force_new_game", true)
@@ -73,7 +78,6 @@ class HomeActivity : AppCompatActivity() {
 
             findViewById<Button>(R.id.btn_continue_game)?.setOnClickListener {
                 try {
-                    Log.d(TAG, "Continue clicked: hasGameInProgress=$hasGameInProgress")
                     if (hasGameInProgress) {
                         startActivity(Intent(this, GameActivity::class.java))
                     } else {
@@ -177,7 +181,6 @@ class HomeActivity : AppCompatActivity() {
                     try {
                         viewModel.hasGameInProgress.collect { hasInProgress ->
                             hasGameInProgress = hasInProgress
-                            Log.d(TAG, "hasGameInProgress updated: $hasInProgress")
                             findViewById<Button>(R.id.btn_continue_game)?.apply {
                                 visibility = if (hasInProgress) View.VISIBLE else View.GONE
                                 isEnabled = hasInProgress
