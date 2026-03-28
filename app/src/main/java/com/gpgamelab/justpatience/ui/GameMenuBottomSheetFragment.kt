@@ -36,6 +36,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuOpenPrivacyPolicy()
         fun onGameMenuOpenTermsOfService()
         fun onGameMenuEditNickname()
+        fun onGameMenuDrawCards()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -59,6 +60,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val host = activity as? Host ?: return
         var expandState = readExpandStateFromArgs()
         val currentNickname = arguments?.getString(ARG_CURRENT_NICKNAME).orEmpty().trim()
+        val currentDrawSize = arguments?.getInt(ARG_CURRENT_DRAW_SIZE, DEFAULT_DRAW_SIZE) ?: DEFAULT_DRAW_SIZE
         if (currentNickname.isNotEmpty()) {
             val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
             nicknameLabel.text = getString(
@@ -70,6 +72,9 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                 currentNickname
             )
         }
+        val normalizedDrawSize = if (currentDrawSize == 3) 3 else 1
+        val drawCardsLabel = view.findViewById<TextView>(R.id.menu_common_draw_cards_text)
+        drawCardsLabel.text = getString(R.string.game_menu_draw_cards_with_value, normalizedDrawSize)
 
         // Collapsible sections
         val statisticsHeader = view.findViewById<View>(R.id.menu_statistics_row)
@@ -166,13 +171,15 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_common_nickname_row).setOnClickListener {
             dismissAndRun { host.onGameMenuEditNickname() }
         }
+        view.findViewById<View>(R.id.menu_common_draw_cards_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuDrawCards() }
+        }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenAbout() }
         }
 
         // Existing settings screen handles current settings items.
         val settingsRows = intArrayOf(
-            R.id.menu_common_draw_cards_row,
             R.id.menu_common_waste_recycles_row,
             R.id.menu_common_show_hints_row,
             R.id.menu_common_mute_music_row,
@@ -250,11 +257,14 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_COMMON_EXPANDED = "arg_common_expanded"
         private const val ARG_ADVANCED_EXPANDED = "arg_advanced_expanded"
         private const val ARG_CURRENT_NICKNAME = "arg_current_nickname"
+        private const val ARG_CURRENT_DRAW_SIZE = "arg_current_draw_size"
         private const val MAX_MENU_NICKNAME_LENGTH = 20
+        private const val DEFAULT_DRAW_SIZE = 3
 
         fun newInstance(
             state: ExpandState = ExpandState(),
-            currentNickname: String = ""
+            currentNickname: String = "",
+            currentDrawSize: Int = DEFAULT_DRAW_SIZE
         ): GameMenuBottomSheetFragment {
             return GameMenuBottomSheetFragment().apply {
                 arguments = Bundle().apply {
@@ -264,11 +274,14 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_COMMON_EXPANDED, state.commonExpanded)
                     putBoolean(ARG_ADVANCED_EXPANDED, state.advancedExpanded)
                     putString(ARG_CURRENT_NICKNAME, currentNickname)
+                    putInt(ARG_CURRENT_DRAW_SIZE, currentDrawSize)
                 }
             }
         }
     }
 }
+
+
 
 
 

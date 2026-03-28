@@ -449,7 +449,7 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/menu_common_draw_cards_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_draw_cards" android:textColor="#CFE7CF" android:textSize="15sp" />
+                <TextView android:id="@+id/menu_common_draw_cards_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_draw_cards" android:textColor="#CFE7CF" android:textSize="15sp" />
             </LinearLayout>
 
             <LinearLayout android:id="@+id/menu_common_waste_recycles_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="40dp" android:orientation="horizontal" android:gravity="center_vertical">
@@ -559,6 +559,7 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
+
 
 
 

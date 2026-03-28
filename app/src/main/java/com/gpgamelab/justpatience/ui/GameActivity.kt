@@ -283,8 +283,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private fun showGameMenu() {
         lifecycleScope.launch {
             if (supportFragmentManager.findFragmentByTag(GameMenuBottomSheetFragment.TAG) != null) return@launch
-            val currentNickname = settingsManager.gamePlaySettingsFlow.first().playerDisplayName
-            GameMenuBottomSheetFragment.newInstance(gameMenuExpandState, currentNickname).show(
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            GameMenuBottomSheetFragment.newInstance(
+                state = gameMenuExpandState,
+                currentNickname = currentSettings.playerDisplayName,
+                currentDrawSize = currentSettings.drawSize
+            ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
             )
@@ -435,6 +439,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuDrawCards() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showDrawCardsDialog(currentSettings.drawSize)
+        }
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -499,6 +510,27 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                     settingsManager.setPlayerDisplayName(updatedNickname)
                     Toast.makeText(this@GameActivity, R.string.nickname_dialog_saved, Toast.LENGTH_SHORT).show()
                 }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showDrawCardsDialog(currentDrawSize: Int) {
+        val drawOptions = arrayOf(
+            getString(R.string.settings_draw_1),
+            getString(R.string.settings_draw_3)
+        )
+        val checkedItem = if (currentDrawSize == 3) 1 else 0
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.game_menu_draw_cards)
+            .setSingleChoiceItems(drawOptions, checkedItem) { dialog, which ->
+                val selectedDrawSize = if (which == 1) 3 else 1
+                lifecycleScope.launch {
+                    val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(currentSettings.copy(drawSize = selectedDrawSize))
+                }
+                dialog.dismiss()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
