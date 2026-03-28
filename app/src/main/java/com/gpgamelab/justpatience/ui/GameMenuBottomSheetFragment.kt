@@ -30,6 +30,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuResetStats()
         fun onGameMenuOpenAbout()
         fun onGameMenuOpenHowToPlay()
+        fun onGameMenuRateUs()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -130,6 +131,9 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_how_to_play_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenHowToPlay() }
         }
+        view.findViewById<View>(R.id.menu_rate_us_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuRateUs() }
+        }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenAbout() }
         }
@@ -222,4 +226,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 }
+
+
 

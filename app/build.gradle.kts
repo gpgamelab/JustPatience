@@ -88,6 +88,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -147,5 +148,9 @@ dependencies {
 
     // --- Google Mobile Ads SDK ---
     implementation("com.google.android.gms:play-services-ads:22.6.0")
+
+    // --- Google Play In-App Review API ---
+    implementation("com.google.android.play:review:2.0.2")
+    implementation("com.google.android.play:review-ktx:2.0.2")
 
 }

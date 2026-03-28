@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.Button
@@ -17,6 +18,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.play.core.review.ReviewInfo
+import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.android.play.core.review.testing.FakeReviewManager
+import com.gpgamelab.justpatience.BuildConfig
 import com.gpgamelab.justpatience.ads.AdManager
 import com.gpgamelab.justpatience.assets.AndroidAssetResolver
 import com.gpgamelab.justpatience.R
@@ -304,6 +309,48 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     override fun onGameMenuOpenHowToPlay() {
         startActivity(Intent(this, HowToPlayActivity::class.java))
+    }
+
+    override fun onGameMenuRateUs() {
+        // FakeReviewManager is used in debug builds so the review sheet can be tested
+        // without the app being installed from the Play Store.
+        // In release builds the real manager is used; Google Play may silently suppress
+        // the sheet (quota, already reviewed, etc.) — openPlayStoreListing() is the fallback.
+        val manager = if (BuildConfig.DEBUG) {
+            FakeReviewManager(this)
+        } else {
+            ReviewManagerFactory.create(this)
+        }
+
+        manager.requestReviewFlow()
+            .addOnCompleteListener { task: com.google.android.gms.tasks.Task<ReviewInfo> ->
+                if (task.isSuccessful) {
+                    manager.launchReviewFlow(this, task.result)
+                        .addOnCompleteListener {
+                            Log.d("GameActivity", "In-app review flow completed")
+                        }
+                } else {
+                    Log.w("GameActivity", "In-app review unavailable, opening Play Store")
+                    openPlayStoreListing()
+                }
+            }
+    }
+
+    private fun openPlayStoreListing() {
+        val appPackageName = packageName
+        try {
+            startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName"))
+                    .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+            )
+        } catch (_: android.content.ActivityNotFoundException) {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+                )
+            )
+        }
     }
 
     override fun onGameMenuOpenSettings() {
