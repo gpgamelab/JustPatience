@@ -28,7 +28,6 @@
     <!-- Stats Strings -->
     <string name="stats_played_format">Games Played: %d</string>
     <string name="stats_high_score_format">High Score: %d</string>
-    <string name="stats_summary_format">Played: %d | High Score: %d</string>
     <string name="stats_reset_success">Game statistics have been reset!</string>
 <!--    <string name="stats_reset_success">Statistics successfully reset.</string>-->
 
