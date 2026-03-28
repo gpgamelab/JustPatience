@@ -393,6 +393,36 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuOpenTermsOfService() {
+        val tosHtml = readRawResourceText(R.raw.terms_of_service_2026_03_27)
+        val tosUrl = getString(R.string.terms_of_service_website_url)
+        val linkBlock = """
+            <p><b>${getString(R.string.terms_of_service_link_title)}</b><br>
+            <a href="$tosUrl">$tosUrl</a></p>
+        """.trimIndent()
+        val tosText = HtmlCompat.fromHtml(tosHtml + linkBlock, HtmlCompat.FROM_HTML_MODE_LEGACY)
+
+        val textView = TextView(this).apply {
+            text = tosText
+            movementMethod = LinkMovementMethod.getInstance()
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setPadding(40, 28, 40, 28)
+        }
+
+        val scrollView = ScrollView(this).apply {
+            addView(textView)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.terms_of_service_dialog_title)
+            .setView(scrollView)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.terms_of_service_open_website) { _, _ ->
+                openTermsOfServiceWebsite(tosUrl)
+            }
+            .show()
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -446,6 +476,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             startActivity(browserIntent)
         } else {
             Toast.makeText(this, R.string.privacy_policy_open_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openTermsOfServiceWebsite(url: String) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        if (browserIntent.resolveActivity(packageManager) != null) {
+            startActivity(browserIntent)
+        } else {
+            Toast.makeText(this, R.string.terms_of_service_open_failed, Toast.LENGTH_SHORT).show()
         }
     }
 
