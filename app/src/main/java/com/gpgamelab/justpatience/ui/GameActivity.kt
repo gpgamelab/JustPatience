@@ -341,6 +341,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val shareText = getString(R.string.share_app_message_format, appUrl)
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_app_subject))
             putExtra(Intent.EXTRA_TEXT, shareText)
         }
 
