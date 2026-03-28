@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -355,6 +356,53 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         } catch (_: android.content.ActivityNotFoundException) {
             Toast.makeText(this, R.string.share_app_no_target, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onGameMenuContactUs() {
+        val supportEmail = getString(R.string.contact_us_email_address)
+        val subject = getString(R.string.contact_us_subject)
+        val body = buildContactUsBody()
+        val emailUri = Uri.fromParts("mailto", supportEmail, null)
+            .buildUpon()
+            .appendQueryParameter("subject", subject)
+            .appendQueryParameter("body", body)
+            .build()
+        val emailIntent = Intent(Intent.ACTION_SENDTO, emailUri)
+
+        if (emailIntent.resolveActivity(packageManager) != null) {
+            startActivity(Intent.createChooser(emailIntent, getString(R.string.contact_us_chooser_title)))
+            return
+        }
+
+        val fallbackUrl = getString(
+            R.string.contact_us_web_fallback_url_format,
+            Uri.encode(supportEmail),
+            Uri.encode(subject),
+            Uri.encode(body)
+        )
+        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl))
+        if (webIntent.resolveActivity(packageManager) != null) {
+            startActivity(webIntent)
+        } else {
+            Toast.makeText(this, R.string.contact_us_no_target, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun buildContactUsBody(): String {
+        val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}".trim()
+        val androidVersion = "${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})"
+        val localeTag = resources.configuration.locales[0].toLanguageTag()
+
+        return getString(
+            R.string.contact_us_body_template,
+            getString(R.string.app_name),
+            BuildConfig.VERSION_NAME,
+            BuildConfig.VERSION_CODE,
+            packageName,
+            androidVersion,
+            deviceName,
+            localeTag
+        )
     }
 
     private fun openPlayStoreListing() {

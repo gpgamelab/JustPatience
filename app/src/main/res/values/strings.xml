@@ -143,6 +143,28 @@
     <string name="share_app_message_format">Try Just Patience (Solitaire): %1$s</string>
     <string name="share_app_no_target">No app available to share right now.</string>
     <string name="game_menu_contact_us">Contact Us</string>
+    <string name="contact_us_email_address">mdk.email@gmail.com</string>
+    <string name="contact_us_subject">Just Patience Support Request</string>
+    <string name="contact_us_chooser_title">Contact Just Patience Support</string>
+    <string name="contact_us_no_target">No email or browser app is available right now.</string>
+    <string name="contact_us_web_fallback_url_format">https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=%1$s&amp;su=%2$s&amp;body=%3$s</string>
+    <string name="contact_us_body_template">Hi Just Patience Support,
+
+Please describe your issue below:
+
+What happened:
+
+What did you expect:
+
+Steps to reproduce (if any):
+
+---
+App: %1$s
+Version: %2$s (%3$d)
+Package: %4$s
+Android: %5$s
+Device: %6$s
+Locale: %7$s</string>
     <string name="game_menu_privacy_policy">Privacy Policy</string>
     <string name="game_menu_terms_of_service">Term of Service</string>
     <string name="game_menu_settings">Settings</string>
