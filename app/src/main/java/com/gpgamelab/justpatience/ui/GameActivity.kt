@@ -101,11 +101,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             "onCreate: from_home=$pendingHomeStartInterstitial force_new_game=$forceNewGameOnLaunch"
         )
 
-        if (forceNewGameOnLaunch) {
-            // PLAY from Home should always begin a fresh hand.
-            Log.d(GAME_LAUNCH_TAG, "onCreate: forcing fresh game launch")
-            viewModel.startNewGame()
-        }
+        // Launch mode is explicit: PLAY forces fresh deal, Continue attempts resume.
+        viewModel.initializeForLaunch(forceNewGameOnLaunch)
 
         updateOverlayVisibility()
 

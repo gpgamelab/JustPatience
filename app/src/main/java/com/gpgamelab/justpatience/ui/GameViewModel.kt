@@ -116,6 +116,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val redoStack = ArrayDeque<Game>()
     private var initialGameState: Game? = null  // Store the game state at the start of the hand
     private var currentHandRecorded = false
+    private var launchInitialized = false
 
     // Exposed state
     private val _game = MutableStateFlow(Game.newGame())
@@ -123,21 +124,36 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val game: StateFlow<Game> = _game
 
     init {
-        // Startup behavior: if an in-progress game exists, resume it.
-        // Otherwise start a fresh hand.
+        // Launch behavior is selected by GameActivity via initializeForLaunch(...).
+        observeDrawSizeSetting()
+    }
+
+    fun initializeForLaunch(forceNewGame: Boolean) {
+        if (launchInitialized) return
+        launchInitialized = true
+
         viewModelScope.launch {
-            Log.d(GAME_PERSIST_TAG, "init: checking for saved game to resume")
+            if (forceNewGame) {
+                Log.d(GAME_PERSIST_TAG, "initializeForLaunch: force new game")
+                startNewGameInternal()
+                updateUndoRedoState()
+                resetHintTimer()
+                return@launch
+            }
+
+            Log.d(GAME_PERSIST_TAG, "initializeForLaunch: checking for saved game to resume")
             val restored = loadSavedGame()
             if (restored) {
-                Log.d(GAME_PERSIST_TAG, "init: resumed saved in-progress game ${summarizeGame(_game.value)}")
+                Log.d(GAME_PERSIST_TAG, "initializeForLaunch: resumed saved in-progress game ${summarizeGame(_game.value)}")
                 updateUndoRedoState()
                 resetHintTimer()
             } else {
-                Log.d(GAME_PERSIST_TAG, "init: no resumable saved game found, starting fresh hand")
+                Log.d(GAME_PERSIST_TAG, "initializeForLaunch: no resumable saved game found, starting fresh hand")
                 startNewGameInternal()
+                updateUndoRedoState()
+                resetHintTimer()
             }
         }
-        observeDrawSizeSetting()
     }
 
     /**
