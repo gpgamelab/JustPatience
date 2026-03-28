@@ -189,6 +189,8 @@ Locale: %7$s</string>
     <string name="game_menu_draw_cards">Draw Cards</string>
     <string name="game_menu_draw_cards_with_value">Draw Cards: %1$d</string>
     <string name="game_menu_waste_recycles">Waste Pile Recycles</string>
+    <string name="game_menu_waste_recycles_with_value">Waste Pile Recycles: %1$s</string>
+    <string name="recycles_dialog_count_label">times allowed</string>
     <string name="game_menu_show_hints">Show Card Movement Hints</string>
     <string name="game_menu_mute_game_music">Mute Game Music</string>
     <string name="game_menu_mute_card_movement_sounds">Mute Card Movement Sounds</string>

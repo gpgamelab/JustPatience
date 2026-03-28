@@ -21,6 +21,7 @@ import android.widget.VideoView
 import androidx.annotation.RawRes
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
@@ -287,7 +288,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             GameMenuBottomSheetFragment.newInstance(
                 state = gameMenuExpandState,
                 currentNickname = currentSettings.playerDisplayName,
-                currentDrawSize = currentSettings.drawSize
+                currentDrawSize = currentSettings.drawSize,
+                currentInfiniteRecycles = currentSettings.infiniteRecycles,
+                currentRecycleCount = currentSettings.recycleCount
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
@@ -446,6 +449,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuWasteRecycles() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showWasteRecyclesDialog(currentSettings.infiniteRecycles, currentSettings.recycleCount)
+        }
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -501,7 +511,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             setSingleLine()
         }
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.nickname_dialog_title)
             .setView(nicknameInput)
             .setPositiveButton(R.string.nickname_dialog_save) { _, _ ->
@@ -514,7 +524,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
-
     private fun showDrawCardsDialog(currentDrawSize: Int) {
         val drawOptions = arrayOf(
             getString(R.string.settings_draw_1),
@@ -522,7 +531,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         )
         val checkedItem = if (currentDrawSize == 3) 1 else 0
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.game_menu_draw_cards)
             .setSingleChoiceItems(drawOptions, checkedItem) { dialog, which ->
                 val selectedDrawSize = if (which == 1) 3 else 1
@@ -531,6 +540,65 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                     settingsManager.saveGamePlaySettings(currentSettings.copy(drawSize = selectedDrawSize))
                 }
                 dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showWasteRecyclesDialog(isInfinite: Boolean, recycleCount: Int) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_waste_recycles, null)
+        val btnMinus = dialogView.findViewById<android.widget.Button>(R.id.btn_recycles_minus)
+        val btnPlus  = dialogView.findViewById<android.widget.Button>(R.id.btn_recycles_plus)
+        val countText = dialogView.findViewById<TextView>(R.id.text_recycles_count)
+        val unlimitedSwitch = dialogView.findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_recycles_unlimited)
+        val countRow = dialogView.findViewById<android.view.View>(R.id.recycles_count_row)
+
+        var currentCount = recycleCount.coerceAtLeast(1)
+
+        fun updateCountDisplay() {
+            countText.text = currentCount.toString()
+        }
+
+        fun updateEnabled() {
+            val limited = !unlimitedSwitch.isChecked
+            countRow.alpha = if (limited) 1f else 0.35f
+            btnMinus.isEnabled = limited
+            btnPlus.isEnabled = limited
+        }
+
+        unlimitedSwitch.isChecked = isInfinite
+        updateCountDisplay()
+        updateEnabled()
+
+        btnMinus.setOnClickListener {
+            if (currentCount > 1) {
+                currentCount--
+                updateCountDisplay()
+            }
+        }
+        btnPlus.setOnClickListener {
+            if (currentCount < 99) {
+                currentCount++
+                updateCountDisplay()
+            }
+        }
+        unlimitedSwitch.setOnCheckedChangeListener { _, _ -> updateEnabled() }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.game_menu_waste_recycles)
+            .setView(dialogView)
+            .setPositiveButton(R.string.nickname_dialog_save) { _, _ ->
+                val saveInfinite = unlimitedSwitch.isChecked
+                val saveCount = currentCount
+                lifecycleScope.launch {
+                    val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        currentSettings.copy(
+                            infiniteRecycles = saveInfinite,
+                            recycleCount = saveCount
+                        )
+                    )
+                }
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

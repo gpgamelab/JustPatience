@@ -37,6 +37,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuOpenTermsOfService()
         fun onGameMenuEditNickname()
         fun onGameMenuDrawCards()
+        fun onGameMenuWasteRecycles()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -61,6 +62,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         var expandState = readExpandStateFromArgs()
         val currentNickname = arguments?.getString(ARG_CURRENT_NICKNAME).orEmpty().trim()
         val currentDrawSize = arguments?.getInt(ARG_CURRENT_DRAW_SIZE, DEFAULT_DRAW_SIZE) ?: DEFAULT_DRAW_SIZE
+        val currentInfiniteRecycles = arguments?.getBoolean(ARG_CURRENT_INFINITE_RECYCLES, true) ?: true
+        val currentRecycleCount = arguments?.getInt(ARG_CURRENT_RECYCLE_COUNT, DEFAULT_RECYCLE_COUNT) ?: DEFAULT_RECYCLE_COUNT
         if (currentNickname.isNotEmpty()) {
             val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
             nicknameLabel.text = getString(
@@ -75,6 +78,14 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val normalizedDrawSize = if (currentDrawSize == 3) 3 else 1
         val drawCardsLabel = view.findViewById<TextView>(R.id.menu_common_draw_cards_text)
         drawCardsLabel.text = getString(R.string.game_menu_draw_cards_with_value, normalizedDrawSize)
+
+        val recyclesLabel = view.findViewById<TextView>(R.id.menu_common_waste_recycles_text)
+        recyclesLabel.text = if (currentInfiniteRecycles) {
+            getString(R.string.game_menu_waste_recycles_with_value,
+                getString(R.string.settings_recycle_unlimited))
+        } else {
+            getString(R.string.game_menu_waste_recycles_with_value, currentRecycleCount.toString())
+        }
 
         // Collapsible sections
         val statisticsHeader = view.findViewById<View>(R.id.menu_statistics_row)
@@ -174,13 +185,15 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_common_draw_cards_row).setOnClickListener {
             dismissAndRun { host.onGameMenuDrawCards() }
         }
+        view.findViewById<View>(R.id.menu_common_waste_recycles_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuWasteRecycles() }
+        }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenAbout() }
         }
 
         // Existing settings screen handles current settings items.
         val settingsRows = intArrayOf(
-            R.id.menu_common_waste_recycles_row,
             R.id.menu_common_show_hints_row,
             R.id.menu_common_mute_music_row,
             R.id.menu_common_mute_card_sounds_row,
@@ -258,13 +271,18 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_ADVANCED_EXPANDED = "arg_advanced_expanded"
         private const val ARG_CURRENT_NICKNAME = "arg_current_nickname"
         private const val ARG_CURRENT_DRAW_SIZE = "arg_current_draw_size"
+        private const val ARG_CURRENT_INFINITE_RECYCLES = "arg_current_infinite_recycles"
+        private const val ARG_CURRENT_RECYCLE_COUNT = "arg_current_recycle_count"
         private const val MAX_MENU_NICKNAME_LENGTH = 20
         private const val DEFAULT_DRAW_SIZE = 3
+        private const val DEFAULT_RECYCLE_COUNT = 3
 
         fun newInstance(
             state: ExpandState = ExpandState(),
             currentNickname: String = "",
-            currentDrawSize: Int = DEFAULT_DRAW_SIZE
+            currentDrawSize: Int = DEFAULT_DRAW_SIZE,
+            currentInfiniteRecycles: Boolean = true,
+            currentRecycleCount: Int = DEFAULT_RECYCLE_COUNT
         ): GameMenuBottomSheetFragment {
             return GameMenuBottomSheetFragment().apply {
                 arguments = Bundle().apply {
@@ -275,11 +293,19 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_ADVANCED_EXPANDED, state.advancedExpanded)
                     putString(ARG_CURRENT_NICKNAME, currentNickname)
                     putInt(ARG_CURRENT_DRAW_SIZE, currentDrawSize)
+                    putBoolean(ARG_CURRENT_INFINITE_RECYCLES, currentInfiniteRecycles)
+                    putInt(ARG_CURRENT_RECYCLE_COUNT, currentRecycleCount)
                 }
             }
         }
     }
 }
+
+
+
+
+
+
 
 
 
