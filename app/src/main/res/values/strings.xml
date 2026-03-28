@@ -138,6 +138,9 @@
     <string name="game_menu_information">Information</string>
     <string name="game_menu_rate_us">Rate Us</string>
     <string name="game_menu_share_app">Share this App</string>
+    <string name="share_app_chooser_title">Share Just Patience</string>
+    <string name="share_app_message_format">Try Just Patience (Solitaire): %1$s</string>
+    <string name="share_app_no_target">No app available to share right now.</string>
     <string name="game_menu_contact_us">Contact Us</string>
     <string name="game_menu_privacy_policy">Privacy Policy</string>
     <string name="game_menu_terms_of_service">Term of Service</string>

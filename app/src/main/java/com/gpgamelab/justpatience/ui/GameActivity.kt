@@ -336,6 +336,26 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             }
     }
 
+    override fun onGameMenuShareApp() {
+        val appUrl = "https://play.google.com/store/apps/details?id=$packageName"
+        val shareText = getString(R.string.share_app_message_format, appUrl)
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+
+        if (shareIntent.resolveActivity(packageManager) == null) {
+            Toast.makeText(this, R.string.share_app_no_target, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        try {
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_app_chooser_title)))
+        } catch (_: android.content.ActivityNotFoundException) {
+            Toast.makeText(this, R.string.share_app_no_target, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun openPlayStoreListing() {
         val appPackageName = packageName
         try {

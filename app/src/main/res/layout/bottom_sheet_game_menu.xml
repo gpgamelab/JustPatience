@@ -240,10 +240,13 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/menu_share_app_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
-            android:enabled="false"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
             android:minHeight="42dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
@@ -254,7 +257,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/game_menu_share_app"
-                android:textColor="#7F7F7F"
+                android:textColor="#D7E8D7"
                 android:textSize="16sp" />
         </LinearLayout>
 
@@ -547,8 +550,4 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
-
-
-
-
 
