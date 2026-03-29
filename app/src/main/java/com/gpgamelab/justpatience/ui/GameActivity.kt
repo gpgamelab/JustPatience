@@ -309,7 +309,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentTapToMove = currentSettings.tapToMove,
                 currentFullScreen = currentSettings.fullScreen,
                 currentScoreMethod = currentSettings.scoreMethod,
-                currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag
+                currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag,
+                currentPremiumAcct = currentSettings.premiumAcct
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
@@ -702,6 +703,23 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                     val latest = settingsManager.gamePlaySettingsFlow.first()
                     settingsManager.saveGamePlaySettings(
                         latest.copy(allowFoundationToTableauDrag = enabled)
+                    )
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuPremiumAcctToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_premium_acct),
+                enabled = currentSettings.premiumAcct
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        latest.copy(premiumAcct = enabled)
                     )
                 }
             }

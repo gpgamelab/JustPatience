@@ -55,6 +55,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuBoardLayout()
         fun onGameMenuScoreMethod()
         fun onGameMenuFoundationToTableauToggle()
+        fun onGameMenuPremiumAcctToggle()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -96,6 +97,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentFullScreen = arguments?.getBoolean(ARG_CURRENT_FULL_SCREEN, false) ?: false
         val currentScoreMethod = arguments?.getString(ARG_CURRENT_SCORE_METHOD) ?: "windows"
         val currentFoundationToTableau = arguments?.getBoolean(ARG_CURRENT_FOUNDATION_TO_TABLEAU, false) ?: false
+        val currentPremiumAcct = arguments?.getBoolean(ARG_CURRENT_PREMIUM_ACCT, false) ?: false
         if (currentNickname.isNotEmpty()) {
             val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
             nicknameLabel.text = getString(
@@ -185,6 +187,10 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<TextView>(R.id.menu_advanced_foundation_to_tableau_text).text = getString(
             R.string.game_menu_foundation_to_tableau_with_value,
             if (currentFoundationToTableau) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_premium_acct_text).text = getString(
+            R.string.game_menu_premium_acct_with_value,
+            if (currentPremiumAcct) stateEnabled else stateDisabled
         )
 
         // Collapsible sections
@@ -352,6 +358,11 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             dismissAndRun { host.onGameMenuFoundationToTableauToggle() }
         }
 
+        // Premium Acct toggle
+        view.findViewById<View>(R.id.menu_advanced_premium_acct_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuPremiumAcctToggle() }
+        }
+
         // Remaining advanced items that open settings
         val settingsRows = intArrayOf()
         settingsRows.forEach { id ->
@@ -438,6 +449,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_FULL_SCREEN = "arg_current_full_screen"
         private const val ARG_CURRENT_SCORE_METHOD = "arg_current_score_method"
         private const val ARG_CURRENT_FOUNDATION_TO_TABLEAU = "arg_current_foundation_to_tableau"
+        private const val ARG_CURRENT_PREMIUM_ACCT = "arg_current_premium_acct"
         private const val MAX_MENU_NICKNAME_LENGTH = 20
         private const val DEFAULT_DRAW_SIZE = 3
         private const val DEFAULT_RECYCLE_COUNT = 3
@@ -462,7 +474,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentTapToMove: Boolean = true,
             currentFullScreen: Boolean = false,
             currentScoreMethod: String = "windows",
-            currentFoundationToTableau: Boolean = false
+            currentFoundationToTableau: Boolean = false,
+            currentPremiumAcct: Boolean = false
         ): GameMenuBottomSheetFragment {
             return GameMenuBottomSheetFragment().apply {
                 arguments = Bundle().apply {
@@ -491,6 +504,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_CURRENT_FULL_SCREEN, currentFullScreen)
                     putString(ARG_CURRENT_SCORE_METHOD, currentScoreMethod)
                     putBoolean(ARG_CURRENT_FOUNDATION_TO_TABLEAU, currentFoundationToTableau)
+                    putBoolean(ARG_CURRENT_PREMIUM_ACCT, currentPremiumAcct)
                 }
             }
         }
