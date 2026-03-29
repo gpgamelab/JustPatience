@@ -34,19 +34,7 @@
         <activity
             android:name=".LoginActivity" />
 
-        <!-- 2. Home Activity: Landing/Menu screen (new home page) -->
-        <activity
-            android:name=".ui.HomeActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.JustPatience">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <!-- 3. Settings Activity -->
+        <!-- 2. Settings Activity -->
         <activity android:name=".SettingsActivity" android:exported="false" />
 
         <!-- 3b. About Activity -->
@@ -60,11 +48,16 @@
             android:exported="false"
             android:label="@string/how_to_play_title" />
 
-        <!-- 4. Game Activity: Main gameplay screen -->
+        <!-- 4. Game Activity: Main gameplay screen and launcher entry -->
         <activity
             android:name=".ui.GameActivity"
             android:exported="true"
-            android:label="@string/game_title" />
+            android:label="@string/game_title">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
     </application>
 

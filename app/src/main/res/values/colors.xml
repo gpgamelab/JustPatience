@@ -34,7 +34,7 @@
     <color name="colorPrimaryDark">#388E3C</color>
     <color name="colorAccent">#FFC107</color>
 
-    <!-- Colors referenced by activity_home.xml -->
+    <!-- Legacy neutral color retained for reusable UI elements -->
     <color name="gray_dark">#616161</color>
 
     <color name="card_placeholder">#7F7F7F</color>

@@ -3,7 +3,7 @@
     <!-- Base App Theme (Assuming it's defined elsewhere, e.g., themes.xml) -->
     <!-- <style name="Theme.JustPatience" parent="Theme.MaterialComponents.DayNight.NoActionBar"> ... </style> -->
 
-    <!-- Solitaire Stack Styles (Used in activity_home.xml) -->
+    <!-- Solitaire stack styles used by game board layouts -->
 
     <!-- Style for the Foundation Stacks (where cards are played up by cardSuit) -->
     <style name="FoundationStack">

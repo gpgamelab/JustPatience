@@ -5,7 +5,7 @@ xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:background="@color/background_color"
-tools:context=".HomeActivity">
+tools:context=".ui.GameActivity">
 
 <!-- Top Toolbar -->
 <androidx.appcompat.widget.Toolbar
@@ -211,5 +211,4 @@ tools:context=".HomeActivity">
         style="@style/TableauStack" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -62,8 +62,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     // Ad frequency counters
     private var totalGamesPlayed: Int = 0
-    private var pendingHomeStartInterstitial: Boolean = false
-    private var handledHomeStartInterstitial: Boolean = false
     private var winDialogShowing: Boolean = false
     private var winCelebrationPlayed: Boolean = false
     private var isWinVideoPlaying: Boolean = false
@@ -102,10 +100,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         statsManager = GameStatsManager(applicationContext)
         settingsManager = SettingsManager(applicationContext)
 
-        // Defer home-start ad decision until we read total games played.
-        pendingHomeStartInterstitial = intent.getBooleanExtra("from_home", false)
+        // Launcher starts directly in GameActivity; default behavior is resume-or-new.
         forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
-        // Launch mode is explicit: PLAY forces fresh deal, Continue attempts resume.
         viewModel.initializeForLaunch(forceNewGameOnLaunch)
 
         updateOverlayVisibility()
@@ -115,10 +111,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 launch {
                     statsManager.getTotalGamesPlayed().collect { total ->
                         totalGamesPlayed = total
-                        if (pendingHomeStartInterstitial && !handledHomeStartInterstitial) {
-                            maybeShowStartInterstitial()
-                            handledHomeStartInterstitial = true
-                        }
                     }
                 }
 
