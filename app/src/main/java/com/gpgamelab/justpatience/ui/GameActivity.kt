@@ -676,6 +676,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuHintDelay() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showHintDelayDialog(currentSettings.hintDelaySeconds)
+        }
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -817,6 +824,48 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                             infiniteRecycles = saveInfinite,
                             recycleCount = saveCount
                         )
+                    )
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showHintDelayDialog(currentDelaySeconds: Int) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_hint_delay, null)
+        val btnMinus = dialogView.findViewById<android.widget.Button>(R.id.btn_hint_delay_minus)
+        val btnPlus  = dialogView.findViewById<android.widget.Button>(R.id.btn_hint_delay_plus)
+        val countText = dialogView.findViewById<TextView>(R.id.text_hint_delay_count)
+
+        var currentCount = currentDelaySeconds.coerceIn(1, 30)
+
+        fun updateCountDisplay() {
+            countText.text = currentCount.toString()
+        }
+
+        updateCountDisplay()
+
+        btnMinus.setOnClickListener {
+            if (currentCount > 1) {
+                currentCount--
+                updateCountDisplay()
+            }
+        }
+        btnPlus.setOnClickListener {
+            if (currentCount < 30) {
+                currentCount++
+                updateCountDisplay()
+            }
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.game_menu_hint_delay)
+            .setView(dialogView)
+            .setPositiveButton(R.string.nickname_dialog_save) { _, _ ->
+                lifecycleScope.launch {
+                    val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        currentSettings.copy(hintDelaySeconds = currentCount)
                     )
                 }
             }

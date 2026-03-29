@@ -276,4 +276,8 @@ Locale: %7$s</string>
     <string name="stats_summary_average_time">Average Time</string>
     <string name="close">Close</string>
 
+    <!-- Hint Delay Dialog Strings -->
+    <string name="hint_delay_dialog_description">Adjust the delay before showing card movement hints</string>
+    <string name="hint_delay_dialog_seconds_label">seconds</string>
+
 </resources>

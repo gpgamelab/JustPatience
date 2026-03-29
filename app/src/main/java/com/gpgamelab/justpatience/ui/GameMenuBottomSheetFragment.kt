@@ -51,6 +51,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuHapticsToggle()
         fun onGameMenuTapToMoveToggle()
         fun onGameMenuFullScreenToggle()
+        fun onGameMenuHintDelay()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -313,10 +314,14 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             dismissAndRun { host.onGameMenuFullScreenToggle() }
         }
 
+        // Hint delay popup
+        view.findViewById<View>(R.id.menu_advanced_hint_delay_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuHintDelay() }
+        }
+
         // Existing settings screen handles these remaining advanced items.
         val settingsRows = intArrayOf(
-            R.id.menu_advanced_board_layout_row,
-            R.id.menu_advanced_hint_delay_row
+            R.id.menu_advanced_board_layout_row
         )
         settingsRows.forEach { id ->
             view.findViewById<View>(id).setOnClickListener {
@@ -453,6 +458,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 }
+
+
 
 
 
