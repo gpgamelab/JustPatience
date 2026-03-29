@@ -81,6 +81,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _showGameTimer = MutableStateFlow(true)
     val showGameTimer: StateFlow<Boolean> = _showGameTimer
 
+    private val _showScore = MutableStateFlow(true)
+    val showScore: StateFlow<Boolean> = _showScore
+
+    private val _showMoves = MutableStateFlow(true)
+    val showMoves: StateFlow<Boolean> = _showMoves
+
     private val _showCardAnimations = MutableStateFlow(true)
     val showCardAnimations: StateFlow<Boolean> = _showCardAnimations
 
@@ -92,6 +98,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _allowFoundationToTableauDrag = MutableStateFlow(false)
     val allowFoundationToTableauDrag: StateFlow<Boolean> = _allowFoundationToTableauDrag
+
+    private val _autoCompleteEnabled = MutableStateFlow(true)
+    val autoCompleteEnabled: StateFlow<Boolean> = _autoCompleteEnabled
+
+    private val _hapticsEnabled = MutableStateFlow(false)
+    val hapticsEnabled: StateFlow<Boolean> = _hapticsEnabled
+
+    private val _tapToMoveEnabled = MutableStateFlow(true)
+    val tapToMoveEnabled: StateFlow<Boolean> = _tapToMoveEnabled
+
+    private val _fullScreenEnabled = MutableStateFlow(false)
+    val fullScreenEnabled: StateFlow<Boolean> = _fullScreenEnabled
 
     // Hint system
     private val _showHints = MutableStateFlow(true)
@@ -177,9 +195,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _isInfiniteRecycles.value = currentInfiniteRecycles
                 _showCardAnimations.value = settings.showCardAnimations
                 _showGameTimer.value = settings.showGameTimer
+                _showScore.value = settings.showScore
+                _showMoves.value = settings.showMoves
                 _showWinAnimation.value = settings.showWinAnimation
                 _isMirroredLayout.value = settings.boardLayout == "left_hand"
                 _allowFoundationToTableauDrag.value = settings.allowFoundationToTableauDrag
+                _autoCompleteEnabled.value = settings.autoComplete
+                _hapticsEnabled.value = settings.haptics
+                _tapToMoveEnabled.value = settings.tapToMove
+                _fullScreenEnabled.value = settings.fullScreen
 
                 val prevShowHints = _showHints.value
                 _showHints.value = settings.showHints

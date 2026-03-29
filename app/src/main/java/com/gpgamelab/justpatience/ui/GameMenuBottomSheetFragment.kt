@@ -38,6 +38,19 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuEditNickname()
         fun onGameMenuDrawCards()
         fun onGameMenuWasteRecycles()
+        fun onGameMenuShowHintsToggle()
+        fun onGameMenuMuteMusicToggle()
+        fun onGameMenuMuteCardSoundsToggle()
+        fun onGameMenuMuteWinSoundToggle()
+        fun onGameMenuShowGameTimerToggle()
+        fun onGameMenuShowScoreToggle()
+        fun onGameMenuShowMovesToggle()
+        fun onGameMenuShowCardAnimationsToggle()
+        fun onGameMenuShowWinAnimationToggle()
+        fun onGameMenuAutoCompleteToggle()
+        fun onGameMenuHapticsToggle()
+        fun onGameMenuTapToMoveToggle()
+        fun onGameMenuFullScreenToggle()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -64,6 +77,19 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentDrawSize = arguments?.getInt(ARG_CURRENT_DRAW_SIZE, DEFAULT_DRAW_SIZE) ?: DEFAULT_DRAW_SIZE
         val currentInfiniteRecycles = arguments?.getBoolean(ARG_CURRENT_INFINITE_RECYCLES, true) ?: true
         val currentRecycleCount = arguments?.getInt(ARG_CURRENT_RECYCLE_COUNT, DEFAULT_RECYCLE_COUNT) ?: DEFAULT_RECYCLE_COUNT
+        val currentShowHints = arguments?.getBoolean(ARG_CURRENT_SHOW_HINTS, true) ?: true
+        val currentMuteMusic = arguments?.getBoolean(ARG_CURRENT_MUTE_MUSIC, false) ?: false
+        val currentMuteCardSounds = arguments?.getBoolean(ARG_CURRENT_MUTE_CARD_SOUNDS, false) ?: false
+        val currentMuteWinSound = arguments?.getBoolean(ARG_CURRENT_MUTE_WIN_SOUND, false) ?: false
+        val currentShowGameTimer = arguments?.getBoolean(ARG_CURRENT_SHOW_GAME_TIMER, true) ?: true
+        val currentShowScore = arguments?.getBoolean(ARG_CURRENT_SHOW_SCORE, true) ?: true
+        val currentShowMoves = arguments?.getBoolean(ARG_CURRENT_SHOW_MOVES, true) ?: true
+        val currentShowCardAnimations = arguments?.getBoolean(ARG_CURRENT_SHOW_CARD_ANIMATIONS, true) ?: true
+        val currentShowWinAnimation = arguments?.getBoolean(ARG_CURRENT_SHOW_WIN_ANIMATION, true) ?: true
+        val currentAutoComplete = arguments?.getBoolean(ARG_CURRENT_AUTO_COMPLETE, true) ?: true
+        val currentHaptics = arguments?.getBoolean(ARG_CURRENT_HAPTICS, false) ?: false
+        val currentTapToMove = arguments?.getBoolean(ARG_CURRENT_TAP_TO_MOVE, true) ?: true
+        val currentFullScreen = arguments?.getBoolean(ARG_CURRENT_FULL_SCREEN, false) ?: false
         if (currentNickname.isNotEmpty()) {
             val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
             nicknameLabel.text = getString(
@@ -86,6 +112,61 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         } else {
             getString(R.string.game_menu_waste_recycles_with_value, currentRecycleCount.toString())
         }
+
+        val stateEnabled = getString(R.string.setting_state_enabled)
+        val stateDisabled = getString(R.string.setting_state_disabled)
+        view.findViewById<TextView>(R.id.menu_common_show_hints_text).text = getString(
+            R.string.game_menu_show_hints_with_value,
+            if (currentShowHints) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_common_mute_music_text).text = getString(
+            R.string.game_menu_mute_game_music_with_value,
+            if (currentMuteMusic) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_common_mute_card_sounds_text).text = getString(
+            R.string.game_menu_mute_card_movement_sounds_with_value,
+            if (currentMuteCardSounds) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_common_mute_win_sound_text).text = getString(
+            R.string.game_menu_mute_win_sound_with_value,
+            if (currentMuteWinSound) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_show_timer_text).text = getString(
+            R.string.game_menu_show_game_timer_with_value,
+            if (currentShowGameTimer) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_show_score_text).text = getString(
+            R.string.game_menu_show_score_with_value,
+            if (currentShowScore) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_show_moves_text).text = getString(
+            R.string.game_menu_show_moves_with_value,
+            if (currentShowMoves) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_show_card_animations_text).text = getString(
+            R.string.game_menu_show_card_movement_animations_with_value,
+            if (currentShowCardAnimations) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_show_win_animation_text).text = getString(
+            R.string.game_menu_show_win_animation_with_value,
+            if (currentShowWinAnimation) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_auto_complete_text).text = getString(
+            R.string.game_menu_auto_complete_with_value,
+            if (currentAutoComplete) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_haptics_text).text = getString(
+            R.string.game_menu_haptics_with_value,
+            if (currentHaptics) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_tap_to_move_text).text = getString(
+            R.string.game_menu_tap_to_move_with_value,
+            if (currentTapToMove) stateEnabled else stateDisabled
+        )
+        view.findViewById<TextView>(R.id.menu_advanced_full_screen_text).text = getString(
+            R.string.game_menu_full_screen_with_value,
+            if (currentFullScreen) stateEnabled else stateDisabled
+        )
 
         // Collapsible sections
         val statisticsHeader = view.findViewById<View>(R.id.menu_statistics_row)
@@ -188,19 +269,52 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_common_waste_recycles_row).setOnClickListener {
             dismissAndRun { host.onGameMenuWasteRecycles() }
         }
+        view.findViewById<View>(R.id.menu_common_show_hints_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuShowHintsToggle() }
+        }
+        view.findViewById<View>(R.id.menu_common_mute_music_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuMuteMusicToggle() }
+        }
+        view.findViewById<View>(R.id.menu_common_mute_card_sounds_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuMuteCardSoundsToggle() }
+        }
+        view.findViewById<View>(R.id.menu_common_mute_win_sound_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuMuteWinSoundToggle() }
+        }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenAbout() }
         }
 
-        // Existing settings screen handles current settings items.
+        view.findViewById<View>(R.id.menu_advanced_show_timer_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuShowGameTimerToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_show_score_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuShowScoreToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_show_moves_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuShowMovesToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_show_card_animations_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuShowCardAnimationsToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_show_win_animation_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuShowWinAnimationToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_auto_complete_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuAutoCompleteToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_haptics_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuHapticsToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_tap_to_move_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuTapToMoveToggle() }
+        }
+        view.findViewById<View>(R.id.menu_advanced_full_screen_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuFullScreenToggle() }
+        }
+
+        // Existing settings screen handles these remaining advanced items.
         val settingsRows = intArrayOf(
-            R.id.menu_common_show_hints_row,
-            R.id.menu_common_mute_music_row,
-            R.id.menu_common_mute_card_sounds_row,
-            R.id.menu_common_mute_win_sound_row,
-            R.id.menu_advanced_show_timer_row,
-            R.id.menu_advanced_show_card_animations_row,
-            R.id.menu_advanced_show_win_animation_row,
             R.id.menu_advanced_board_layout_row,
             R.id.menu_advanced_hint_delay_row
         )
@@ -273,6 +387,19 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_DRAW_SIZE = "arg_current_draw_size"
         private const val ARG_CURRENT_INFINITE_RECYCLES = "arg_current_infinite_recycles"
         private const val ARG_CURRENT_RECYCLE_COUNT = "arg_current_recycle_count"
+        private const val ARG_CURRENT_SHOW_HINTS = "arg_current_show_hints"
+        private const val ARG_CURRENT_MUTE_MUSIC = "arg_current_mute_music"
+        private const val ARG_CURRENT_MUTE_CARD_SOUNDS = "arg_current_mute_card_sounds"
+        private const val ARG_CURRENT_MUTE_WIN_SOUND = "arg_current_mute_win_sound"
+        private const val ARG_CURRENT_SHOW_GAME_TIMER = "arg_current_show_game_timer"
+        private const val ARG_CURRENT_SHOW_SCORE = "arg_current_show_score"
+        private const val ARG_CURRENT_SHOW_MOVES = "arg_current_show_moves"
+        private const val ARG_CURRENT_SHOW_CARD_ANIMATIONS = "arg_current_show_card_animations"
+        private const val ARG_CURRENT_SHOW_WIN_ANIMATION = "arg_current_show_win_animation"
+        private const val ARG_CURRENT_AUTO_COMPLETE = "arg_current_auto_complete"
+        private const val ARG_CURRENT_HAPTICS = "arg_current_haptics"
+        private const val ARG_CURRENT_TAP_TO_MOVE = "arg_current_tap_to_move"
+        private const val ARG_CURRENT_FULL_SCREEN = "arg_current_full_screen"
         private const val MAX_MENU_NICKNAME_LENGTH = 20
         private const val DEFAULT_DRAW_SIZE = 3
         private const val DEFAULT_RECYCLE_COUNT = 3
@@ -282,7 +409,20 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentNickname: String = "",
             currentDrawSize: Int = DEFAULT_DRAW_SIZE,
             currentInfiniteRecycles: Boolean = true,
-            currentRecycleCount: Int = DEFAULT_RECYCLE_COUNT
+            currentRecycleCount: Int = DEFAULT_RECYCLE_COUNT,
+            currentShowHints: Boolean = true,
+            currentMuteMusic: Boolean = false,
+            currentMuteCardSounds: Boolean = false,
+            currentMuteWinSound: Boolean = false,
+            currentShowGameTimer: Boolean = true,
+            currentShowScore: Boolean = true,
+            currentShowMoves: Boolean = true,
+            currentShowCardAnimations: Boolean = true,
+            currentShowWinAnimation: Boolean = true,
+            currentAutoComplete: Boolean = true,
+            currentHaptics: Boolean = false,
+            currentTapToMove: Boolean = true,
+            currentFullScreen: Boolean = false
         ): GameMenuBottomSheetFragment {
             return GameMenuBottomSheetFragment().apply {
                 arguments = Bundle().apply {
@@ -295,11 +435,26 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putInt(ARG_CURRENT_DRAW_SIZE, currentDrawSize)
                     putBoolean(ARG_CURRENT_INFINITE_RECYCLES, currentInfiniteRecycles)
                     putInt(ARG_CURRENT_RECYCLE_COUNT, currentRecycleCount)
+                    putBoolean(ARG_CURRENT_SHOW_HINTS, currentShowHints)
+                    putBoolean(ARG_CURRENT_MUTE_MUSIC, currentMuteMusic)
+                    putBoolean(ARG_CURRENT_MUTE_CARD_SOUNDS, currentMuteCardSounds)
+                    putBoolean(ARG_CURRENT_MUTE_WIN_SOUND, currentMuteWinSound)
+                    putBoolean(ARG_CURRENT_SHOW_GAME_TIMER, currentShowGameTimer)
+                    putBoolean(ARG_CURRENT_SHOW_SCORE, currentShowScore)
+                    putBoolean(ARG_CURRENT_SHOW_MOVES, currentShowMoves)
+                    putBoolean(ARG_CURRENT_SHOW_CARD_ANIMATIONS, currentShowCardAnimations)
+                    putBoolean(ARG_CURRENT_SHOW_WIN_ANIMATION, currentShowWinAnimation)
+                    putBoolean(ARG_CURRENT_AUTO_COMPLETE, currentAutoComplete)
+                    putBoolean(ARG_CURRENT_HAPTICS, currentHaptics)
+                    putBoolean(ARG_CURRENT_TAP_TO_MOVE, currentTapToMove)
+                    putBoolean(ARG_CURRENT_FULL_SCREEN, currentFullScreen)
                 }
             }
         }
     }
 }
+
+
 
 
 

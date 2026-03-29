@@ -150,6 +150,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 }
 
                 launch {
+                    viewModel.showScore.collect { shouldShow ->
+                        binding.tvScore.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                    }
+                }
+
+                launch {
+                    viewModel.showMoves.collect { shouldShow ->
+                        binding.tvMoves.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                    }
+                }
+
+                launch {
                     viewModel.showWinAnimation.collect { enabled ->
                         showWinAnimation = enabled
                     }
@@ -290,7 +302,20 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentNickname = currentSettings.playerDisplayName,
                 currentDrawSize = currentSettings.drawSize,
                 currentInfiniteRecycles = currentSettings.infiniteRecycles,
-                currentRecycleCount = currentSettings.recycleCount
+                currentRecycleCount = currentSettings.recycleCount,
+                currentShowHints = currentSettings.showHints,
+                currentMuteMusic = currentSettings.muteMusic,
+                currentMuteCardSounds = currentSettings.muteCardSound,
+                currentMuteWinSound = currentSettings.muteWinSound,
+                currentShowGameTimer = currentSettings.showGameTimer,
+                currentShowScore = currentSettings.showScore,
+                currentShowMoves = currentSettings.showMoves,
+                currentShowCardAnimations = currentSettings.showCardAnimations,
+                currentShowWinAnimation = currentSettings.showWinAnimation,
+                currentAutoComplete = currentSettings.autoComplete,
+                currentHaptics = currentSettings.haptics,
+                currentTapToMove = currentSettings.tapToMove,
+                currentFullScreen = currentSettings.fullScreen
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
@@ -456,6 +481,201 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuShowHintsToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_show_hints),
+                enabled = currentSettings.showHints
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(showHints = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuMuteMusicToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_mute_game_music),
+                enabled = currentSettings.muteMusic
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(muteMusic = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuMuteCardSoundsToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_mute_card_movement_sounds),
+                enabled = currentSettings.muteCardSound
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(muteCardSound = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuMuteWinSoundToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_mute_win_sound),
+                enabled = currentSettings.muteWinSound
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(muteWinSound = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuShowGameTimerToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_show_game_timer),
+                enabled = currentSettings.showGameTimer
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(showGameTimer = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuShowScoreToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_show_score),
+                enabled = currentSettings.showScore
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(showScore = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuShowMovesToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_show_moves),
+                enabled = currentSettings.showMoves
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(showMoves = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuShowCardAnimationsToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_show_card_movement_animations),
+                enabled = currentSettings.showCardAnimations
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(showCardAnimations = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuShowWinAnimationToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_show_win_animation),
+                enabled = currentSettings.showWinAnimation
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(showWinAnimation = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuAutoCompleteToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_auto_complete),
+                enabled = currentSettings.autoComplete
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(autoComplete = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuHapticsToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_haptics),
+                enabled = currentSettings.haptics
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(haptics = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuTapToMoveToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_tap_to_move),
+                enabled = currentSettings.tapToMove
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(tapToMove = enabled))
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuFullScreenToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_full_screen),
+                enabled = currentSettings.fullScreen
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(fullScreen = enabled))
+                }
+            }
+        }
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -599,6 +819,27 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                         )
                     )
                 }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showEnableDisableDialog(
+        title: String,
+        enabled: Boolean,
+        onSelection: (Boolean) -> Unit
+    ) {
+        val options = arrayOf(
+            getString(R.string.setting_state_enabled),
+            getString(R.string.setting_state_disabled)
+        )
+        val checkedItem = if (enabled) 0 else 1
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setSingleChoiceItems(options, checkedItem) { dialog, which ->
+                onSelection(which == 0)
+                dialog.dismiss()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
