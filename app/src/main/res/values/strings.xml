@@ -287,4 +287,8 @@ Locale: %7$s</string>
     <string name="score_method_vegas_cumulative">Vegas Cumulative</string>
     <string name="score_method_completion">Completion Percentage</string>
 
+    <!-- Foundation to Tableau -->
+    <string name="game_menu_foundation_to_tableau">Allow Foundation to Tableau</string>
+    <string name="game_menu_foundation_to_tableau_with_value">Allow Foundation to Tableau: %1$s</string>
+
 </resources>

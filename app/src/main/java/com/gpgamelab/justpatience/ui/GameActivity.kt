@@ -316,7 +316,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentHaptics = currentSettings.haptics,
                 currentTapToMove = currentSettings.tapToMove,
                 currentFullScreen = currentSettings.fullScreen,
-                currentScoreMethod = currentSettings.scoreMethod
+                currentScoreMethod = currentSettings.scoreMethod,
+                currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
@@ -695,6 +696,23 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         lifecycleScope.launch {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
             showScoreMethodDialog(currentSettings.scoreMethod)
+        }
+    }
+
+    override fun onGameMenuFoundationToTableauToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_foundation_to_tableau),
+                enabled = currentSettings.allowFoundationToTableauDrag
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        latest.copy(allowFoundationToTableauDrag = enabled)
+                    )
+                }
+            }
         }
     }
 
