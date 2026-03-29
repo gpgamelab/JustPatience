@@ -315,7 +315,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentAutoComplete = currentSettings.autoComplete,
                 currentHaptics = currentSettings.haptics,
                 currentTapToMove = currentSettings.tapToMove,
-                currentFullScreen = currentSettings.fullScreen
+                currentFullScreen = currentSettings.fullScreen,
+                currentScoreMethod = currentSettings.scoreMethod
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
@@ -690,6 +691,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuScoreMethod() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showScoreMethodDialog(currentSettings.scoreMethod)
+        }
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -896,6 +904,32 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                     val currentSettings = settingsManager.gamePlaySettingsFlow.first()
                     settingsManager.saveGamePlaySettings(
                         currentSettings.copy(boardLayout = selectedLayout)
+                    )
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showScoreMethodDialog(currentMethod: String) {
+        val scoreMethodKeys = listOf("windows", "vegas", "vegas_cumulative", "completion")
+        val scoreMethodOptions = arrayOf(
+            getString(R.string.score_method_windows),
+            getString(R.string.score_method_vegas),
+            getString(R.string.score_method_vegas_cumulative),
+            getString(R.string.score_method_completion)
+        )
+        val checkedItem = scoreMethodKeys.indexOf(currentMethod).coerceAtLeast(0)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.game_menu_score_method)
+            .setSingleChoiceItems(scoreMethodOptions, checkedItem) { dialog, which ->
+                val selectedMethod = scoreMethodKeys[which]
+                lifecycleScope.launch {
+                    val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        currentSettings.copy(scoreMethod = selectedMethod)
                     )
                 }
                 dialog.dismiss()

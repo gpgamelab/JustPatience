@@ -72,6 +72,7 @@ class SettingsManager(private val context: Context) {
         val MUTE_WIN_SOUND = booleanPreferencesKey("mute_win_sound")
         val ORIENTATION_LOCK = stringPreferencesKey("orientation_lock")         // "device", "portrait", "landscape"
         val BOARD_LAYOUT = stringPreferencesKey("board_layout")                 // "right_hand", "left_hand"
+        val SCORE_METHOD = stringPreferencesKey("score_method")                 // "windows", "vegas", "vegas_cumulative", "completion"
         val PLAYER_DISPLAY_NAME = stringPreferencesKey("player_display_name")
 
         // Session tracking: true while an IN_PROGRESS game is saved; false after normal game end.
@@ -103,6 +104,7 @@ class SettingsManager(private val context: Context) {
         val fullScreen: Boolean = false,
         val orientationLock: String = "device",
         val boardLayout: String = "right_hand",
+        val scoreMethod: String = "windows",
         val playerDisplayName: String = ""
     )
 
@@ -350,6 +352,7 @@ class SettingsManager(private val context: Context) {
                 fullScreen = preferences[PreferencesKeys.FULL_SCREEN] ?: false,
                 orientationLock = preferences[PreferencesKeys.ORIENTATION_LOCK] ?: "device",
                 boardLayout = preferences[PreferencesKeys.BOARD_LAYOUT] ?: "right_hand",
+                scoreMethod = preferences[PreferencesKeys.SCORE_METHOD] ?: "windows",
                 playerDisplayName = preferences[PreferencesKeys.PLAYER_DISPLAY_NAME] ?: ""
             )
         }
@@ -376,6 +379,7 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.FULL_SCREEN] = settings.fullScreen
             preferences[PreferencesKeys.ORIENTATION_LOCK] = settings.orientationLock
             preferences[PreferencesKeys.BOARD_LAYOUT] = settings.boardLayout
+            preferences[PreferencesKeys.SCORE_METHOD] = settings.scoreMethod
             preferences[PreferencesKeys.PLAYER_DISPLAY_NAME] = settings.playerDisplayName
         }
     }

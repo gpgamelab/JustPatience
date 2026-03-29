@@ -280,4 +280,11 @@ Locale: %7$s</string>
     <string name="hint_delay_dialog_description">Adjust the delay before showing card movement hints</string>
     <string name="hint_delay_dialog_seconds_label">seconds</string>
 
+    <!-- Score Method -->
+    <string name="game_menu_score_method_with_value">Score Method: %1$s</string>
+    <string name="score_method_windows">Windows Style</string>
+    <string name="score_method_vegas">Vegas Style</string>
+    <string name="score_method_vegas_cumulative">Vegas Cumulative</string>
+    <string name="score_method_completion">Completion Percentage</string>
+
 </resources>

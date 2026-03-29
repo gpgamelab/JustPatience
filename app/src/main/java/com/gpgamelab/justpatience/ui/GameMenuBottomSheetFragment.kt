@@ -53,6 +53,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuFullScreenToggle()
         fun onGameMenuHintDelay()
         fun onGameMenuBoardLayout()
+        fun onGameMenuScoreMethod()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -92,6 +93,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentHaptics = arguments?.getBoolean(ARG_CURRENT_HAPTICS, false) ?: false
         val currentTapToMove = arguments?.getBoolean(ARG_CURRENT_TAP_TO_MOVE, true) ?: true
         val currentFullScreen = arguments?.getBoolean(ARG_CURRENT_FULL_SCREEN, false) ?: false
+        val currentScoreMethod = arguments?.getString(ARG_CURRENT_SCORE_METHOD) ?: "windows"
         if (currentNickname.isNotEmpty()) {
             val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
             nicknameLabel.text = getString(
@@ -168,6 +170,15 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<TextView>(R.id.menu_advanced_full_screen_text).text = getString(
             R.string.game_menu_full_screen_with_value,
             if (currentFullScreen) stateEnabled else stateDisabled
+        )
+        val scoreMethodLabel = when (currentScoreMethod) {
+            "vegas"            -> getString(R.string.score_method_vegas)
+            "vegas_cumulative" -> getString(R.string.score_method_vegas_cumulative)
+            "completion"       -> getString(R.string.score_method_completion)
+            else               -> getString(R.string.score_method_windows)
+        }
+        view.findViewById<TextView>(R.id.menu_advanced_score_method_text).text = getString(
+            R.string.game_menu_score_method_with_value, scoreMethodLabel
         )
 
         // Collapsible sections
@@ -325,6 +336,11 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             dismissAndRun { host.onGameMenuBoardLayout() }
         }
 
+        // Score method popup
+        view.findViewById<View>(R.id.menu_advanced_score_method_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuScoreMethod() }
+        }
+
         // Remaining advanced items that open settings
         val settingsRows = intArrayOf()
         settingsRows.forEach { id ->
@@ -409,6 +425,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_HAPTICS = "arg_current_haptics"
         private const val ARG_CURRENT_TAP_TO_MOVE = "arg_current_tap_to_move"
         private const val ARG_CURRENT_FULL_SCREEN = "arg_current_full_screen"
+        private const val ARG_CURRENT_SCORE_METHOD = "arg_current_score_method"
         private const val MAX_MENU_NICKNAME_LENGTH = 20
         private const val DEFAULT_DRAW_SIZE = 3
         private const val DEFAULT_RECYCLE_COUNT = 3
@@ -431,10 +448,12 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentAutoComplete: Boolean = true,
             currentHaptics: Boolean = false,
             currentTapToMove: Boolean = true,
-            currentFullScreen: Boolean = false
+            currentFullScreen: Boolean = false,
+            currentScoreMethod: String = "windows"
         ): GameMenuBottomSheetFragment {
             return GameMenuBottomSheetFragment().apply {
                 arguments = Bundle().apply {
+                    // ...existing puts...
                     putBoolean(ARG_STATISTICS_EXPANDED, state.statisticsExpanded)
                     putBoolean(ARG_INFORMATION_EXPANDED, state.informationExpanded)
                     putBoolean(ARG_SETTINGS_EXPANDED, state.settingsExpanded)
@@ -457,11 +476,19 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_CURRENT_HAPTICS, currentHaptics)
                     putBoolean(ARG_CURRENT_TAP_TO_MOVE, currentTapToMove)
                     putBoolean(ARG_CURRENT_FULL_SCREEN, currentFullScreen)
+                    putString(ARG_CURRENT_SCORE_METHOD, currentScoreMethod)
                 }
             }
         }
     }
 }
+
+
+
+
+
+
+
 
 
 
