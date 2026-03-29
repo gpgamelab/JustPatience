@@ -683,6 +683,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuBoardLayout() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showBoardLayoutDialog(currentSettings.boardLayout)
+        }
+    }
+
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
         val policyUrl = getString(R.string.privacy_policy_website_url)
@@ -868,6 +875,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                         currentSettings.copy(hintDelaySeconds = currentCount)
                     )
                 }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showBoardLayoutDialog(currentLayout: String) {
+        val boardLayoutOptions = arrayOf(
+            getString(R.string.settings_board_layout_right),
+            getString(R.string.settings_board_layout_left)
+        )
+        val boardLayoutKeys = listOf("right_hand", "left_hand")
+        val checkedItem = boardLayoutKeys.indexOf(currentLayout).coerceAtLeast(0)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.game_menu_board_layout)
+            .setSingleChoiceItems(boardLayoutOptions, checkedItem) { dialog, which ->
+                val selectedLayout = boardLayoutKeys[which]
+                lifecycleScope.launch {
+                    val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        currentSettings.copy(boardLayout = selectedLayout)
+                    )
+                }
+                dialog.dismiss()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

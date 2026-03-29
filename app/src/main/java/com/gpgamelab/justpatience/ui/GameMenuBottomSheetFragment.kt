@@ -52,6 +52,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuTapToMoveToggle()
         fun onGameMenuFullScreenToggle()
         fun onGameMenuHintDelay()
+        fun onGameMenuBoardLayout()
         fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
@@ -319,10 +320,13 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             dismissAndRun { host.onGameMenuHintDelay() }
         }
 
-        // Existing settings screen handles these remaining advanced items.
-        val settingsRows = intArrayOf(
-            R.id.menu_advanced_board_layout_row
-        )
+        // Board layout popup
+        view.findViewById<View>(R.id.menu_advanced_board_layout_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuBoardLayout() }
+        }
+
+        // Remaining advanced items that open settings
+        val settingsRows = intArrayOf()
         settingsRows.forEach { id ->
             view.findViewById<View>(id).setOnClickListener {
                 dismissAndRun { host.onGameMenuOpenSettings() }
@@ -458,6 +462,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 }
+
+
 
 
 
