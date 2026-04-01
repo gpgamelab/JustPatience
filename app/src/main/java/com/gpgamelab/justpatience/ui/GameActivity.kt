@@ -252,48 +252,66 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         if (!isWin || isFinishing || isDestroyed || winDialogShowing) return
 
         winDialogShowing = true
-        val adMultiplier = if (isPremiumAccount) 5 else 2
         val baseReward = 10
-        val boostedReward = baseReward * adMultiplier
+
+        if (isPremiumAccount) {
+            showWinRewardChoiceDialog(baseReward)
+            return
+        }
+
+        val shown = adManager.showRewardedInterstitialAd(
+            onCompleted = { showWinRewardChoiceDialog(baseReward) }
+        )
+
+        if (!shown) {
+            adManager.loadRewardedInterstitialAd()
+            showWinRewardChoiceDialog(baseReward)
+        }
+    }
+
+    private fun showWinRewardChoiceDialog(baseReward: Int) {
+        if (isFinishing || isDestroyed) {
+            winDialogShowing = false
+            return
+        }
+
+        val adMultiplier = if (isPremiumAccount) 5 else 2
 
         AlertDialog.Builder(this)
             .setTitle(R.string.win_dialog_title)
             .setMessage(
                 getString(
-                    R.string.win_dialog_message,
+                    R.string.win_dialog_reward_message,
                     viewModel.game.value.score,
-                    viewModel.game.value.moves
+                    viewModel.game.value.moves,
+                    baseReward,
+                    baseReward * adMultiplier
                 )
             )
-            .setPositiveButton(R.string.win_reward_continue_10) { _, _ ->
-                val shown = adManager.showRewardedInterstitialAd(
-                    onCompleted = {
-                        completeWinRewardFlow(baseReward)
-                    }
-                )
-
-                if (!shown) {
-                    Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
-                    completeWinRewardFlow(baseReward)
-                    adManager.loadRewardedInterstitialAd()
-                }
+            .setPositiveButton(R.string.continue_without_reward) { _, _ ->
+                completeWinRewardFlow(baseReward)
             }
-            .setNegativeButton(getString(R.string.win_reward_watch_ad_xn, adMultiplier)) { _, _ ->
-                val shown = adManager.showRewardedAd(
-                    onCompleted = {
-                        completeWinRewardFlow(boostedReward)
-                    }
-                )
-
-                if (!shown) {
-                    Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
-                    completeWinRewardFlow(boostedReward)
-                    adManager.loadRewardedAd()
-                }
+            .setNegativeButton(getString(R.string.win_reward_xn_gems, adMultiplier)) { _, _ ->
+                showWinMultiplierRewardAd(baseReward, adMultiplier)
             }
             .setCancelable(false)
             .setOnDismissListener { winDialogShowing = false }
             .show()
+    }
+
+    private fun showWinMultiplierRewardAd(baseReward: Int, multiplier: Int) {
+        val shown = adManager.showRewardedAd(
+            onFinished = { rewardEarned ->
+                val gemsToAward = if (rewardEarned) baseReward * multiplier else baseReward
+                completeWinRewardFlow(gemsToAward)
+            }
+        )
+
+        if (!shown) {
+            Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
+            completeWinRewardFlow(baseReward)
+            adManager.loadRewardedAd()
+        }
     }
 
     private fun awardGems(amount: Int) {

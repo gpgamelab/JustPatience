@@ -87,14 +87,16 @@
     <string name="congratulations_title">Congratulations, You Won!</string>
     <string name="win_dialog_title">Congratulations, You Won!</string>
     <string name="win_message">You solved the game with a final score of %1$d in %2$s! Well done!</string>
-    <string name="win_dialog_message">You solved the puzzle!\nFinal Score: %1$d | Total Moves: %2$d</string>
+    <string name="win_dialog_reward_message">Final Score: %1$d | Total Moves: %2$d</string>
     <string name="continue_playing">View Board</string>
     <string name="watch_optional_ad">Watch Optional Ad</string>
     <string name="continue_without_reward">Continue</string>
     <string name="optional_ad_not_ready">Ad not ready right now.</string>
     <string name="control_group_ad_required">Complete an ad to unlock these controls.</string>
     <string name="win_reward_continue_10">You earned 10 gems, continue</string>
+    <string name="win_reward_continue_n">Continue with %1$d gems</string>
     <string name="win_reward_watch_ad_xn">Play an ad for x%1$d gems</string>
+    <string name="win_reward_xn_gems">x%1$d gems</string>
     <string name="no_saved_game_to_continue">No saved game to continue.</string>
 
     <string name="switch_to_register">Don\'t have an account? Register</string>
@@ -299,3 +301,6 @@ Locale: %7$s</string>
     <string name="game_menu_premium_acct_with_value">Premium Acct: %1$s</string>
 
 </resources>
+
+
+
