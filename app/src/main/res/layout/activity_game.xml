@@ -228,6 +228,18 @@
 
         </FrameLayout>
 
+        <Button
+            android:id="@+id/btn_auto_move"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="50dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/auto_move_button_text"
+            android:textColor="@color/secondary_button_color"
+            app:strokeColor="@color/secondary_button_color" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_stats"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -243,18 +255,6 @@
             app:iconPadding="-4px"
             app:iconSize="48dp"
             app:iconTint="@null"
-            app:strokeColor="@color/secondary_button_color" />
-
-        <Button
-            android:id="@+id/btn_auto_move"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="50dp"
-            android:layout_height="80dp"
-            android:layout_marginEnd="2dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/auto_move_button_text"
-            android:textColor="@color/secondary_button_color"
             app:strokeColor="@color/secondary_button_color" />
 
     </LinearLayout>
