@@ -55,10 +55,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private lateinit var statsManager: GameStatsManager
     private lateinit var settingsManager: SettingsManager
 
-    // Ad enable flags for undo and redo
-    private var enableUndo = false
-    private var enableRedo = false
-    private var enableRestart = false
+    // Non-premium users must unlock the grouped move controls once per game via ad.
+    private var isControlGroupAdUnlocked = false
+    private var isControlGroupAdFlowInProgress = false
 
     private var winDialogShowing: Boolean = false
     private var winCelebrationPlayed: Boolean = false
@@ -110,6 +109,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 launch {
                     settingsManager.gamePlaySettingsFlow.collect { settings ->
                         isPremiumAccount = settings.premiumAcct
+                        if (isPremiumAccount) {
+                            isControlGroupAdUnlocked = true
+                        }
+                        updateOverlayVisibility()
                     }
                 }
 
@@ -169,7 +172,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                         findViewById<ImageView>(R.id.undo_main)?.setImageResource(
                             if (canUndo) R.drawable.undo_red else R.drawable.undo_gray
                         )
-                        updateOverlayVisibility()
                     }
                 }
 
@@ -178,7 +180,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                         findViewById<ImageView>(R.id.redo_main)?.setImageResource(
                             if (canRedo) R.drawable.redo_blue else R.drawable.redo_gray
                         )
-                        updateOverlayVisibility()
                     }
                 }
             }
@@ -186,31 +187,33 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
         // Simple button hookups (if present in layout)
         binding.btnUndo.setOnClickListener {
-            handleUndoClick()
+            runAfterControlGroupUnlock { handleUndoClick() }
         }
         binding.btnRedo.setOnClickListener {
-            handleRedoClick()
+            runAfterControlGroupUnlock { handleRedoClick() }
         }
         binding.btnNewGame.setOnClickListener {
-            enableUndo = false
-            enableRedo = false
-            enableRestart = false
+            resetControlGroupAdRequirement()
             winCelebrationPlayed = false
             updateOverlayVisibility()
             viewModel.startNewGame()
         }
-        findViewById<Button>(R.id.btn_restart).setOnClickListener { handleRestartClick() }
+        findViewById<Button>(R.id.btn_restart).setOnClickListener {
+            runAfterControlGroupUnlock { handleRestartClick() }
+        }
         binding.btnStats.setOnClickListener { showGameMenu() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
-            buttonView.isEnabled = false
-            lifecycleScope.launch {
-                try {
-                    val movesMade = viewModel.performAutoMove()
-                    if (movesMade == 0) {
-                        Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
+            runAfterControlGroupUnlock {
+                buttonView.isEnabled = false
+                lifecycleScope.launch {
+                    try {
+                        val movesMade = viewModel.performAutoMove()
+                        if (movesMade == 0) {
+                            Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
+                        }
+                    } finally {
+                        buttonView.isEnabled = true
                     }
-                } finally {
-                    buttonView.isEnabled = true
                 }
             }
         }
@@ -303,9 +306,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     private fun completeWinRewardFlow(gemsToAward: Int) {
         awardGems(gemsToAward)
-        enableUndo = false
-        enableRedo = false
-        enableRestart = false
+        resetControlGroupAdRequirement()
         winCelebrationPlayed = false
         updateOverlayVisibility()
         viewModel.startNewGame()
@@ -1101,74 +1102,74 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         applyResponsiveControlSizing()
     }
 
+    private fun resetControlGroupAdRequirement() {
+        isControlGroupAdUnlocked = isPremiumAccount
+        isControlGroupAdFlowInProgress = false
+        updateOverlayVisibility()
+    }
+
+    private fun runAfterControlGroupUnlock(action: () -> Unit) {
+        if (isPremiumAccount || isControlGroupAdUnlocked) {
+            action()
+            return
+        }
+
+        if (isControlGroupAdFlowInProgress) return
+        isControlGroupAdFlowInProgress = true
+        showControlGroupUnlockAd(action, retriesRemaining = 1)
+    }
+
+    private fun showControlGroupUnlockAd(action: () -> Unit, retriesRemaining: Int) {
+        val shown = adManager.showRewardedAd(
+            onFinished = { rewardEarned ->
+                if (rewardEarned) {
+                    isControlGroupAdUnlocked = true
+                    isControlGroupAdFlowInProgress = false
+                    updateOverlayVisibility()
+                    action()
+                    return@showRewardedAd
+                }
+
+                if (retriesRemaining > 0) {
+                    showControlGroupUnlockAd(action, retriesRemaining - 1)
+                } else {
+                    isControlGroupAdFlowInProgress = false
+                    Toast.makeText(this, R.string.control_group_ad_required, Toast.LENGTH_SHORT).show()
+                    adManager.loadRewardedAd()
+                }
+            }
+        )
+
+        if (!shown) {
+            if (retriesRemaining > 0) {
+                adManager.loadRewardedAd()
+                binding.root.postDelayed(
+                    { showControlGroupUnlockAd(action, retriesRemaining - 1) },
+                    350L
+                )
+            } else {
+                isControlGroupAdFlowInProgress = false
+                Toast.makeText(this, R.string.control_group_ad_required, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 
     private fun updateOverlayVisibility() {
-        findViewById<ImageView>(R.id.undo_overlay)?.visibility = if (enableUndo) View.GONE else View.VISIBLE
-        findViewById<ImageView>(R.id.redo_overlay)?.visibility = if (enableRedo) View.GONE else View.VISIBLE
-        findViewById<ImageView>(R.id.restart_overlay)?.visibility = if (enableRestart) View.GONE else View.VISIBLE
+        findViewById<ImageView>(R.id.group_ad_overlay)?.visibility =
+            if (isPremiumAccount || isControlGroupAdUnlocked) View.GONE else View.VISIBLE
     }
 
     private fun handleUndoClick() {
-        if (enableUndo) {
-            viewModel.undo()
-            return
-        }
-
-        val shown = adManager.showRewardedAdUndoBtn {
-            enableUndo = true
-            updateOverlayVisibility()
-            viewModel.undo()
-        }
-
-        // If ad isn't ready, gracefully unlock once and continue gameplay.
-        if (!shown) {
-            enableUndo = true
-            updateOverlayVisibility()
-            viewModel.undo()
-            adManager.loadRewardedAdUndoBtn()
-        }
+        viewModel.undo()
     }
 
     private fun handleRedoClick() {
-        if (enableRedo) {
-            viewModel.redo()
-            return
-        }
-
-        val shown = adManager.showRewardedAdRedoBtn {
-            enableRedo = true
-            updateOverlayVisibility()
-            viewModel.redo()
-        }
-
-        // If ad isn't ready, gracefully unlock once and continue gameplay.
-        if (!shown) {
-            enableRedo = true
-            updateOverlayVisibility()
-            viewModel.redo()
-            adManager.loadRewardedAdRedoBtn()
-        }
+        viewModel.redo()
     }
 
     private fun handleRestartClick() {
-        if (enableRestart) {
-            showRestartDialog()
-            return
-        }
-
-        val shown = adManager.showRewardedAdRestartBtn {
-            enableRestart = true
-            updateOverlayVisibility()
-            showRestartDialog()
-        }
-
-        // If ad isn't ready, gracefully unlock once and continue gameplay.
-        if (!shown) {
-            enableRestart = true
-            updateOverlayVisibility()
-            showRestartDialog()
-            adManager.loadRewardedAdRestartBtn()
-        }
+        showRestartDialog()
     }
 
     private fun applyResponsiveControlSizing() {
@@ -1190,13 +1191,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         findViewById<Button?>(R.id.btn_auto_move)?.let { applyButtonScale(it, controlTextSp, scale) }
 
         val iconSizePx = dpToPx(40f * scale)
-        val overlaySizePx = dpToPx(8f * scale)
+        val overlaySizePx = dpToPx(10f * scale)
 
         resizeFrame(binding.btnUndo, iconSizePx, iconSizePx)
         resizeFrame(binding.btnRedo, iconSizePx, iconSizePx)
-        findViewById<View?>(R.id.undo_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
-        findViewById<View?>(R.id.redo_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
-        findViewById<View?>(R.id.restart_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
+        findViewById<View?>(R.id.group_ad_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
     }
 
     private fun applyButtonScale(button: Button, textSp: Float, scale: Float) {

@@ -150,56 +150,55 @@
             android:background="@null" />-->
 
         <FrameLayout
+            android:id="@+id/move_controls_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="2dp"
+            android:background="@drawable/bg_control_group_outline"
+            android:paddingStart="3dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="3dp"
+            android:paddingBottom="2dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+        <FrameLayout
             android:id="@+id/btnUndo"
-            android:layout_width="32dp"
-            android:layout_height="80dp"
+            android:layout_width="30dp"
+            android:layout_height="72dp"
             android:background="?android:attr/selectableItemBackground">
 
             <ImageView
                 android:id="@+id/undo_main"
-                android:layout_width="32dp"
-                android:layout_height="72dp"
+                android:layout_width="30dp"
+                android:layout_height="66dp"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/action_undo"
                 android:scaleType="fitCenter"
                 android:src="@drawable/undo_gray" />
 
-            <ImageView
-                android:id="@+id/undo_overlay"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:layout_gravity="top|start"
-                android:layout_marginTop="2dp"
-                android:layout_margin="2dp"
-                android:src="@drawable/ic_play_ad_01" />
-
         </FrameLayout>
 
         <FrameLayout
             android:id="@+id/btnRedo"
-            android:layout_width="32dp"
-            android:layout_height="80dp"
+            android:layout_width="30dp"
+            android:layout_height="72dp"
             android:background="?android:attr/selectableItemBackground">
 
             <ImageView
                 android:id="@+id/redo_main"
-                android:layout_width="32dp"
-                android:layout_height="72dp"
+                android:layout_width="30dp"
+                android:layout_height="66dp"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/action_redo"
                 android:scaleType="fitCenter"
                 android:src="@drawable/redo_gray" />
-
-            <ImageView
-                android:id="@+id/redo_overlay"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:layout_gravity="top|start"
-                android:layout_marginTop="4dp"
-                android:layout_margin="2dp"
-                android:src="@drawable/ic_play_ad_01" />
 
         </FrameLayout>
 
@@ -207,38 +206,42 @@
             android:id="@+id/btnRestart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="2dp">
+            android:layout_marginEnd="1dp">
 
             <Button
                 android:id="@+id/btn_restart"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="70dp"
-                android:layout_height="80dp"
+                android:layout_width="62dp"
+                android:layout_height="72dp"
                 android:text="@string/restart_game_text"
                 android:textColor="@color/secondary_button_color"
                 app:strokeColor="@color/secondary_button_color" />
-
-            <ImageView
-                android:id="@+id/restart_overlay"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:layout_gravity="top|start"
-                android:layout_margin="2dp"
-                android:src="@drawable/ic_play_ad_01" />
 
         </FrameLayout>
 
         <Button
             android:id="@+id/btn_auto_move"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="50dp"
-            android:layout_height="80dp"
-            android:layout_marginEnd="2dp"
+            android:layout_width="44dp"
+            android:layout_height="72dp"
+            android:layout_marginEnd="0dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@string/auto_move_button_text"
             android:textColor="@color/secondary_button_color"
             app:strokeColor="@color/secondary_button_color" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/group_ad_overlay"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="top|start"
+            android:layout_margin="1dp"
+            android:src="@drawable/ic_play_ad_01" />
+
+        </FrameLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_stats"

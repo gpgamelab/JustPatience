@@ -305,7 +305,11 @@ class AdManager(private val context: Context) {
      * Show rewarded ad if available.
      * @return true if ad was shown, false if unavailable.
      */
-    fun showRewardedAd(onCompleted: (() -> Unit)? = null): Boolean {
+    fun showRewardedAd(
+        onCompleted: (() -> Unit)? = null,
+        onUserEarnedReward: (() -> Unit)? = null,
+        onFinished: ((Boolean) -> Unit)? = null
+    ): Boolean {
         val ad = mRewardedAd
         if (ad == null) {
             logDebug("Rewarded ad not ready to show")
@@ -313,6 +317,7 @@ class AdManager(private val context: Context) {
         }
 
         val completion = onCompleted ?: adDismissedCallback
+        var rewardEarned = false
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
@@ -320,6 +325,7 @@ class AdManager(private val context: Context) {
                 mRewardedAd = null
                 loadRewardedAd()
                 completion?.invoke()
+                onFinished?.invoke(rewardEarned)
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
@@ -327,6 +333,7 @@ class AdManager(private val context: Context) {
                 mRewardedAd = null
                 loadRewardedAd()
                 completion?.invoke()
+                onFinished?.invoke(false)
             }
 
             override fun onAdShowedFullScreenContent() {
@@ -335,7 +342,9 @@ class AdManager(private val context: Context) {
         }
 
         ad.show(context as android.app.Activity) { rewardItem ->
+            rewardEarned = true
             logDebug("User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+            onUserEarnedReward?.invoke()
         }
         return true
     }
