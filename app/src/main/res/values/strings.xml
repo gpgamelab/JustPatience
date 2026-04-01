@@ -51,6 +51,8 @@
     <string name="game_title">Solitaire</string>
     <string name="score_format">Score: %d</string>
     <string name="moves_format">Moves: %d</string>
+    <string name="gems_total_label">Gems</string>
+    <string name="gems_count_content_description">Total gems: %1$d</string>
     <string name="exit_game_title">Exit Game?</string>
     <string name="exit_game_message">Do you want to save your current game before exiting?</string>
     <string name="save_and_exit">Save &amp; Exit</string>

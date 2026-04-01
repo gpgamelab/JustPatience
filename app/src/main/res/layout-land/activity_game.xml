@@ -53,11 +53,45 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAlignment="viewEnd"
+            android:textAlignment="center"
             android:textColor="@color/secondary_text_color"
             android:textSize="14sp"
             android:textStyle="bold"
             tools:text="Time: 0:35" />
+
+        <!-- Gems total -->
+        <LinearLayout
+            android:id="@+id/gems_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/iv_gem_bag"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/gems_total_label"
+                android:scaleType="fitCenter"
+                android:src="@drawable/gems_empty_bag_1536x1536" />
+
+            <TextView
+                android:id="@+id/tv_gem_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:background="@drawable/bg_gem_count_oval"
+                android:minWidth="26dp"
+                android:paddingStart="6dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="1dp"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                tools:text="0" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- 2. Main Content Area: Game Board on Left, Controls on Right -->

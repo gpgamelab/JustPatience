@@ -70,6 +70,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private var forceNewGameOnLaunch: Boolean = false
     private var gameMenuExpandState = GameMenuBottomSheetFragment.ExpandState()
     private var pendingWinUiAfterAnimation: Boolean = false
+    private var gemTotal: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +100,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
         statsManager = GameStatsManager(applicationContext)
         settingsManager = SettingsManager(applicationContext)
+        renderGemHud(gemTotal)
 
         // Launcher starts directly in GameActivity; default behavior is resume-or-new.
         forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
@@ -224,6 +226,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val minutes = seconds / 60
         val secs = seconds % 60
         return String.format("%02d:%02d", minutes, secs)
+    }
+
+    private fun renderGemHud(total: Int) {
+        val safeTotal = total.coerceAtLeast(0)
+        binding.ivGemBag.setImageResource(
+            if (safeTotal == 0) R.drawable.gems_empty_bag_1536x1536
+            else R.drawable.gems_purple_bag_1536x1536
+        )
+        binding.tvGemCount.text = safeTotal.toString()
+        binding.ivGemBag.contentDescription = getString(R.string.gems_count_content_description, safeTotal)
     }
 
 
