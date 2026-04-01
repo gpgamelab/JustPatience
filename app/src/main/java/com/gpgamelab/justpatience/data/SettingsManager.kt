@@ -50,6 +50,7 @@ class SettingsManager(private val context: Context) {
 
         // Saved Game State
         val SAVED_GAME_STATE_JSON = stringPreferencesKey("saved_game_state_json")
+        val TOTAL_GEMS = intPreferencesKey("total_gems")
 
         // Game Play Settings
         val DRAW_SIZE = intPreferencesKey("draw_size")                          // 1 or 3
@@ -279,6 +280,24 @@ class SettingsManager(private val context: Context) {
     suspend fun clearSavedGame() {
         dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.SAVED_GAME_STATE_JSON)
+        }
+    }
+
+    fun getTotalGemsFlow(): Flow<Int> = dataStore.data
+        .map { preferences ->
+            (preferences[PreferencesKeys.TOTAL_GEMS] ?: 0).coerceAtLeast(0)
+        }
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(0)
+            } else {
+                throw exception
+            }
+        }
+
+    suspend fun setTotalGems(total: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TOTAL_GEMS] = total.coerceAtLeast(0)
         }
     }
 

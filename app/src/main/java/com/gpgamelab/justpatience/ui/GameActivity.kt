@@ -60,13 +60,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private var enableRedo = false
     private var enableRestart = false
 
-    // Ad frequency counters
-    private var totalGamesPlayed: Int = 0
     private var winDialogShowing: Boolean = false
     private var winCelebrationPlayed: Boolean = false
     private var isWinVideoPlaying: Boolean = false
-    private var hasShownWinRewardedInterstitialForCurrentWin: Boolean = false
     private var showWinAnimation: Boolean = true
+    private var isPremiumAccount: Boolean = false
     private var forceNewGameOnLaunch: Boolean = false
     private var gameMenuExpandState = GameMenuBottomSheetFragment.ExpandState()
     private var pendingWinUiAfterAnimation: Boolean = false
@@ -94,7 +92,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         adManager = AdManager(this)
         adManager.initializeAds()
         adManager.loadBannerAd(binding.adView)
-        adManager.loadInterstitialAd()
         adManager.loadRewardedAd()
         adManager.loadRewardedInterstitialAd()
 
@@ -111,8 +108,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 launch {
-                    statsManager.getTotalGamesPlayed().collect { total ->
-                        totalGamesPlayed = total
+                    settingsManager.gamePlaySettingsFlow.collect { settings ->
+                        isPremiumAccount = settings.premiumAcct
+                    }
+                }
+
+                launch {
+                    settingsManager.getTotalGemsFlow().collect { persistedTotal ->
+                        gemTotal = persistedTotal
+                        renderGemHud(gemTotal)
                     }
                 }
 
@@ -123,7 +127,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
                         if (g.status != GameStatus.WON) {
                             winCelebrationPlayed = false
-                            hasShownWinRewardedInterstitialForCurrentWin = false
                             pendingWinUiAfterAnimation = false
                         } else {
                             showWinCelebrationThenDialog()
@@ -189,16 +192,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             handleRedoClick()
         }
         binding.btnNewGame.setOnClickListener {
-            // If the current game is in-progress it will be finalized (recorded) inside
-            // startNewGame(), but that write is async so totalGamesPlayed is still the
-            // pre-record value here.  Pass +1 so the threshold check is accurate.
-            val pending = if (viewModel.game.value.status == GameStatus.IN_PROGRESS) 1 else 0
-            maybeShowStartInterstitial(pending)
             enableUndo = false
             enableRedo = false
             enableRestart = false
             winCelebrationPlayed = false
-            hasShownWinRewardedInterstitialForCurrentWin = false
             updateOverlayVisibility()
             viewModel.startNewGame()
         }
@@ -252,7 +249,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         if (!isWin || isFinishing || isDestroyed || winDialogShowing) return
 
         winDialogShowing = true
-        val builder = AlertDialog.Builder(this)
+        val adMultiplier = if (isPremiumAccount) 5 else 2
+        val baseReward = 10
+        val boostedReward = baseReward * adMultiplier
+
+        AlertDialog.Builder(this)
             .setTitle(R.string.win_dialog_title)
             .setMessage(
                 getString(
@@ -261,36 +262,53 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                     viewModel.game.value.moves
                 )
             )
-            .setPositiveButton(R.string.new_game_button_text) { _, _ ->
-                maybeShowStartInterstitial()
-                enableUndo = false
-                enableRedo = false
-                enableRestart = false
-                winCelebrationPlayed = false
-                hasShownWinRewardedInterstitialForCurrentWin = false
-                updateOverlayVisibility()
-                viewModel.startNewGame()
-            }
-            .setNeutralButton(R.string.continue_without_reward, null)
-            .setOnDismissListener { winDialogShowing = false }
-
-        if (!hasShownWinRewardedInterstitialForCurrentWin) {
-            builder.setNegativeButton(R.string.watch_optional_ad) { _, _ ->
+            .setPositiveButton(R.string.win_reward_continue_10) { _, _ ->
                 val shown = adManager.showRewardedInterstitialAd(
-                    onCompleted = { showGameEndDialog(true) }
+                    onCompleted = {
+                        completeWinRewardFlow(baseReward)
+                    }
                 )
 
-                if (shown) {
-                    hasShownWinRewardedInterstitialForCurrentWin = true
-                } else {
+                if (!shown) {
                     Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
+                    completeWinRewardFlow(baseReward)
                     adManager.loadRewardedInterstitialAd()
-                    binding.root.post { showGameEndDialog(true) }
                 }
             }
-        }
+            .setNegativeButton(getString(R.string.win_reward_watch_ad_xn, adMultiplier)) { _, _ ->
+                val shown = adManager.showRewardedAd(
+                    onCompleted = {
+                        completeWinRewardFlow(boostedReward)
+                    }
+                )
 
-        builder.show()
+                if (!shown) {
+                    Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
+                    completeWinRewardFlow(boostedReward)
+                    adManager.loadRewardedAd()
+                }
+            }
+            .setCancelable(false)
+            .setOnDismissListener { winDialogShowing = false }
+            .show()
+    }
+
+    private fun awardGems(amount: Int) {
+        gemTotal = (gemTotal + amount).coerceAtLeast(0)
+        renderGemHud(gemTotal)
+        lifecycleScope.launch {
+            settingsManager.setTotalGems(gemTotal)
+        }
+    }
+
+    private fun completeWinRewardFlow(gemsToAward: Int) {
+        awardGems(gemsToAward)
+        enableUndo = false
+        enableRedo = false
+        enableRestart = false
+        winCelebrationPlayed = false
+        updateOverlayVisibility()
+        viewModel.startNewGame()
     }
 
     private fun showStatsDialog() {
@@ -1080,32 +1098,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        // Reload interstitial ad when orientation changes to ensure proper sizing
-        adManager.loadInterstitialAd()
         applyResponsiveControlSizing()
     }
 
-    private fun shouldShowStartInterstitial(total: Int): Boolean {
-        return when {
-            total < 10 -> false
-            total <= 30 -> total % 3 == 0
-            else -> total % 2 == 0
-        }
-    }
-
-    /**
-     * @param pendingRecordCount Pass 1 when the current in-progress game is about to be
-     * finalized (recorded) by the action that triggered this call (e.g. pressing New Game
-     * mid-game).  That recording is async, so totalGamesPlayed is still the pre-record value
-     * at this point; adding 1 corrects for the stale count so the threshold check is accurate.
-     */
-    private fun maybeShowStartInterstitial(pendingRecordCount: Int = 0) {
-        if (!shouldShowStartInterstitial(totalGamesPlayed + pendingRecordCount)) return
-
-        // Show immediately if loaded; otherwise show when load completes.
-        adManager.setShowOnLoad(true)
-        adManager.showInterstitialAd()
-    }
 
     private fun updateOverlayVisibility() {
         findViewById<ImageView>(R.id.undo_overlay)?.visibility = if (enableUndo) View.GONE else View.VISIBLE
