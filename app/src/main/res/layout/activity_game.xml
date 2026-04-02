@@ -202,6 +202,16 @@
 
         </FrameLayout>
 
+        <Button
+            android:id="@+id/btn_hint"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="44dp"
+            android:layout_height="72dp"
+            android:layout_marginEnd="1dp"
+            android:text="@string/action_hint"
+            android:textColor="@color/secondary_button_color"
+            app:strokeColor="@color/secondary_button_color" />
+
         <FrameLayout
             android:id="@+id/btnRestart"
             android:layout_width="wrap_content"

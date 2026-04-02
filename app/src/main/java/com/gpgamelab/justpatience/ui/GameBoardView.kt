@@ -47,6 +47,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private var lastTapTime = 0L
     private val doubleTapTimeout = 300L
+    private var pendingSingleTap: Runnable? = null
+    private var lastTapStackType: StackType? = null
+    private var lastTapStackIndex: Int = -1
+    private var lastTapCardIndex: Int = -1
 
     // Orientation-aware dimensions and offsets
     private var isLandscape = false
@@ -903,7 +907,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
 
         // ── Normal tap handling (no glow active) ─────────────────
-        val (type, stackIndex, _) = findStackAt(x, y)
+        val (type, stackIndex, cardIndex) = findStackAt(x, y)
 
         when (type) {
             StackType.STOCK -> {
@@ -915,7 +919,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
 
             StackType.TABLEAU -> {
-                viewModel.handleSingleClickOnTableau(stackIndex)
+                viewModel.handleSingleClickOnTableau(stackIndex, cardIndex)
+            }
+
+            StackType.FOUNDATION -> {
+                // Explicit no-op for foundation taps.
             }
 
             else -> {
@@ -923,6 +931,58 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 viewModel.clearSingleClickGlow()
             }
         }
+    }
+
+    private fun handleDoubleTap(x: Float, y: Float) {
+        val (type, stackIndex, _) = findStackAt(x, y)
+        when (type) {
+            StackType.WASTE -> viewModel.handleDoubleClickOnWaste()
+            StackType.TABLEAU -> viewModel.handleDoubleClickOnTableau(stackIndex)
+            else -> handleTap(x, y)
+        }
+    }
+
+    private fun cancelPendingSingleTap() {
+        pendingSingleTap?.let { removeCallbacks(it) }
+        pendingSingleTap = null
+        lastTapTime = 0L
+        lastTapStackType = null
+        lastTapStackIndex = -1
+        lastTapCardIndex = -1
+    }
+
+    private fun dispatchTapWithDoubleTapSupport(x: Float, y: Float) {
+        val (type, stackIndex, cardIndex) = findStackAt(x, y)
+        if (type != StackType.WASTE && type != StackType.TABLEAU) {
+            cancelPendingSingleTap()
+            handleTap(x, y)
+            return
+        }
+
+        val now = SystemClock.elapsedRealtime()
+        val isDoubleTap =
+            pendingSingleTap != null &&
+                (now - lastTapTime) <= doubleTapTimeout &&
+                type == lastTapStackType &&
+                stackIndex == lastTapStackIndex &&
+                cardIndex == lastTapCardIndex
+
+        if (isDoubleTap) {
+            cancelPendingSingleTap()
+            handleDoubleTap(x, y)
+            return
+        }
+
+        cancelPendingSingleTap()
+        lastTapTime = now
+        lastTapStackType = type
+        lastTapStackIndex = stackIndex
+        lastTapCardIndex = cardIndex
+        pendingSingleTap = Runnable {
+            pendingSingleTap = null
+            handleTap(x, y)
+        }
+        postDelayed(pendingSingleTap, doubleTapTimeout)
     }
 
     /**
@@ -1218,7 +1278,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     val dy = abs(event.y - downY)
 
                     if (dx < touchSlop && dy < touchSlop) {
-                        handleTap(event.x, event.y)
+                        dispatchTapWithDoubleTapSupport(event.x, event.y)
                     }
                 }
 
@@ -1327,6 +1387,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        cancelPendingSingleTap()
         tabletopBitmap?.recycle()
         tabletopBitmap = null
     }

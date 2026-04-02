@@ -38,7 +38,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuEditNickname()
         fun onGameMenuDrawCards()
         fun onGameMenuWasteRecycles()
-        fun onGameMenuShowHintsToggle()
         fun onGameMenuMuteMusicToggle()
         fun onGameMenuMuteCardSoundsToggle()
         fun onGameMenuMuteWinSoundToggle()
@@ -51,7 +50,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuHapticsToggle()
         fun onGameMenuTapToMoveToggle()
         fun onGameMenuFullScreenToggle()
-        fun onGameMenuHintDelay()
         fun onGameMenuBoardLayout()
         fun onGameMenuScoreMethod()
         fun onGameMenuFoundationToTableauToggle()
@@ -82,7 +80,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentDrawSize = arguments?.getInt(ARG_CURRENT_DRAW_SIZE, DEFAULT_DRAW_SIZE) ?: DEFAULT_DRAW_SIZE
         val currentInfiniteRecycles = arguments?.getBoolean(ARG_CURRENT_INFINITE_RECYCLES, true) ?: true
         val currentRecycleCount = arguments?.getInt(ARG_CURRENT_RECYCLE_COUNT, DEFAULT_RECYCLE_COUNT) ?: DEFAULT_RECYCLE_COUNT
-        val currentShowHints = arguments?.getBoolean(ARG_CURRENT_SHOW_HINTS, true) ?: true
         val currentMuteMusic = arguments?.getBoolean(ARG_CURRENT_MUTE_MUSIC, false) ?: false
         val currentMuteCardSounds = arguments?.getBoolean(ARG_CURRENT_MUTE_CARD_SOUNDS, false) ?: false
         val currentMuteWinSound = arguments?.getBoolean(ARG_CURRENT_MUTE_WIN_SOUND, false) ?: false
@@ -123,10 +120,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
         val stateEnabled = getString(R.string.setting_state_enabled)
         val stateDisabled = getString(R.string.setting_state_disabled)
-        view.findViewById<TextView>(R.id.menu_common_show_hints_text).text = getString(
-            R.string.game_menu_show_hints_with_value,
-            if (currentShowHints) stateEnabled else stateDisabled
-        )
         view.findViewById<TextView>(R.id.menu_common_mute_music_text).text = getString(
             R.string.game_menu_mute_game_music_with_value,
             if (currentMuteMusic) stateEnabled else stateDisabled
@@ -294,9 +287,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_common_waste_recycles_row).setOnClickListener {
             dismissAndRun { host.onGameMenuWasteRecycles() }
         }
-        view.findViewById<View>(R.id.menu_common_show_hints_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuShowHintsToggle() }
-        }
         view.findViewById<View>(R.id.menu_common_mute_music_row).setOnClickListener {
             dismissAndRun { host.onGameMenuMuteMusicToggle() }
         }
@@ -336,11 +326,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
         view.findViewById<View>(R.id.menu_advanced_full_screen_row).setOnClickListener {
             dismissAndRun { host.onGameMenuFullScreenToggle() }
-        }
-
-        // Hint delay popup
-        view.findViewById<View>(R.id.menu_advanced_hint_delay_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuHintDelay() }
         }
 
         // Board layout popup
@@ -434,7 +419,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_DRAW_SIZE = "arg_current_draw_size"
         private const val ARG_CURRENT_INFINITE_RECYCLES = "arg_current_infinite_recycles"
         private const val ARG_CURRENT_RECYCLE_COUNT = "arg_current_recycle_count"
-        private const val ARG_CURRENT_SHOW_HINTS = "arg_current_show_hints"
         private const val ARG_CURRENT_MUTE_MUSIC = "arg_current_mute_music"
         private const val ARG_CURRENT_MUTE_CARD_SOUNDS = "arg_current_mute_card_sounds"
         private const val ARG_CURRENT_MUTE_WIN_SOUND = "arg_current_mute_win_sound"
@@ -460,7 +444,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentDrawSize: Int = DEFAULT_DRAW_SIZE,
             currentInfiniteRecycles: Boolean = true,
             currentRecycleCount: Int = DEFAULT_RECYCLE_COUNT,
-            currentShowHints: Boolean = true,
             currentMuteMusic: Boolean = false,
             currentMuteCardSounds: Boolean = false,
             currentMuteWinSound: Boolean = false,
@@ -489,7 +472,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putInt(ARG_CURRENT_DRAW_SIZE, currentDrawSize)
                     putBoolean(ARG_CURRENT_INFINITE_RECYCLES, currentInfiniteRecycles)
                     putInt(ARG_CURRENT_RECYCLE_COUNT, currentRecycleCount)
-                    putBoolean(ARG_CURRENT_SHOW_HINTS, currentShowHints)
                     putBoolean(ARG_CURRENT_MUTE_MUSIC, currentMuteMusic)
                     putBoolean(ARG_CURRENT_MUTE_CARD_SOUNDS, currentMuteCardSounds)
                     putBoolean(ARG_CURRENT_MUTE_WIN_SOUND, currentMuteWinSound)
