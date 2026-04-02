@@ -283,6 +283,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <TextView
+        android:id="@+id/fakeBannerView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/dark_surface_color"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="@string/fake_ad_message"
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <!-- Win celebration video overlay (hidden until a hand is won). -->
     <FrameLayout
         android:id="@+id/win_video_overlay"

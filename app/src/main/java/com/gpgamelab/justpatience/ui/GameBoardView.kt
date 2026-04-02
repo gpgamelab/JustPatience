@@ -936,8 +936,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun handleDoubleTap(x: Float, y: Float) {
         val (type, stackIndex, _) = findStackAt(x, y)
         when (type) {
-            StackType.WASTE -> viewModel.handleDoubleClickOnWaste()
-            StackType.TABLEAU -> viewModel.handleDoubleClickOnTableau(stackIndex)
+            StackType.WASTE -> viewModel.tryAutoMoveWasteToFoundation()
+            StackType.TABLEAU -> viewModel.tryAutoMoveTableauTopToFoundation(stackIndex)
             else -> handleTap(x, y)
         }
     }

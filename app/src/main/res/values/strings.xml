@@ -93,6 +93,8 @@
     <string name="continue_without_reward">Continue</string>
     <string name="optional_ad_not_ready">Ad not ready right now.</string>
     <string name="control_group_ad_required">Complete an ad to unlock these controls.</string>
+    <string name="fake_ad_message">An AD would be displayed here once advertising is fully enabled.</string>
+    <string name="fake_ad_continue">Continue</string>
     <string name="win_reward_continue_10">You earned 10 gems, continue</string>
     <string name="win_reward_continue_n">Continue with %1$d gems</string>
     <string name="win_reward_watch_ad_xn">Play an ad for x%1$d gems</string>

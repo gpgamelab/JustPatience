@@ -1,7 +1,13 @@
 package com.gpgamelab.justpatience.ads
 
+import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
+import android.widget.Button
 import android.util.Log
 import com.gpgamelab.justpatience.R
 import com.google.android.gms.ads.MobileAds
@@ -28,6 +34,10 @@ class AdManager(private val context: Context) {
     private var mRewardedInterstitialAd: RewardedInterstitialAd? = null
     private var showOnLoad = false
     private var adDismissedCallback: (() -> Unit)? = null
+    private val useProductionAds = context.resources.getBoolean(R.bool.use_production_ad_ids)
+    private val useFakeTestAds = context.resources.getBoolean(R.bool.use_fake_test_ads)
+    private val useFakeAds = !useProductionAds && useFakeTestAds
+    private val useTestAds = !useProductionAds && !useFakeTestAds
     private val isDebugBuild: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
@@ -60,8 +70,13 @@ class AdManager(private val context: Context) {
     }
 
     init {
-        isTestMode = context.resources.getBoolean(R.bool.use_test_ad_ids)
-        logDebug("Ad mode initialized: ${if (isTestMode) "TEST" else "PRODUCTION"}")
+        isTestMode = useTestAds
+        val mode = when {
+            useProductionAds -> "PRODUCTION"
+            useFakeAds -> "FAKE_TEST"
+            else -> "ADMOB_TEST"
+        }
+        logDebug("Ad mode initialized: $mode")
     }
 
     /**
@@ -69,6 +84,10 @@ class AdManager(private val context: Context) {
      * Call this once when the app starts (in your Application class or MainActivity).
      */
     fun initializeAds() {
+        if (useFakeAds) {
+            logDebug("Skipping Mobile Ads SDK initialization in fake ad mode")
+            return
+        }
         try {
             MobileAds.initialize(context)
             logDebug("Google Mobile Ads SDK initialized successfully")
@@ -82,6 +101,12 @@ class AdManager(private val context: Context) {
      * @param adView The XML AdView to load
      */
     fun loadBannerAd(adView: AdView) {
+        if (useFakeAds) {
+            showFakeBanner(adView)
+            return
+        }
+
+        hideFakeBanner(adView)
         try {
             adView.adListener = object : AdListener() {
                 override fun onAdLoaded() {
@@ -118,9 +143,15 @@ class AdManager(private val context: Context) {
      * Load an interstitial ad.
      */
     fun loadInterstitialAd() {
+        if (useFakeAds) {
+            mInterstitialAd = null
+            logDebug("Using fake popup for interstitial ad")
+            return
+        }
+
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (isTestMode) TEST_INTERSTITIAL_AD_UNIT_ID else PRODUCTION_INTERSTITIAL_AD_UNIT_ID
+            val adUnitId = if (useTestAds) TEST_INTERSTITIAL_AD_UNIT_ID else PRODUCTION_INTERSTITIAL_AD_UNIT_ID
 
             InterstitialAd.load(context, adUnitId, adRequest, object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
@@ -148,6 +179,13 @@ class AdManager(private val context: Context) {
      * @return true if an ad was shown, false if no ad was ready
      */
     fun showInterstitialAd(onCompleted: (() -> Unit)? = null): Boolean {
+        if (useFakeAds) {
+            val completion = onCompleted ?: adDismissedCallback
+            return showFakeFullScreenAd {
+                completion?.invoke()
+            }
+        }
+
         val ad = mInterstitialAd
         if (ad == null) {
             logDebug("Interstitial ad not ready to show")
@@ -188,9 +226,15 @@ class AdManager(private val context: Context) {
      * Load a rewarded ad.
      */
     fun loadRewardedAd() {
+        if (useFakeAds) {
+            mRewardedAd = null
+            logDebug("Using fake popup for rewarded ad")
+            return
+        }
+
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID
+            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -208,9 +252,15 @@ class AdManager(private val context: Context) {
         }
     }
     fun loadRewardedAdUndoBtn() {
+        if (useFakeAds) {
+            mRewardedAd = null
+            logDebug("Using fake popup for rewarded undo ad")
+            return
+        }
+
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN
+            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -228,9 +278,15 @@ class AdManager(private val context: Context) {
         }
     }
     fun loadRewardedAdRedoBtn() {
+        if (useFakeAds) {
+            mRewardedAd = null
+            logDebug("Using fake popup for rewarded redo ad")
+            return
+        }
+
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN
+            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -248,9 +304,15 @@ class AdManager(private val context: Context) {
         }
     }
     fun loadRewardedAdRestartBtn() {
+        if (useFakeAds) {
+            mRewardedAd = null
+            logDebug("Using fake popup for rewarded restart ad")
+            return
+        }
+
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (isTestMode) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN
+            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -272,9 +334,15 @@ class AdManager(private val context: Context) {
      * Load a rewarded interstitial ad (used in the post-win dialog flow).
      */
     fun loadRewardedInterstitialAd() {
+        if (useFakeAds) {
+            mRewardedInterstitialAd = null
+            logDebug("Using fake popup for rewarded interstitial ad")
+            return
+        }
+
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (isTestMode) {
+            val adUnitId = if (useTestAds) {
                 TEST_REWARDED_INTERSTITIAL_AD_UNIT_ID
             } else {
                 PRODUCTION_REWARDED_INTERSTITIAL_AD_UNIT_ID
@@ -310,6 +378,15 @@ class AdManager(private val context: Context) {
         onUserEarnedReward: (() -> Unit)? = null,
         onFinished: ((Boolean) -> Unit)? = null
     ): Boolean {
+        if (useFakeAds) {
+            val completion = onCompleted ?: adDismissedCallback
+            return showFakeFullScreenAd {
+                onUserEarnedReward?.invoke()
+                completion?.invoke()
+                onFinished?.invoke(true)
+            }
+        }
+
         val ad = mRewardedAd
         if (ad == null) {
             logDebug("Rewarded ad not ready to show")
@@ -349,6 +426,13 @@ class AdManager(private val context: Context) {
         return true
     }
     fun showRewardedAdUndoBtn(onCompleted: (() -> Unit)? = null): Boolean {
+        if (useFakeAds) {
+            val completion = onCompleted ?: adDismissedCallback
+            return showFakeFullScreenAd {
+                completion?.invoke()
+            }
+        }
+
         val ad = mRewardedAd
         if (ad == null) {
             logDebug("Rewarded ad not ready to show")
@@ -383,6 +467,13 @@ class AdManager(private val context: Context) {
         return true
     }
     fun showRewardedAdRedoBtn(onCompleted: (() -> Unit)? = null): Boolean {
+        if (useFakeAds) {
+            val completion = onCompleted ?: adDismissedCallback
+            return showFakeFullScreenAd {
+                completion?.invoke()
+            }
+        }
+
         val ad = mRewardedAd
         if (ad == null) {
             logDebug("Rewarded ad not ready to show")
@@ -417,6 +508,13 @@ class AdManager(private val context: Context) {
         return true
     }
     fun showRewardedAdRestartBtn(onCompleted: (() -> Unit)? = null): Boolean {
+        if (useFakeAds) {
+            val completion = onCompleted ?: adDismissedCallback
+            return showFakeFullScreenAd {
+                completion?.invoke()
+            }
+        }
+
         val ad = mRewardedAd
         if (ad == null) {
             logDebug("Rewarded ad not ready to show")
@@ -462,6 +560,14 @@ class AdManager(private val context: Context) {
         onCompleted: (() -> Unit)? = null,
         onUserEarnedReward: (() -> Unit)? = null
     ): Boolean {
+        if (useFakeAds) {
+            val completion = onCompleted ?: adDismissedCallback
+            return showFakeFullScreenAd {
+                onUserEarnedReward?.invoke()
+                completion?.invoke()
+            }
+        }
+
         val ad = mRewardedInterstitialAd
         if (ad == null) {
             logDebug("Rewarded interstitial ad not ready to show")
@@ -502,8 +608,54 @@ class AdManager(private val context: Context) {
      * @param testMode true for test ads, false for production ads
      */
     fun setTestMode(testMode: Boolean) {
+        if (useProductionAds || useFakeAds) {
+            logDebug("Ignoring setTestMode because ad mode is fixed by Gradle properties")
+            return
+        }
         isTestMode = testMode
         logDebug("Test mode set to: $testMode")
+    }
+
+    private fun showFakeBanner(adView: AdView) {
+        // Keep AdView in the layout flow so bottom-constrained controls stay above banner space.
+        adView.visibility = View.INVISIBLE
+        (context as? Activity)?.findViewById<View>(R.id.fakeBannerView)?.visibility = View.VISIBLE
+    }
+
+    private fun hideFakeBanner(adView: AdView) {
+        adView.visibility = View.VISIBLE
+        (context as? Activity)?.findViewById<View>(R.id.fakeBannerView)?.visibility = View.GONE
+    }
+
+    private fun showFakeFullScreenAd(onContinue: () -> Unit): Boolean {
+        val activity = context as? Activity
+        if (activity == null || activity.isFinishing) {
+            Log.e(TAG, "Unable to show fake full-screen ad: invalid activity context")
+            return false
+        }
+
+        val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_fake_fullscreen_ad, null)
+        val dialog = AlertDialog.Builder(activity)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        dialog.setOnShowListener {
+            val metrics = activity.resources.displayMetrics
+            dialog.window?.setLayout(
+                (metrics.widthPixels * 0.8f).toInt(),
+                (metrics.heightPixels * 0.8f).toInt()
+            )
+            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        }
+
+        dialogView.findViewById<Button>(R.id.fakeAdContinueButton).setOnClickListener {
+            dialog.dismiss()
+            onContinue()
+        }
+
+        dialog.show()
+        return true
     }
 
     /**

@@ -561,12 +561,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * Called on any detectable player activity (touch, undo, redo, draw, move…).
-     * Automatic hint scheduling is disabled; this now only clears active hint visuals.
+     * Cancels any running hint display, then re-arms the inactivity countdown.
      */
     fun resetHintTimer() {
         hintInactivityJob?.cancel()
         hintCycleJob?.cancel()
         _hintDisplayState.value = null
+
+        if (!_showHints.value) return
+        if (_game.value.status != GameStatus.IN_PROGRESS) return
+
+        hintInactivityJob = viewModelScope.launch {
+            delay(_hintDelaySeconds.value * 1000L)
+            startHintCycle()
+        }
     }
 
     /**
@@ -579,21 +587,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _hintDisplayState.value = null
     }
 
-    /** Automatic hints are disabled; keep this as a no-op for existing call sites. */
+    /** Re-arms the inactivity countdown from scratch after non-player activity ends. */
     fun resumeHintTimerAfterNonPlayerActivity() {
-        // No automatic hint timer.
-    }
-
-    /**
-     * Trigger one hint sequence on demand (used by the HINT button).
-     * Returns false when no legal moves are available.
-     */
-    fun showHintOnDemand(): Boolean {
-        pauseHintTimerForNonPlayerActivity()
-        if (_game.value.status != GameStatus.IN_PROGRESS) return false
-        if (computeLegalMoves().isEmpty()) return false
-        startHintCycle()
-        return true
+        resetHintTimer()
     }
 
     private fun startHintCycle() {
@@ -679,121 +675,123 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     // ─────────────────────────────────────────────────────────────
 
     /**
-     * Single-tap waste behavior:
-     * 1) Move to foundation if legal and within foundation-gap guard.
-     * 2) Otherwise move to the leftmost legal tableau destination.
+     * Single-click on waste card:
+     * - If can move to foundation only → move immediately
+     * - If can move to tableau only → move immediately
+     * - If can move to both → move to tableau immediately
+     * - If can move to multiple tableaus → show glow destinations, don't move
      */
     fun handleSingleClickOnWaste() {
         val game = _game.value
         val wasteCard = game.waste.peek() ?: return
 
-        clearSingleClickGlow()
+        // Collect valid destinations
+        val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
+        val tableauDests = (0..6).filter { game.moveWasteToTableau(it) != null }
 
-        val foundationIndex = firstWasteFoundationIndex(game)
-        if (foundationIndex != null && isWithinFoundationGapGuard(wasteCard)) {
-            if (tryMoveWasteToFoundation(foundationIndex)) return
-        }
-
-        val leftmostTableauIndex = firstWasteTableauIndex(game)
-        if (leftmostTableauIndex != null) {
-            tryMoveWasteToTableau(leftmostTableauIndex)
+        when {
+            // Can move to foundation only → move there
+            canFoundation && tableauDests.isEmpty() -> {
+                for (i in game.foundations.indices) {
+                    if (tryMoveWasteToFoundation(i)) return
+                }
+            }
+            // Can move to exactly one tableau and no foundation → move there
+            tableauDests.size == 1 && !canFoundation -> {
+                tryMoveWasteToTableau(tableauDests[0])
+            }
+            // Can move to one tableau + foundation exists → move to tableau
+            tableauDests.size == 1 && canFoundation -> {
+                tryMoveWasteToTableau(tableauDests[0])
+            }
+            // Can move to multiple tableaus → show glows
+            tableauDests.size > 1 -> {
+                val dests = tableauDests.map { GlowDestination(StackType.TABLEAU, it) }
+                _singleClickGlowState.value = SingleClickGlowState(
+                    sourceStackType = StackType.WASTE,
+                    sourceStackIndex = 0,
+                    sourceCardIndex = -1,
+                    destinations = dests
+                )
+            }
         }
     }
 
     /**
-     * Single-tap tableau behavior:
-     * - If tapped card is not the pile top and is face-up, try moving that run to tableau.
-     * - If tapped card is top, keep normal top-card routing (guarded foundation first, then tableau).
+     * Single-click on tableau card at [tappedCardIndex]:
+     * - Uses tapped face-up card when valid, otherwise falls back to top face-up card.
+     * - If can move to exactly one tableau and no foundation → move immediately.
+     * - If can move to foundation only → move immediately.
+     * - If multiple destinations exist → show destination glows for user selection.
      */
     fun handleSingleClickOnTableau(tableauIndex: Int, tappedCardIndex: Int) {
         val game = _game.value
         val pile = game.tableau.getOrNull(tableauIndex) ?: return
         val cards = pile.asList()
-        if (cards.isEmpty()) return
 
-        val normalizedTappedIndex = tappedCardIndex.coerceIn(0, cards.lastIndex)
-        val topIndex = cards.lastIndex
-
-        clearSingleClickGlow()
-
-        // Non-top single tap: move the tapped face-up run to a tableau pile, if legal.
-        if (normalizedTappedIndex != topIndex) {
-            val tappedCard = cards[normalizedTappedIndex]
-            if (!tappedCard.isFaceUp) return
-
-            val tableauDestIndex = firstTableauToTableauIndex(game, tableauIndex, normalizedTappedIndex)
-            if (tableauDestIndex != null) {
-                tryMoveTableauToTableau(tableauIndex, normalizedTappedIndex, tableauDestIndex)
-            }
-            return
-        }
-
-        // Top-card single tap: existing behavior.
-        val topCard = cards[topIndex]
-
-        val foundationIndex = firstTableauFoundationIndex(game, tableauIndex, topIndex)
-        if (foundationIndex != null && isWithinFoundationGapGuard(topCard)) {
-            if (tryMoveTableauToFoundation(tableauIndex, topIndex, foundationIndex)) return
-        }
-
-        val tableauDestIndex = firstTableauToTableauIndex(game, tableauIndex, topIndex)
-        if (tableauDestIndex != null) {
-            tryMoveTableauToTableau(tableauIndex, topIndex, tableauDestIndex)
-        }
-    }
-
-    /** Double-tap waste: force foundation move when legal (ignores gap guard). */
-    fun handleDoubleClickOnWaste() {
-        val game = _game.value
-        clearSingleClickGlow()
-        val foundationIndex = firstWasteFoundationIndex(game) ?: return
-        tryMoveWasteToFoundation(foundationIndex)
-    }
-
-    /** Double-tap tableau: force foundation move when legal (ignores gap guard). */
-    fun handleDoubleClickOnTableau(tableauIndex: Int) {
-        val game = _game.value
-        val topFaceUpIndex = topFaceUpIndex(game, tableauIndex) ?: return
-        clearSingleClickGlow()
-        val foundationIndex = firstTableauFoundationIndex(game, tableauIndex, topFaceUpIndex) ?: return
-        tryMoveTableauToFoundation(tableauIndex, topFaceUpIndex, foundationIndex)
-    }
-
-    private fun topFaceUpIndex(game: Game, tableauIndex: Int): Int? {
-        val pile = game.tableau.getOrNull(tableauIndex) ?: return null
-        val cards = pile.asList()
+        // Find the top face-up card
+        var topFaceUpIndex = -1
         for (i in cards.indices.reversed()) {
-            if (cards[i].isFaceUp) return i
+            if (cards[i].isFaceUp) {
+                topFaceUpIndex = i
+                break
+            }
         }
-        return null
-    }
+        if (topFaceUpIndex < 0) return
 
-    private fun firstWasteFoundationIndex(game: Game): Int? {
-        return game.foundations.indices.firstOrNull { game.moveWasteToFoundation(it) != null }
-    }
-
-    private fun firstTableauFoundationIndex(game: Game, tableauIndex: Int, cardIndex: Int): Int? {
-        return game.foundations.indices.firstOrNull {
-            game.moveTableauToFoundation(tableauIndex, cardIndex, it) != null
+        // Use the tapped card when it is a valid face-up card in this pile.
+        val sourceIndex = if (
+            tappedCardIndex in cards.indices && cards[tappedCardIndex].isFaceUp
+        ) {
+            tappedCardIndex
+        } else {
+            topFaceUpIndex
         }
-    }
 
-    private fun firstWasteTableauIndex(game: Game): Int? {
-        return game.tableau.indices.firstOrNull { game.moveWasteToTableau(it) != null }
-    }
-
-    private fun firstTableauToTableauIndex(game: Game, fromIndex: Int, cardIndex: Int): Int? {
-        return game.tableau.indices.firstOrNull { toIndex ->
-            toIndex != fromIndex && game.moveTableauToTableau(fromIndex, cardIndex, toIndex) != null
+        // Check tableau destinations (any face-up card can go)
+        val tableauDests = (0..6).filter { destIdx ->
+            destIdx != tableauIndex && game.moveTableauToTableau(tableauIndex, sourceIndex, destIdx) != null
         }
-    }
 
-    private fun isWithinFoundationGapGuard(card: Card): Boolean {
-        val lowestFoundationTop = _game.value.foundations.minOf { pile ->
-            pile.peek()?.rank?.sortOrder ?: 0
+        // Foundation move is only possible from the top exposed card.
+        val isTopCard = sourceIndex == cards.lastIndex
+        val canFoundation = isTopCard && (0..3).any { foundIdx ->
+            game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null
         }
-        // Block if tapped rank is 3+ above the lowest foundation top value.
-        return card.rank.sortOrder < (lowestFoundationTop + 3)
+
+        when {
+            // Can move to exactly one tableau and no foundation → move immediately
+            tableauDests.size == 1 && !canFoundation -> {
+                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests[0])
+            }
+            // Can move to foundation only → move immediately
+            canFoundation && tableauDests.isEmpty() -> {
+                for (i in game.foundations.indices) {
+                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return
+                }
+            }
+            // Multiple destinations (tableau or foundation) → show all destination glows
+            tableauDests.isNotEmpty() || canFoundation -> {
+                val dests = mutableListOf<GlowDestination>()
+                // Add all valid tableau destinations
+                dests.addAll(tableauDests.map { GlowDestination(StackType.TABLEAU, it) })
+                // Add foundation destination(s) if available
+                if (canFoundation) {
+                    for (foundIdx in game.foundations.indices) {
+                        if (game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null) {
+                            dests.add(GlowDestination(StackType.FOUNDATION, foundIdx))
+                            break  // Only one foundation can accept a given card
+                        }
+                    }
+                }
+                _singleClickGlowState.value = SingleClickGlowState(
+                    sourceStackType = StackType.TABLEAU,
+                    sourceStackIndex = tableauIndex,
+                    sourceCardIndex = sourceIndex,
+                    destinations = dests
+                )
+            }
+        }
     }
 
     /** Clear single-click glow display (called on any player action or when dismissing). */

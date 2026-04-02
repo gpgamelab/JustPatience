@@ -201,12 +201,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         findViewById<Button>(R.id.btn_restart).setOnClickListener {
             runAfterControlGroupUnlock { handleRestartClick() }
         }
-        findViewById<Button>(R.id.btn_hint)?.setOnClickListener {
-            val shown = viewModel.showHintOnDemand()
-            if (!shown) {
-                Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
-            }
-        }
         binding.btnStats.setOnClickListener { showGameMenu() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             runAfterControlGroupUnlock {
@@ -350,6 +344,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentDrawSize = currentSettings.drawSize,
                 currentInfiniteRecycles = currentSettings.infiniteRecycles,
                 currentRecycleCount = currentSettings.recycleCount,
+                currentShowHints = currentSettings.showHints,
                 currentMuteMusic = currentSettings.muteMusic,
                 currentMuteCardSounds = currentSettings.muteCardSound,
                 currentMuteWinSound = currentSettings.muteWinSound,
@@ -530,6 +525,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
+    override fun onGameMenuShowHintsToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_show_hints),
+                enabled = currentSettings.showHints
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(showHints = enabled))
+                }
+            }
+        }
+    }
+
     override fun onGameMenuMuteMusicToggle() {
         lifecycleScope.launch {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
@@ -707,6 +717,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                     settingsManager.saveGamePlaySettings(latest.copy(fullScreen = enabled))
                 }
             }
+        }
+    }
+
+    override fun onGameMenuHintDelay() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showHintDelayDialog(currentSettings.hintDelaySeconds)
         }
     }
 
@@ -899,6 +916,48 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                             infiniteRecycles = saveInfinite,
                             recycleCount = saveCount
                         )
+                    )
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showHintDelayDialog(currentDelaySeconds: Int) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_hint_delay, null)
+        val btnMinus = dialogView.findViewById<android.widget.Button>(R.id.btn_hint_delay_minus)
+        val btnPlus  = dialogView.findViewById<android.widget.Button>(R.id.btn_hint_delay_plus)
+        val countText = dialogView.findViewById<TextView>(R.id.text_hint_delay_count)
+
+        var currentCount = currentDelaySeconds.coerceIn(1, 30)
+
+        fun updateCountDisplay() {
+            countText.text = currentCount.toString()
+        }
+
+        updateCountDisplay()
+
+        btnMinus.setOnClickListener {
+            if (currentCount > 1) {
+                currentCount--
+                updateCountDisplay()
+            }
+        }
+        btnPlus.setOnClickListener {
+            if (currentCount < 30) {
+                currentCount++
+                updateCountDisplay()
+            }
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.game_menu_hint_delay)
+            .setView(dialogView)
+            .setPositiveButton(R.string.nickname_dialog_save) { _, _ ->
+                lifecycleScope.launch {
+                    val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        currentSettings.copy(hintDelaySeconds = currentCount)
                     )
                 }
             }

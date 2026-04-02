@@ -15,6 +15,17 @@ val useProductionAds = providers.gradleProperty("useProductionAds")
     .orElse(false)
     .get()
 
+val useFakeTestAds = providers.gradleProperty("useFakeTestAds")
+    .map(String::toBoolean)
+    .orElse(true)
+    .get()
+
+val selectedBannerAdId = if (useProductionAds) {
+    "ca-app-pub-7092037186763886/6653974301"
+} else {
+    "ca-app-pub-3940256099942544/6300978111"
+}
+
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties()
 val hasReleaseKeystore = keystorePropertiesFile.exists()
@@ -52,17 +63,16 @@ android {
 
     buildTypes {
         debug {
-            resValue("string", "banner_ad_unit_id", "ca-app-pub-3940256099942544/6300978111")
-            resValue("bool", "use_test_ad_ids", "true")
+            resValue("string", "banner_ad_unit_id", selectedBannerAdId)
+            resValue("bool", "use_test_ad_ids", (!useProductionAds).toString())
+            resValue("bool", "use_production_ad_ids", useProductionAds.toString())
+            resValue("bool", "use_fake_test_ads", useFakeTestAds.toString())
         }
         release {
-            val releaseBannerId = if (useProductionAds) {
-                "ca-app-pub-7092037186763886/6653974301"
-            } else {
-                "ca-app-pub-3940256099942544/6300978111"
-            }
-            resValue("string", "banner_ad_unit_id", releaseBannerId)
+            resValue("string", "banner_ad_unit_id", selectedBannerAdId)
             resValue("bool", "use_test_ad_ids", (!useProductionAds).toString())
+            resValue("bool", "use_production_ad_ids", useProductionAds.toString())
+            resValue("bool", "use_fake_test_ads", useFakeTestAds.toString())
             isMinifyEnabled = false
             ndk {
                 debugSymbolLevel = "SYMBOL_TABLE"
