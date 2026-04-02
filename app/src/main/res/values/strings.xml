@@ -235,6 +235,7 @@ Locale: %7$s</string>
     <string name="game_menu_exit_app">Exit App</string>
 
     <string name="auto_move_button_text">Auto</string>
+    <string name="no_hints_available">No hints available</string>
 
     <!-- Settings Sections -->
     <string name="settings_section_player">Player</string>

@@ -20,7 +20,6 @@ class SettingsActivity : AppCompatActivity() {
     // Track the current working copy so we can save on each change
     private var currentSettings = SettingsManager.GamePlaySettings()
     private var recycleCount = 3
-    private var hintDelaySec = 5
     private var settingsLoaded = false
     private var isBindingUi = false
 
@@ -68,7 +67,6 @@ class SettingsActivity : AppCompatActivity() {
         isBindingUi = true
         currentSettings = settings
         recycleCount = settings.recycleCount
-        hintDelaySec = settings.hintDelaySeconds
 
         // Draw size
         if (settings.drawSize == 3) {
@@ -81,10 +79,6 @@ class SettingsActivity : AppCompatActivity() {
         updateRecycleCountDisplay()
         binding.switchInfiniteRecycles.isChecked = settings.infiniteRecycles
         updateRecycleButtonsEnabled(!settings.infiniteRecycles)
-
-        // Hints
-        binding.switchHints.isChecked = settings.showHints
-        updateHintDelayDisplay()
 
         // Appearance
         binding.switchTimer.isChecked = settings.showGameTimer
@@ -135,30 +129,6 @@ class SettingsActivity : AppCompatActivity() {
             if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
             updateRecycleButtonsEnabled(!checked)
             saveSettings(currentSettings.copy(infiniteRecycles = checked))
-        }
-
-        // Hints toggle
-        binding.switchHints.setOnCheckedChangeListener { _, checked ->
-            if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
-            saveSettings(currentSettings.copy(showHints = checked))
-        }
-
-        // Hint delay +/-
-        binding.btnHintDelayMinus.setOnClickListener {
-            if (isBindingUi || !settingsLoaded) return@setOnClickListener
-            if (hintDelaySec > 1) {
-                hintDelaySec--
-                updateHintDelayDisplay()
-                saveSettings(currentSettings.copy(hintDelaySeconds = hintDelaySec))
-            }
-        }
-        binding.btnHintDelayPlus.setOnClickListener {
-            if (isBindingUi || !settingsLoaded) return@setOnClickListener
-            if (hintDelaySec < 30) {
-                hintDelaySec++
-                updateHintDelayDisplay()
-                saveSettings(currentSettings.copy(hintDelaySeconds = hintDelaySec))
-            }
         }
 
         // Appearance
@@ -232,9 +202,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.textRecycleCount.text = recycleCount.toString()
     }
 
-    private fun updateHintDelayDisplay() {
-        binding.textHintDelayCount.text = hintDelaySec.toString()
-    }
 
     private fun updateRecycleButtonsEnabled(enabled: Boolean) {
         binding.btnRecycleMinus.isEnabled = enabled

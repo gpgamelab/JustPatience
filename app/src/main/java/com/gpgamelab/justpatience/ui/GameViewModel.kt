@@ -111,13 +111,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _fullScreenEnabled = MutableStateFlow(false)
     val fullScreenEnabled: StateFlow<Boolean> = _fullScreenEnabled
 
-    // Hint system
-    private val _showHints = MutableStateFlow(true)
-    private val _hintDelaySeconds = MutableStateFlow(5)
+    // Hint system (manual only via HINT button)
     private val _hintDisplayState = MutableStateFlow<HintDisplayState?>(null)
     val hintDisplayState: StateFlow<HintDisplayState?> = _hintDisplayState
 
-    private var hintInactivityJob: Job? = null
     private var hintCycleJob: Job? = null
 
     // Single-click destination glows (independent of hint system)
@@ -152,18 +149,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (forceNewGame) {
                 startNewGameInternal()
                 updateUndoRedoState()
-                resetHintTimer()
                 return@launch
             }
 
             val restored = loadSavedGame()
             if (restored) {
                 updateUndoRedoState()
-                resetHintTimer()
             } else {
                 startNewGameInternal()
                 updateUndoRedoState()
-                resetHintTimer()
             }
         }
     }
@@ -205,12 +199,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _tapToMoveEnabled.value = settings.tapToMove
                 _fullScreenEnabled.value = settings.fullScreen
 
-                val prevShowHints = _showHints.value
-                _showHints.value = settings.showHints
-                _hintDelaySeconds.value = settings.hintDelaySeconds
-                if (!settings.showHints && prevShowHints) {
-                    pauseHintTimerForNonPlayerActivity()
-                }
             }
         }
     }
@@ -454,14 +442,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return false
     }
 
-    fun tryAutoMoveWasteToFoundation(): Boolean {
+    fun tryAutoMoveWasteToFoundation(respectThreshold: Boolean = false): Boolean {
         val game = _game.value
+        val wasteCard = game.waste.peek() ?: return false
+
+        if (respectThreshold && !shouldPreferFoundationOnSingleTap(game, wasteCard)) {
+            return false
+        }
 
         for (i in game.foundations.indices) {
             val updated = game.moveWasteToFoundation(i)
             if (updated != null) {
                 animateCardMove(
-                    card = game.waste.peek(),
+                    card = wasteCard,
                     sourceStackType = StackType.WASTE,
                     sourceIndex = 0,
                     sourceCardIndex = -1,
@@ -482,7 +475,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return false
     }
 
-    fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int): Boolean {
+    fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int, respectThreshold: Boolean = false): Boolean {
         val game = _game.value
         val pile = game.tableau.getOrNull(tableauIndex) ?: return false
 
@@ -492,6 +485,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val topCard = pile.peek()
 
         if (topCard?.isFaceUp != true) return false
+        if (respectThreshold && !shouldPreferFoundationOnSingleTap(game, topCard)) return false
 
         for (i in game.foundations.indices) {
             val updated = game.moveTableauToFoundation(tableauIndex, topIndex, i)
@@ -560,43 +554,44 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Called on any detectable player activity (touch, undo, redo, draw, move…).
-     * Cancels any running hint display, then re-arms the inactivity countdown.
+     * Called on player activity to dismiss any currently running manual hint cycle.
      */
     fun resetHintTimer() {
-        hintInactivityJob?.cancel()
         hintCycleJob?.cancel()
         _hintDisplayState.value = null
-
-        if (!_showHints.value) return
-        if (_game.value.status != GameStatus.IN_PROGRESS) return
-
-        hintInactivityJob = viewModelScope.launch {
-            delay(_hintDelaySeconds.value * 1000L)
-            startHintCycle()
-        }
     }
 
     /**
-     * Pause hint timers during non-player activity (ad, animation, win dialog…).
-     * Call [resumeHintTimerAfterNonPlayerActivity] when control returns to the player.
+     * Pause/dismiss manual hint display during non-player activity (ad, animation, win dialog…).
      */
     fun pauseHintTimerForNonPlayerActivity() {
-        hintInactivityJob?.cancel()
         hintCycleJob?.cancel()
         _hintDisplayState.value = null
     }
 
-    /** Re-arms the inactivity countdown from scratch after non-player activity ends. */
+    /** Manual hints do not auto-resume after non-player activity. */
     fun resumeHintTimerAfterNonPlayerActivity() {
-        resetHintTimer()
+        // Intentionally no-op for manual-only hints.
     }
 
-    private fun startHintCycle() {
+    fun showManualHints(): Boolean {
+        if (_game.value.status != GameStatus.IN_PROGRESS) return false
+
+        val moves = computeLegalMoves()
+        if (moves.isEmpty()) {
+            hintCycleJob?.cancel()
+            _hintDisplayState.value = null
+            return false
+        }
+
+        clearSingleClickGlow()
+        startHintCycle(moves)
+        return true
+    }
+
+    private fun startHintCycle(moves: List<HintMove>) {
         hintCycleJob?.cancel()
         hintCycleJob = viewModelScope.launch {
-            val moves = computeLegalMoves()
-            if (moves.isEmpty()) return@launch
 
             for (move in moves) {
                 // Phase 1 – source card glows alone (1 s)
@@ -670,16 +665,29 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return moves
     }
 
+    private fun lowestFoundationValue(game: Game): Int {
+        return game.foundations.minOf { foundation ->
+            foundation.peek()?.rank?.sortOrder ?: 0
+        }
+    }
+
+    private fun shouldPreferFoundationOnSingleTap(game: Game, card: Card): Boolean {
+        val lowestFoundation = lowestFoundationValue(game)
+        return (card.rank.sortOrder - lowestFoundation) < 3
+    }
+
     // ─────────────────────────────────────────────────────────────
     // Single-click glow system (independent from hints)
     // ─────────────────────────────────────────────────────────────
 
     /**
      * Single-click on waste card:
-     * - If can move to foundation only → move immediately
-     * - If can move to tableau only → move immediately
-     * - If can move to both → move to tableau immediately
-     * - If can move to multiple tableaus → show glow destinations, don't move
+     * - If can move to foundation only → move there immediately.
+     * - If can move to tableau only → move immediately to first valid tableau.
+     * - If can move to both → apply the same threshold rule used for top tableau cards:
+     *     prefer foundation only when the card is within 2 ranks of the lowest foundation card;
+     *     otherwise move to the first valid tableau.
+     * - If can move to multiple tableaus → move immediately to first valid tableau.
      */
     fun handleSingleClickOnWaste() {
         val game = _game.value
@@ -689,29 +697,36 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
         val tableauDests = (0..6).filter { game.moveWasteToTableau(it) != null }
 
+        val shouldPreferFoundation = canFoundation && shouldPreferFoundationOnSingleTap(game, wasteCard)
+
         when {
-            // Can move to foundation only → move there
-            canFoundation && tableauDests.isEmpty() -> {
+            // Foundation only and threshold prefers foundation → move there.
+            canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
                     if (tryMoveWasteToFoundation(i)) return
                 }
             }
-            // Can move to exactly one tableau and no foundation → move there
-            tableauDests.size == 1 && !canFoundation -> {
+            // Tableau only → move to first valid tableau
+            tableauDests.isNotEmpty() && !canFoundation -> {
                 tryMoveWasteToTableau(tableauDests[0])
             }
-            // Can move to one tableau + foundation exists → move to tableau
-            tableauDests.size == 1 && canFoundation -> {
-                tryMoveWasteToTableau(tableauDests[0])
+            // Both available → use the same threshold rule as top-tableau cards
+            canFoundation && tableauDests.isNotEmpty() -> {
+                if (shouldPreferFoundation) {
+                    for (i in game.foundations.indices) {
+                        if (tryMoveWasteToFoundation(i)) return
+                    }
+                } else {
+                    tryMoveWasteToTableau(tableauDests[0])
+                }
             }
-            // Can move to multiple tableaus → show glows
-            tableauDests.size > 1 -> {
-                val dests = tableauDests.map { GlowDestination(StackType.TABLEAU, it) }
+            // Foundation-only but threshold does not prefer foundation → require explicit confirm tap.
+            canFoundation -> {
                 _singleClickGlowState.value = SingleClickGlowState(
                     sourceStackType = StackType.WASTE,
                     sourceStackIndex = 0,
                     sourceCardIndex = -1,
-                    destinations = dests
+                    destinations = listOf(GlowDestination(StackType.FOUNDATION, game.foundations.indices.first { game.moveWasteToFoundation(it) != null }))
                 )
             }
         }
@@ -720,9 +735,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Single-click on tableau card at [tappedCardIndex]:
      * - Uses tapped face-up card when valid, otherwise falls back to top face-up card.
-     * - If can move to exactly one tableau and no foundation → move immediately.
-     * - If can move to foundation only → move immediately.
-     * - If multiple destinations exist → show destination glows for user selection.
+     * - Any tableau-only move (no foundation destination) moves immediately
+     *   to the first valid tableau destination.
+     * - Top cards prefer foundation when the card is within the lowest-foundation
+     *   threshold rule; otherwise they keep the richer tableau/glow behavior.
      */
     fun handleSingleClickOnTableau(tableauIndex: Int, tappedCardIndex: Int) {
         val game = _game.value
@@ -758,14 +774,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val canFoundation = isTopCard && (0..3).any { foundIdx ->
             game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null
         }
+        val shouldPreferFoundation = isTopCard && canFoundation && shouldPreferFoundationOnSingleTap(game, cards[sourceIndex])
 
         when {
-            // Can move to exactly one tableau and no foundation → move immediately
-            tableauDests.size == 1 && !canFoundation -> {
-                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests[0])
+            // Non-top runs should move directly to the first valid tableau destination.
+            !isTopCard && tableauDests.isNotEmpty() -> {
+                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
             }
-            // Can move to foundation only → move immediately
-            canFoundation && tableauDests.isEmpty() -> {
+            // Top cards should move to foundation immediately when they satisfy the threshold rule.
+            shouldPreferFoundation -> {
+                for (i in game.foundations.indices) {
+                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return
+                }
+            }
+            // Tableau-only destinations should move immediately to the first valid tableau.
+            tableauDests.isNotEmpty() && !canFoundation -> {
+                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
+            }
+            // Can move to foundation only AND threshold says to prefer foundation → move immediately.
+            // If threshold says no, fall through to the glow branch so the user must confirm.
+            canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
                     if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return
                 }
@@ -813,7 +841,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             madeMoveThisPass = false
 
             for (tableauIndex in _game.value.tableau.indices) {
-                if (tryAutoMoveTableauTopToFoundation(tableauIndex)) {
+                if (tryAutoMoveTableauTopToFoundation(tableauIndex, respectThreshold = true)) {
                     moveCount++
                     madeMoveThisPass = true
                     if (_showCardAnimations.value) {
@@ -823,7 +851,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            if (!madeMoveThisPass && tryAutoMoveWasteToFoundation()) {
+            if (!madeMoveThisPass && tryAutoMoveWasteToFoundation(respectThreshold = true)) {
                 moveCount++
                 madeMoveThisPass = true
                 if (_showCardAnimations.value) {
