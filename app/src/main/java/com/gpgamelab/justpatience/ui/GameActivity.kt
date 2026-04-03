@@ -21,7 +21,6 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.VideoView
 import androidx.annotation.RawRes
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -92,7 +91,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     private var winDialogShowing: Boolean = false
     private var winCelebrationPlayed: Boolean = false
-    private var isWinVideoPlaying: Boolean = false
     private var showWinAnimation: Boolean = true
     private var isPremiumAccount: Boolean = false
     private var forceNewGameOnLaunch: Boolean = false
@@ -1174,7 +1172,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     override fun onPause() {
         super.onPause()
         // Avoid recording losses on transient pauses (ads, dialogs, rotation).
-        stopWinVideoPlayback()
         viewModel.saveGame()
         // Pause hints while the activity is not in foreground (ad overlay, etc.).
         viewModel.pauseHintTimerForNonPlayerActivity()
@@ -1183,7 +1180,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     override fun onStop() {
         super.onStop()
         if (isFinishing) {
-            stopWinVideoPlayback()
             viewModel.stopGame()
         }
     }
@@ -1439,7 +1435,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun showWinCelebrationThenDialog() {
-        if (isFinishing || isDestroyed || winDialogShowing || isWinVideoPlaying) return
+        if (isFinishing || isDestroyed || winDialogShowing) return
 
         if (binding.gameBoardView.isCardAnimationActive()) {
             if (!pendingWinUiAfterAnimation) {
@@ -1457,14 +1453,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
 
         winCelebrationPlayed = true
-
-        val played = playWinVideo {
-            showGameEndDialog(true)
-        }
-
-        if (!played) {
-            showGameEndDialog(true)
-        }
+        showGameEndDialog(true)
     }
 
     private fun waitForBoardAnimationThenShowWinUi() {
@@ -1489,51 +1478,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun playWinVideo(onFinished: () -> Unit): Boolean {
-        // Weighted video selection: name to weight (higher = more likely)
-        // Weights: 50% chance for video_01, 30% for video_02, 20% for video_03
-        val weightedVideos = listOf(
-            "gpgameslab_solitaire_win_01" to 50,
-            "gpgameslab_solitaire_win_02" to 30,
-            "gpgameslab_solitaire_win_03" to 20
-        )
-
-        // Pick a weighted random video
-        val randomVideoName = weightedVideos.weightedRandom()
-        val resId = resources.getIdentifier(randomVideoName, "raw", packageName)
-
-        if (resId == 0) {
-            return false
-        }
-
-        val overlay = findViewById<FrameLayout>(R.id.win_video_overlay) ?: return false
-        val videoView = findViewById<VideoView>(R.id.win_video_view) ?: return false
-
-        isWinVideoPlaying = true
-        overlay.visibility = View.VISIBLE
-
-        val finishPlayback = {
-            stopWinVideoPlayback()
-            onFinished()
-        }
-
-        videoView.setOnCompletionListener { finishPlayback() }
-        videoView.setOnErrorListener { _, _, _ ->
-            finishPlayback()
-            true
-        }
-
-        videoView.setVideoURI(Uri.parse("android.resource://$packageName/$resId"))
-        videoView.start()
-        return true
+        // Win videos have been removed - this method is now a no-op
+        return false
     }
 
     private fun stopWinVideoPlayback() {
-        val overlay = findViewById<FrameLayout>(R.id.win_video_overlay)
-        val videoView = findViewById<VideoView>(R.id.win_video_view)
-
-        videoView?.stopPlayback()
-        overlay?.visibility = View.GONE
-        isWinVideoPlaying = false
+        // Win videos have been removed - this method is now a no-op
     }
 
     /**
