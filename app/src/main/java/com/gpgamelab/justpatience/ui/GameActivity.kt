@@ -1,11 +1,14 @@
 package com.gpgamelab.justpatience.ui
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
@@ -22,6 +25,7 @@ import android.widget.VideoView
 import androidx.annotation.RawRes
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
@@ -46,6 +50,30 @@ import kotlinx.coroutines.flow.first
 import kotlin.math.sqrt
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
+
+    private data class WinPopupUiConfig(
+        val dialogWidthPercentLandscape: Float = 0.40f,
+        val dialogWidthPercentPortrait: Float = 0.95f,
+        val dialogHeightPercent: Float = 0.80f,
+        val rewardTopPercent: Float = 0.64f,
+        val rewardBottomPercent: Float = rewardTopPercent + 0.1f,
+        val buttonsTopPercent: Float = 0.82f,
+        val buttonsBottomPercent: Float = buttonsTopPercent + 0.1f,
+        val continueButtonWidthPercent: Float = 0.30f,
+        val multiplierButtonWidthPercent: Float = 0.30f,
+        val buttonGapDp: Float = 18f,
+        val rewardAmountTextSp: Float = 44f,
+        val buttonTextSpLandscape: Float = 16f,
+        val buttonTextSpPortrait: Float = 30f,
+        val rewardAmountToGemGapDp: Float = 40f,
+        val rewardRowMinWidthDp: Float = 160f,
+        val rewardRowMaxWidthDp: Float = 360f,
+        val buttonHorizontalPaddingDp: Float = 30f
+    )
+
+    // Single tweak cluster for the custom win popup. Adjust these values instead of
+    // searching through the XML when you want to nudge positions/sizes.
+    private val winPopupUiConfig = WinPopupUiConfig()
 
     private lateinit var binding: ActivityGameBinding
     private val viewModel: GameViewModel by viewModels()
@@ -286,6 +314,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun showWinRewardChoiceDialog(baseReward: Int) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            runOnUiThread { showWinRewardChoiceDialog(baseReward) }
+            return
+        }
+
         if (isFinishing || isDestroyed) {
             winDialogShowing = false
             return
@@ -293,24 +326,112 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
         val adMultiplier = if (isPremiumAccount) 5 else 2
 
-        AlertDialog.Builder(this)
-            .setTitle(R.string.win_dialog_title)
-            .setMessage(
-                getString(
-                    R.string.win_dialog_reward_message,
-                    viewModel.game.value.score,
-                    viewModel.game.value.moves
-                )
-            )
-            .setPositiveButton(R.string.continue_without_reward) { _, _ ->
-                completeWinRewardFlow(baseReward)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_win_reward_choice, null)
+        val rewardAmount = dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)
+        val continueButton = dialogView.findViewById<Button>(R.id.btn_win_continue)
+        val multiplierButton = dialogView.findViewById<Button>(R.id.btn_win_multiplier)
+
+        applyWinPopupUiConfig(dialogView, winPopupUiConfig)
+
+        rewardAmount.text = getString(R.string.win_reward_popup_amount, baseReward)
+        continueButton.text = getString(R.string.win_reward_popup_continue)
+        multiplierButton.text = getString(R.string.win_reward_popup_multiplier, adMultiplier)
+
+        val dialog = Dialog(this).apply {
+            setContentView(dialogView)
+            setCancelable(false)
+            setCanceledOnTouchOutside(false)
+        }
+
+        continueButton.setOnClickListener {
+            dialog.dismiss()
+            completeWinRewardFlow(baseReward)
+        }
+        multiplierButton.setOnClickListener {
+            dialog.dismiss()
+            showWinMultiplierRewardAd(baseReward, adMultiplier)
+        }
+
+        dialog.setOnShowListener {
+            val widthPercent = getWinPopupWidthPercent(winPopupUiConfig)
+            val widthPx = (resources.displayMetrics.widthPixels * widthPercent).toInt().coerceAtLeast(1)
+            val heightPx = (resources.displayMetrics.heightPixels * winPopupUiConfig.dialogHeightPercent).toInt().coerceAtLeast(1)
+            dialog.window?.setLayout(widthPx, heightPx)
+            dialog.window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+        }
+        dialog.setOnDismissListener { winDialogShowing = false }
+        dialog.show()
+    }
+
+    private fun applyWinPopupUiConfig(dialogView: View, config: WinPopupUiConfig) {
+        setGuidelinePercent(dialogView, R.id.guideline_reward_top, config.rewardTopPercent)
+        setGuidelinePercent(dialogView, R.id.guideline_reward_bottom, config.rewardBottomPercent)
+        setGuidelinePercent(dialogView, R.id.guideline_buttons_top, config.buttonsTopPercent)
+        setGuidelinePercent(dialogView, R.id.guideline_buttons_bottom, config.buttonsBottomPercent)
+
+        dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)?.let { rewardText ->
+            rewardText.setTextSize(TypedValue.COMPLEX_UNIT_SP, config.rewardAmountTextSp)
+            (rewardText.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                lp.marginEnd = dpToPx(config.rewardAmountToGemGapDp)
+                rewardText.layoutParams = lp
             }
-            .setNegativeButton(getString(R.string.win_reward_xn_gems, adMultiplier)) { _, _ ->
-                showWinMultiplierRewardAd(baseReward, adMultiplier)
+        }
+
+        dialogView.findViewById<LinearLayout>(R.id.layout_reward_row)?.let { rewardRow ->
+            (rewardRow.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
+                lp.matchConstraintMinWidth = dpToPx(config.rewardRowMinWidthDp)
+                lp.matchConstraintMaxWidth = dpToPx(config.rewardRowMaxWidthDp)
+                rewardRow.layoutParams = lp
             }
-            .setCancelable(false)
-            .setOnDismissListener { winDialogShowing = false }
-            .show()
+        }
+
+        val widthPercent = getWinPopupWidthPercent(config)
+        val popupWidthPx = (resources.displayMetrics.widthPixels * widthPercent).toInt().coerceAtLeast(1)
+        val continueButtonWidthPx = (popupWidthPx * config.continueButtonWidthPercent).toInt().coerceAtLeast(1)
+        val multiplierButtonWidthPx = (popupWidthPx * config.multiplierButtonWidthPercent).toInt().coerceAtLeast(1)
+        val buttonGapPx = dpToPx(config.buttonGapDp)
+
+        dialogView.findViewById<Button>(R.id.btn_win_continue)?.let { button ->
+            applyWinPopupButtonConfig(button, continueButtonWidthPx, config, endMarginPx = buttonGapPx)
+        }
+        dialogView.findViewById<Button>(R.id.btn_win_multiplier)?.let { button ->
+            applyWinPopupButtonConfig(button, multiplierButtonWidthPx, config, endMarginPx = 0)
+        }
+    }
+
+    private fun setGuidelinePercent(root: View, guidelineId: Int, percent: Float) {
+        val guideline = root.findViewById<View>(guidelineId) ?: return
+        (guideline.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
+            lp.guidePercent = percent.coerceIn(0f, 1f)
+            guideline.layoutParams = lp
+        }
+    }
+
+    private fun getWinPopupWidthPercent(config: WinPopupUiConfig): Float {
+        return if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            config.dialogWidthPercentLandscape
+        } else {
+            config.dialogWidthPercentPortrait
+        }
+    }
+
+    private fun getWinPopupButtonTextSp(config: WinPopupUiConfig): Float {
+        return if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            config.buttonTextSpLandscape
+        } else {
+            config.buttonTextSpPortrait
+        }
+    }
+
+    private fun applyWinPopupButtonConfig(button: Button, widthPx: Int, config: WinPopupUiConfig, endMarginPx: Int) {
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, getWinPopupButtonTextSp(config))
+        val horizontalPadding = dpToPx(config.buttonHorizontalPaddingDp)
+        button.setPaddingRelative(horizontalPadding, button.paddingTop, horizontalPadding, button.paddingBottom)
+        (button.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            lp.width = widthPx
+            lp.marginEnd = endMarginPx
+            button.layoutParams = lp
+        }
     }
 
     private fun showWinMultiplierRewardAd(baseReward: Int, multiplier: Int) {
