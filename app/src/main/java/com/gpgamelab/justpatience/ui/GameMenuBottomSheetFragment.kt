@@ -13,6 +13,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.R as MaterialR
 import com.gpgamelab.justpatience.R
+import com.gpgamelab.justpatience.util.UiScaleUtil
 
 class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
@@ -73,6 +74,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        UiScaleUtil.applyBaselineScale(view, requireContext())
 
         val host = activity as? Host ?: return
         var expandState = readExpandStateFromArgs()
@@ -369,7 +371,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val behavior = BottomSheetBehavior.from(bottomSheet)
 
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val maxHeightFraction = if (isLandscape) 0.50f else 0.30f
+        val maxHeightFraction = if (isLandscape) 0.375f else 0.225f
         val maxHeight = (resources.displayMetrics.heightPixels * maxHeightFraction).toInt().coerceAtLeast(1)
 
         bottomSheet.layoutParams = bottomSheet.layoutParams.apply {

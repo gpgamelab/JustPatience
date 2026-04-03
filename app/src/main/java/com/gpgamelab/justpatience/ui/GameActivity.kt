@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
@@ -26,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.button.MaterialButton
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.review.testing.FakeReviewManager
@@ -38,9 +40,10 @@ import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.databinding.ActivityGameBinding
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.data.GameStatsManager
+import com.gpgamelab.justpatience.util.UiScaleUtil
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
-import kotlin.math.min
+import kotlin.math.sqrt
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
@@ -73,6 +76,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         super.onCreate(savedInstanceState)
         binding = ActivityGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Scale the bottom control-button row (and info panel) vertically using the
+        // raw baseline factor – no extreme-aspect correction – so portrait phones get
+        // slightly taller touch targets while landscape phones stay compact.
+        UiScaleUtil.applyScreenVerticalScale(binding.controlButtonsLayout, this)
+        UiScaleUtil.applyScreenVerticalScale(binding.gameInfoPanel, this)
 
         // Wire viewModel into GameBoardView
         binding.gameBoardView.viewModel = viewModel
@@ -497,6 +506,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val scrollView = ScrollView(this).apply {
             addView(textView)
         }
+        UiScaleUtil.applyBaselineScale(scrollView, this)
 
         AlertDialog.Builder(this)
             .setTitle(R.string.terms_of_service_dialog_title)
@@ -776,6 +786,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val scrollView = ScrollView(this).apply {
             addView(textView)
         }
+        UiScaleUtil.applyBaselineScale(scrollView, this)
 
         AlertDialog.Builder(this)
             .setTitle(R.string.privacy_policy_dialog_title)
@@ -848,6 +859,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     private fun showWasteRecyclesDialog(isInfinite: Boolean, recycleCount: Int) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_waste_recycles, null)
+        UiScaleUtil.applyBaselineScale(dialogView, this)
         val btnMinus = dialogView.findViewById<android.widget.Button>(R.id.btn_recycles_minus)
         val btnPlus  = dialogView.findViewById<android.widget.Button>(R.id.btn_recycles_plus)
         val countText = dialogView.findViewById<TextView>(R.id.text_recycles_count)
@@ -1134,27 +1146,148 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val config = resources.configuration
         val widthDp = config.screenWidthDp.toFloat()
         val heightDp = config.screenHeightDp.toFloat()
-        val minDp = min(widthDp, heightDp)
         val isLandscapeNow = config.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-        val baseScale = (minDp / 360f).coerceIn(0.82f, 1.10f)
-        val orientationScale = if (isLandscapeNow) 0.88f else 0.95f
-        val scale = (baseScale * orientationScale).coerceIn(0.72f, 1.10f)
+        val factors = UiScaleUtil.calculateBaselineScaleFactors(widthDp, heightDp)
+        val widthScale = factors.horizontal.coerceIn(0.56f, 1.70f)
+        val heightScale = factors.vertical.coerceIn(0.56f, 1.70f)
+        val textScale = factors.text.coerceIn(0.64f, 1.35f)
 
-        val controlTextSp = 8f * scale * 0.90f
+        // Portrait button widths already have a 1.75× boost to compensate for the narrow
+        // phone screen.  Applying the extreme-aspect compression on top (which the full
+        // widthScale carries) would double-penalise the width.  Strip the per-axis factor
+        // out so portrait button widths track only the baseline (screen vs. baseline tablet)
+        // ratio, not the additional phone-shape compression.
+        val portraitButtonWidthScale = if (!isLandscapeNow && factors.isExtremeAspect && factors.horizontalFactor != 0f)
+            (factors.horizontal / factors.horizontalFactor).coerceIn(0.56f, 1.70f)
+        else
+            widthScale
 
-        applyButtonScale(binding.btnNewGame, controlTextSp, scale)
-        findViewById<Button?>(R.id.btn_restart)?.let { applyButtonScale(it, controlTextSp, scale) }
-        findViewById<Button?>(R.id.btn_hint)?.let { applyButtonScale(it, controlTextSp, scale) }
-        applyButtonScale(binding.btnStats, controlTextSp, scale)
-        findViewById<Button?>(R.id.btn_auto_move)?.let { applyButtonScale(it, controlTextSp, scale) }
+        applyTopHudSizing(isLandscapeNow, widthScale, heightScale, textScale)
+        applyBottomControlsSizing(isLandscapeNow, widthScale, heightScale, textScale, portraitButtonWidthScale)
+    }
 
-        val iconSizePx = dpToPx(40f * scale)
-        val overlaySizePx = dpToPx(10f * scale)
+    private fun applyTopHudSizing(
+        isLandscape: Boolean,
+        widthScale: Float,
+        heightScale: Float,
+        textScale: Float
+    ) {
+        val panel = findViewById<LinearLayout>(R.id.game_info_panel) ?: return
 
-        resizeFrame(binding.btnUndo, iconSizePx, iconSizePx)
-        resizeFrame(binding.btnRedo, iconSizePx, iconSizePx)
-        findViewById<View?>(R.id.group_ad_overlay)?.let { resizeFrame(it, overlaySizePx, overlaySizePx) }
+        panel.setPaddingRelative(
+            dpToPx(16f * widthScale),
+            dpToPx(8f * heightScale),
+            dpToPx(16f * widthScale),
+            dpToPx(8f * heightScale)
+        )
+
+        val statTextSp = (if (isLandscape) 14f else 16f) * textScale
+        binding.tvScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
+        binding.tvMoves.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
+        binding.tvTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
+
+        val gemBagBaseDp = if (isLandscape) 22f else 24f
+        val gemCountBaseSp = if (isLandscape) 10f else 11f
+        val gemMinWidthBaseDp = if (isLandscape) 26f else 28f
+        val gemSizePx = dpToPx(gemBagBaseDp * textScale)
+
+        resizeFrame(binding.ivGemBag, gemSizePx, gemSizePx)
+        binding.tvGemCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
+        binding.tvGemCount.minWidth = dpToPx(gemMinWidthBaseDp * widthScale)
+        binding.tvGemCount.setPaddingRelative(
+            dpToPx(6f * widthScale),
+            dpToPx(1f * heightScale),
+            dpToPx(6f * widthScale),
+            dpToPx(1f * heightScale)
+        )
+        (binding.tvGemCount.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            lp.topMargin = 0
+            lp.marginEnd = dpToPx(6f * widthScale)
+            binding.tvGemCount.layoutParams = lp
+        }
+    }
+
+    private fun applyBottomControlsSizing(
+        isLandscape: Boolean,
+        widthScale: Float,
+        heightScale: Float,
+        textScale: Float,
+        portraitButtonWidthScale: Float = widthScale
+    ) {
+        val controlPanel = findViewById<LinearLayout>(R.id.control_buttons_layout)
+        val moveGroup = findViewById<FrameLayout>(R.id.move_controls_group)
+        val btnHint = findViewById<Button?>(R.id.btn_hint)
+        val btnRestart = findViewById<Button?>(R.id.btn_restart)
+        val btnAuto = findViewById<Button?>(R.id.btn_auto_move)
+        val undoMain = findViewById<ImageView?>(R.id.undo_main)
+        val redoMain = findViewById<ImageView?>(R.id.redo_main)
+
+        val controlTextSp = 8f * textScale
+        // Both orientations use heightScale:
+        //   Portrait  → heightScale carries the expansion factor (long axis) → buttons grow taller ✓
+        //   Landscape → heightScale carries the compression factor (short axis) → buttons shrink ✓
+        val controlHeightScale = heightScale
+        val portraitWidthBoost = 1.75f
+
+        if (!isLandscape) {
+            // Portrait uses fixed button widths; portraitButtonWidthScale strips the extreme-aspect
+            // compression so the existing portraitWidthBoost is not double-penalised.
+            setButtonSizeDp(binding.btnNewGame, 50f * portraitWidthBoost * portraitButtonWidthScale, 80f * controlHeightScale)
+            setButtonSizeDp(binding.btnStats, 56f * portraitWidthBoost * portraitButtonWidthScale, 80f * controlHeightScale)
+            setButtonSizeDp(btnHint, 50f * portraitWidthBoost * portraitButtonWidthScale, 72f * controlHeightScale)
+            setButtonSizeDp(btnRestart, 62f * portraitWidthBoost * portraitButtonWidthScale, 72f * controlHeightScale)
+            setButtonSizeDp(btnAuto, 52f * portraitWidthBoost * portraitButtonWidthScale, 72f * controlHeightScale)
+            (controlPanel?.layoutParams)?.let { lp ->
+                lp.height = dpToPx(80f * controlHeightScale)
+                controlPanel.layoutParams = lp
+            }
+        } else {
+            controlPanel?.setPaddingRelative(
+                dpToPx(8f * widthScale),
+                controlPanel.paddingTop,
+                dpToPx(8f * widthScale),
+                controlPanel.paddingBottom
+            )
+        }
+
+        applyButtonScale(binding.btnNewGame, controlTextSp, textScale)
+        applyButtonScale(binding.btnStats, controlTextSp, textScale)
+        btnHint?.let { applyButtonScale(it, controlTextSp, textScale) }
+        btnRestart?.let { applyButtonScale(it, controlTextSp, textScale) }
+        btnAuto?.let { applyButtonScale(it, controlTextSp, textScale) }
+
+        // Portrait undo/redo widths also use the baseline-only scale (no extra compression).
+        val undoWidthScale = if (isLandscape) widthScale else portraitButtonWidthScale
+        val undoFrameW = if (isLandscape) 40f else 30f * portraitWidthBoost
+        val undoFrameH = if (isLandscape) 40f else 72f
+        val undoImgW = if (isLandscape) 40f else 30f * portraitWidthBoost
+        val undoImgH = if (isLandscape) 40f else 66f
+
+        resizeFrame(binding.btnUndo, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
+        resizeFrame(binding.btnRedo, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
+        undoMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
+        redoMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
+
+        moveGroup?.setPaddingRelative(
+            dpToPx((if (isLandscape) 4f else 3f) * widthScale),
+            dpToPx((if (isLandscape) 4f else 2f) * heightScale),
+            dpToPx((if (isLandscape) 4f else 3f) * widthScale),
+            dpToPx((if (isLandscape) 4f else 2f) * heightScale)
+        )
+
+        val overlaySize = dpToPx(14f * textScale)
+        findViewById<View?>(R.id.group_ad_overlay)?.let { resizeFrame(it, overlaySize, overlaySize) }
+        (findViewById<View?>(R.id.group_ad_overlay)?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+            lp.marginStart = dpToPx(1f * widthScale)
+            lp.topMargin = dpToPx(1f * heightScale)
+            findViewById<View>(R.id.group_ad_overlay).layoutParams = lp
+        }
+
+        if (binding.btnStats is MaterialButton) {
+            binding.btnStats.iconSize = dpToPx(48f * textScale)
+            binding.btnStats.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
+        }
     }
 
     private fun applyButtonScale(button: Button, textSp: Float, scale: Float) {
@@ -1163,6 +1296,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val horizontal = dpToPx(12f * scale)
         val vertical = dpToPx(6f * scale)
         button.setPaddingRelative(horizontal, vertical, horizontal, vertical)
+    }
+
+    private fun setButtonSizeDp(button: Button?, widthDp: Float, heightDp: Float) {
+        button ?: return
+        val lp = button.layoutParams ?: return
+        lp.width = dpToPx(widthDp)
+        lp.height = dpToPx(heightDp)
+        button.layoutParams = lp
     }
 
     private fun resizeFrame(view: View, widthPx: Int, heightPx: Int) {

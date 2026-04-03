@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gpgamelab.justpatience.data.GameRecord
 import com.gpgamelab.justpatience.databinding.ItemGameRecordBinding
+import com.gpgamelab.justpatience.util.UiScaleUtil
 
 /**
  * RecyclerView adapter for displaying game history records.
@@ -40,6 +41,7 @@ class GameRecordAdapter(
             parent,
             false
         )
+        UiScaleUtil.applyBaselineScale(binding.root, parent.context)
         return GameRecordViewHolder(binding)
     }
 
@@ -49,4 +51,3 @@ class GameRecordAdapter(
 
     override fun getItemCount(): Int = records.size
 }
-

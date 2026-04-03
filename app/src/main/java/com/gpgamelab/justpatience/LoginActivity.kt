@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import com.gpgamelab.justpatience.api.UserLoginRequest
 import com.gpgamelab.justpatience.api.UserRegistrationRequest
 import com.gpgamelab.justpatience.databinding.ActivityLoginBinding
+import com.gpgamelab.justpatience.util.UiScaleUtil
 import com.gpgamelab.justpatience.viewmodel.AuthViewModel
 
 /**
@@ -46,6 +47,7 @@ class LoginActivity : AppCompatActivity() {
         // Initialize ViewBinding
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        UiScaleUtil.applyBaselineScale(binding.root, this)
 
         // Check if the user is already authenticated (e.g., has a saved token)
         // This is handled by observing the token flow below.

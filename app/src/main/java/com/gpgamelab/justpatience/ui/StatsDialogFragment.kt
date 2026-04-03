@@ -13,6 +13,7 @@ import com.gpgamelab.justpatience.data.SettingsManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gpgamelab.justpatience.databinding.DialogStatsBinding
 import com.gpgamelab.justpatience.ui.adapter.GameRecordAdapter
+import com.gpgamelab.justpatience.util.UiScaleUtil
 import com.gpgamelab.justpatience.viewmodel.StatsViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -42,6 +43,7 @@ class StatsDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        UiScaleUtil.applyBaselineScale(view, requireContext())
         settingsManager = SettingsManager(requireContext().applicationContext)
 
         setupRecyclerView()

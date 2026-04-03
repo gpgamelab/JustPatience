@@ -13,6 +13,7 @@ import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.GameRecord
 import com.gpgamelab.justpatience.databinding.DialogStatsSummaryBinding
 import com.gpgamelab.justpatience.viewmodel.StatsViewModel
+import com.gpgamelab.justpatience.util.UiScaleUtil
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -39,6 +40,7 @@ class StatsSummaryDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        UiScaleUtil.applyBaselineScale(view, requireContext())
         settingsManager = SettingsManager(requireContext().applicationContext)
         setupToggle()
         binding.btnCloseSummary.setOnClickListener { dismiss() }

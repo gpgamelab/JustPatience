@@ -10,6 +10,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.util.Log
 import com.gpgamelab.justpatience.R
+import com.gpgamelab.justpatience.util.UiScaleUtil
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -635,6 +636,7 @@ class AdManager(private val context: Context) {
         }
 
         val dialogView = LayoutInflater.from(activity).inflate(R.layout.dialog_fake_fullscreen_ad, null)
+        UiScaleUtil.applyBaselineScale(dialogView, activity)
         val dialog = AlertDialog.Builder(activity)
             .setView(dialogView)
             .setCancelable(false)

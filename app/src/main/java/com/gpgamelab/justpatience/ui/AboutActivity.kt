@@ -6,12 +6,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.gpgamelab.justpatience.R
+import com.gpgamelab.justpatience.util.UiScaleUtil
 
 class AboutActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_about)
+        UiScaleUtil.applyBaselineScale(findViewById(android.R.id.content), this)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar_about)
         setSupportActionBar(toolbar)

@@ -9,4 +9,7 @@
     <dimen name="spacing_small">3dp</dimen>
     <dimen name="spacing_medium">6dp</dimen>
     <dimen name="spacing_large">12dp</dimen>
+
+    <!-- Marker ID for one-time responsive scaling -->
+    <item name="ui_scale_applied_tag" type="id" />
 </resources>

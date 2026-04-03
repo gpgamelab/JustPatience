@@ -29,6 +29,7 @@ import com.gpgamelab.justpatience.model.SingleClickGlowState
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.model.TableauPile
 import com.gpgamelab.justpatience.model.Verso
+import com.gpgamelab.justpatience.util.UiScaleUtil
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
@@ -66,7 +67,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // Landscape-specific offsets (estimates - can be adjusted later)
     private val LANDSCAPE_BOARD_WIDTH_FRACTION = 0.90f  // Use more of the width
-    private val LANDSCAPE_BOARD_SHIFT_LEFT_PX = 40f     // Less left shift (landscape is wider)
+    private val LANDSCAPE_BOARD_SHIFT_LEFT_PX = 40f * context.resources.displayMetrics.density  // density-aware dp offset
     private val LANDSCAPE_BOARD_SHIFT_DOWN_PX = 20f     // Less top shift (landscape is shorter)
 
     // Card size multipliers for different orientations
@@ -335,7 +336,16 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         if (w <= 0 || h <= 0) return
 
+        val density = resources.displayMetrics.density.coerceAtLeast(1f)
+        // aspectFactors is still used for text-paint scaling; card dimensions use raw pixels
+        // so that extreme-aspect compression never shrinks cards below what actually fits.
+        val aspectFactors = UiScaleUtil.calculateBaselineScaleFactors(w / density, h / density)
+
         // Size cards from both width and height limits so narrow landscape layouts fit.
+        // Do NOT pass the axis-compression/expansion factors here: on a phone in landscape
+        // the GameBoardView itself has an extreme aspect ratio, which would make
+        // verticalFactor = 0.5 and artificially halve the already-small height budget,
+        // producing cards that are nearly invisible.
         val widthLimitedCardW = calculateWidthLimitedCardWidth(w)
         val heightLimitedCardW = calculateHeightLimitedCardWidth(h)
 
@@ -347,19 +357,33 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         tableauOffset = baseTableauOffset * spacingScale
         cardRadius = baseCardRadius * spacingScale
 
+        // Scale border and placeholder stroke widths with card size
+        borderPaint.strokeWidth = (cardW * 0.025f).coerceIn(1.5f, 4f)
+        placeholderPaint.strokeWidth = (cardW * 0.05f).coerceIn(2f, 7f)
+
         computeColumnX()
         computeBoardStartY(h)
 
         // Keep pile labels legible across phone/tablet sizes.
         pileLabelPaint.textSize = (cardW * 0.22f).coerceIn(22f, 40f)
+        textPaint.textSize = ((min(w, h) * 0.10f) * aspectFactors.textCompression).coerceIn(28f, 60f)
     }
 
+    /**
+     * Maximum card width derived from the available horizontal space.
+     * Uses the actual view width; no aspect-ratio compression is applied.
+     */
     private fun calculateWidthLimitedCardWidth(viewWidth: Int): Float {
         val usableWidth = viewWidth * BOARD_WIDTH_FRACTION
         val totalPad = baseCardPadding * (columns + 1)
         return ((usableWidth - totalPad) / (columns + 1)) * cardWidthRatio * CARD_SIZE_MULTIPLIER
     }
 
+    /**
+     * Maximum card width derived from the available vertical space.
+     * Uses the actual view height; no aspect-ratio compression is applied so
+     * that landscape phone layouts do not compress cards beyond what fits.
+     */
     private fun calculateHeightLimitedCardWidth(viewHeight: Int): Float {
         val effectiveHeight = viewHeight * if (isLandscape) 0.95f else 0.92f
         val cardHeightSlots = if (isLandscape) 3.60f else 4.85f
@@ -627,9 +651,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
      * Works on hardware-accelerated canvas (no BlurMaskFilter needed).
      */
     private fun drawGlowRing(canvas: Canvas, rect: RectF, basePaint: Paint) {
-        val expansions = floatArrayOf(16f, 11f, 7f, 3f)
-        val alphas     = intArrayOf(55, 110, 175, 255)
-        val strokeWidths = floatArrayOf(5f, 5f, 4f, 3f)
+        // Scale glow ring geometry relative to card width so it looks consistent
+        // across phone (~60px cardW) and tablet (~120px cardW) sizes.
+        val cw = cardW.coerceAtLeast(30f)
+        val expansions   = floatArrayOf(cw * 0.20f, cw * 0.14f, cw * 0.09f, cw * 0.04f)
+        val alphas       = intArrayOf(55, 110, 175, 255)
+        val strokeWidths = floatArrayOf(cw * 0.065f, cw * 0.065f, cw * 0.055f, cw * 0.040f)
         val savedAlpha = basePaint.alpha
 
         for (i in expansions.indices) {
@@ -704,9 +731,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private fun drawLoading(c: Canvas) {
         textPaint.color = Color.GRAY
-        textPaint.textSize = 60f
         c.drawText("Loading Game...", width / 2f, height / 2f, textPaint)
-        textPaint.textSize = cardW * 0.3f
     }
 
     private fun drawTopRow(canvas: Canvas) {
