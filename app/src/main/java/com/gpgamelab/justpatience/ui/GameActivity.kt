@@ -50,24 +50,44 @@ import kotlin.math.sqrt
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
+    private data class WinRewards(
+        val gems: Int,
+        val tickets: Int
+    ) {
+        fun withMultiplier(multiplier: Int): WinRewards {
+            val safeMultiplier = multiplier.coerceAtLeast(1)
+            return copy(gems = gems * safeMultiplier, tickets = tickets * safeMultiplier)
+        }
+    }
+
     private data class WinPopupUiConfig(
         val dialogWidthPercentLandscape: Float = 0.40f,
         val dialogWidthPercentPortrait: Float = 0.95f,
         val dialogHeightPercent: Float = 0.80f,
-        val rewardTopPercent: Float = 0.64f,
-        val rewardBottomPercent: Float = rewardTopPercent + 0.1f,
+        // Portrait reward band (gems position is fine; tickets get an extra nudge below)
+        val rewardTopPercentPortrait: Float = 0.63f,
+        val rewardBottomPercentPortrait: Float = 0.75f,
+        // Landscape reward band: shifted 5 % lower than portrait
+        val rewardTopPercentLandscape: Float = 0.65f,
+        val rewardBottomPercentLandscape: Float = 0.74f,
         val buttonsTopPercent: Float = 0.82f,
         val buttonsBottomPercent: Float = buttonsTopPercent + 0.1f,
         val continueButtonWidthPercent: Float = 0.30f,
         val multiplierButtonWidthPercent: Float = 0.30f,
         val buttonGapDp: Float = 18f,
-        val rewardAmountTextSp: Float = 44f,
+        val rewardAmountTextSp: Float = 20f,
         val buttonTextSpLandscape: Float = 16f,
         val buttonTextSpPortrait: Float = 30f,
-        val rewardAmountToGemGapDp: Float = 40f,
-        val rewardRowMinWidthDp: Float = 160f,
-        val rewardRowMaxWidthDp: Float = 360f,
-        val buttonHorizontalPaddingDp: Float = 30f
+        // Portrait-only adjustment to trim win button text by 10%.
+        val portraitButtonTextScale: Float = 0.9f,
+        // Half-size labels on extreme-aspect devices (ratio > 2.0).
+        val extremeAspectButtonTextScale: Float = 0.5f,
+        // Landscape reward row (gems+tickets image/text) rendered at 50%.
+        val landscapeRewardRowScale: Float = 0.5f,
+        val buttonHorizontalPaddingDp: Float = 30f,
+        // Portrait only: push the ticket group down independently of the gem group (~1–2 % of popup height)
+        val ticketGroupExtraTopDpPortrait: Float = 8f,
+        val ticketGroupExtraTopDpLandscape: Float = 8f
     )
 
     // Single tweak cluster for the custom win popup. Adjust these values instead of
@@ -97,6 +117,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private var gameMenuExpandState = GameMenuBottomSheetFragment.ExpandState()
     private var pendingWinUiAfterAnimation: Boolean = false
     private var gemTotal: Int = 0
+    private var ticketTotal: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,6 +153,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         statsManager = GameStatsManager(applicationContext)
         settingsManager = SettingsManager(applicationContext)
         renderGemHud(gemTotal)
+        renderTicketHud(ticketTotal)
 
         // Launcher starts directly in GameActivity; default behavior is resume-or-new.
         forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
@@ -155,6 +177,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                     settingsManager.getTotalGemsFlow().collect { persistedTotal ->
                         gemTotal = persistedTotal
                         renderGemHud(gemTotal)
+                    }
+                }
+
+                launch {
+                    settingsManager.getTotalTicketsFlow().collect { persistedTotal ->
+                        ticketTotal = persistedTotal
+                        renderTicketHud(ticketTotal)
                     }
                 }
 
@@ -280,6 +309,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         binding.ivGemBag.contentDescription = getString(R.string.gems_count_content_description, safeTotal)
     }
 
+    private fun renderTicketHud(total: Int) {
+        val safeTotal = total.coerceAtLeast(0)
+        binding.tvTicketCount.text = safeTotal.toString()
+        binding.ivTicketIcon.contentDescription = getString(R.string.tickets_count_content_description, safeTotal)
+    }
+
 
     private fun showRestartDialog() {
         AlertDialog.Builder(this)
@@ -294,26 +329,29 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         if (!isWin || isFinishing || isDestroyed || winDialogShowing) return
 
         winDialogShowing = true
-        val baseReward = 10
+        val baseRewards = WinRewards(
+            gems = 10,
+            tickets = if (isPremiumAccount) 50 else 5
+        )
 
         if (isPremiumAccount) {
-            showWinRewardChoiceDialog(baseReward)
+            showWinRewardChoiceDialog(baseRewards)
             return
         }
 
         val shown = adManager.showRewardedInterstitialAd(
-            onCompleted = { showWinRewardChoiceDialog(baseReward) }
+            onCompleted = { showWinRewardChoiceDialog(baseRewards) }
         )
 
         if (!shown) {
             adManager.loadRewardedInterstitialAd()
-            showWinRewardChoiceDialog(baseReward)
+            showWinRewardChoiceDialog(baseRewards)
         }
     }
 
-    private fun showWinRewardChoiceDialog(baseReward: Int) {
+    private fun showWinRewardChoiceDialog(baseRewards: WinRewards) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
-            runOnUiThread { showWinRewardChoiceDialog(baseReward) }
+            runOnUiThread { showWinRewardChoiceDialog(baseRewards) }
             return
         }
 
@@ -326,12 +364,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_win_reward_choice, null)
         val rewardAmount = dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)
+        val ticketRewardAmount = dialogView.findViewById<TextView>(R.id.tv_ticket_reward_amount)
         val continueButton = dialogView.findViewById<Button>(R.id.btn_win_continue)
         val multiplierButton = dialogView.findViewById<Button>(R.id.btn_win_multiplier)
 
         applyWinPopupUiConfig(dialogView, winPopupUiConfig)
 
-        rewardAmount.text = getString(R.string.win_reward_popup_amount, baseReward)
+        rewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.gems)
+        ticketRewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.tickets)
         continueButton.text = getString(R.string.win_reward_popup_continue)
         multiplierButton.text = getString(R.string.win_reward_popup_multiplier, adMultiplier)
 
@@ -343,11 +383,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
         continueButton.setOnClickListener {
             dialog.dismiss()
-            completeWinRewardFlow(baseReward)
+            completeWinRewardFlow(baseRewards)
         }
         multiplierButton.setOnClickListener {
             dialog.dismiss()
-            showWinMultiplierRewardAd(baseReward, adMultiplier)
+            showWinMultiplierRewardAd(baseRewards, adMultiplier)
         }
 
         dialog.setOnShowListener {
@@ -362,24 +402,43 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun applyWinPopupUiConfig(dialogView: View, config: WinPopupUiConfig) {
-        setGuidelinePercent(dialogView, R.id.guideline_reward_top, config.rewardTopPercent)
-        setGuidelinePercent(dialogView, R.id.guideline_reward_bottom, config.rewardBottomPercent)
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        // Pick reward-band guidelines based on orientation.
+        val rewardTop = if (isLandscape) config.rewardTopPercentLandscape else config.rewardTopPercentPortrait
+        val rewardBottom = if (isLandscape) config.rewardBottomPercentLandscape else config.rewardBottomPercentPortrait
+        setGuidelinePercent(dialogView, R.id.guideline_reward_top, rewardTop)
+        setGuidelinePercent(dialogView, R.id.guideline_reward_bottom, rewardBottom)
         setGuidelinePercent(dialogView, R.id.guideline_buttons_top, config.buttonsTopPercent)
         setGuidelinePercent(dialogView, R.id.guideline_buttons_bottom, config.buttonsBottomPercent)
 
-        dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)?.let { rewardText ->
-            rewardText.setTextSize(TypedValue.COMPLEX_UNIT_SP, config.rewardAmountTextSp)
-            (rewardText.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
-                lp.marginEnd = dpToPx(config.rewardAmountToGemGapDp)
-                rewardText.layoutParams = lp
-            }
+        // Apply text size to both reward count labels (image sizing is handled in XML).
+        dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)
+            ?.setTextSize(TypedValue.COMPLEX_UNIT_SP, config.rewardAmountTextSp)
+        dialogView.findViewById<TextView>(R.id.tv_ticket_reward_amount)
+            ?.setTextSize(TypedValue.COMPLEX_UNIT_SP, config.rewardAmountTextSp)
+
+        // Landscape: shrink the entire reward row (images + numbers) by 50%.
+        dialogView.findViewById<LinearLayout>(R.id.layout_reward_row)?.let { rewardRow ->
+            val scale = if (isLandscape) config.landscapeRewardRowScale else 1f
+            rewardRow.scaleX = scale
+            rewardRow.scaleY = scale
         }
 
-        dialogView.findViewById<LinearLayout>(R.id.layout_reward_row)?.let { rewardRow ->
-            (rewardRow.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
-                lp.matchConstraintMinWidth = dpToPx(config.rewardRowMinWidthDp)
-                lp.matchConstraintMaxWidth = dpToPx(config.rewardRowMaxWidthDp)
-                rewardRow.layoutParams = lp
+        // In portrait, nudge the ticket group down independently of the gem group.
+        if (!isLandscape) {
+            dialogView.findViewById<LinearLayout>(R.id.layout_tickets_group)?.let { ticketsGroup ->
+                (ticketsGroup.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                    lp.topMargin = dpToPx(config.ticketGroupExtraTopDpPortrait)
+                    ticketsGroup.layoutParams = lp
+                }
+            }
+        } else {
+            dialogView.findViewById<LinearLayout>(R.id.layout_tickets_group)?.let { ticketsGroup ->
+                (ticketsGroup.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                    lp.topMargin = dpToPx(config.ticketGroupExtraTopDpLandscape)
+                    ticketsGroup.layoutParams = lp
+                }
             }
         }
 
@@ -414,10 +473,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun getWinPopupButtonTextSp(config: WinPopupUiConfig): Float {
-        return if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val baseTextSp = if (isLandscape) {
             config.buttonTextSpLandscape
         } else {
-            config.buttonTextSpPortrait
+            config.buttonTextSpPortrait * config.portraitButtonTextScale
+        }
+
+        val isExtremeAspect = UiScaleUtil.calculateBaselineScaleFactors(this).isExtremeAspect
+        return if (isExtremeAspect) {
+            baseTextSp * config.extremeAspectButtonTextScale
+        } else {
+            baseTextSp
         }
     }
 
@@ -432,17 +499,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
-    private fun showWinMultiplierRewardAd(baseReward: Int, multiplier: Int) {
+    private fun showWinMultiplierRewardAd(baseRewards: WinRewards, multiplier: Int) {
         val shown = adManager.showRewardedAd(
             onFinished = { rewardEarned ->
-                val gemsToAward = if (rewardEarned) baseReward * multiplier else baseReward
-                completeWinRewardFlow(gemsToAward)
+                val rewardsToAward = if (rewardEarned) {
+                    baseRewards.withMultiplier(multiplier)
+                } else {
+                    baseRewards
+                }
+                completeWinRewardFlow(rewardsToAward)
             }
         )
 
         if (!shown) {
             Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
-            completeWinRewardFlow(baseReward)
+            completeWinRewardFlow(baseRewards)
             adManager.loadRewardedAd()
         }
     }
@@ -455,8 +526,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
-    private fun completeWinRewardFlow(gemsToAward: Int) {
-        awardGems(gemsToAward)
+    private fun awardTickets(amount: Int) {
+        ticketTotal = (ticketTotal + amount).coerceAtLeast(0)
+        renderTicketHud(ticketTotal)
+        lifecycleScope.launch {
+            settingsManager.setTotalTickets(ticketTotal)
+        }
+    }
+
+    private fun completeWinRewardFlow(rewardsToAward: WinRewards) {
+        awardGems(rewardsToAward.gems)
+        awardTickets(rewardsToAward.tickets)
         resetControlGroupAdRequirement()
         winCelebrationPlayed = false
         updateOverlayVisibility()
@@ -1310,9 +1390,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val gemSizePx = dpToPx(gemBagBaseDp * textScale)
 
         resizeFrame(binding.ivGemBag, gemSizePx, gemSizePx)
+        resizeFrame(binding.ivTicketIcon, gemSizePx, gemSizePx)
         binding.tvGemCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
+        binding.tvTicketCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
         binding.tvGemCount.minWidth = dpToPx(gemMinWidthBaseDp * widthScale)
+        binding.tvTicketCount.minWidth = dpToPx(gemMinWidthBaseDp * widthScale)
         binding.tvGemCount.setPaddingRelative(
+            dpToPx(6f * widthScale),
+            dpToPx(1f * heightScale),
+            dpToPx(6f * widthScale),
+            dpToPx(1f * heightScale)
+        )
+        binding.tvTicketCount.setPaddingRelative(
             dpToPx(6f * widthScale),
             dpToPx(1f * heightScale),
             dpToPx(6f * widthScale),
@@ -1322,6 +1411,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             lp.topMargin = 0
             lp.marginEnd = dpToPx(6f * widthScale)
             binding.tvGemCount.layoutParams = lp
+        }
+        (binding.tvTicketCount.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            lp.topMargin = 0
+            lp.marginEnd = dpToPx(6f * widthScale)
+            binding.tvTicketCount.layoutParams = lp
+        }
+        (binding.ticketsContainer.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            lp.marginStart = dpToPx(8f * widthScale)
+            binding.ticketsContainer.layoutParams = lp
         }
     }
 
