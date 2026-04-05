@@ -30,6 +30,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatImageButton
 import com.google.android.material.button.MaterialButton
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
@@ -50,6 +52,17 @@ import java.time.LocalDate
 import kotlin.math.sqrt
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
+
+    private enum class HelpControlAction(
+        val storageKey: String,
+        val titleLabel: String
+    ) {
+        UNDO("undo", "UNDO"),
+        REDO("redo", "REDO"),
+        HINT("hint", "HINT"),
+        RESTART("restart", "RESTART"),
+        AUTO("auto", "AUTO")
+    }
 
     private data class WinRewards(
         val gems: Int,
@@ -125,9 +138,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private lateinit var settingsManager: SettingsManager
     private lateinit var rewardPopupDialog: RewardPopupDialog
 
-    // Non-premium users must unlock the grouped move controls once per game via ad.
-    private var isControlGroupAdUnlocked = false
-    private var isControlGroupAdFlowInProgress = false
+    private var helpControlFlowInProgress = false
+    private var couponPendingOnRestartConfirm = false
+    private var pendingCouponTargetView: View? = null
 
     private var winDialogShowing: Boolean = false
     private var winCelebrationPlayed: Boolean = false
@@ -181,17 +194,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
         viewModel.initializeForLaunch(forceNewGameOnLaunch)
 
-        updateOverlayVisibility()
-
         lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 launch {
                     settingsManager.gamePlaySettingsFlow.collect { settings ->
                         isPremiumAccount = settings.premiumAcct
-                        if (isPremiumAccount) {
-                            isControlGroupAdUnlocked = true
-                        }
-                        updateOverlayVisibility()
                     }
                 }
 
@@ -272,26 +279,24 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
 
         // Simple button hookups (if present in layout)
-        binding.btnUndo.setOnClickListener {
-            runAfterControlGroupUnlock { handleUndoClick() }
+        binding.btnUndo.setOnClickListener { buttonView ->
+            onHelpControlClicked(HelpControlAction.UNDO, buttonView) { handleUndoClick() }
         }
-        binding.btnRedo.setOnClickListener {
-            runAfterControlGroupUnlock { handleRedoClick() }
+        binding.btnRedo.setOnClickListener { buttonView ->
+            onHelpControlClicked(HelpControlAction.REDO, buttonView) { handleRedoClick() }
         }
         binding.btnNewGame.setOnClickListener {
-            resetControlGroupAdRequirement()
             winCelebrationPlayed = false
-            updateOverlayVisibility()
             viewModel.startNewGame()
         }
-        findViewById<Button>(R.id.btn_restart).setOnClickListener {
-            runAfterControlGroupUnlock { handleRestartClick() }
+        findViewById<Button>(R.id.btn_restart).setOnClickListener { buttonView ->
+            onHelpControlClicked(HelpControlAction.RESTART, buttonView) { handleRestartClick() }
         }
         findViewById<Button>(R.id.btn_daily_bonus_test)?.setOnClickListener {
             showDailyBonusPreview()
         }
-        findViewById<Button>(R.id.btn_hint)?.setOnClickListener {
-            runAfterControlGroupUnlock {
+        findViewById<Button>(R.id.btn_hint)?.setOnClickListener { buttonView ->
+            onHelpControlClicked(HelpControlAction.HINT, buttonView) {
                 if (!viewModel.showManualHints()) {
                     Toast.makeText(this@GameActivity, R.string.no_hints_available, Toast.LENGTH_SHORT).show()
                 }
@@ -299,7 +304,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
         binding.btnStats.setOnClickListener { showGameMenu() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
-            runAfterControlGroupUnlock {
+            onHelpControlClicked(HelpControlAction.AUTO, buttonView) {
                 buttonView.isEnabled = false
                 lifecycleScope.launch {
                     try {
@@ -343,11 +348,26 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
 
     private fun showRestartDialog() {
+        val restartButton = findViewById<Button>(R.id.btn_restart)
+
         AlertDialog.Builder(this)
             .setTitle(R.string.restart_game_title)
             .setMessage(R.string.restart_game_message)
-            .setPositiveButton(R.string.restart_game_text) { _, _ -> viewModel.restartGame() }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.restart_game_text) { _, _ ->
+                lifecycleScope.launch {
+                    if (couponPendingOnRestartConfirm) {
+                        val targetView = pendingCouponTargetView ?: restartButton
+                        couponPendingOnRestartConfirm = false
+                        pendingCouponTargetView = null
+                        animateAndConsumeHelpCoupon(targetView)
+                    }
+                    viewModel.restartGame()
+                }
+            }
+            .setNegativeButton(android.R.string.cancel) { _, _ ->
+                couponPendingOnRestartConfirm = false
+                pendingCouponTargetView = null
+            }
             .show()
     }
 
@@ -563,9 +583,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private fun completeWinRewardFlow(rewardsToAward: WinRewards) {
         awardGems(rewardsToAward.gems)
         awardTickets(rewardsToAward.tickets)
-        resetControlGroupAdRequirement()
         winCelebrationPlayed = false
-        updateOverlayVisibility()
         viewModel.startNewGame()
     }
 
@@ -582,10 +600,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun showDailyBonusPreview() {
-        showDailyBonusPopup(todayIsoDate = null, previewOnly = true)
+        // Test button now awards rewards for validation runs without consuming daily claim state.
+        showDailyBonusPopup(
+            todayIsoDate = LocalDate.now().toString(),
+            previewOnly = false,
+            persistClaimDate = false
+        )
     }
 
-    private fun showDailyBonusPopup(todayIsoDate: String?, previewOnly: Boolean = false) {
+    private fun showDailyBonusPopup(
+        todayIsoDate: String?,
+        previewOnly: Boolean = false,
+        persistClaimDate: Boolean = true
+    ) {
         val baseRewards = WinRewards(gems = 10, tickets = 20)
 
         val popupModel = RewardPopupDialog.Model(
@@ -619,22 +646,34 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
                 val claimDate = todayIsoDate ?: return@show
                 when (index) {
-                    0 -> claimDailyBonus(baseRewards, claimDate)
-                    1 -> claimDailyBonusWithMultiplier(baseRewards, multiplier = 2, todayIsoDate = claimDate)
+                    0 -> claimDailyBonus(baseRewards, claimDate, persistClaimDate)
+                    1 -> claimDailyBonusWithMultiplier(
+                        baseRewards,
+                        multiplier = 2,
+                        todayIsoDate = claimDate,
+                        persistClaimDate = persistClaimDate
+                    )
                 }
             }
         )
     }
 
-    private fun claimDailyBonus(baseRewards: WinRewards, todayIsoDate: String) {
+    private fun claimDailyBonus(baseRewards: WinRewards, todayIsoDate: String, persistClaimDate: Boolean = true) {
         awardGems(baseRewards.gems)
         awardTickets(baseRewards.tickets)
-        lifecycleScope.launch {
-            settingsManager.setLastDailyBonusDate(todayIsoDate)
+        if (persistClaimDate) {
+            lifecycleScope.launch {
+                settingsManager.setLastDailyBonusDate(todayIsoDate)
+            }
         }
     }
 
-    private fun claimDailyBonusWithMultiplier(baseRewards: WinRewards, multiplier: Int, todayIsoDate: String) {
+    private fun claimDailyBonusWithMultiplier(
+        baseRewards: WinRewards,
+        multiplier: Int,
+        todayIsoDate: String,
+        persistClaimDate: Boolean = true
+    ) {
         val shown = adManager.showRewardedAd(
             onFinished = { rewardEarned ->
                 val rewardsToAward = if (rewardEarned) {
@@ -645,13 +684,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 if (!rewardEarned) {
                     Toast.makeText(this, R.string.daily_bonus_x2_unavailable_fallback, Toast.LENGTH_SHORT).show()
                 }
-                claimDailyBonus(rewardsToAward, todayIsoDate)
+                claimDailyBonus(rewardsToAward, todayIsoDate, persistClaimDate)
             }
         )
 
         if (!shown) {
             Toast.makeText(this, R.string.daily_bonus_x2_unavailable_fallback, Toast.LENGTH_SHORT).show()
-            claimDailyBonus(baseRewards, todayIsoDate)
+            claimDailyBonus(baseRewards, todayIsoDate, persistClaimDate)
             adManager.loadRewardedAd()
         }
     }
@@ -1382,62 +1421,186 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         applyResponsiveControlSizing()
     }
 
-    private fun resetControlGroupAdRequirement() {
-        isControlGroupAdUnlocked = isPremiumAccount
-        isControlGroupAdFlowInProgress = false
-        updateOverlayVisibility()
-    }
+    private fun onHelpControlClicked(control: HelpControlAction, targetView: View?, action: () -> Unit) {
+        if (helpControlFlowInProgress) return
 
-    private fun runAfterControlGroupUnlock(action: () -> Unit) {
-        if (isPremiumAccount || isControlGroupAdUnlocked) {
-            action()
-            return
-        }
+        lifecycleScope.launch {
+            val now = System.currentTimeMillis()
+            val unlockExpiry = settingsManager.getHelpControlUnlockExpiry(control.storageKey)
+            if (unlockExpiry > now) {
+                action()
+                return@launch
+            }
 
-        if (isControlGroupAdFlowInProgress) return
-        isControlGroupAdFlowInProgress = true
-        showControlGroupUnlockAd(action, retriesRemaining = 1)
-    }
+            if (ticketTotal > 0) {
+                when (control) {
+                    HelpControlAction.RESTART -> {
+                        // Restart has confirm/cancel semantics, so consume only on positive confirm.
+                        couponPendingOnRestartConfirm = true
+                        pendingCouponTargetView = targetView
+                        action()
+                        return@launch
+                    }
 
-    private fun showControlGroupUnlockAd(action: () -> Unit, retriesRemaining: Int) {
-        val shown = adManager.showRewardedAd(
-            onFinished = { rewardEarned ->
-                if (rewardEarned) {
-                    isControlGroupAdUnlocked = true
-                    isControlGroupAdFlowInProgress = false
-                    updateOverlayVisibility()
-                    action()
-                    return@showRewardedAd
-                }
-
-                if (retriesRemaining > 0) {
-                    showControlGroupUnlockAd(action, retriesRemaining - 1)
-                } else {
-                    isControlGroupAdFlowInProgress = false
-                    Toast.makeText(this, R.string.control_group_ad_required, Toast.LENGTH_SHORT).show()
-                    adManager.loadRewardedAd()
+                    else -> {
+                        animateAndConsumeHelpCoupon(targetView)
+                        action()
+                        return@launch
+                    }
                 }
             }
+
+            showNoCouponsDialog(control, action)
+        }
+    }
+
+    private suspend fun consumeHelpCoupon() {
+        ticketTotal = (ticketTotal - 1).coerceAtLeast(0)
+        renderTicketHud(ticketTotal)
+        settingsManager.setTotalTickets(ticketTotal)
+    }
+
+    private suspend fun animateAndConsumeHelpCoupon(targetView: View?) {
+        val boardView = binding.gameBoardView
+        val boardLocation = IntArray(2)
+        boardView.getLocationOnScreen(boardLocation)
+
+        val sourceRect = clampRectToBoardBounds(
+            viewRectInBoardSpace(binding.ivTicketIcon, boardLocation),
+            boardView
         )
-
-        if (!shown) {
-            if (retriesRemaining > 0) {
-                adManager.loadRewardedAd()
-                binding.root.postDelayed(
-                    { showControlGroupUnlockAd(action, retriesRemaining - 1) },
-                    350L
-                )
-            } else {
-                isControlGroupAdFlowInProgress = false
-                Toast.makeText(this, R.string.control_group_ad_required, Toast.LENGTH_SHORT).show()
-            }
+        val targetRect = targetView?.let {
+            clampRectToBoardBounds(viewRectInBoardSpace(it, boardLocation), boardView)
         }
+            ?: android.graphics.RectF(
+                boardView.width * 0.5f - sourceRect.width() * 0.5f,
+                boardView.height * 0.5f - sourceRect.height() * 0.5f,
+                boardView.width * 0.5f + sourceRect.width() * 0.5f,
+                boardView.height * 0.5f + sourceRect.height() * 0.5f
+            )
+
+        boardView.scheduleCouponAnimation(sourceRect, targetRect)
+
+        // Keep deduction synced with full coupon animation runtime, including midpoint pause.
+        kotlinx.coroutines.delay(CouponFlightAnimator.TOTAL_RUNTIME_MS + 40L)
+        consumeHelpCoupon()
     }
 
+    private fun viewRectInBoardSpace(
+        view: View,
+        boardLocationOnScreen: IntArray
+    ): android.graphics.RectF {
+        val viewLocation = IntArray(2)
+        view.getLocationOnScreen(viewLocation)
+        val left = (viewLocation[0] - boardLocationOnScreen[0]).toFloat()
+        val top = (viewLocation[1] - boardLocationOnScreen[1]).toFloat()
+        return android.graphics.RectF(
+            left,
+            top,
+            left + view.width,
+            top + view.height
+        )
+    }
 
-    private fun updateOverlayVisibility() {
-        findViewById<ImageView>(R.id.group_ad_overlay)?.visibility =
-            if (isPremiumAccount || isControlGroupAdUnlocked) View.GONE else View.VISIBLE
+    private fun clampRectToBoardBounds(
+        rect: android.graphics.RectF,
+        boardView: View,
+        insetPx: Float = 4f
+    ): android.graphics.RectF {
+        val boardW = boardView.width.toFloat().coerceAtLeast(1f)
+        val boardH = boardView.height.toFloat().coerceAtLeast(1f)
+
+        val maxHalfW = (boardW * 0.5f - insetPx).coerceAtLeast(1f)
+        val maxHalfH = (boardH * 0.5f - insetPx).coerceAtLeast(1f)
+        val halfW = (rect.width() * 0.5f).coerceAtLeast(1f).coerceAtMost(maxHalfW)
+        val halfH = (rect.height() * 0.5f).coerceAtLeast(1f).coerceAtMost(maxHalfH)
+
+        val minX = (halfW + insetPx).coerceAtMost(boardW - insetPx)
+        val maxX = (boardW - halfW - insetPx).coerceAtLeast(insetPx)
+        val minY = (halfH + insetPx).coerceAtMost(boardH - insetPx)
+        val maxY = (boardH - halfH - insetPx).coerceAtLeast(insetPx)
+
+        val centerX = rect.centerX().coerceIn(minX, maxX)
+        val centerY = rect.centerY().coerceIn(minY, maxY)
+
+        return android.graphics.RectF(
+            centerX - halfW,
+            centerY - halfH,
+            centerX + halfW,
+            centerY + halfH
+        )
+    }
+
+    private fun showNoCouponsDialog(control: HelpControlAction, action: () -> Unit) {
+        val unlockHours = if (isPremiumAccount) 10 else 4
+        val gemCost = if (isPremiumAccount) 1 else 3
+        val dialogView = layoutInflater.inflate(R.layout.dialog_help_coupon_unlock, null)
+        val titleView = dialogView.findViewById<TextView>(R.id.tv_help_unlock_title)
+        val descriptionView = dialogView.findViewById<TextView>(R.id.tv_help_unlock_description)
+        val gemButton = dialogView.findViewById<AppCompatButton>(R.id.btn_unlock_with_gems)
+        val adButton = dialogView.findViewById<AppCompatImageButton>(R.id.btn_unlock_with_ad)
+
+        titleView.text = control.titleLabel
+        descriptionView.text = getString(
+            R.string.help_unlock_description_format,
+            control.titleLabel,
+            unlockHours
+        )
+        gemButton.text = getString(R.string.help_unlock_gems_format, gemCost)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        gemButton.setOnClickListener {
+            if (gemTotal < gemCost) {
+                Toast.makeText(this, R.string.help_unlock_not_enough_gems, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                helpControlFlowInProgress = true
+                awardGems(-gemCost)
+                unlockHelpControl(control, unlockHours)
+                helpControlFlowInProgress = false
+                dialog.dismiss()
+                action()
+            }
+        }
+
+        adButton.setOnClickListener {
+            if (helpControlFlowInProgress) return@setOnClickListener
+            helpControlFlowInProgress = true
+            val shown = adManager.showRewardedAd(
+                onFinished = { rewardEarned ->
+                    lifecycleScope.launch {
+                        helpControlFlowInProgress = false
+                        if (rewardEarned) {
+                            unlockHelpControl(control, unlockHours)
+                            dialog.dismiss()
+                            action()
+                        } else {
+                            Toast.makeText(this@GameActivity, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            )
+
+            if (!shown) {
+                helpControlFlowInProgress = false
+                adManager.loadRewardedAd()
+                Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        dialog.show()
+    }
+
+    private suspend fun unlockHelpControl(control: HelpControlAction, hours: Int) {
+        val durationMillis = hours.coerceAtLeast(1) * 60L * 60L * 1000L
+        val expiry = System.currentTimeMillis() + durationMillis
+        settingsManager.setHelpControlUnlockExpiry(control.storageKey, expiry)
     }
 
     private fun handleUndoClick() {
@@ -1614,13 +1777,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             dpToPx((if (isLandscape) 4f else 2f) * heightScale)
         )
 
-        val overlaySize = dpToPx(14f * textScale)
-        findViewById<View?>(R.id.group_ad_overlay)?.let { resizeFrame(it, overlaySize, overlaySize) }
-        (findViewById<View?>(R.id.group_ad_overlay)?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
-            lp.marginStart = dpToPx(1f * widthScale)
-            lp.topMargin = dpToPx(1f * heightScale)
-            findViewById<View>(R.id.group_ad_overlay).layoutParams = lp
-        }
 
         if (binding.btnStats is MaterialButton) {
             binding.btnStats.iconSize = dpToPx(48f * textScale)

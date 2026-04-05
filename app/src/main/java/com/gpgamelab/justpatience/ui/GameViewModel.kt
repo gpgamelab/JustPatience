@@ -286,7 +286,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun restartGame() {
         finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
-        val initial = initialGameState ?: return
+        val initial = initialGameState
+        if (initial == null) {
+            undoStack.clear()
+            redoStack.clear()
+            currentHandRecorded = false
+            viewModelScope.launch {
+                val newGame = controller.newGameWithClearHistory()
+                initialGameState = newGame
+                _game.value = newGame
+                resetTimerForNewHand()
+                updateUndoRedoState()
+                saveGame()
+            }
+            return
+        }
         undoStack.clear()
         redoStack.clear()
         _game.value = initial
@@ -1011,6 +1025,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (!saved.isNullOrEmpty()) {
                 val savedGame = gson.fromJson(saved, Game::class.java)
                 if (savedGame.status == GameStatus.IN_PROGRESS) {
+                    // Keep a restart anchor even when resuming from persisted state.
+                    initialGameState = savedGame
                     _game.value = savedGame
                     gameTime.value = savedGame.savedGameTime
                     hasRegisteredFirstMove = savedGame.savedGameTime > 0

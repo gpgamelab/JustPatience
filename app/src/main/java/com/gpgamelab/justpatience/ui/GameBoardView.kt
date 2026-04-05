@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
@@ -146,6 +147,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     // single-click glow state (shows all valid destinations simultaneously)
     private var singleClickGlowState: SingleClickGlowState? = null
 
+    // coupon flight animation state
+    private val couponFlightAnimator = CouponFlightAnimator()
+    private var couponDrawable: android.graphics.drawable.Drawable? = null
+
     private val hintGlowSourcePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ContextCompat.getColor(context, R.color.hint_glow_source_color)
         style = Paint.Style.STROKE
@@ -162,6 +167,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         updateOffsetsForOrientation()
         loadTabletopImage()
+        // Initialize coupon drawable
+        couponDrawable = ContextCompat.getDrawable(context, R.drawable.ticket_yellow_on_green_768x384)
     }
 
     private fun updateOffsetsForOrientation() {
@@ -514,6 +521,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         drawSingleClickGlows(canvas)
         drawDragGhost(canvas)
         drawAnimatedCard(canvas)
+        drawCouponFlight(canvas)
     }
 
     private fun drawTabletop(canvas: Canvas) {
@@ -623,6 +631,57 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             4f * t * t * t
         } else {
             1f - ((-2f * t + 2f) * (-2f * t + 2f) * (-2f * t + 2f)) / 2f
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Coupon flight animation
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Schedule a coupon flight animation from the ticket icon to a target button.
+     * Call from GameActivity when a coupon is about to be consumed.
+     */
+    fun scheduleCouponAnimation(sourceRect: RectF, targetRect: RectF) {
+        val landscapeMinArcPx = if (isLandscape) {
+            val boardHeight = height.toFloat().coerceAtLeast(1f)
+            // Force a theatrical dip into the board even for short control-to-control hops.
+            // Keep this tied to board height (not card height) so it remains clearly visible.
+            (boardHeight * 0.45f).coerceIn(cardH * 1.5f, boardHeight * 0.60f)
+        } else {
+            0f
+        }
+
+        val landscapeControlPoint = if (isLandscape) {
+            val waste = getWasteRect()
+            // Route toward waste area first, then come back to the selected helper button.
+            val controlX = waste.centerX().coerceIn(cardW * 0.5f, width - cardW * 0.5f)
+            val controlY = (waste.centerY() + cardH * 0.9f).coerceIn(cardH * 0.5f, height - cardH * 0.5f)
+            PointF(controlX, controlY)
+        } else {
+            null
+        }
+
+        couponFlightAnimator.scheduleCouponAnimation(
+            sourceRect,
+            targetRect,
+            isLandscape = isLandscape,
+            landscapeMinArcPx = landscapeMinArcPx,
+            controlPoint = landscapeControlPoint
+        )
+        postInvalidateOnAnimation()
+    }
+
+    private fun drawCouponFlight(canvas: Canvas) {
+        if (!couponFlightAnimator.isAnimating()) return
+
+        val wasAnimating = couponFlightAnimator.isAnimating()
+        couponFlightAnimator.drawAnimatedCoupon(canvas, couponDrawable)
+        val isAnimatingNow = couponFlightAnimator.isAnimating()
+
+        // Continue while active; when it just finished, invalidate once more to clear last frame.
+        if (isAnimatingNow || (wasAnimating && !isAnimatingNow)) {
+            postInvalidateOnAnimation()
         }
     }
 
@@ -1254,7 +1313,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                         }
                     }
 
-                    // 2️⃣ TABLEAU DROP (only if foundation failed)
+                    // 2️⃣ TABLEU DROP (only if foundation failed)
                     if (!moveSucceeded) {
                         val startY = getTableauStartY()
 

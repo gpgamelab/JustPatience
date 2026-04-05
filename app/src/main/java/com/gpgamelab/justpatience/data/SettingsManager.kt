@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
@@ -342,6 +343,23 @@ class SettingsManager(private val context: Context) {
     suspend fun setLastDailyBonusDate(isoDate: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_DAILY_BONUS_DATE] = isoDate.trim()
+        }
+    }
+
+    private fun helpControlUnlockKey(controlId: String) =
+        longPreferencesKey("help_control_unlock_${controlId.lowercase()}")
+
+    suspend fun getHelpControlUnlockExpiry(controlId: String): Long {
+        return try {
+            dataStore.data.first()[helpControlUnlockKey(controlId)] ?: 0L
+        } catch (_: Exception) {
+            0L
+        }
+    }
+
+    suspend fun setHelpControlUnlockExpiry(controlId: String, expiryEpochMillis: Long) {
+        dataStore.edit { preferences ->
+            preferences[helpControlUnlockKey(controlId)] = expiryEpochMillis.coerceAtLeast(0L)
         }
     }
 
