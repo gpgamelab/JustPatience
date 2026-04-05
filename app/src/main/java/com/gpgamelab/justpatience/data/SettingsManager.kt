@@ -52,6 +52,7 @@ class SettingsManager(private val context: Context) {
         val SAVED_GAME_STATE_JSON = stringPreferencesKey("saved_game_state_json")
         val TOTAL_GEMS = intPreferencesKey("total_gems")
         val TOTAL_TICKETS = intPreferencesKey("total_tickets")
+        val LAST_DAILY_BONUS_DATE = stringPreferencesKey("last_daily_bonus_date")
 
         // Game Play Settings
         val DRAW_SIZE = intPreferencesKey("draw_size")                          // 1 or 3
@@ -317,6 +318,30 @@ class SettingsManager(private val context: Context) {
     suspend fun setTotalTickets(total: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.TOTAL_TICKETS] = total.coerceAtLeast(0)
+        }
+    }
+
+    fun getLastDailyBonusDateFlow(): Flow<String?> = dataStore.data
+        .map { preferences -> preferences[PreferencesKeys.LAST_DAILY_BONUS_DATE] }
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(null)
+            } else {
+                throw exception
+            }
+        }
+
+    suspend fun getLastDailyBonusDate(): String? {
+        return try {
+            dataStore.data.first()[PreferencesKeys.LAST_DAILY_BONUS_DATE]
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    suspend fun setLastDailyBonusDate(isoDate: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_DAILY_BONUS_DATE] = isoDate.trim()
         }
     }
 

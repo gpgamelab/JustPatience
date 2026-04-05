@@ -54,6 +54,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/tv_reward_popup_title"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fontFamily="sans-serif-black"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/white"
+        android:textSize="34sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/guideline_reward_top"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Daily Bonus"
+        tools:visibility="visible" />
+
     <!--
          Reward row: two vertical item groups side by side.
          Each group: image on top, count number below overlapping the bottom of the image.
@@ -173,6 +191,4 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 

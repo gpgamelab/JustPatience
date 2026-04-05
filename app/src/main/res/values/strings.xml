@@ -105,6 +105,12 @@
     <string name="win_reward_popup_continue">CONTINUE</string>
     <string name="win_reward_popup_multiplier">x%1$d Reward</string>
     <string name="win_reward_popup_multiplier_preview">x2 Reward</string>
+    <string name="daily_bonus_title">Daily Bonus</string>
+    <string name="daily_bonus_claim">Claim</string>
+    <string name="daily_bonus_x2">x2 Reward</string>
+    <string name="daily_bonus_x2_unavailable_fallback">x2 reward unavailable. Base daily bonus claimed.</string>
+    <string name="daily_bonus_test_button">Daily Bonus Test</string>
+    <string name="daily_bonus_preview_message">Daily bonus preview only. No rewards were granted.</string>
     <string name="no_saved_game_to_continue">No saved game to continue.</string>
 
     <string name="switch_to_register">Don\'t have an account? Register</string>

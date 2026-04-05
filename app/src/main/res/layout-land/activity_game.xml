@@ -139,6 +139,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/game_info_panel" />
 
+    <Button
+        android:id="@+id/btn_daily_bonus_test"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/daily_bonus_test_button"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="@id/game_board_view"
+        app:layout_constraintStart_toStartOf="@id/game_board_view"
+        app:strokeColor="@color/secondary_button_color" />
+
     <!-- 3. Control Buttons Panel (Right Side) -->
     <LinearLayout
         android:id="@+id/control_buttons_layout"
