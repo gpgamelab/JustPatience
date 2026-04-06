@@ -320,7 +320,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
 
         applyResponsiveControlSizing()
-        maybeShowDailyBonusOnFirstLaunch(savedInstanceState)
+        maybeShowDailyBonusOnFirstLaunch()
     }
 
     @SuppressLint("DefaultLocale")
@@ -587,14 +587,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         viewModel.startNewGame()
     }
 
-    private fun maybeShowDailyBonusOnFirstLaunch(savedInstanceState: Bundle?) {
-        if (savedInstanceState != null || dailyBonusPromptShownThisLaunch) return
-        dailyBonusPromptShownThisLaunch = true
+    private fun maybeShowDailyBonusOnFirstLaunch() {
+        if (dailyBonusPromptShownThisLaunch) return
 
         lifecycleScope.launch {
-            val today = LocalDate.now().toString()
+            val today = currentUtcIsoDate()
             val lastClaimDate = settingsManager.getLastDailyBonusDate()
-            if (lastClaimDate == today || isFinishing || isDestroyed) return@launch
+            if (lastClaimDate == today) return@launch
             showDailyBonusPopup(today)
         }
     }
@@ -602,7 +601,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private fun showDailyBonusPreview() {
         // Test button now awards rewards for validation runs without consuming daily claim state.
         showDailyBonusPopup(
-            todayIsoDate = LocalDate.now().toString(),
+            todayIsoDate = currentUtcIsoDate(),
             previewOnly = false,
             persistClaimDate = false
         )
@@ -613,6 +612,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         previewOnly: Boolean = false,
         persistClaimDate: Boolean = true
     ) {
+        if (isFinishing || isDestroyed) return
+
         val baseRewards = WinRewards(gems = 10, tickets = 20)
 
         val popupModel = RewardPopupDialog.Model(
@@ -662,11 +663,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         awardGems(baseRewards.gems)
         awardTickets(baseRewards.tickets)
         if (persistClaimDate) {
+            dailyBonusPromptShownThisLaunch = true
+        }
+        if (persistClaimDate) {
             lifecycleScope.launch {
                 settingsManager.setLastDailyBonusDate(todayIsoDate)
             }
         }
     }
+
+    private fun currentUtcIsoDate(): String = LocalDate.now(java.time.ZoneOffset.UTC).toString()
 
     private fun claimDailyBonusWithMultiplier(
         baseRewards: WinRewards,
