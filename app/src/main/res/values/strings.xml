@@ -247,8 +247,6 @@ Locale: %7$s</string>
     <string name="game_menu_haptics_with_value">Haptics: %1$s</string>
     <string name="game_menu_tap_to_move">Tap to Move</string>
     <string name="game_menu_tap_to_move_with_value">Tap to Move: %1$s</string>
-    <string name="game_menu_full_screen">Full Screen</string>
-    <string name="game_menu_full_screen_with_value">Full Screen: %1$s</string>
     <string name="game_menu_exit_app">Exit App</string>
 
     <string name="auto_move_button_text">Auto</string>
@@ -290,8 +288,11 @@ Locale: %7$s</string>
         <item quantity="one">%d card</item>
         <item quantity="other">%d cards</item>
     </plurals>
-    <string name="recycle_remaining_format">%1$d remaining</string>
-    <string name="recycle_remaining_unlimited">Unlimited</string>
+    <string name="stock_draw_label_line_2">Draw</string>
+    <string name="recycle_remaining_format">%1$d recycles</string>
+    <string name="recycle_remaining_unlimited">unlimited</string>
+    <string name="recycle_remaining_unlimited_line_2">recycles</string>
+    <string name="recycle_remaining_limited_line_2">remaining</string>
 
     <string name="stats_summary_title">Statistics Summary</string>
     <string name="stats_summary_draw_one">1 Card</string>

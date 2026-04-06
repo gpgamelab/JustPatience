@@ -105,6 +105,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val baseCardRadius = 20f
     private val baseCardPadding = 16f
     private val baseTableauOffset = 40f
+    private val LANDSCAPE_TOP_PILE_SHIFT_RATIO = 0.22f
+    private val LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO = 0.22f
+    private val PORTRAIT_TOP_PILE_SHIFT_RATIO = 0.10f
 
     private var boardStartY = 0f
 
@@ -428,20 +431,23 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun getStockRect(): RectF {
         if (!isLandscape) {
             val topY = getTopRowY()
+            val y = topY + topPileVerticalShiftPx()
             // Mirrored: stock is at the far-right column (col 6); Classic: col 0
             val x = if (isMirrored) columnX[6] else columnX[0]
-            return RectF(x, topY, x + cardW, topY + cardH)
+            return RectF(x, y, x + cardW, y + cardH)
         }
 
         // Landscape: stock is outside the tableau columns
         val foundationRect = getFoundationRect(0)
-        val y = foundationRect.top
+        val y = foundationRect.top + topPileVerticalShiftPx()
+        // Use a full card-width gap between the outer column and the tableau (more breathing room).
+        val landscapeOuterGap = cardW
         val x = if (isMirrored) {
             // Mirrored: stock to the RIGHT of tableau
-            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + cardPadding
+            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
         } else {
             // Classic: stock to the LEFT of tableau
-            (columnX.firstOrNull() ?: cardPadding) - cardW - cardPadding
+            (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
         }
         return RectF(x, y, x + cardW, y + cardH)
     }
@@ -449,20 +455,23 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun getWasteRect(): RectF {
         if (!isLandscape) {
             val topY = getTopRowY()
+            val y = topY + topPileVerticalShiftPx()
             // Mirrored: waste is at col 5; Classic: col 1
             val x = if (isMirrored) columnX[5] else columnX[1]
-            return RectF(x, topY, x + cardW, topY + cardH)
+            return RectF(x, y, x + cardW, y + cardH)
         }
 
         // Landscape: waste is outside the tableau columns
         val foundationRect = getFoundationRect(1)
-        val y = foundationRect.top
+        val y = foundationRect.top + topPileVerticalShiftPx() + (cardH * LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO)
+        // Use a full card-width gap between the outer column and the tableau (more breathing room).
+        val landscapeOuterGap = cardW
         val x = if (isMirrored) {
             // Mirrored: waste to the RIGHT of tableau (same X column as mirrored stock)
-            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + cardPadding
+            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
         } else {
             // Classic: waste to the LEFT of tableau (same X column as classic stock)
-            (columnX.firstOrNull() ?: cardPadding) - cardW - cardPadding
+            (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
         }
         return RectF(x, y, x + cardW, y + cardH)
     }
@@ -476,12 +485,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
 
         // Landscape: foundations are outside the tableau columns
+        // Use a full card-width gap between the tableau and the outer column (more breathing room).
+        val landscapeOuterGap = cardW
         val x = if (isMirrored) {
             // Mirrored: foundations to the LEFT of tableau
-            (columnX.firstOrNull() ?: cardPadding) - cardW - cardPadding
+            (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
         } else {
             // Classic: foundations to the RIGHT of tableau
-            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + cardPadding
+            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
         }
 
         // Y position: vertically stacked with equal gaps (same formula for both layouts)
@@ -837,18 +848,30 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private fun drawTopPileLabels(canvas: Canvas, stockRect: RectF, wasteRect: RectF) {
         val drawCount = viewModel.getDrawCountLabelValue()
-        val drawLabel = resources.getQuantityString(R.plurals.stock_draw_label, drawCount, drawCount)
+        val drawTopLine = resources.getQuantityString(R.plurals.stock_draw_label, drawCount, drawCount)
+        val drawLines = listOf(drawTopLine, context.getString(R.string.stock_draw_label_line_2))
 
         val remainingRecycles = viewModel.getRemainingRecycleCount()
-        val recycleLabel = if (remainingRecycles == null) {
-            context.getString(R.string.recycle_remaining_unlimited)
+        val recycleLines = if (remainingRecycles == null) {
+            listOf(
+                context.getString(R.string.recycle_remaining_unlimited),
+                context.getString(R.string.recycle_remaining_unlimited_line_2)
+            )
         } else {
-            context.getString(R.string.recycle_remaining_format, remainingRecycles)
+            listOf(
+                context.getString(R.string.recycle_remaining_format, remainingRecycles),
+                context.getString(R.string.recycle_remaining_limited_line_2)
+            )
         }
 
-        drawLabelAboveRect(canvas, stockRect, drawLabel)
+        drawLabelAboveRect(canvas, stockRect, drawLines)
         val recycleLabelColor = if (remainingRecycles == 0) Color.RED else Color.WHITE
-        drawLabelAboveRect(canvas, wasteRect, recycleLabel, recycleLabelColor)
+        drawLabelAboveRect(canvas, wasteRect, recycleLines, recycleLabelColor)
+    }
+
+    private fun topPileVerticalShiftPx(): Float {
+        val ratio = if (isLandscape) LANDSCAPE_TOP_PILE_SHIFT_RATIO else PORTRAIT_TOP_PILE_SHIFT_RATIO
+        return cardH * ratio
     }
 
     private fun drawEmptyStockPlaceholder(canvas: Canvas, rect: RectF) {
@@ -875,12 +898,26 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return remainingRecycles == null || remainingRecycles > 0
     }
 
-    private fun drawLabelAboveRect(canvas: Canvas, rect: RectF, label: String, color: Int = Color.WHITE) {
+    private fun drawLabelAboveRect(canvas: Canvas, rect: RectF, lines: List<String>, color: Int = Color.WHITE) {
+        if (lines.isEmpty()) return
+
         val density = resources.displayMetrics.density
-        val labelBottomY = (rect.top - (6f * density)).coerceAtLeast(pileLabelPaint.textSize + 2f)
+        val lineSpacing = 2f * density
+        val fontMetrics = pileLabelPaint.fontMetrics
+        val lineHeight = (fontMetrics.descent - fontMetrics.ascent).coerceAtLeast(1f)
+        val totalTextHeight = lines.size * lineHeight + (lines.size - 1) * lineSpacing
+        val minBottomBaseline = (-fontMetrics.ascent) + totalTextHeight - lineHeight + 2f
+        val labelBottomY = (rect.top - (6f * density)).coerceAtLeast(minBottomBaseline)
+
         val previousColor = pileLabelPaint.color
         pileLabelPaint.color = color
-        canvas.drawText(label, rect.centerX(), labelBottomY, pileLabelPaint)
+
+        var baseline = labelBottomY - (lines.size - 1) * (lineHeight + lineSpacing)
+        lines.forEach { line ->
+            canvas.drawText(line, rect.centerX(), baseline, pileLabelPaint)
+            baseline += lineHeight + lineSpacing
+        }
+
         pileLabelPaint.color = previousColor
     }
 

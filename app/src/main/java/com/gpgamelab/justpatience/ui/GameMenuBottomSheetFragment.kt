@@ -50,7 +50,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuAutoCompleteToggle()
         fun onGameMenuHapticsToggle()
         fun onGameMenuTapToMoveToggle()
-        fun onGameMenuFullScreenToggle()
         fun onGameMenuBoardLayout()
         fun onGameMenuScoreMethod()
         fun onGameMenuFoundationToTableauToggle()
@@ -93,7 +92,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentAutoComplete = arguments?.getBoolean(ARG_CURRENT_AUTO_COMPLETE, true) ?: true
         val currentHaptics = arguments?.getBoolean(ARG_CURRENT_HAPTICS, false) ?: false
         val currentTapToMove = arguments?.getBoolean(ARG_CURRENT_TAP_TO_MOVE, true) ?: true
-        val currentFullScreen = arguments?.getBoolean(ARG_CURRENT_FULL_SCREEN, false) ?: false
         val currentScoreMethod = arguments?.getString(ARG_CURRENT_SCORE_METHOD) ?: "windows"
         val currentFoundationToTableau = arguments?.getBoolean(ARG_CURRENT_FOUNDATION_TO_TABLEAU, false) ?: false
         val currentPremiumAcct = arguments?.getBoolean(ARG_CURRENT_PREMIUM_ACCT, false) ?: false
@@ -165,10 +163,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<TextView>(R.id.menu_advanced_tap_to_move_text).text = getString(
             R.string.game_menu_tap_to_move_with_value,
             if (currentTapToMove) stateEnabled else stateDisabled
-        )
-        view.findViewById<TextView>(R.id.menu_advanced_full_screen_text).text = getString(
-            R.string.game_menu_full_screen_with_value,
-            if (currentFullScreen) stateEnabled else stateDisabled
         )
         val scoreMethodLabel = when (currentScoreMethod) {
             "vegas"            -> getString(R.string.score_method_vegas)
@@ -326,9 +320,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_advanced_tap_to_move_row).setOnClickListener {
             dismissAndRun { host.onGameMenuTapToMoveToggle() }
         }
-        view.findViewById<View>(R.id.menu_advanced_full_screen_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuFullScreenToggle() }
-        }
 
         // Board layout popup
         view.findViewById<View>(R.id.menu_advanced_board_layout_row).setOnClickListener {
@@ -432,7 +423,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_AUTO_COMPLETE = "arg_current_auto_complete"
         private const val ARG_CURRENT_HAPTICS = "arg_current_haptics"
         private const val ARG_CURRENT_TAP_TO_MOVE = "arg_current_tap_to_move"
-        private const val ARG_CURRENT_FULL_SCREEN = "arg_current_full_screen"
         private const val ARG_CURRENT_SCORE_METHOD = "arg_current_score_method"
         private const val ARG_CURRENT_FOUNDATION_TO_TABLEAU = "arg_current_foundation_to_tableau"
         private const val ARG_CURRENT_PREMIUM_ACCT = "arg_current_premium_acct"
@@ -457,7 +447,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentAutoComplete: Boolean = true,
             currentHaptics: Boolean = false,
             currentTapToMove: Boolean = true,
-            currentFullScreen: Boolean = false,
             currentScoreMethod: String = "windows",
             currentFoundationToTableau: Boolean = false,
             currentPremiumAcct: Boolean = false
@@ -485,7 +474,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_CURRENT_AUTO_COMPLETE, currentAutoComplete)
                     putBoolean(ARG_CURRENT_HAPTICS, currentHaptics)
                     putBoolean(ARG_CURRENT_TAP_TO_MOVE, currentTapToMove)
-                    putBoolean(ARG_CURRENT_FULL_SCREEN, currentFullScreen)
                     putString(ARG_CURRENT_SCORE_METHOD, currentScoreMethod)
                     putBoolean(ARG_CURRENT_FOUNDATION_TO_TABLEAU, currentFoundationToTableau)
                     putBoolean(ARG_CURRENT_PREMIUM_ACCT, currentPremiumAcct)

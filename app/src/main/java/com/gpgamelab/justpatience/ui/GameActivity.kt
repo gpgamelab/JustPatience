@@ -28,6 +28,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.appcompat.widget.AppCompatButton
@@ -157,6 +160,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         super.onCreate(savedInstanceState)
         binding = ActivityGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyImmersiveFullscreen()
 
         // Scale the bottom control-button row (and info panel) vertically using the
         // raw baseline factor – no extreme-aspect correction – so portrait phones get
@@ -726,7 +730,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentAutoComplete = currentSettings.autoComplete,
                 currentHaptics = currentSettings.haptics,
                 currentTapToMove = currentSettings.tapToMove,
-                currentFullScreen = currentSettings.fullScreen,
                 currentScoreMethod = currentSettings.scoreMethod,
                 currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag,
                 currentPremiumAcct = currentSettings.premiumAcct
@@ -1061,21 +1064,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
-    override fun onGameMenuFullScreenToggle() {
-        lifecycleScope.launch {
-            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
-            showEnableDisableDialog(
-                title = getString(R.string.game_menu_full_screen),
-                enabled = currentSettings.fullScreen
-            ) { enabled ->
-                lifecycleScope.launch {
-                    val latest = settingsManager.gamePlaySettingsFlow.first()
-                    settingsManager.saveGamePlaySettings(latest.copy(fullScreen = enabled))
-                }
-            }
-        }
-    }
-
     override fun onGameMenuBoardLayout() {
         lifecycleScope.launch {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
@@ -1403,8 +1391,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     override fun onResume() {
         super.onResume()
+        applyImmersiveFullscreen()
         // Player has returned – restart the hint inactivity countdown from scratch.
         viewModel.resumeHintTimerAfterNonPlayerActivity()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) applyImmersiveFullscreen()
     }
 
     override fun onPause() {
@@ -1424,7 +1418,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        applyImmersiveFullscreen()
         applyResponsiveControlSizing()
+    }
+
+    private fun applyImmersiveFullscreen() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.hide(WindowInsetsCompat.Type.systemBars())
     }
 
     private fun onHelpControlClicked(control: HelpControlAction, targetView: View?, action: () -> Unit) {
