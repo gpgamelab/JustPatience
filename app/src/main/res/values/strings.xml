@@ -109,8 +109,6 @@
     <string name="daily_bonus_claim">Claim</string>
     <string name="daily_bonus_x2">x2 Reward</string>
     <string name="daily_bonus_x2_unavailable_fallback">x2 reward unavailable. Base daily bonus claimed.</string>
-    <string name="daily_bonus_test_button">Daily Bonus Test</string>
-    <string name="daily_bonus_preview_message">Daily bonus preview only. No rewards were granted.</string>
     <string name="no_saved_game_to_continue">No saved game to continue.</string>
     <string name="help_unlock_description_format">You have no more Help Coupons. Your options are: Spend Gems, Watch an AD. Either will unlock %1$s for the next %2$d hours.</string>
     <string name="help_unlock_gems_format">%1$d gems</string>

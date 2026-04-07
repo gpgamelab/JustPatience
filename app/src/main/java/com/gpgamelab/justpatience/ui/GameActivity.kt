@@ -297,9 +297,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         findViewById<Button>(R.id.btn_restart).setOnClickListener { buttonView ->
             onHelpControlClicked(HelpControlAction.RESTART, buttonView) { handleRestartClick() }
         }
-        findViewById<Button>(R.id.btn_daily_bonus_test)?.setOnClickListener {
-            showDailyBonusPreview()
-        }
         findViewById<Button>(R.id.btn_hint)?.setOnClickListener { buttonView ->
             onHelpControlClicked(HelpControlAction.HINT, buttonView) {
                 if (!viewModel.showManualHints()) {
@@ -603,20 +600,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
-    private fun showDailyBonusPreview() {
-        // Test button now awards rewards for validation runs without consuming daily claim state.
-        showDailyBonusPopup(
-            todayIsoDate = currentUtcIsoDate(),
-            previewOnly = false,
-            persistClaimDate = false
-        )
-    }
-
-    private fun showDailyBonusPopup(
-        todayIsoDate: String?,
-        previewOnly: Boolean = false,
-        persistClaimDate: Boolean = true
-    ) {
+    private fun showDailyBonusPopup(todayIsoDate: String?) {
         if (isFinishing || isDestroyed) return
 
         val baseRewards = selectDailyBonusRewards(isPremiumAccount)
@@ -645,35 +629,25 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             uiConfig = dailyBonusPopupUiConfig,
             onButtonClick = { index, dialog ->
                 dialog.dismiss()
-                if (previewOnly) {
-                    Toast.makeText(this, R.string.daily_bonus_preview_message, Toast.LENGTH_SHORT).show()
-                    return@show
-                }
-
                 val claimDate = todayIsoDate ?: return@show
                 when (index) {
-                    0 -> claimDailyBonus(baseRewards, claimDate, persistClaimDate)
+                    0 -> claimDailyBonus(baseRewards, claimDate)
                     1 -> claimDailyBonusWithMultiplier(
                         baseRewards,
                         multiplier = 2,
-                        todayIsoDate = claimDate,
-                        persistClaimDate = persistClaimDate
+                        todayIsoDate = claimDate
                     )
                 }
             }
         )
     }
 
-    private fun claimDailyBonus(baseRewards: WinRewards, todayIsoDate: String, persistClaimDate: Boolean = true) {
+    private fun claimDailyBonus(baseRewards: WinRewards, todayIsoDate: String) {
         awardGems(baseRewards.gems)
         awardTickets(baseRewards.tickets)
-        if (persistClaimDate) {
-            dailyBonusPromptShownThisLaunch = true
-        }
-        if (persistClaimDate) {
-            lifecycleScope.launch {
-                settingsManager.setLastDailyBonusDate(todayIsoDate)
-            }
+        dailyBonusPromptShownThisLaunch = true
+        lifecycleScope.launch {
+            settingsManager.setLastDailyBonusDate(todayIsoDate)
         }
     }
 
@@ -715,8 +689,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     private fun claimDailyBonusWithMultiplier(
         baseRewards: WinRewards,
         multiplier: Int,
-        todayIsoDate: String,
-        persistClaimDate: Boolean = true
+        todayIsoDate: String
     ) {
         val shown = adManager.showRewardedAd(
             onFinished = { rewardEarned ->
@@ -728,13 +701,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 if (!rewardEarned) {
                     Toast.makeText(this, R.string.daily_bonus_x2_unavailable_fallback, Toast.LENGTH_SHORT).show()
                 }
-                claimDailyBonus(rewardsToAward, todayIsoDate, persistClaimDate)
+                claimDailyBonus(rewardsToAward, todayIsoDate)
             }
         )
 
         if (!shown) {
             Toast.makeText(this, R.string.daily_bonus_x2_unavailable_fallback, Toast.LENGTH_SHORT).show()
-            claimDailyBonus(baseRewards, todayIsoDate, persistClaimDate)
+            claimDailyBonus(baseRewards, todayIsoDate)
             adManager.loadRewardedAd()
         }
     }
@@ -1738,7 +1711,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         val btnHint = findViewById<Button?>(R.id.btn_hint)
         val btnRestart = findViewById<Button?>(R.id.btn_restart)
         val btnAuto = findViewById<Button?>(R.id.btn_auto_move)
-        val btnDailyBonusTest = findViewById<Button?>(R.id.btn_daily_bonus_test)
         val undoMain = findViewById<ImageView?>(R.id.undo_main)
         val redoMain = findViewById<ImageView?>(R.id.redo_main)
 
@@ -1775,15 +1747,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         btnHint?.let { applyButtonScale(it, controlTextSp, textScale) }
         btnRestart?.let { applyButtonScale(it, controlTextSp, textScale) }
         btnAuto?.let { applyButtonScale(it, controlTextSp, textScale) }
-        btnDailyBonusTest?.let {
-            it.setTextSize(TypedValue.COMPLEX_UNIT_SP, (10f * textScale).coerceAtMost(14f))
-            it.setPaddingRelative(
-                dpToPx(12f * widthScale),
-                dpToPx(6f * heightScale),
-                dpToPx(12f * widthScale),
-                dpToPx(6f * heightScale)
-            )
-        }
 
         // Portrait undo/redo widths also use the baseline-only scale (no extra compression).
         val undoWidthScale = if (isLandscape) widthScale else portraitButtonWidthScale
