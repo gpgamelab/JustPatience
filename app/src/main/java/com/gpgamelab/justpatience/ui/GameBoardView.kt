@@ -94,6 +94,24 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         style = Paint.Style.FILL
         setShadowLayer(6f, 0f, 2f, Color.BLACK)
     }
+    private val pileCountBadgeFillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#D32F2F")
+        style = Paint.Style.FILL
+    }
+    private val pileCountBadgeStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 2f
+    }
+    private val pileCountBadgeTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textAlign = Paint.Align.CENTER
+        textSize = 24f
+        style = Paint.Style.FILL
+        isFakeBoldText = true
+    }
+    private var pileCountBadgeRadius = 12f
+    private var pileCountBadgeInset = 6f
 
     // Board and Card dimensions
     private val cardWidthRatio = 1.5f
@@ -377,6 +395,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         // Keep pile labels legible across phone/tablet sizes.
         pileLabelPaint.textSize = (cardW * 0.22f).coerceIn(22f, 40f)
         textPaint.textSize = ((min(w, h) * 0.10f) * aspectFactors.textCompression).coerceIn(28f, 60f)
+
+        // Count badge scales with card size.
+        pileCountBadgeRadius = (cardW * 0.16f).coerceIn(10f, 22f)
+        pileCountBadgeInset = (cardW * 0.06f).coerceIn(4f, 10f)
+        pileCountBadgeStrokePaint.strokeWidth = (cardW * 0.02f).coerceIn(1.5f, 3.5f)
+        pileCountBadgeTextPaint.textSize = (pileCountBadgeRadius * 1.15f).coerceIn(12f, 24f)
     }
 
     /**
@@ -822,6 +846,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         } else
             canvas.drawRoundRect(wasteRect, cardRadius, cardRadius, placeholderPaint)
 
+        drawPileCountBadge(canvas, stockRect, stock.size())
+        drawPileCountBadge(canvas, wasteRect, waste.size())
+
         // Foundations: portrait keeps top row placement; landscape moves them left of tableau.
         for (i in 0..3) {
             val rect = getFoundationRect(i)
@@ -867,6 +894,21 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         drawLabelAboveRect(canvas, stockRect, drawLines)
         val recycleLabelColor = if (remainingRecycles == 0) Color.RED else Color.WHITE
         drawLabelAboveRect(canvas, wasteRect, recycleLines, recycleLabelColor)
+    }
+
+    private fun drawPileCountBadge(canvas: Canvas, pileRect: RectF, count: Int) {
+        if (count < 1) return
+
+        val badgeText = if (count > 99) "99+" else count.toString()
+        val cx = pileRect.right - pileCountBadgeInset - pileCountBadgeRadius
+        val cy = pileRect.top + pileCountBadgeInset + pileCountBadgeRadius
+
+        canvas.drawCircle(cx, cy, pileCountBadgeRadius, pileCountBadgeFillPaint)
+        canvas.drawCircle(cx, cy, pileCountBadgeRadius, pileCountBadgeStrokePaint)
+
+        val fm = pileCountBadgeTextPaint.fontMetrics
+        val baseline = cy - (fm.ascent + fm.descent) / 2f
+        canvas.drawText(badgeText, cx, baseline, pileCountBadgeTextPaint)
     }
 
     private fun topPileVerticalShiftPx(): Float {
