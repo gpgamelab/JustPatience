@@ -46,7 +46,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuShowScoreToggle()
         fun onGameMenuShowMovesToggle()
         fun onGameMenuShowCardAnimationsToggle()
-        fun onGameMenuShowWinAnimationToggle()
         fun onGameMenuAutoCompleteToggle()
         fun onGameMenuHapticsToggle()
         fun onGameMenuTapToMoveToggle()
@@ -88,7 +87,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentShowScore = arguments?.getBoolean(ARG_CURRENT_SHOW_SCORE, true) ?: true
         val currentShowMoves = arguments?.getBoolean(ARG_CURRENT_SHOW_MOVES, true) ?: true
         val currentShowCardAnimations = arguments?.getBoolean(ARG_CURRENT_SHOW_CARD_ANIMATIONS, true) ?: true
-        val currentShowWinAnimation = arguments?.getBoolean(ARG_CURRENT_SHOW_WIN_ANIMATION, true) ?: true
         val currentAutoComplete = arguments?.getBoolean(ARG_CURRENT_AUTO_COMPLETE, true) ?: true
         val currentHaptics = arguments?.getBoolean(ARG_CURRENT_HAPTICS, false) ?: false
         val currentTapToMove = arguments?.getBoolean(ARG_CURRENT_TAP_TO_MOVE, true) ?: true
@@ -147,10 +145,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<TextView>(R.id.menu_advanced_show_card_animations_text).text = getString(
             R.string.game_menu_show_card_movement_animations_with_value,
             if (currentShowCardAnimations) stateEnabled else stateDisabled
-        )
-        view.findViewById<TextView>(R.id.menu_advanced_show_win_animation_text).text = getString(
-            R.string.game_menu_show_win_animation_with_value,
-            if (currentShowWinAnimation) stateEnabled else stateDisabled
         )
         view.findViewById<TextView>(R.id.menu_advanced_auto_complete_text).text = getString(
             R.string.game_menu_auto_complete_with_value,
@@ -308,9 +302,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_advanced_show_card_animations_row).setOnClickListener {
             dismissAndRun { host.onGameMenuShowCardAnimationsToggle() }
         }
-        view.findViewById<View>(R.id.menu_advanced_show_win_animation_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuShowWinAnimationToggle() }
-        }
         view.findViewById<View>(R.id.menu_advanced_auto_complete_row).setOnClickListener {
             dismissAndRun { host.onGameMenuAutoCompleteToggle() }
         }
@@ -419,7 +410,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_SHOW_SCORE = "arg_current_show_score"
         private const val ARG_CURRENT_SHOW_MOVES = "arg_current_show_moves"
         private const val ARG_CURRENT_SHOW_CARD_ANIMATIONS = "arg_current_show_card_animations"
-        private const val ARG_CURRENT_SHOW_WIN_ANIMATION = "arg_current_show_win_animation"
         private const val ARG_CURRENT_AUTO_COMPLETE = "arg_current_auto_complete"
         private const val ARG_CURRENT_HAPTICS = "arg_current_haptics"
         private const val ARG_CURRENT_TAP_TO_MOVE = "arg_current_tap_to_move"
@@ -443,7 +433,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentShowScore: Boolean = true,
             currentShowMoves: Boolean = true,
             currentShowCardAnimations: Boolean = true,
-            currentShowWinAnimation: Boolean = true,
             currentAutoComplete: Boolean = true,
             currentHaptics: Boolean = false,
             currentTapToMove: Boolean = true,
@@ -470,7 +459,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_CURRENT_SHOW_SCORE, currentShowScore)
                     putBoolean(ARG_CURRENT_SHOW_MOVES, currentShowMoves)
                     putBoolean(ARG_CURRENT_SHOW_CARD_ANIMATIONS, currentShowCardAnimations)
-                    putBoolean(ARG_CURRENT_SHOW_WIN_ANIMATION, currentShowWinAnimation)
                     putBoolean(ARG_CURRENT_AUTO_COMPLETE, currentAutoComplete)
                     putBoolean(ARG_CURRENT_HAPTICS, currentHaptics)
                     putBoolean(ARG_CURRENT_TAP_TO_MOVE, currentTapToMove)

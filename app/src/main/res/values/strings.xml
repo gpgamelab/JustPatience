@@ -236,8 +236,6 @@ Locale: %7$s</string>
     <string name="game_menu_show_moves_with_value">Show Moves: %1$s</string>
     <string name="game_menu_show_card_movement_animations">Show Card Movement Animations</string>
     <string name="game_menu_show_card_movement_animations_with_value">Show Card Movement Animations: %1$s</string>
-    <string name="game_menu_show_win_animation">Show WIN Animation</string>
-    <string name="game_menu_show_win_animation_with_value">Show WIN Animation: %1$s</string>
     <string name="game_menu_board_layout">Board Layout</string>
     <string name="game_menu_hint_delay">Hint Delay</string>
     <string name="game_menu_auto_complete">Auto Complete</string>
@@ -265,7 +263,6 @@ Locale: %7$s</string>
     <string name="settings_show_game_timer">Show Game Timer</string>
     <string name="settings_hint_delay_label">Hint delay (seconds)</string>
     <string name="settings_card_animations">Show Card Move Animations</string>
-    <string name="settings_win_animation">Show WIN Animation</string>
     <string name="settings_advanced_section_title">Advanced Settings</string>
     <string name="settings_advanced_expand">Expand</string>
     <string name="settings_advanced_collapse">Collapse</string>

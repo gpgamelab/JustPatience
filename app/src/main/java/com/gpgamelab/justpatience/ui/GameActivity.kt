@@ -760,7 +760,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentShowScore = currentSettings.showScore,
                 currentShowMoves = currentSettings.showMoves,
                 currentShowCardAnimations = currentSettings.showCardAnimations,
-                currentShowWinAnimation = currentSettings.showWinAnimation,
                 currentAutoComplete = currentSettings.autoComplete,
                 currentHaptics = currentSettings.haptics,
                 currentTapToMove = currentSettings.tapToMove,
@@ -1038,20 +1037,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
-    override fun onGameMenuShowWinAnimationToggle() {
-        lifecycleScope.launch {
-            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
-            showEnableDisableDialog(
-                title = getString(R.string.game_menu_show_win_animation),
-                enabled = currentSettings.showWinAnimation
-            ) { enabled ->
-                lifecycleScope.launch {
-                    val latest = settingsManager.gamePlaySettingsFlow.first()
-                    settingsManager.saveGamePlaySettings(latest.copy(showWinAnimation = enabled))
-                }
-            }
-        }
-    }
 
     override fun onGameMenuAutoCompleteToggle() {
         lifecycleScope.launch {

@@ -85,7 +85,6 @@ class SettingsActivity : AppCompatActivity() {
         // Appearance
         binding.switchTimer.isChecked = settings.showGameTimer
         binding.switchCardAnimations.isChecked = settings.showCardAnimations
-        binding.switchWinAnimation.isChecked = settings.showWinAnimation
         binding.switchFoundationToTableau.isChecked = settings.allowFoundationToTableauDrag
 
         // Sound
@@ -141,10 +140,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchCardAnimations.setOnCheckedChangeListener { _, checked ->
             if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
             saveSettings(currentSettings.copy(showCardAnimations = checked))
-        }
-        binding.switchWinAnimation.setOnCheckedChangeListener { _, checked ->
-            if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
-            saveSettings(currentSettings.copy(showWinAnimation = checked))
         }
         binding.switchFoundationToTableau.setOnCheckedChangeListener { _, checked ->
             if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
