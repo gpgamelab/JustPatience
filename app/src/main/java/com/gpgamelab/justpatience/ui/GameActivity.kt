@@ -52,6 +52,7 @@ import com.gpgamelab.justpatience.util.UiScaleUtil
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
+import kotlin.random.Random
 import kotlin.math.sqrt
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
@@ -618,7 +619,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     ) {
         if (isFinishing || isDestroyed) return
 
-        val baseRewards = WinRewards(gems = 10, tickets = 20)
+        val baseRewards = selectDailyBonusRewards(isPremiumAccount)
 
         val popupModel = RewardPopupDialog.Model(
             title = getString(R.string.daily_bonus_title),
@@ -677,6 +678,39 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
     }
 
     private fun currentUtcIsoDate(): String = LocalDate.now(java.time.ZoneOffset.UTC).toString()
+
+    private enum class DailyBonusBand {
+        LOW,
+        MID,
+        HIGH
+    }
+
+    private fun selectDailyBonusRewards(isPremium: Boolean): WinRewards {
+        val band = pickDailyBonusBand()
+        return if (isPremium) {
+            when (band) {
+                DailyBonusBand.LOW -> WinRewards(gems = 10, tickets = 20)
+                DailyBonusBand.MID -> WinRewards(gems = 20, tickets = 40)
+                DailyBonusBand.HIGH -> WinRewards(gems = 40, tickets = 80)
+            }
+        } else {
+            when (band) {
+                DailyBonusBand.LOW -> WinRewards(gems = 5, tickets = 10)
+                DailyBonusBand.MID -> WinRewards(gems = 10, tickets = 20)
+                DailyBonusBand.HIGH -> WinRewards(gems = 20, tickets = 40)
+            }
+        }
+    }
+
+    // 10% / 80% / 10% weighted random picker.
+    private fun pickDailyBonusBand(): DailyBonusBand {
+        val roll = Random.nextInt(100)
+        return when {
+            roll < 10 -> DailyBonusBand.LOW
+            roll < 90 -> DailyBonusBand.MID
+            else -> DailyBonusBand.HIGH
+        }
+    }
 
     private fun claimDailyBonusWithMultiplier(
         baseRewards: WinRewards,
