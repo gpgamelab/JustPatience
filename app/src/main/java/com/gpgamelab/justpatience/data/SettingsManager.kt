@@ -474,4 +474,15 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.PLAYER_DISPLAY_NAME] = displayName.trim()
         }
     }
+
+    /**
+     * Wipes every key in the DataStore, returning all settings and economy values to their
+     * default state (equivalent to a fresh install).  Call [GameStatsManager.deleteAllGameRecords]
+     * alongside this to also clear the game-history database.
+     */
+    suspend fun resetAllData() {
+        dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

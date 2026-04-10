@@ -55,7 +55,7 @@ import java.time.LocalDate
 import kotlin.random.Random
 import kotlin.math.sqrt
 
-class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
+class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, TesterMenuDialogFragment.Host {
 
     private enum class HelpControlAction(
         val storageKey: String,
@@ -305,6 +305,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             }
         }
         binding.btnStats.setOnClickListener { showGameMenu() }
+        binding.btnTesters.setOnClickListener { showTesterMenu() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             onHelpControlClicked(HelpControlAction.AUTO, buttonView) {
                 buttonView.isEnabled = false
@@ -737,14 +738,72 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
                 currentHaptics = currentSettings.haptics,
                 currentTapToMove = currentSettings.tapToMove,
                 currentScoreMethod = currentSettings.scoreMethod,
-                currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag,
-                currentPremiumAcct = currentSettings.premiumAcct
+                currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
             )
         }
     }
+
+    private fun showTesterMenu() {
+        if (supportFragmentManager.findFragmentByTag(TesterMenuDialogFragment.TAG) != null) return
+        TesterMenuDialogFragment.newInstance().show(supportFragmentManager, TesterMenuDialogFragment.TAG)
+    }
+
+    // ------------------------------------------------------------------
+    // TesterMenuDialogFragment.Host implementation
+    // ------------------------------------------------------------------
+
+    override fun testerCurrentGems(): Int = gemTotal
+    override fun testerCurrentCoupons(): Int = ticketTotal
+    override fun testerIsPremium(): Boolean = isPremiumAccount
+
+    override fun onTesterAdjustGems(delta: Int) {
+        awardGems(delta)
+    }
+
+    override fun onTesterSetGems(value: Int) {
+        gemTotal = value.coerceAtLeast(0)
+        renderGemHud(gemTotal)
+        lifecycleScope.launch { settingsManager.setTotalGems(gemTotal) }
+    }
+
+    override fun onTesterAdjustCoupons(delta: Int) {
+        awardTickets(delta)
+    }
+
+    override fun onTesterSetCoupons(value: Int) {
+        ticketTotal = value.coerceAtLeast(0)
+        renderTicketHud(ticketTotal)
+        lifecycleScope.launch { settingsManager.setTotalTickets(ticketTotal) }
+    }
+
+    override fun onTesterSetPremium(enabled: Boolean) {
+        lifecycleScope.launch {
+            val latest = settingsManager.gamePlaySettingsFlow.first()
+            settingsManager.saveGamePlaySettings(latest.copy(premiumAcct = enabled))
+        }
+    }
+
+    override fun onTesterResetEverything(onComplete: () -> Unit) {
+        lifecycleScope.launch {
+            statsManager.deleteAllGameRecords()
+            settingsManager.resetAllData()
+            // Reset in-memory state immediately (flows will also catch up asynchronously)
+            gemTotal = 0
+            ticketTotal = 0
+            isPremiumAccount = false
+            winCelebrationPlayed = false
+            dailyBonusPromptShownThisLaunch = false
+            renderGemHud(gemTotal)
+            renderTicketHud(ticketTotal)
+            viewModel.startNewGame()
+            onComplete()
+        }
+    }
+
+    // ------------------------------------------------------------------
 
     override fun onGameMenuStatisticsSummary() {
         StatsSummaryDialogFragment.newInstance().show(supportFragmentManager, "stats_summary_dialog")
@@ -1087,22 +1146,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
         }
     }
 
-    override fun onGameMenuPremiumAcctToggle() {
-        lifecycleScope.launch {
-            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
-            showEnableDisableDialog(
-                title = getString(R.string.game_menu_premium_acct),
-                enabled = currentSettings.premiumAcct
-            ) { enabled ->
-                lifecycleScope.launch {
-                    val latest = settingsManager.gamePlaySettingsFlow.first()
-                    settingsManager.saveGamePlaySettings(
-                        latest.copy(premiumAcct = enabled)
-                    )
-                }
-            }
-        }
-    }
 
     override fun onGameMenuOpenPrivacyPolicy() {
         val policyHtml = readRawResourceText(R.raw.privacy_policy_2026_03_17)
@@ -1767,11 +1810,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host {
             dpToPx((if (isLandscape) 4f else 2f) * heightScale)
         )
 
-
-        if (binding.btnStats is MaterialButton) {
-            binding.btnStats.iconSize = dpToPx(48f * textScale)
-            binding.btnStats.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
-        }
+        binding.btnStats.iconSize = dpToPx(48f * textScale)
+        binding.btnStats.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
     }
 
     private fun applyButtonScale(button: Button, textSp: Float, scale: Float) {

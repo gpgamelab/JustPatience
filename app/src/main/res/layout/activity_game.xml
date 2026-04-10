@@ -300,6 +300,27 @@
 
     </LinearLayout>
 
+    <!-- Testers-only button: lower-left corner of the game board area.
+         This button will eventually be removed from production builds,
+         but the backing logic in GameActivity remains permanently. -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_testers"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:alpha="0.65"
+        android:text="Testers"
+        android:textSize="9sp"
+        android:textColor="#AAAAAA"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        app:strokeColor="#555555"
+        app:layout_constraintBottom_toTopOf="@id/control_buttons_layout"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <!-- 3. Banner Ad (at the very bottom, below buttons, full width) -->
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
