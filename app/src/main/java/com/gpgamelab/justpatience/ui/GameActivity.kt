@@ -380,7 +380,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         winDialogShowing = true
         val baseRewards = WinRewards(
             gems = 10,
-            tickets = if (isPremiumAccount) 50 else 5
+            tickets = if (isPremiumAccount) 4 else 2
         )
 
         if (isPremiumAccount) {
@@ -664,15 +664,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val band = pickDailyBonusBand()
         return if (isPremium) {
             when (band) {
-                DailyBonusBand.LOW -> WinRewards(gems = 10, tickets = 20)
-                DailyBonusBand.MID -> WinRewards(gems = 20, tickets = 40)
-                DailyBonusBand.HIGH -> WinRewards(gems = 40, tickets = 80)
+                DailyBonusBand.LOW -> WinRewards(gems = 10, tickets = 4)
+                DailyBonusBand.MID -> WinRewards(gems = 20, tickets = 5)
+                DailyBonusBand.HIGH -> WinRewards(gems = 40, tickets = 6)
             }
         } else {
             when (band) {
-                DailyBonusBand.LOW -> WinRewards(gems = 5, tickets = 10)
-                DailyBonusBand.MID -> WinRewards(gems = 10, tickets = 20)
-                DailyBonusBand.HIGH -> WinRewards(gems = 20, tickets = 40)
+                DailyBonusBand.LOW -> WinRewards(gems = 5, tickets = 2)
+                DailyBonusBand.MID -> WinRewards(gems = 10, tickets = 3)
+                DailyBonusBand.HIGH -> WinRewards(gems = 20, tickets = 4)
             }
         }
     }
@@ -681,7 +681,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun pickDailyBonusBand(): DailyBonusBand {
         val roll = Random.nextInt(100)
         return when {
-            roll < 10 -> DailyBonusBand.LOW
+            roll < 80 -> DailyBonusBand.LOW
             roll < 90 -> DailyBonusBand.MID
             else -> DailyBonusBand.HIGH
         }
