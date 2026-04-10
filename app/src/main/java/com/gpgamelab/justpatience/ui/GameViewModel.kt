@@ -936,7 +936,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private suspend fun recordGameCompletionInternal(game: Game, isWin: Boolean) {
+    private suspend fun recordGameCompletionInternal(game: Game, isWin: Boolean, elapsedTimeMs: Long) {
         // Only record if game hasn't been recorded yet and player made at least 5 moves
         if (currentHandRecorded || game.moves < 5) return
 
@@ -949,7 +949,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             statsManager.recordGame(
                 score = game.score,
                 moves = game.moves,
-                timeMs = gameTime.value * 1000,  // Convert seconds to milliseconds
+                timeMs = elapsedTimeMs.coerceAtLeast(0L),
                 isWin = isWin,
                 playerName = playerName,
                 cardsDraw = cardsDraw
@@ -965,9 +965,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Only records if moves >= 5 and game hasn't been recorded yet.
      * Called when a game is won, or when the game is abandoned with enough moves.
      */
-    private fun recordGameCompletion(game: Game, isWin: Boolean) {
+    private fun recordGameCompletion(game: Game, isWin: Boolean, elapsedTimeMs: Long = gameTime.value * 1000L) {
         viewModelScope.launch {
-            recordGameCompletionInternal(game, isWin)
+            recordGameCompletionInternal(game, isWin, elapsedTimeMs)
         }
     }
 
@@ -1000,7 +1000,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private fun finalizeCurrentGameIfNeeded() {
         val current = _game.value
         if (current.status == GameStatus.IN_PROGRESS) {
-            recordGameCompletion(current, isWin = false)
+            val elapsedTimeMs = gameTime.value * 1000L
+            recordGameCompletion(current, isWin = false, elapsedTimeMs = elapsedTimeMs)
         }
     }
 
