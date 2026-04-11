@@ -393,11 +393,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun tryMoveWasteToTableau(index: Int) {
+    fun tryMoveWasteToTableau(index: Int, animate: Boolean = true) {
         val game = _game.value
+        val wasteCard = game.waste.peek() ?: return
         val updated = game.moveWasteToTableau(index)
 
         if (updated != null) {
+            if (animate) {
+                animateCardMove(
+                    card = wasteCard,
+                    sourceStackType = StackType.WASTE,
+                    sourceIndex = 0,
+                    sourceCardIndex = -1,
+                    destStackType = StackType.TABLEAU,
+                    destIndex = index
+                )
+            }
             clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
@@ -412,12 +423,29 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun tryMoveTableauToTableau(
         fromIndex: Int,
         cardIndex: Int,
-        toIndex: Int
+        toIndex: Int,
+        animate: Boolean = true
     ): Boolean {
         val game = _game.value
+        val pile = game.tableau.getOrNull(fromIndex) ?: return false
+        if (pile.isEmpty()) return false
+        val sourceCards = pile.asList()
+        val movingCard = sourceCards.getOrNull(cardIndex) ?: return false
+        val movedCardCount = sourceCards.size - cardIndex
         val updated = game.moveTableauToTableau(fromIndex, cardIndex, toIndex)
 
         if (updated != null) {
+            if (animate) {
+                animateCardMove(
+                    card = movingCard,
+                    sourceStackType = StackType.TABLEAU,
+                    sourceIndex = fromIndex,
+                    sourceCardIndex = cardIndex,
+                    destStackType = StackType.TABLEAU,
+                    destIndex = toIndex,
+                    movedCardCount = movedCardCount
+                )
+            }
             clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
@@ -537,7 +565,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         sourceIndex: Int,
         sourceCardIndex: Int,
         destStackType: StackType,
-        destIndex: Int
+        destIndex: Int,
+        movedCardCount: Int = 1
     ) {
         if (!_showCardAnimations.value || card == null || gameBoardView == null) return
 
@@ -555,7 +584,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             startRect = sourceRect,
             endRect = destRect,
             destStackType = destStackType,
-            destStackIndex = destIndex
+            destStackIndex = destIndex,
+            movedCardCount = movedCardCount
         )
     }
 
@@ -878,11 +908,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return moveCount
     }
 
-    fun tryMoveWasteToFoundation(index: Int): Boolean {
+    fun tryMoveWasteToFoundation(index: Int, animate: Boolean = true): Boolean {
         val game = _game.value
+        val wasteCard = game.waste.peek() ?: return false
         val updated = game.moveWasteToFoundation(index)
 
         if (updated != null) {
+            if (animate) {
+                animateCardMove(
+                    card = wasteCard,
+                    sourceStackType = StackType.WASTE,
+                    sourceIndex = 0,
+                    sourceCardIndex = -1,
+                    destStackType = StackType.FOUNDATION,
+                    destIndex = index
+                )
+            }
             clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)
@@ -899,12 +940,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun tryMoveTableauToFoundation(
         tableauIndex: Int,
         cardIndex: Int,
-        foundationIndex: Int
+        foundationIndex: Int,
+        animate: Boolean = true
     ): Boolean {
         val game = _game.value
+        val pile = game.tableau.getOrNull(tableauIndex) ?: return false
+        if (pile.isEmpty()) return false
+        val topCard = pile.peek()
         val updated = game.moveTableauToFoundation(tableauIndex, cardIndex, foundationIndex)
 
         if (updated != null) {
+            if (animate) {
+                animateCardMove(
+                    card = topCard,
+                    sourceStackType = StackType.TABLEAU,
+                    sourceIndex = tableauIndex,
+                    sourceCardIndex = cardIndex,
+                    destStackType = StackType.FOUNDATION,
+                    destIndex = foundationIndex
+                )
+            }
             clearSingleClickGlow()
             resetHintTimer()
             undoStack.addLast(game)

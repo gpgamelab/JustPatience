@@ -158,6 +158,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var animationEndRect: RectF? = null
     private var animationDestStackType: StackType? = null
     private var animationDestStackIndex: Int = -1
+    private var animationMovedCardCount: Int = 1
     private var animationStartTimeMs: Long = 0
     private val ANIMATION_DURATION_MS = 250L
     private var isAnimating = false
@@ -287,7 +288,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 var y = getTableauStartY()
                 val pile = viewModel.game.value.tableau.getOrNull(stackIndex) ?: return null
                 val cards = pile.asList()
-                for (i in 0 until cardIndex.coerceAtMost(cards.size - 1)) {
+                // cardIndex < 0 means destination drop position (bottom of current pile)
+                val limit = if (cardIndex < 0) cards.size else cardIndex.coerceAtMost(cards.size)
+                for (i in 0 until limit) {
                     y += if (cards[i].isFaceUp) cardW * 0.4f else cardW * 0.1f
                 }
                 RectF(x, y, x + cardW, y + cardH)
@@ -304,7 +307,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         startRect: RectF,
         endRect: RectF,
         destStackType: StackType,
-        destStackIndex: Int
+        destStackIndex: Int,
+        movedCardCount: Int = 1
     ) {
         if (::viewModel.isInitialized) viewModel.pauseHintTimerForNonPlayerActivity()
         animationCard = card
@@ -312,6 +316,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         animationEndRect = RectF(endRect)
         animationDestStackType = destStackType
         animationDestStackIndex = destStackIndex
+        animationMovedCardCount = movedCardCount.coerceAtLeast(1)
         animationStartTimeMs = SystemClock.elapsedRealtime()
         isAnimating = true
         postInvalidateOnAnimation()
@@ -333,6 +338,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         animationEndRect = null
         animationDestStackType = null
         animationDestStackIndex = -1
+        animationMovedCardCount = 1
         // Only resume hint timer when we're finishing a real animation, not on cold calls.
         if (wasAnimating && ::viewModel.isInitialized) {
             viewModel.resumeHintTimerAfterNonPlayerActivity()
@@ -342,6 +348,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun isAnimatingIntoFoundation(index: Int): Boolean {
         return isAnimationActive() &&
             animationDestStackType == StackType.FOUNDATION &&
+            animationDestStackIndex == index
+    }
+
+    private fun isAnimatingIntoTableau(index: Int): Boolean {
+        return isAnimationActive() &&
+            animationDestStackType == StackType.TABLEAU &&
             animationDestStackIndex == index
     }
 
@@ -985,6 +997,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                         return@forEachIndexed
                     }
 
+                    // Suppress cards that just arrived at animation destination.
+                    // They are represented by the flying animation card during flight.
+                    if (isAnimatingIntoTableau(colIdx) && index >= cards.size - animationMovedCardCount) {
+                        y += if (card.isFaceUp) cardW * 0.4f else cardW * 0.1f
+                        return@forEachIndexed
+                    }
+
                     val rect = RectF(x, y, x + cardW, y + cardH)
                     if (card.isFaceUp)
                         drawCard(canvas, card, rect)
@@ -1366,6 +1385,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 var moveSucceeded = false
 
                 if (isDragging) {
+                    // Drag-and-drop already provides motion feedback via the ghost card,
+                    // so post-drop card-flight animation is skipped (animate = false).
 
                     // 1️⃣ FOUNDATION DROP (highest priority)
                     for (i in viewModel.game.value.foundations.indices) {
@@ -1375,14 +1396,15 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                             when (dragStackType) {
 
                                 StackType.WASTE -> {
-                                    moveSucceeded = viewModel.tryMoveWasteToFoundation(i)
+                                    moveSucceeded = viewModel.tryMoveWasteToFoundation(i, animate = false)
                                 }
 
                                 StackType.TABLEAU -> {
                                     moveSucceeded = viewModel.tryMoveTableauToFoundation(
                                         dragStackIndex,
                                         dragCardIndex,
-                                        i
+                                        i,
+                                        animate = false
                                     )
                                 }
 
@@ -1404,7 +1426,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                                 when (dragStackType) {
 
                                     StackType.WASTE -> {
-                                        viewModel.tryMoveWasteToTableau(index)
+                                        viewModel.tryMoveWasteToTableau(index, animate = false)
                                         moveSucceeded = true
                                     }
 
@@ -1412,7 +1434,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                                         moveSucceeded = viewModel.tryMoveTableauToTableau(
                                             dragStackIndex,
                                             dragCardIndex,
-                                            index
+                                            index,
+                                            animate = false
                                         )
                                     }
 
