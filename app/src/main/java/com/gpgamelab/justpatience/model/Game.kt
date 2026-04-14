@@ -213,22 +213,22 @@ data class Game(
         }
 
         val suitChar = when (suit) {
-            CardSuit.HEARTS -> "h"
-            CardSuit.DIAMONDS -> "d"
-            CardSuit.SPADES -> "s"
-            CardSuit.CLUBS -> "c"
+            CardSuit.HEARTS -> "hearts"
+            CardSuit.DIAMONDS -> "diamonds"
+            CardSuit.SPADES -> "spades"
+            CardSuit.CLUBS -> "clubs"
             else -> error("Invalid suit")
         }
 
         val rankCode = when (rank) {
-            StandardRank.ACE -> "ac"
-            StandardRank.JACK -> "ja"
-            StandardRank.QUEEN -> "qu"
-            StandardRank.KING -> "ki"
-            else -> rank.sortOrder.toString().padStart(2, '0')
+            StandardRank.ACE -> "ace"
+            StandardRank.JACK -> "jack"
+            StandardRank.QUEEN -> "queen"
+            StandardRank.KING -> "king"
+            else -> rank.sortOrder.toString()
         }
 
-        return "${suitChar}_${rankCode}"
+        return "ic_${suitChar}_${rankCode}"
     }
 
     fun recycleWasteToStock(): Game? {

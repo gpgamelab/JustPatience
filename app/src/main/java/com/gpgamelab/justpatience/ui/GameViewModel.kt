@@ -19,16 +19,21 @@ import com.gpgamelab.justpatience.data.TokenManager
 import com.gpgamelab.justpatience.game.GameController
 import com.gpgamelab.justpatience.model.Card
 import com.gpgamelab.justpatience.model.CardRank
+import com.gpgamelab.justpatience.model.CardSuit
 import com.gpgamelab.justpatience.model.Game
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.model.GlowDestination
 import com.gpgamelab.justpatience.model.HintDisplayState
 import com.gpgamelab.justpatience.model.HintMove
 import com.gpgamelab.justpatience.model.HintPhase
+import com.gpgamelab.justpatience.model.FoundationPile
 import com.gpgamelab.justpatience.model.SingleClickGlowState
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.model.StandardRank
 import com.gpgamelab.justpatience.model.Joker
+import com.gpgamelab.justpatience.model.Stock
+import com.gpgamelab.justpatience.model.TableauPile
+import com.gpgamelab.justpatience.model.Waste
 import com.gpgamelab.justpatience.repository.GameRepository
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -1079,7 +1084,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return try {
             val saved = repository.getCurrentGameState().firstOrNull()
             if (!saved.isNullOrEmpty()) {
-                val savedGame = gson.fromJson(saved, Game::class.java)
+                val parsedGame = gson.fromJson(saved, Game::class.java)
+                val (savedGame, wasMigrated) = migrateSavedGameImagePaths(parsedGame)
                 if (savedGame.status == GameStatus.IN_PROGRESS) {
                     // Keep a restart anchor even when resuming from persisted state.
                     initialGameState = savedGame
@@ -1087,6 +1093,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     gameTime.value = savedGame.savedGameTime
                     hasRegisteredFirstMove = savedGame.savedGameTime > 0
                     currentHandRecorded = false
+
+                    // Persist one-time migration to heal legacy image paths on device.
+                    if (wasMigrated) {
+                        repository.saveCurrentGameState(gson.toJson(savedGame))
+                    }
+
                     // Keep the session marker aligned with the resumed in-progress game.
                     settingsManager.setGameSessionActive(true)
                     true
@@ -1100,6 +1112,74 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             Log.w("GameViewModel", "loadSavedGame failed: ${t.message}", t)
             false
         }
+    }
+
+    private fun migrateSavedGameImagePaths(game: Game): Pair<Game, Boolean> {
+        var changed = false
+
+        fun normalizeCard(card: Card): Card {
+            val targetFacePath = expectedFaceImagePath(card)
+            val targetBackPath = "drawable:b_0001"
+
+            val migrated = card.copy(
+                recto = card.recto.copy(imagePath = targetFacePath),
+                verso = card.verso.copy(imagePath = targetBackPath)
+            )
+
+            if (migrated != card) changed = true
+            return migrated
+        }
+
+        val migratedStock = Stock(game.stock.asList().map(::normalizeCard).toMutableList())
+
+        val migratedWaste = Waste().also { newWaste ->
+            game.waste.asList().map(::normalizeCard).forEach { card ->
+                newWaste.push(card)
+            }
+        }
+
+        val migratedTableau = game.tableau.map { pile ->
+            TableauPile(pile.asList().map(::normalizeCard).toMutableList())
+        }
+
+        val migratedFoundations = game.foundations.map { pile ->
+            FoundationPile(pile.asList().map(::normalizeCard).toMutableList())
+        }
+
+        return Pair(
+            game.copy(
+                stock = migratedStock,
+                waste = migratedWaste,
+                tableau = migratedTableau,
+                foundations = migratedFoundations
+            ),
+            changed
+        )
+    }
+
+    private fun expectedFaceImagePath(card: Card): String {
+        if (card.rank == Joker) {
+            val existing = card.recto.imagePath.lowercase(Locale.US)
+            return if (existing.contains("j_li")) "drawable:j_li" else "drawable:j_da"
+        }
+
+        val suitCode = when (card.suit) {
+            CardSuit.HEARTS -> "hearts"
+            CardSuit.DIAMONDS -> "diamonds"
+            CardSuit.SPADES -> "spades"
+            CardSuit.CLUBS -> "clubs"
+            else -> "spades"
+        }
+
+        val rankCode = when (card.rank) {
+            StandardRank.ACE -> "ace"
+            StandardRank.JACK -> "jack"
+            StandardRank.QUEEN -> "queen"
+            StandardRank.KING -> "king"
+            else -> card.rank.sortOrder.toString()
+        }
+
+        return "drawable:ic_${suitCode}_${rankCode}"
     }
 
     fun stopGame() {

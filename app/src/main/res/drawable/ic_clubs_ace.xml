@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="212dp" android:height="329dp" android:viewportWidth="212" android:viewportHeight="329">
+    <group android:translateX="106" android:translateY="164.5">
+        <path android:pathData="M -86.5 -164 H 86.5 A 19 19 0 0 1 105.5 -145 V 145 A 19 19 0 0 1 86.5 164 H -86.5 A 19 19 0 0 1 -105.5 145 V -145 A 19 19 0 0 1 -86.5 -164 Z" android:fillColor="#FFFFFFFF" android:strokeColor="#FF000000" android:strokeWidth="1" />
+        <group android:scaleX="0.032" android:scaleY="0.032" android:translateX="-83.201863" android:translateY="-132.274812">
+            <path android:pathData="M-270 460L-110 460M-200 450L0 -460L200 450M110 460L270 460M-120 130L120 130" android:strokeColor="#FF000000" android:strokeWidth="80" android:strokeLineCap="square" android:strokeMiterLimit="1.5" android:fillColor="#00000000" />
+        </group>
+        <group android:scaleX="0.031264" android:scaleY="0.031264" android:translateX="-49.657397" android:translateY="-131.903571">
+            <path android:pathData="M30 150C35 385 85 400 130 500L-130 500C-85 400 -35 385 -30 150A10 10 0 0 0 -50 150A210 210 0 1 1 -124 -51A10 10 0 0 0 -110 -65A230 230 0 1 1 110 -65A10 10 0 0 0 124 -51A210 210 0 1 1 50 150A10 10 0 0 0 30 150Z" android:fillColor="#FF000000" />
+        </group>
+        <group android:scaleX="0.173596" android:scaleY="0.173596" android:translateX="0.681082" android:translateY="10.459943">
+            <path android:pathData="M30 150C35 385 85 400 130 500L-130 500C-85 400 -35 385 -30 150A10 10 0 0 0 -50 150A210 210 0 1 1 -124 -51A10 10 0 0 0 -110 -65A230 230 0 1 1 110 -65A10 10 0 0 0 124 -51A210 210 0 1 1 50 150A10 10 0 0 0 30 150Z" android:fillColor="#FF000000" />
+        </group>
+    </group>
+</vector>

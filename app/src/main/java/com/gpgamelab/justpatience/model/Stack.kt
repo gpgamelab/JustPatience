@@ -93,22 +93,22 @@ private fun buildDeck(
 
 private fun faceImagePath(rank: CardRank, suit: CardSuit?): String {
     val suitCode = when (suit) {
-        CardSuit.HEARTS -> "h"
-        CardSuit.DIAMONDS -> "d"
-        CardSuit.CLUBS -> "c"
-        CardSuit.SPADES -> "s"
+        CardSuit.HEARTS -> "hearts"
+        CardSuit.DIAMONDS -> "diamonds"
+        CardSuit.CLUBS -> "clubs"
+        CardSuit.SPADES -> "spades"
         else -> error("Non-joker card must have suit")
     }
 
     val rankCode = when (rank) {
-        StandardRank.ACE -> "ac"
-        StandardRank.JACK -> "ja"
-        StandardRank.QUEEN -> "qu"
-        StandardRank.KING -> "ki"
-        else -> rank.sortOrder.toString().padStart(2, '0')
+        StandardRank.ACE -> "ace"
+        StandardRank.JACK -> "jack"
+        StandardRank.QUEEN -> "queen"
+        StandardRank.KING -> "king"
+        else -> rank.sortOrder.toString()
     }
 
-    return "drawable:${suitCode}_${rankCode}"
+    return "drawable:ic_${suitCode}_${rankCode}"
 }
 
 private fun defaultBackImagePath(): String =
