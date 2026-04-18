@@ -13,6 +13,7 @@ import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
+import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -50,6 +51,7 @@ import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.data.GameStatsManager
 import com.gpgamelab.justpatience.util.UiScaleUtil
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import kotlin.random.Random
@@ -82,6 +84,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val dialogWidthPercentLandscape: Float = 0.40f,
         val dialogWidthPercentPortrait: Float = 0.95f,
         val dialogHeightPercent: Float = 0.80f,
+        // Scale the final dialog footprint (1.0 = unchanged).
+        val dialogScaleLandscape: Float = 0.90f,
+        val dialogScalePortrait: Float = 0.60f,
+        // Visual-only starburst tweaks for win popup.
+        val starburstOffsetXPx: Float = 100f,
+        val starburstOffsetYPx: Float = 250f,
+        // +300% size increase relative to baseline = 4x total size.
+        val starburstScale: Float = 4.0f,
         // Portrait reward band (gems position is fine; tickets get an extra nudge below)
         val rewardTopPercentPortrait: Float = 0.63f,
         val rewardBottomPercentPortrait: Float = 0.75f,
@@ -156,6 +166,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var gemTotal: Int = 0
     private var ticketTotal: Int = 0
     private var dailyBonusPromptShownThisLaunch: Boolean = false
+
+    private companion object {
+        private const val WIN_POPUP_DEBUG_PAUSES_ENABLED = false
+        private const val WIN_POPUP_DEBUG_PAUSE_MS = 3_000L
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -384,17 +399,34 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         )
 
         if (isPremiumAccount) {
-            showWinRewardChoiceDialog(baseRewards)
+            showWinRewardChoiceDialogWithDebugPause(baseRewards)
             return
         }
 
         val shown = adManager.showRewardedInterstitialAd(
-            onCompleted = { showWinRewardChoiceDialog(baseRewards) }
+            onCompleted = { showWinRewardChoiceDialogWithDebugPause(baseRewards) }
         )
 
         if (!shown) {
             adManager.loadRewardedInterstitialAd()
+            showWinRewardChoiceDialogWithDebugPause(baseRewards)
+        }
+    }
+
+    private fun showWinRewardChoiceDialogWithDebugPause(baseRewards: WinRewards) {
+        lifecycleScope.launch {
+            maybeDelayWinPopupDebugPause()
+            if (isFinishing || isDestroyed) {
+                winDialogShowing = false
+                return@launch
+            }
             showWinRewardChoiceDialog(baseRewards)
+        }
+    }
+
+    private suspend fun maybeDelayWinPopupDebugPause() {
+        if (WIN_POPUP_DEBUG_PAUSES_ENABLED) {
+            delay(WIN_POPUP_DEBUG_PAUSE_MS)
         }
     }
 
@@ -412,6 +444,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val adMultiplier = if (isPremiumAccount) 5 else 2
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_win_reward_choice, null)
+        configureWinPopupArtwork(dialogView)
         val rewardAmount = dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)
         val ticketRewardAmount = dialogView.findViewById<TextView>(R.id.tv_ticket_reward_amount)
         val continueButton = dialogView.findViewById<Button>(R.id.btn_win_continue)
@@ -424,30 +457,71 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         continueButton.text = getString(R.string.win_reward_popup_continue)
         multiplierButton.text = getString(R.string.win_reward_popup_multiplier, adMultiplier)
 
+        val dialogScale = getWinPopupScale(winPopupUiConfig)
+        val widthPercent = getWinPopupWidthPercent(winPopupUiConfig)
+        val widthPx = (
+            resources.displayMetrics.widthPixels * widthPercent * dialogScale
+            ).toInt().coerceAtLeast(1)
+        val heightPx = (
+            resources.displayMetrics.heightPixels * winPopupUiConfig.dialogHeightPercent * dialogScale
+            ).toInt().coerceAtLeast(1)
+
         val dialog = Dialog(this).apply {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
             setContentView(dialogView)
             setCancelable(false)
             setCanceledOnTouchOutside(false)
+            window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            window?.setLayout(widthPx, heightPx)
         }
 
         continueButton.setOnClickListener {
-            dialog.dismiss()
-            completeWinRewardFlow(baseRewards)
+            continueButton.isEnabled = false
+            multiplierButton.isEnabled = false
+            lifecycleScope.launch {
+                maybeDelayWinPopupDebugPause()
+                dialog.dismiss()
+                completeWinRewardFlow(baseRewards)
+            }
         }
         multiplierButton.setOnClickListener {
-            dialog.dismiss()
-            showWinMultiplierRewardAd(baseRewards, adMultiplier)
+            continueButton.isEnabled = false
+            multiplierButton.isEnabled = false
+            lifecycleScope.launch {
+                maybeDelayWinPopupDebugPause()
+                dialog.dismiss()
+                showWinMultiplierRewardAd(baseRewards, adMultiplier)
+            }
         }
 
-        dialog.setOnShowListener {
-            val widthPercent = getWinPopupWidthPercent(winPopupUiConfig)
-            val widthPx = (resources.displayMetrics.widthPixels * widthPercent).toInt().coerceAtLeast(1)
-            val heightPx = (resources.displayMetrics.heightPixels * winPopupUiConfig.dialogHeightPercent).toInt().coerceAtLeast(1)
-            dialog.window?.setLayout(widthPx, heightPx)
-            dialog.window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-        }
         dialog.setOnDismissListener { winDialogShowing = false }
         dialog.show()
+        dialog.window?.setLayout(widthPx, heightPx)
+    }
+
+    private fun configureWinPopupArtwork(dialogView: View) {
+        dialogView.findViewById<ImageView>(R.id.iv_win_popup_bg)?.apply {
+            setImageResource(R.drawable.ic_popup_rect_blue)
+            visibility = View.VISIBLE
+            alpha = 1f
+        }
+
+        dialogView.findViewById<TextView>(R.id.tv_reward_popup_title)?.visibility = View.GONE
+
+        dialogView.findViewById<View>(R.id.layout_reward_row)?.bringToFront()
+        dialogView.findViewById<View>(R.id.layout_buttons_row)?.bringToFront()
+
+        dialogView.findViewById<ImageView>(R.id.iv_win_popup_starburst)?.apply {
+            setImageResource(R.drawable.ic_star_burst_yellow)
+            visibility = View.VISIBLE
+            alpha = 1f
+            translationX = winPopupUiConfig.starburstOffsetXPx
+            translationY = winPopupUiConfig.starburstOffsetYPx
+            scaleX = winPopupUiConfig.starburstScale
+            scaleY = winPopupUiConfig.starburstScale
+            elevation = dpToPx(24f).toFloat()
+            bringToFront()
+        }
     }
 
     private fun applyWinPopupUiConfig(dialogView: View, config: WinPopupUiConfig) {
@@ -492,7 +566,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         val widthPercent = getWinPopupWidthPercent(config)
-        val popupWidthPx = (resources.displayMetrics.widthPixels * widthPercent).toInt().coerceAtLeast(1)
+        val popupWidthPx = (resources.displayMetrics.widthPixels * widthPercent * getWinPopupScale(config)).toInt().coerceAtLeast(1)
         val continueButtonWidthPx = (popupWidthPx * config.continueButtonWidthPercent).toInt().coerceAtLeast(1)
         val multiplierButtonWidthPx = (popupWidthPx * config.multiplierButtonWidthPercent).toInt().coerceAtLeast(1)
         val buttonGapPx = dpToPx(config.buttonGapDp)
@@ -518,6 +592,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             config.dialogWidthPercentLandscape
         } else {
             config.dialogWidthPercentPortrait
+        }
+    }
+
+    private fun getWinPopupScale(config: WinPopupUiConfig): Float {
+        return if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            config.dialogScaleLandscape
+        } else {
+            config.dialogScalePortrait
         }
     }
 
@@ -1854,11 +1936,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         pendingWinUiAfterAnimation = false
 
-        if (!showWinAnimation || winCelebrationPlayed) {
-            showGameEndDialog(true)
-            return
-        }
-
+        // Win videos are removed. Keep the win flow one-shot while status remains WON.
+        if (winCelebrationPlayed) return
         winCelebrationPlayed = true
         showGameEndDialog(true)
     }
