@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/dark_surface_color">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/develop_menu_title"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:paddingBottom="16dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#555555"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:id="@+id/layout_develop_starburst_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/develop_menu_win_starburst_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/tv_develop_starburst_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▴"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_develop_starburst_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_starburst_apply_auto"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_apply_auto"
+                android:textColor="#A5D6A7"
+                app:strokeColor="#A5D6A7"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_starburst_copy_values"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_copy_values"
+                android:textColor="#90CAF9"
+                app:strokeColor="#90CAF9"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_scale"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_scale_minus_quarter"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-0.25"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_scale_minus_small"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-0.05"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_scale_value"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="4.00x"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    app:strokeColor="#777777"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_scale_plus_small"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+0.05"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_scale_plus_quarter"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+0.25"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_position_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_position_x"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_x_minus10"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-10"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_x_minus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-1"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_x_value"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    app:strokeColor="#777777"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_x_plus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+1"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_x_plus10"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+10"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_position_y"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_y_minus10"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-10"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_y_minus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-1"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_y_value"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    app:strokeColor="#777777"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_y_plus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+1"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_position_y_plus10"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+10"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_pivot_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_pivot_x"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_x_minus5"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-5"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_x_minus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-1"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_x_value"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    app:strokeColor="#777777"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_x_plus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+1"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_x_plus5"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+5"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_pivot_y"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_y_minus5"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-5"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_y_minus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-1"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_y_value"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    app:strokeColor="#777777"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_y_plus1"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+1"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_pivot_y_plus5"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+5"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_rotation_speed"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_rotation_speed_minus100"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-100"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_rotation_speed_minus10"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="-10"
+                    android:textColor="#FF6B6B"
+                    app:strokeColor="#FF6B6B"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_rotation_speed_value"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="1200"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    app:strokeColor="#777777"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_rotation_speed_plus10"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+10"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_rotation_speed_plus100"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="+100"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE"
+                    android:layout_marginStart="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tester_menu_starburst_rotation_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:id="@+id/tv_starburst_rotation_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tester_menu_starburst_rotation_stopped"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_starburst_rotation_toggle"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tester_menu_starburst_rotation_start"
+                    android:textColor="#69F0AE"
+                    app:strokeColor="#69F0AE" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_develop_close"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tester_menu_close"
+            android:textColor="#CCCCCC"
+            app:strokeColor="#666666" />
+
+    </LinearLayout>
+</ScrollView>
+

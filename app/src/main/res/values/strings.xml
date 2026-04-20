@@ -315,6 +315,8 @@ Locale: %7$s</string>
     <string name="game_menu_foundation_to_tableau_with_value">Allow Foundation to Tableau: %1$s</string>
     <string name="game_menu_premium_acct">Premium Acct</string>
     <string name="game_menu_premium_acct_with_value">Premium Acct: %1$s</string>
+    <string name="board_button_testers">Testers</string>
+    <string name="board_button_develop">Develop</string>
 
     <!-- Tester Menu -->
     <string name="tester_menu_title">Testers Menu</string>
@@ -325,6 +327,22 @@ Locale: %7$s</string>
     <string name="tester_menu_disable">Disable</string>
     <string name="tester_menu_gems_section">Gems</string>
     <string name="tester_menu_coupons_section">Coupons</string>
+    <string name="tester_menu_starburst_pivot_section">Win Starburst Pivot (px offsets)</string>
+    <string name="tester_menu_starburst_pivot_x">Center X Offset</string>
+    <string name="tester_menu_starburst_pivot_y">Center Y Offset</string>
+    <string name="tester_menu_starburst_position_section">Win Starburst Position (px)</string>
+    <string name="tester_menu_starburst_position_x">Position X</string>
+    <string name="tester_menu_starburst_position_y">Position Y</string>
+    <string name="tester_menu_starburst_scale">Win Starburst Scale</string>
+    <string name="tester_menu_starburst_rotation_section">Win Starburst Rotation</string>
+    <string name="tester_menu_starburst_rotation_speed">Win Starburst Speed (ms per turn)</string>
+    <string name="tester_menu_starburst_rotation_running">Rotation: Running</string>
+    <string name="tester_menu_starburst_rotation_stopped">Rotation: Stopped</string>
+    <string name="tester_menu_starburst_rotation_start">Start Rotation</string>
+    <string name="tester_menu_starburst_rotation_stop">Stop Rotation</string>
+    <string name="tester_menu_starburst_copy_values">Copy Starburst Values</string>
+    <string name="tester_menu_starburst_apply_auto">Apply Auto Layout (Device Scale)</string>
+    <string name="tester_menu_starburst_values_copied">Starburst values copied to clipboard</string>
     <string name="tester_menu_reset_everything">⚠  RESET EVERYTHING  (Fresh Install)</string>
     <string name="tester_menu_close">Close</string>
     <string name="tester_menu_set_value_title">Set %1$s Value</string>
@@ -332,6 +350,11 @@ Locale: %7$s</string>
     <string name="tester_menu_reset_confirm_title">Reset Everything?</string>
     <string name="tester_menu_reset_confirm_message">This will wipe ALL game data: gems, coupons, statistics, settings, and saved game — restoring the app to a fresh-install state. This cannot be undone.</string>
     <string name="tester_menu_reset_confirm_yes">YES, RESET ALL</string>
+    <string name="tester_menu_trigger_win">▶  Trigger Win Sequence</string>
+
+    <!-- Develop Menu -->
+    <string name="develop_menu_title">Develop Menu</string>
+    <string name="develop_menu_win_starburst_section">Win Starburst Adjustments</string>
 
 </resources>
 

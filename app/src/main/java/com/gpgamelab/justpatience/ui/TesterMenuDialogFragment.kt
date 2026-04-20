@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.button.MaterialButton
@@ -27,17 +28,22 @@ class TesterMenuDialogFragment : DialogFragment() {
         fun onTesterSetCoupons(value: Int)
         fun onTesterSetPremium(enabled: Boolean)
         fun onTesterResetEverything(onComplete: () -> Unit)
+        fun onTesterTriggerWinSequence()
     }
+
     private var tvPremiumStatus: TextView? = null
     private var btnPremiumToggle: MaterialButton? = null
     private var btnGemsValue: MaterialButton? = null
     private var btnCouponsValue: MaterialButton? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         isCancelable = false
     }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         inflater.inflate(R.layout.dialog_tester_menu, container, false)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val host = activity as? Host ?: return
@@ -46,6 +52,7 @@ class TesterMenuDialogFragment : DialogFragment() {
         btnGemsValue     = view.findViewById(R.id.btn_gems_value)
         btnCouponsValue  = view.findViewById(R.id.btn_coupons_value)
         refreshAllDisplays(host)
+
         // Gems
         view.findViewById<MaterialButton>(R.id.btn_gems_minus5).setOnClickListener { host.onTesterAdjustGems(-5); refreshGemsDisplay(host) }
         view.findViewById<MaterialButton>(R.id.btn_gems_minus1).setOnClickListener { host.onTesterAdjustGems(-1); refreshGemsDisplay(host) }
@@ -66,6 +73,7 @@ class TesterMenuDialogFragment : DialogFragment() {
                 host.onTesterSetCoupons(v); refreshCouponsDisplay(host)
             }
         }
+
         // Premium toggle
         btnPremiumToggle?.setOnClickListener {
             host.onTesterSetPremium(!host.testerIsPremium())
@@ -84,6 +92,11 @@ class TesterMenuDialogFragment : DialogFragment() {
         }
         // Close
         view.findViewById<MaterialButton>(R.id.btn_tester_close).setOnClickListener { dismiss() }
+        // Trigger Win Sequence
+        view.findViewById<MaterialButton>(R.id.btn_tester_trigger_win).setOnClickListener {
+            dismiss()
+            host.onTesterTriggerWinSequence()
+        }
     }
     override fun onStart() {
         super.onStart()
@@ -100,12 +113,15 @@ class TesterMenuDialogFragment : DialogFragment() {
         refreshCouponsDisplay(host)
         refreshPremiumDisplay(host)
     }
+
     private fun refreshGemsDisplay(host: Host) {
         btnGemsValue?.text = host.testerCurrentGems().toString()
     }
+
     private fun refreshCouponsDisplay(host: Host) {
         btnCouponsValue?.text = host.testerCurrentCoupons().toString()
     }
+
     private fun refreshPremiumDisplay(host: Host) {
         val isPremium = host.testerIsPremium()
         tvPremiumStatus?.text = if (isPremium) getString(R.string.tester_menu_premium_enabled)
@@ -113,6 +129,7 @@ class TesterMenuDialogFragment : DialogFragment() {
         btnPremiumToggle?.text = if (isPremium) getString(R.string.tester_menu_disable)
                                  else getString(R.string.tester_menu_enable)
     }
+
     private fun showSetValueDialog(label: String, current: Int, onValueSet: (Int) -> Unit) {
         val editText = EditText(requireContext()).apply {
             hint      = getString(R.string.tester_menu_set_value_hint)
@@ -131,6 +148,7 @@ class TesterMenuDialogFragment : DialogFragment() {
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
+
     companion object {
         const val TAG = "tester_menu_dialog"
         fun newInstance(): TesterMenuDialogFragment = TesterMenuDialogFragment()

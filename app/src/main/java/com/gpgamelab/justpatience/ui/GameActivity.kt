@@ -1,10 +1,15 @@
 package com.gpgamelab.justpatience.ui
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -13,6 +18,7 @@ import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.widget.Button
 import android.widget.EditText
@@ -49,6 +55,7 @@ import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.databinding.ActivityGameBinding
 import com.gpgamelab.justpatience.model.GameStatus
 import com.gpgamelab.justpatience.data.GameStatsManager
+import com.gpgamelab.justpatience.util.BaselineResolutionScaleUtil
 import com.gpgamelab.justpatience.util.UiScaleUtil
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -56,8 +63,11 @@ import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import kotlin.random.Random
 import kotlin.math.sqrt
+import kotlin.math.roundToInt
+import android.graphics.drawable.GradientDrawable
+import java.util.Locale
 
-class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, TesterMenuDialogFragment.Host {
+class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, TesterMenuDialogFragment.Host, DevelopMenuDialogFragment.Host {
 
     private enum class HelpControlAction(
         val storageKey: String,
@@ -88,9 +98,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val dialogScaleLandscape: Float = 0.90f,
         val dialogScalePortrait: Float = 0.60f,
         // Visual-only starburst tweaks for win popup.
-        val starburstOffsetXPx: Float = 100f,
-        val starburstOffsetYPx: Float = 250f,
-        // +300% size increase relative to baseline = 4x total size.
+        val starburstOffsetXPx: Float = 0f,
+        val starburstOffsetYPx: Float = 0f,
+        // Baseline visual memory value; auto-layout recalculates per device/orientation.
         val starburstScale: Float = 4.0f,
         // Portrait reward band (gems position is fine; tickets get an extra nudge below)
         val rewardTopPercentPortrait: Float = 0.63f,
@@ -166,10 +176,86 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var gemTotal: Int = 0
     private var ticketTotal: Int = 0
     private var dailyBonusPromptShownThisLaunch: Boolean = false
+    private var testerStarburstPositionXPx: Int = winPopupUiConfig.starburstOffsetXPx.toInt()
+    private var testerStarburstPositionYPx: Int = winPopupUiConfig.starburstOffsetYPx.toInt()
+    private var testerStarburstScale: Float = winPopupUiConfig.starburstScale
+    private var testerStarburstPivotOffsetXPx: Int = 0
+    private var testerStarburstPivotOffsetYPx: Int = 0
+    private var testerStarburstRotationDurationMs: Int = DEFAULT_STARBURST_ROTATION_DURATION_MS.toInt()
+    private var testerStarburstRotationEnabled: Boolean = true
+    private var testerStarburstAutoLayoutEnabled: Boolean = true
+    private var activeStarburstView: ImageView? = null
+    private var activeStarburstAnimator: ObjectAnimator? = null
+    private var activeWinPopupDialog: Dialog? = null
+    private var activeWinPopupRoot: View? = null
+    private var activeWinPopupBaseWidthPx: Int = 0
+    private var activeWinPopupBaseHeightPx: Int = 0
+
+    // -------------------------------------------------------------------------
+    // Auto starburst layout profile
+    // -------------------------------------------------------------------------
+
+    /**
+     * Auto-computed starburst scale and position for the current device and orientation.
+     *
+     * The medium tablet is the remembered baseline:
+     *   • portrait baseline resolution = 1600 × 2560 px
+     *   • baseline starburst scale     = 4.0x
+     *   • baseline starburst posY      = -33 px
+     *
+     * The current device ratio is the average of width-ratio and height-ratio against the
+     * orientation-matched baseline resolution. Feature values are then derived as:
+     *   • scale = baselineScale × averageRatio
+     *   • posY  = baselinePosY ÷ averageRatio
+     */
+    private data class AutoStarburstProfile(
+        val scale: Float,
+        val positionXPx: Int,
+        val positionYPx: Int
+    )
+
+    private fun computeAutoStarburstProfile(): AutoStarburstProfile {
+        val ratioProfile = BaselineResolutionScaleUtil.calculateAverageRatio(
+            context = this,
+            baselinePortraitWidthPx = WIN_POPUP_BASELINE_PORTRAIT_WIDTH_PX,
+            baselinePortraitHeightPx = WIN_POPUP_BASELINE_PORTRAIT_HEIGHT_PX
+        )
+
+        val scale = BaselineResolutionScaleUtil
+            .scaleFromBaseline(WIN_POPUP_BASELINE_STARBURST_SCALE, ratioProfile.averageRatio)
+            .coerceAtLeast(MIN_STARBURST_SCALE)
+        val posYPx = BaselineResolutionScaleUtil
+            .inverseScaleFromBaseline(WIN_POPUP_BASELINE_STARBURST_POSITION_Y_PX.toFloat(), ratioProfile.averageRatio)
+            .roundToInt()
+
+        return AutoStarburstProfile(scale = scale, positionXPx = 0, positionYPx = posYPx)
+    }
+
+    /** Apply the auto-computed starburst profile to the active tester values. */
+    private fun applyAutoStarburstProfile() {
+        val profile = computeAutoStarburstProfile()
+        testerStarburstPositionXPx = profile.positionXPx
+        testerStarburstPositionYPx = profile.positionYPx
+        testerStarburstScale       = profile.scale
+        testerStarburstAutoLayoutEnabled = true
+    }
+
+    // -------------------------------------------------------------------------
 
     private companion object {
+        private const val WIN_POPUP_BASELINE_PORTRAIT_WIDTH_PX = 1_600
+        private const val WIN_POPUP_BASELINE_PORTRAIT_HEIGHT_PX = 2_560
+        private const val WIN_POPUP_BASELINE_STARBURST_SCALE = 4.0f
+        private const val WIN_POPUP_BASELINE_STARBURST_POSITION_Y_PX = -33
         private const val WIN_POPUP_DEBUG_PAUSES_ENABLED = false
         private const val WIN_POPUP_DEBUG_PAUSE_MS = 3_000L
+        private const val DEFAULT_STARBURST_ROTATION_DURATION_MS = 4_000L
+        private const val MIN_STARBURST_SCALE = 0.25f
+        private const val DEFAULT_STARBURST_TOP_OVERFLOW_DP = 140f
+        private const val STARBURST_OVERFLOW_MARGIN_DP = 12f
+        private const val SHOW_STARBURST_PIVOT_DEBUG_TEXT = false
+        private const val STARBURST_PIVOT_MARKER_TAG = "starburst_pivot_marker"
+        private const val STARBURST_PIVOT_DEBUG_TEXT_TAG = "starburst_pivot_debug_text"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -177,6 +263,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding = ActivityGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
         applyImmersiveFullscreen()
+
+        // Initialise starburst tester values from the auto-scaling profile so
+        // every device/orientation gets sensible defaults without manual tuning.
+        applyAutoStarburstProfile()
 
         // Scale the bottom control-button row (and info panel) vertically using the
         // raw baseline factor – no extreme-aspect correction – so portrait phones get
@@ -321,6 +411,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
         binding.btnStats.setOnClickListener { showGameMenu() }
         binding.btnTesters.setOnClickListener { showTesterMenu() }
+        binding.btnDevelop.setOnClickListener { showDevelopMenu() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             onHelpControlClicked(HelpControlAction.AUTO, buttonView) {
                 buttonView.isEnabled = false
@@ -444,7 +535,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val adMultiplier = if (isPremiumAccount) 5 else 2
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_win_reward_choice, null)
-        configureWinPopupArtwork(dialogView)
+        val starburstView = configureWinPopupArtwork(dialogView)
         val rewardAmount = dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)
         val ticketRewardAmount = dialogView.findViewById<TextView>(R.id.tv_ticket_reward_amount)
         val continueButton = dialogView.findViewById<Button>(R.id.btn_win_continue)
@@ -462,9 +553,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val widthPx = (
             resources.displayMetrics.widthPixels * widthPercent * dialogScale
             ).toInt().coerceAtLeast(1)
-        val heightPx = (
+        val baseHeightPx = (
             resources.displayMetrics.heightPixels * winPopupUiConfig.dialogHeightPercent * dialogScale
             ).toInt().coerceAtLeast(1)
+        val initialOverflowTopPx = estimateInitialStarburstTopOverflowPx()
+        val heightPx = (baseHeightPx + initialOverflowTopPx).coerceAtLeast(1)
 
         val dialog = Dialog(this).apply {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -474,6 +567,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
             window?.setLayout(widthPx, heightPx)
         }
+        activeWinPopupDialog = dialog
+        activeWinPopupRoot = dialogView
+        activeWinPopupBaseWidthPx = widthPx
+        activeWinPopupBaseHeightPx = baseHeightPx
 
         continueButton.setOnClickListener {
             continueButton.isEnabled = false
@@ -494,12 +591,28 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             }
         }
 
-        dialog.setOnDismissListener { winDialogShowing = false }
+        dialog.setOnDismissListener {
+            activeStarburstAnimator?.cancel()
+            activeStarburstAnimator = null
+            activeStarburstView = null
+            activeWinPopupDialog = null
+            activeWinPopupRoot = null
+            activeWinPopupBaseWidthPx = 0
+            activeWinPopupBaseHeightPx = 0
+            winDialogShowing = false
+        }
         dialog.show()
         dialog.window?.setLayout(widthPx, heightPx)
+
+        // Start rotation only after the view is measured, so pivot uses true center.
+        starburstView?.post {
+            if (!dialog.isShowing) return@post
+            activeStarburstView = starburstView
+            refreshActiveStarburstDebugAndMotion()
+        }
     }
 
-    private fun configureWinPopupArtwork(dialogView: View) {
+    private fun configureWinPopupArtwork(dialogView: View): ImageView? {
         dialogView.findViewById<ImageView>(R.id.iv_win_popup_bg)?.apply {
             setImageResource(R.drawable.ic_popup_rect_blue)
             visibility = View.VISIBLE
@@ -511,17 +624,270 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         dialogView.findViewById<View>(R.id.layout_reward_row)?.bringToFront()
         dialogView.findViewById<View>(R.id.layout_buttons_row)?.bringToFront()
 
-        dialogView.findViewById<ImageView>(R.id.iv_win_popup_starburst)?.apply {
+        val starburstView = dialogView.findViewById<ImageView>(R.id.iv_win_popup_starburst)
+        starburstView?.apply {
             setImageResource(R.drawable.ic_star_burst_yellow)
             visibility = View.VISIBLE
             alpha = 1f
-            translationX = winPopupUiConfig.starburstOffsetXPx
-            translationY = winPopupUiConfig.starburstOffsetYPx
-            scaleX = winPopupUiConfig.starburstScale
-            scaleY = winPopupUiConfig.starburstScale
+            translationX = testerStarburstPositionXPx.toFloat()
+            translationY = testerStarburstPositionYPx.toFloat()
+            scaleX = testerStarburstScale
+            scaleY = testerStarburstScale
             elevation = dpToPx(24f).toFloat()
             bringToFront()
         }
+
+        return starburstView
+    }
+
+    private fun applyStarburstPivot(view: ImageView) {
+        view.rotation = 0f
+
+        // Base pivot from the actual visible starburst pixels (min/max bounds midpoint),
+        // not from the ImageView box and not from manual compensation.
+        val displayBounds = calculateDisplayedDrawableBoundsInView(view)
+        val basePivotX = displayBounds?.centerX() ?: (view.width / 2.0f)
+        val basePivotY = displayBounds?.centerY() ?: (view.height / 2.0f)
+        view.pivotX = basePivotX + testerStarburstPivotOffsetXPx
+        view.pivotY = basePivotY + testerStarburstPivotOffsetYPx
+    }
+
+    private fun applyStarburstPlacement(view: ImageView) {
+        view.translationX = testerStarburstPositionXPx.toFloat()
+        view.translationY = testerStarburstPositionYPx.toFloat()
+    }
+
+    private fun applyStarburstScale(view: ImageView) {
+        view.scaleX = testerStarburstScale
+        view.scaleY = testerStarburstScale
+    }
+
+    private fun startStarburstRotation(view: ImageView): ObjectAnimator {
+        applyStarburstPlacement(view)
+        applyStarburstScale(view)
+        applyStarburstPivot(view)
+
+        return ObjectAnimator.ofFloat(view, "rotation", 0f, 360f).apply {
+            duration = testerStarburstRotationDurationMs.toLong()
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.RESTART
+            interpolator = android.view.animation.LinearInterpolator()
+            start()
+        }
+    }
+
+    private fun refreshActiveStarburstDebugAndMotion() {
+        val starburstView = activeStarburstView ?: return
+
+        activeStarburstAnimator?.cancel()
+        activeStarburstAnimator = null
+
+        applyStarburstPlacement(starburstView)
+        applyStarburstScale(starburstView)
+        applyStarburstPivot(starburstView)
+        updateActiveWinPopupOverflow(starburstView)
+        if (testerStarburstRotationEnabled) {
+            activeStarburstAnimator = startStarburstRotation(starburstView)
+        }
+        showStarburstPivotMarker(starburstView)
+    }
+
+    private fun estimateInitialStarburstTopOverflowPx(): Int {
+        val baseStarburstHeightPx = dpToPx(133f)
+        val scaledOverflow = ((testerStarburstScale - 1f).coerceAtLeast(0f) * baseStarburstHeightPx * 0.5f)
+        val translationReduction = testerStarburstPositionYPx.toFloat().coerceAtLeast(0f)
+        return (scaledOverflow - translationReduction + dpToPx(DEFAULT_STARBURST_TOP_OVERFLOW_DP)).toInt().coerceAtLeast(dpToPx(32f))
+    }
+
+    private fun updateActiveWinPopupOverflow(starburstView: ImageView) {
+        val root = activeWinPopupRoot ?: return
+        val dialog = activeWinPopupDialog ?: return
+        val spacer = root.findViewById<View>(R.id.view_starburst_overflow_spacer) ?: return
+
+        val overflowTopPx = calculateRequiredStarburstTopOverflowPx(starburstView)
+        val lp = spacer.layoutParams
+        if (lp.height != overflowTopPx) {
+            lp.height = overflowTopPx
+            spacer.layoutParams = lp
+        }
+
+        val desiredHeightPx = (activeWinPopupBaseHeightPx + overflowTopPx).coerceAtLeast(1)
+        dialog.window?.setLayout(activeWinPopupBaseWidthPx.coerceAtLeast(1), desiredHeightPx)
+    }
+
+    private fun calculateRequiredStarburstTopOverflowPx(starburstView: ImageView): Int {
+        val points = floatArrayOf(
+            0f, 0f,
+            starburstView.width.toFloat(), 0f,
+            starburstView.width.toFloat(), starburstView.height.toFloat(),
+            0f, starburstView.height.toFloat()
+        )
+        starburstView.matrix.mapPoints(points)
+
+        var minY = Float.POSITIVE_INFINITY
+        var i = 1
+        while (i < points.size) {
+            val y = points[i]
+            if (y < minY) minY = y
+            i += 2
+        }
+
+        val marginPx = dpToPx(STARBURST_OVERFLOW_MARGIN_DP)
+        return (-minY + marginPx).toInt().coerceAtLeast(marginPx)
+    }
+
+    private fun showStarburstPivotMarker(starburstView: ImageView) {
+        val parent = starburstView.parent as? ViewGroup ?: return
+
+        // Replace any existing marker for this popup instance.
+        parent.findViewWithTag<View>(STARBURST_PIVOT_MARKER_TAG)?.let { parent.removeView(it) }
+        parent.findViewWithTag<View>(STARBURST_PIVOT_DEBUG_TEXT_TAG)?.let { parent.removeView(it) }
+
+        val markerSizePx = dpToPx(8f)
+        val marker = View(this).apply {
+            tag = STARBURST_PIVOT_MARKER_TAG
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(0x88FF0000.toInt())
+                setStroke(dpToPx(1f), 0xFFFF0000.toInt())
+            }
+            layoutParams = ViewGroup.LayoutParams(markerSizePx, markerSizePx)
+            isClickable = false
+            isFocusable = false
+            alpha = 0.95f
+            elevation = starburstView.elevation + 2f
+        }
+
+        parent.addView(marker)
+
+        // Convert local starburst pivot to parent coordinates and center the marker on it.
+        val pivotOnParent = mapLocalPointToParent(starburstView, starburstView.pivotX, starburstView.pivotY)
+        val pivotOnParentX = pivotOnParent.first
+        val pivotOnParentY = pivotOnParent.second
+        marker.x = pivotOnParentX - markerSizePx / 2f
+        marker.y = pivotOnParentY - markerSizePx / 2f
+
+        if (!SHOW_STARBURST_PIVOT_DEBUG_TEXT) return
+
+        val debugText = buildStarburstPivotDebugText(starburstView, pivotOnParentX, pivotOnParentY)
+        val debugView = TextView(this).apply {
+            tag = STARBURST_PIVOT_DEBUG_TEXT_TAG
+            text = debugText
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xAA000000.toInt())
+            setPadding(dpToPx(6f), dpToPx(4f), dpToPx(6f), dpToPx(4f))
+            elevation = marker.elevation + 2f
+            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
+        parent.addView(debugView)
+        debugView.x = dpToPx(6f).toFloat()
+        debugView.y = dpToPx(6f).toFloat()
+    }
+
+    private fun buildStarburstPivotDebugText(starburstView: ImageView, pivotParentX: Float, pivotParentY: Float): String {
+        val displayBounds = calculateDisplayedDrawableBoundsInView(starburstView)
+        val basePivotX = displayBounds?.centerX() ?: (starburstView.width / 2f)
+        val basePivotY = displayBounds?.centerY() ?: (starburstView.height / 2f)
+        val finalPivotX = starburstView.pivotX
+        val finalPivotY = starburstView.pivotY
+
+        val viewCenterX = starburstView.width / 2f
+        val viewCenterY = starburstView.height / 2f
+
+        return buildString {
+            appendLine("Starburst Pivot Debug")
+            appendLine("visible min/max: x=${fmt(displayBounds?.left)}..${fmt(displayBounds?.right)}, y=${fmt(displayBounds?.top)}..${fmt(displayBounds?.bottom)}")
+            appendLine("position: (${testerStarburstPositionXPx}, ${testerStarburstPositionYPx})")
+            appendLine("scale: ${fmtScale(testerStarburstScale)}x")
+            appendLine("base center: (${fmt(basePivotX)}, ${fmt(basePivotY)})")
+            appendLine("offsets: (${testerStarburstPivotOffsetXPx}, ${testerStarburstPivotOffsetYPx})")
+            appendLine("final pivot local: (${fmt(finalPivotX)}, ${fmt(finalPivotY)})")
+            appendLine("view center local: (${fmt(viewCenterX)}, ${fmt(viewCenterY)})")
+            appendLine("rotation ms/turn: $testerStarburstRotationDurationMs")
+            append("pivot parent: (${fmt(pivotParentX)}, ${fmt(pivotParentY)})")
+        }
+    }
+
+    private fun fmt(v: Float?): String {
+        if (v == null) return "n/a"
+        return String.format(Locale.US, "%.1f", v)
+    }
+
+    private fun fmtScale(v: Float): String = String.format(Locale.US, "%.2f", v)
+
+    private fun calculateDisplayedDrawableBoundsInView(imageView: ImageView): RectF? {
+        val sourceDrawable = imageView.drawable ?: return null
+        val drawableWidth = sourceDrawable.intrinsicWidth.takeIf { it > 0 } ?: return null
+        val drawableHeight = sourceDrawable.intrinsicHeight.takeIf { it > 0 } ?: return null
+
+        val drawable = sourceDrawable.constantState?.newDrawable()?.mutate() ?: sourceDrawable.mutate()
+        val bitmap = Bitmap.createBitmap(drawableWidth, drawableHeight, Bitmap.Config.ARGB_8888)
+        return try {
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, drawableWidth, drawableHeight)
+            drawable.draw(canvas)
+
+            val pixels = IntArray(drawableWidth * drawableHeight)
+            bitmap.getPixels(pixels, 0, drawableWidth, 0, 0, drawableWidth, drawableHeight)
+
+            var minX = drawableWidth
+            var minY = drawableHeight
+            var maxX = -1
+            var maxY = -1
+
+            for (y in 0 until drawableHeight) {
+                val rowOffset = y * drawableWidth
+                for (x in 0 until drawableWidth) {
+                    val alpha = pixels[rowOffset + x] ushr 24
+                    if (alpha > 8) {
+                        if (x < minX) minX = x
+                        if (x > maxX) maxX = x
+                        if (y < minY) minY = y
+                        if (y > maxY) maxY = y
+                    }
+                }
+            }
+
+            if (maxX < minX || maxY < minY) {
+                null
+            } else {
+                val points = floatArrayOf(
+                    minX.toFloat(), minY.toFloat(),
+                    (maxX + 1).toFloat(), minY.toFloat(),
+                    (maxX + 1).toFloat(), (maxY + 1).toFloat(),
+                    minX.toFloat(), (maxY + 1).toFloat()
+                )
+                imageView.imageMatrix.mapPoints(points)
+
+                var mappedMinX = Float.POSITIVE_INFINITY
+                var mappedMaxX = Float.NEGATIVE_INFINITY
+                var mappedMinY = Float.POSITIVE_INFINITY
+                var mappedMaxY = Float.NEGATIVE_INFINITY
+                var i = 0
+                while (i < points.size) {
+                    val x = points[i]
+                    val y = points[i + 1]
+                    if (x < mappedMinX) mappedMinX = x
+                    if (x > mappedMaxX) mappedMaxX = x
+                    if (y < mappedMinY) mappedMinY = y
+                    if (y > mappedMaxY) mappedMaxY = y
+                    i += 2
+                }
+
+                RectF(mappedMinX, mappedMinY, mappedMaxX, mappedMaxY)
+            }
+        } finally {
+            bitmap.recycle()
+        }
+    }
+
+    private fun mapLocalPointToParent(view: View, localX: Float, localY: Float): Pair<Float, Float> {
+        val points = floatArrayOf(localX, localY)
+        view.matrix.mapPoints(points)
+        points[0] += view.left
+        points[1] += view.top
+        return Pair(points[0], points[1])
     }
 
     private fun applyWinPopupUiConfig(dialogView: View, config: WinPopupUiConfig) {
@@ -833,6 +1199,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         TesterMenuDialogFragment.newInstance().show(supportFragmentManager, TesterMenuDialogFragment.TAG)
     }
 
+    private fun showDevelopMenu() {
+        if (supportFragmentManager.findFragmentByTag(DevelopMenuDialogFragment.TAG) != null) return
+        DevelopMenuDialogFragment.newInstance().show(supportFragmentManager, DevelopMenuDialogFragment.TAG)
+    }
+
     // ------------------------------------------------------------------
     // TesterMenuDialogFragment.Host implementation
     // ------------------------------------------------------------------
@@ -840,6 +1211,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun testerCurrentGems(): Int = gemTotal
     override fun testerCurrentCoupons(): Int = ticketTotal
     override fun testerIsPremium(): Boolean = isPremiumAccount
+    override fun testerStarburstPositionX(): Int = testerStarburstPositionXPx
+    override fun testerStarburstPositionY(): Int = testerStarburstPositionYPx
+    override fun testerStarburstScale(): Float = testerStarburstScale
+    override fun testerStarburstPivotOffsetX(): Int = testerStarburstPivotOffsetXPx
+    override fun testerStarburstPivotOffsetY(): Int = testerStarburstPivotOffsetYPx
+    override fun testerStarburstRotationDurationMs(): Int = testerStarburstRotationDurationMs
+    override fun testerIsStarburstRotationEnabled(): Boolean = testerStarburstRotationEnabled
 
     override fun onTesterAdjustGems(delta: Int) {
         awardGems(delta)
@@ -868,7 +1246,79 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    override fun onTesterAdjustStarburstPivotOffsetX(delta: Int) {
+        testerStarburstPivotOffsetXPx += delta
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterAdjustStarburstPivotOffsetY(delta: Int) {
+        testerStarburstPivotOffsetYPx += delta
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterSetStarburstPivotOffsetX(value: Int) {
+        testerStarburstPivotOffsetXPx = value
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterSetStarburstPivotOffsetY(value: Int) {
+        testerStarburstPivotOffsetYPx = value
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterAdjustStarburstPositionX(delta: Int) {
+        testerStarburstPositionXPx += delta
+        testerStarburstAutoLayoutEnabled = false
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterAdjustStarburstPositionY(delta: Int) {
+        testerStarburstPositionYPx += delta
+        testerStarburstAutoLayoutEnabled = false
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterSetStarburstPositionX(value: Int) {
+        testerStarburstPositionXPx = value
+        testerStarburstAutoLayoutEnabled = false
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterSetStarburstPositionY(value: Int) {
+        testerStarburstPositionYPx = value
+        testerStarburstAutoLayoutEnabled = false
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterAdjustStarburstScale(delta: Float) {
+        testerStarburstScale = (testerStarburstScale + delta).coerceAtLeast(MIN_STARBURST_SCALE)
+        testerStarburstAutoLayoutEnabled = false
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterSetStarburstScale(value: Float) {
+        testerStarburstScale = value.coerceAtLeast(MIN_STARBURST_SCALE)
+        testerStarburstAutoLayoutEnabled = false
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterAdjustStarburstRotationDurationMs(delta: Int) {
+        testerStarburstRotationDurationMs = (testerStarburstRotationDurationMs + delta).coerceAtLeast(100)
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterSetStarburstRotationDurationMs(value: Int) {
+        testerStarburstRotationDurationMs = value.coerceAtLeast(100)
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterSetStarburstRotationEnabled(enabled: Boolean) {
+        testerStarburstRotationEnabled = enabled
+        refreshActiveStarburstDebugAndMotion()
+    }
+
     override fun onTesterResetEverything(onComplete: () -> Unit) {
+
         lifecycleScope.launch {
             statsManager.deleteAllGameRecords()
             settingsManager.resetAllData()
@@ -878,11 +1328,29 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             isPremiumAccount = false
             winCelebrationPlayed = false
             dailyBonusPromptShownThisLaunch = false
+            // Reset starburst to the auto-computed defaults for the current device/orientation.
+            applyAutoStarburstProfile()
+            testerStarburstPivotOffsetXPx = 0
+            testerStarburstPivotOffsetYPx = 0
+            testerStarburstRotationDurationMs = DEFAULT_STARBURST_ROTATION_DURATION_MS.toInt()
+            testerStarburstRotationEnabled = false
             renderGemHud(gemTotal)
             renderTicketHud(ticketTotal)
             viewModel.startNewGame()
             onComplete()
         }
+    }
+
+    override fun onTesterApplyAutoStarburstLayout() {
+        applyAutoStarburstProfile()
+        refreshActiveStarburstDebugAndMotion()
+    }
+
+    override fun onTesterTriggerWinSequence() {
+        // Reset win-flow guards so the sequence runs even if a win was already shown.
+        winCelebrationPlayed = false
+        winDialogShowing = false
+        showGameEndDialog(true)
     }
 
     // ------------------------------------------------------------------
@@ -1537,6 +2005,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         super.onConfigurationChanged(newConfig)
         applyImmersiveFullscreen()
         applyResponsiveControlSizing()
+        if (testerStarburstAutoLayoutEnabled) {
+            applyAutoStarburstProfile()
+            refreshActiveStarburstDebugAndMotion()
+        }
     }
 
     private fun applyImmersiveFullscreen() {

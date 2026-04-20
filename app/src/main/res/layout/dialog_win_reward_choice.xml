@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent">
+    android:background="@android:color/transparent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <!--
          Easy tweak points for overlay placement:
@@ -14,45 +16,202 @@
          - text/icon sizing: edit textSize / margins below
     -->
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_reward_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.55" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_reward_bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.65" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_buttons_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.75" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_buttons_bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.85" />
-
-    <ImageView
-        android:id="@+id/iv_win_popup_bg"
+    <View
+        android:id="@+id/view_starburst_overflow_spacer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:contentDescription="@null"
-        android:scaleType="fitXY"
-        android:src="@drawable/ic_popup_rect_blue"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_popup_body"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view_starburst_overflow_spacer">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_reward_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.55" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_reward_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.65" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_buttons_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.75" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_buttons_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.85" />
+
+        <ImageView
+            android:id="@+id/iv_win_popup_bg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@null"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_popup_rect_blue"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_reward_popup_title"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="sans-serif-black"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/white"
+            android:textSize="34sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/guideline_reward_top"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Daily Bonus"
+            tools:visibility="visible" />
+
+        <!--
+             Reward row: two vertical item groups side by side.
+             Each group: image on top, count number below overlapping the bottom of the image.
+             Image sizes:  gems = base × 0.80,  tickets = base × 0.70
+             Text overlap: negative top margin ≈ 50 % of text height → ~22 dp at 44 sp
+        -->
+        <LinearLayout
+            android:id="@+id/layout_reward_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/guideline_reward_bottom"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/guideline_reward_top">
+
+            <!-- Gems group -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginEnd="28dp"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/iv_main_reward_gems"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/gems_purple_3_1024x1024" />
+
+                <TextView
+                    android:id="@+id/tv_main_reward_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-20dp"
+                    android:fontFamily="sans-serif-black"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    tools:text="10" />
+            </LinearLayout>
+
+            <!-- Tickets group -->
+            <LinearLayout
+                android:id="@+id/layout_tickets_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/iv_main_reward_tickets"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ticket_yellow_on_green_768x384" />
+
+                <TextView
+                    android:id="@+id/tv_ticket_reward_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-10dp"
+                    android:fontFamily="sans-serif-black"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    tools:text="5" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_buttons_row"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/guideline_buttons_bottom"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/guideline_buttons_top">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_win_continue"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/button_horizontal_lt_green_512x256"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="@string/win_reward_popup_continue"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_win_multiplier"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/button_horizontal_lt_green_512x256"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="@string/win_reward_popup_multiplier_preview"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
         android:id="@+id/iv_win_popup_starburst"
@@ -64,145 +223,9 @@
         android:src="@drawable/ic_star_burst_yellow"
         android:translationY="-6dp"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_reward_popup_title"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:fontFamily="sans-serif-black"
-        android:gravity="center"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:textColor="@color/white"
-        android:textSize="34sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/guideline_reward_top"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Daily Bonus"
-        tools:visibility="visible" />
-
-    <!--
-         Reward row: two vertical item groups side by side.
-         Each group: image on top, count number below overlapping the bottom of the image.
-         Image sizes:  gems = base × 0.80,  tickets = base × 0.70
-         Text overlap: negative top margin ≈ 50 % of text height → ~22 dp at 44 sp
-    -->
-    <LinearLayout
-        android:id="@+id/layout_reward_row"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/guideline_reward_bottom"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guideline_reward_top">
-
-        <!-- Gems group -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="28dp"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/iv_main_reward_gems"
-                android:layout_width="wrap_content"
-                android:layout_height="52dp"
-                android:adjustViewBounds="true"
-                android:contentDescription="@null"
-                android:scaleType="fitCenter"
-                android:src="@drawable/gems_purple_3_1024x1024" />
-
-            <TextView
-                android:id="@+id/tv_main_reward_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-20dp"
-                android:fontFamily="sans-serif-black"
-                android:gravity="center"
-                android:text=""
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                tools:text="10" />
-        </LinearLayout>
-
-        <!-- Tickets group -->
-        <LinearLayout
-            android:id="@+id/layout_tickets_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/iv_main_reward_tickets"
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:adjustViewBounds="true"
-                android:contentDescription="@null"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ticket_yellow_on_green_768x384" />
-
-            <TextView
-                android:id="@+id/tv_ticket_reward_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-10dp"
-                android:fontFamily="sans-serif-black"
-                android:gravity="center"
-                android:text=""
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                tools:text="5" />
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layout_buttons_row"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/guideline_buttons_bottom"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guideline_buttons_top">
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_win_continue"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@drawable/button_horizontal_lt_green_512x256"
-            android:gravity="center"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:text="@string/win_reward_popup_continue"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="20sp" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_win_multiplier"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@drawable/button_horizontal_lt_green_512x256"
-            android:gravity="center"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:text="@string/win_reward_popup_multiplier_preview"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="20sp" />
-    </LinearLayout>
+        app:layout_constraintEnd_toEndOf="@id/layout_popup_body"
+        app:layout_constraintStart_toStartOf="@id/layout_popup_body"
+        app:layout_constraintTop_toTopOf="@id/layout_popup_body" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

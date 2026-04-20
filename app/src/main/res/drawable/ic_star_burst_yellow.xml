@@ -4,11 +4,11 @@
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="210"
-    android:viewportHeight="297">
+    android:viewportHeight="210">
 
     <group
-        android:translateX="-29.469589"
-        android:translateY="-45.699211">
+        android:translateX="1.11062"
+        android:translateY="-14.31575">
 
         <!-- Outer spiky rays (12 rays at 30° intervals, gold #FFC900 → yellow #FFFF00) -->
 

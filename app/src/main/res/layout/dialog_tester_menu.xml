@@ -246,6 +246,30 @@
 
         </LinearLayout>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#555555"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Trigger Win Sequence -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#555555"
+            android:layout_marginBottom="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_tester_trigger_win"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tester_menu_trigger_win"
+            android:textColor="#FFD740"
+            android:textStyle="bold"
+            app:strokeColor="#FFD740"
+            android:layout_marginBottom="8dp" />
+
         <!-- Extra space before the dangerous Reset button -->
         <View
             android:layout_width="match_parent"

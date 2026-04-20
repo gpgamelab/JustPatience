@@ -286,7 +286,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="6dp"
         android:alpha="0.65"
-        android:text="Testers"
+        android:text="@string/board_button_testers"
         android:textSize="9sp"
         android:textColor="#AAAAAA"
         android:paddingStart="6dp"
@@ -296,6 +296,25 @@
         app:strokeColor="#555555"
         app:layout_constraintBottom_toTopOf="@id/adView"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_develop"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:alpha="0.65"
+        android:text="@string/board_button_develop"
+        android:textSize="9sp"
+        android:textColor="#90CAF9"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        app:strokeColor="#4F83CC"
+        app:layout_constraintBottom_toBottomOf="@id/btn_testers"
+        app:layout_constraintStart_toEndOf="@id/btn_testers"
+        app:layout_constraintTop_toTopOf="@id/btn_testers" />
 
     <!-- 4. Banner Ad (at the very bottom, below game board and controls) -->
     <com.google.android.gms.ads.AdView
