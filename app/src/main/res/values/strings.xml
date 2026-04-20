@@ -355,6 +355,26 @@ Locale: %7$s</string>
     <!-- Develop Menu -->
     <string name="develop_menu_title">Develop Menu</string>
     <string name="develop_menu_win_starburst_section">Win Starburst Adjustments</string>
+    <string name="develop_menu_win_popup_section">Win Popup Elements</string>
+    <string name="develop_menu_apply_auto_popup">Apply Auto Popup Ratios</string>
+    <string name="develop_menu_gem_image_height">Gem image height (dp)</string>
+    <string name="develop_menu_gem_offset_x">Gem image offset X (dp)</string>
+    <string name="develop_menu_gem_offset_y">Gem image offset Y (dp)</string>
+    <string name="develop_menu_ticket_image_height">Ticket image height (dp)</string>
+    <string name="develop_menu_ticket_offset_x">Ticket image offset X (dp)</string>
+    <string name="develop_menu_ticket_offset_y">Ticket image offset Y (dp)</string>
+    <string name="develop_menu_reward_text_size">Reward number text size (sp)</string>
+    <string name="develop_menu_gem_number_offset_x">Gem number offset X (dp)</string>
+    <string name="develop_menu_gem_number_offset_y">Gem number offset Y (dp)</string>
+    <string name="develop_menu_ticket_number_offset_x">Ticket number offset X (dp)</string>
+    <string name="develop_menu_ticket_number_offset_y">Ticket number offset Y (dp)</string>
+    <string name="develop_menu_button_text_size">Popup button text size (sp)</string>
+    <string name="develop_menu_button_row_offset_x">Popup button row offset X (dp)</string>
+    <string name="develop_menu_button_row_offset_y">Popup button row offset Y (dp)</string>
+    <string name="develop_menu_victory_text_size">VICTORY text size (sp)</string>
+    <string name="develop_menu_victory_offset_x">VICTORY offset X (dp)</string>
+    <string name="develop_menu_victory_offset_y">VICTORY offset Y (dp)</string>
+    <string name="win_popup_victory_title">VICTORY!</string>
 
 </resources>
 

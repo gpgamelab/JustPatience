@@ -20,6 +20,16 @@ val useFakeTestAds = providers.gradleProperty("useFakeTestAds")
     .orElse(true)
     .get()
 
+val showTesterButton = providers.gradleProperty("showTesterButton")
+    .map(String::toBoolean)
+    .orElse(true)
+    .get()
+
+val showDevelopButton = providers.gradleProperty("showDevelopButton")
+    .map(String::toBoolean)
+    .orElse(true)
+    .get()
+
 val selectedBannerAdId = if (useProductionAds) {
     "ca-app-pub-7092037186763886/6653974301"
 } else {
@@ -67,12 +77,16 @@ android {
             resValue("bool", "use_test_ad_ids", (!useProductionAds).toString())
             resValue("bool", "use_production_ad_ids", useProductionAds.toString())
             resValue("bool", "use_fake_test_ads", useFakeTestAds.toString())
+            buildConfigField("boolean", "SHOW_TESTER_BUTTON", showTesterButton.toString())
+            buildConfigField("boolean", "SHOW_DEVELOP_BUTTON", showDevelopButton.toString())
         }
         release {
             resValue("string", "banner_ad_unit_id", selectedBannerAdId)
             resValue("bool", "use_test_ad_ids", (!useProductionAds).toString())
             resValue("bool", "use_production_ad_ids", useProductionAds.toString())
             resValue("bool", "use_fake_test_ads", useFakeTestAds.toString())
+            buildConfigField("boolean", "SHOW_TESTER_BUTTON", showTesterButton.toString())
+            buildConfigField("boolean", "SHOW_DEVELOP_BUTTON", showDevelopButton.toString())
             isMinifyEnabled = false
             ndk {
                 debugSymbolLevel = "SYMBOL_TABLE"

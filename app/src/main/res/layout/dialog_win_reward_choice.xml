@@ -93,6 +93,22 @@
             tools:text="Daily Bonus"
             tools:visibility="visible" />
 
+        <TextView
+            android:id="@+id/tv_win_victory"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="sans-serif-black"
+            android:gravity="center"
+            android:text="@string/win_popup_victory_title"
+            android:textColor="#FFD740"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/guideline_reward_top"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="VICTORY!" />
+
         <!--
              Reward row: two vertical item groups side by side.
              Each group: image on top, count number below overlapping the bottom of the image.

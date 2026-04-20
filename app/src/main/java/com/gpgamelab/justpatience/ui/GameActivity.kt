@@ -191,6 +191,25 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var activeWinPopupBaseWidthPx: Int = 0
     private var activeWinPopupBaseHeightPx: Int = 0
 
+    // Win popup element sizes – device-ratio-scaled defaults (reset by applyAutoWinPopupRatios).
+    private var devGemImageHeightDpState: Float      = BASELINE_WIN_GEM_HEIGHT_DP
+    private var devTicketImageHeightDpState: Float   = BASELINE_WIN_TICKET_HEIGHT_DP
+    private var devGemOffsetXDpState: Float          = 0f
+    private var devGemOffsetYDpState: Float          = 0f
+    private var devTicketOffsetXDpState: Float       = 0f
+    private var devTicketOffsetYDpState: Float       = 0f
+    private var devRewardTextSizeSpState: Float      = BASELINE_WIN_REWARD_TEXT_SP
+    private var devGemNumberOffsetXDpState: Float    = 0f
+    private var devGemNumberOffsetYDpState: Float    = 0f
+    private var devTicketNumberOffsetXDpState: Float = 0f
+    private var devTicketNumberOffsetYDpState: Float = 0f
+    private var devButtonTextSizeSpState: Float      = BASELINE_WIN_BUTTON_TEXT_SP
+    private var devButtonRowOffsetXDpState: Float    = 0f
+    private var devButtonRowOffsetYDpState: Float    = 0f
+    private var devVictoryTextSizeSpState: Float     = BASELINE_WIN_VICTORY_TEXT_SP
+    private var devVictoryOffsetXDpState: Float      = 0f
+    private var devVictoryOffsetYDpState: Float      = 0f
+
     // -------------------------------------------------------------------------
     // Auto starburst layout profile
     // -------------------------------------------------------------------------
@@ -240,6 +259,35 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         testerStarburstAutoLayoutEnabled = true
     }
 
+    /**
+     * Compute ratio-scaled defaults for win-popup element sizes (everything except starburst).
+     * Baseline is the medium tablet at 1600 × 2560 px.
+     */
+    private fun applyAutoWinPopupRatios() {
+        val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
+            this,
+            baselinePortraitWidthPx  = 1600,
+            baselinePortraitHeightPx = 2560
+        ).averageRatio
+        devGemImageHeightDpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP, ratio).coerceAtLeast(8f)
+        devTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP, ratio).coerceAtLeast(8f)
+        devRewardTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_REWARD_TEXT_SP, ratio).coerceAtLeast(6f)
+        devButtonTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_BUTTON_TEXT_SP, ratio).coerceAtLeast(6f)
+        devVictoryTextSizeSpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_VICTORY_TEXT_SP, ratio).coerceAtLeast(6f)
+        devGemOffsetXDpState      = 0f
+        devGemOffsetYDpState      = 0f
+        devTicketOffsetXDpState   = 0f
+        devTicketOffsetYDpState   = 0f
+        devGemNumberOffsetXDpState = 0f
+        devGemNumberOffsetYDpState = 0f
+        devTicketNumberOffsetXDpState = 0f
+        devTicketNumberOffsetYDpState = 0f
+        devButtonRowOffsetXDpState = 0f
+        devButtonRowOffsetYDpState = 0f
+        devVictoryOffsetXDpState  = 0f
+        devVictoryOffsetYDpState  = 0f
+    }
+
     // -------------------------------------------------------------------------
 
     private companion object {
@@ -256,6 +304,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         private const val SHOW_STARBURST_PIVOT_DEBUG_TEXT = false
         private const val STARBURST_PIVOT_MARKER_TAG = "starburst_pivot_marker"
         private const val STARBURST_PIVOT_DEBUG_TEXT_TAG = "starburst_pivot_debug_text"
+        // Win popup element baselines tuned on the medium tablet (1600 × 2560 px).
+        private const val BASELINE_WIN_GEM_HEIGHT_DP     = 52f
+        private const val BASELINE_WIN_TICKET_HEIGHT_DP  = 35f
+        private const val BASELINE_WIN_REWARD_TEXT_SP    = 20f
+        private const val BASELINE_WIN_BUTTON_TEXT_SP    = 20f
+        private const val BASELINE_WIN_VICTORY_TEXT_SP   = 34f
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -267,6 +321,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Initialise starburst tester values from the auto-scaling profile so
         // every device/orientation gets sensible defaults without manual tuning.
         applyAutoStarburstProfile()
+        applyAutoWinPopupRatios()
+
+        // Apply BuildConfig-driven visibility for overlay debug buttons.
+        binding.btnTesters.visibility = if (BuildConfig.SHOW_TESTER_BUTTON) View.VISIBLE else View.GONE
+        binding.btnDevelop.visibility = if (BuildConfig.SHOW_DEVELOP_BUTTON) View.VISIBLE else View.GONE
 
         // Scale the bottom control-button row (and info panel) vertically using the
         // raw baseline factor – no extreme-aspect correction – so portrait phones get
@@ -542,6 +601,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val multiplierButton = dialogView.findViewById<Button>(R.id.btn_win_multiplier)
 
         applyWinPopupUiConfig(dialogView, winPopupUiConfig)
+        applyWinPopupElementSizes(dialogView)
 
         rewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.gems)
         ticketRewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.tickets)
@@ -945,6 +1005,60 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    /**
+     * Apply dev-adjustable (and ratio-scaled) sizes to individual win popup elements:
+     * gem/ticket image heights, reward text sizes, button text sizes, VICTORY! text.
+     */
+    private fun applyWinPopupElementSizes(dialogView: View) {
+        // Gem image height
+        dialogView.findViewById<ImageView>(R.id.iv_main_reward_gems)?.let { iv ->
+            val lp = iv.layoutParams
+            lp.height = dpToPx(devGemImageHeightDpState)
+            iv.layoutParams = lp
+            iv.translationX = dpToPxFloatSigned(devGemOffsetXDpState)
+            iv.translationY = dpToPxFloatSigned(devGemOffsetYDpState)
+        }
+        // Ticket image height
+        dialogView.findViewById<ImageView>(R.id.iv_main_reward_tickets)?.let { iv ->
+            val lp = iv.layoutParams
+            lp.height = dpToPx(devTicketImageHeightDpState)
+            iv.layoutParams = lp
+            iv.translationX = dpToPxFloatSigned(devTicketOffsetXDpState)
+            iv.translationY = dpToPxFloatSigned(devTicketOffsetYDpState)
+        }
+        // Reward count text sizes
+        dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)?.let { tv ->
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, devRewardTextSizeSpState)
+            tv.translationX = dpToPxFloatSigned(devGemNumberOffsetXDpState)
+            tv.translationY = dpToPxFloatSigned(devGemNumberOffsetYDpState)
+        }
+        dialogView.findViewById<TextView>(R.id.tv_ticket_reward_amount)?.let { tv ->
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, devRewardTextSizeSpState)
+            tv.translationX = dpToPxFloatSigned(devTicketNumberOffsetXDpState)
+            tv.translationY = dpToPxFloatSigned(devTicketNumberOffsetYDpState)
+        }
+        // Button text sizes
+        dialogView.findViewById<Button>(R.id.btn_win_continue)
+            ?.setTextSize(TypedValue.COMPLEX_UNIT_SP, devButtonTextSizeSpState)
+        dialogView.findViewById<Button>(R.id.btn_win_multiplier)
+            ?.setTextSize(TypedValue.COMPLEX_UNIT_SP, devButtonTextSizeSpState)
+        dialogView.findViewById<LinearLayout>(R.id.layout_buttons_row)?.let { row ->
+            row.translationX = dpToPxFloatSigned(devButtonRowOffsetXDpState)
+            row.translationY = dpToPxFloatSigned(devButtonRowOffsetYDpState)
+        }
+        // VICTORY! text
+        dialogView.findViewById<TextView>(R.id.tv_win_victory)?.let { tv ->
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, devVictoryTextSizeSpState)
+            tv.translationX = dpToPxFloatSigned(devVictoryOffsetXDpState)
+            tv.translationY = dpToPxFloatSigned(devVictoryOffsetYDpState)
+        }
+    }
+
+    private fun refreshActiveWinPopupElementSizing() {
+        val root = activeWinPopupRoot ?: return
+        applyWinPopupElementSizes(root)
+    }
+
     private fun setGuidelinePercent(root: View, guidelineId: Int, percent: Float) {
         val guideline = root.findViewById<View>(guidelineId) ?: return
         (guideline.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
@@ -1334,6 +1448,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             testerStarburstPivotOffsetYPx = 0
             testerStarburstRotationDurationMs = DEFAULT_STARBURST_ROTATION_DURATION_MS.toInt()
             testerStarburstRotationEnabled = false
+            // Reset win popup element sizes to auto-scaled defaults.
+            applyAutoWinPopupRatios()
             renderGemHud(gemTotal)
             renderTicketHud(ticketTotal)
             viewModel.startNewGame()
@@ -1345,6 +1461,52 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyAutoStarburstProfile()
         refreshActiveStarburstDebugAndMotion()
     }
+
+    // ------------------------------------------------------------------
+    // DevelopMenuDialogFragment.Host – win popup element sizing
+    // ------------------------------------------------------------------
+
+    override fun devGemImageHeightDp(): Float = devGemImageHeightDpState
+    override fun devGemOffsetXDp(): Float = devGemOffsetXDpState
+    override fun devGemOffsetYDp(): Float = devGemOffsetYDpState
+    override fun devTicketImageHeightDp(): Float = devTicketImageHeightDpState
+    override fun devTicketOffsetXDp(): Float = devTicketOffsetXDpState
+    override fun devTicketOffsetYDp(): Float = devTicketOffsetYDpState
+    override fun devRewardTextSizeSp(): Float = devRewardTextSizeSpState
+    override fun devGemNumberOffsetXDp(): Float = devGemNumberOffsetXDpState
+    override fun devGemNumberOffsetYDp(): Float = devGemNumberOffsetYDpState
+    override fun devTicketNumberOffsetXDp(): Float = devTicketNumberOffsetXDpState
+    override fun devTicketNumberOffsetYDp(): Float = devTicketNumberOffsetYDpState
+    override fun devButtonTextSizeSp(): Float = devButtonTextSizeSpState
+    override fun devButtonRowOffsetXDp(): Float = devButtonRowOffsetXDpState
+    override fun devButtonRowOffsetYDp(): Float = devButtonRowOffsetYDpState
+    override fun devVictoryTextSizeSp(): Float = devVictoryTextSizeSpState
+    override fun devVictoryOffsetXDp(): Float = devVictoryOffsetXDpState
+    override fun devVictoryOffsetYDp(): Float = devVictoryOffsetYDpState
+
+    override fun onDevSetGemImageHeight(value: Float) { devGemImageHeightDpState = value.coerceAtLeast(4f) }
+    override fun onDevSetGemOffsetX(value: Float) { devGemOffsetXDpState = value }
+    override fun onDevSetGemOffsetY(value: Float) { devGemOffsetYDpState = value }
+    override fun onDevSetTicketImageHeight(value: Float) { devTicketImageHeightDpState = value.coerceAtLeast(4f) }
+    override fun onDevSetTicketOffsetX(value: Float) { devTicketOffsetXDpState = value }
+    override fun onDevSetTicketOffsetY(value: Float) { devTicketOffsetYDpState = value }
+    override fun onDevSetRewardTextSize(value: Float) { devRewardTextSizeSpState = value.coerceAtLeast(4f) }
+    override fun onDevSetGemNumberOffsetX(value: Float) { devGemNumberOffsetXDpState = value }
+    override fun onDevSetGemNumberOffsetY(value: Float) { devGemNumberOffsetYDpState = value }
+    override fun onDevSetTicketNumberOffsetX(value: Float) { devTicketNumberOffsetXDpState = value }
+    override fun onDevSetTicketNumberOffsetY(value: Float) { devTicketNumberOffsetYDpState = value }
+    override fun onDevSetButtonTextSize(value: Float) { devButtonTextSizeSpState = value.coerceAtLeast(4f) }
+    override fun onDevSetButtonRowOffsetX(value: Float) { devButtonRowOffsetXDpState = value }
+    override fun onDevSetButtonRowOffsetY(value: Float) { devButtonRowOffsetYDpState = value }
+    override fun onDevSetVictoryTextSize(value: Float) { devVictoryTextSizeSpState = value.coerceAtLeast(4f) }
+    override fun onDevSetVictoryOffsetX(value: Float) { devVictoryOffsetXDpState = value }
+    override fun onDevSetVictoryOffsetY(value: Float) { devVictoryOffsetYDpState = value }
+
+    override fun onDevApplyAutoWinPopupRatios() {
+        applyAutoWinPopupRatios()
+    }
+
+    // ------------------------------------------------------------------
 
     override fun onTesterTriggerWinSequence() {
         // Reset win-flow guards so the sequence runs even if a win was already shown.
@@ -2005,6 +2167,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         super.onConfigurationChanged(newConfig)
         applyImmersiveFullscreen()
         applyResponsiveControlSizing()
+        applyAutoWinPopupRatios()
         if (testerStarburstAutoLayoutEnabled) {
             applyAutoStarburstProfile()
             refreshActiveStarburstDebugAndMotion()
@@ -2393,6 +2556,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun dpToPx(dp: Float): Int {
         return (dp * resources.displayMetrics.density).toInt().coerceAtLeast(1)
+    }
+
+    private fun dpToPxFloatSigned(dp: Float): Float {
+        return dp * resources.displayMetrics.density
     }
 
     private fun showWinCelebrationThenDialog() {
