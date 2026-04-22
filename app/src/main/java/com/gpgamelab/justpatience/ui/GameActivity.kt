@@ -20,6 +20,7 @@ import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.MotionEvent
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -114,15 +115,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val multiplierButtonWidthPercent: Float = 0.30f,
         val buttonGapDp: Float = 18f,
         val rewardAmountTextSp: Float = 20f,
-        val buttonTextSpLandscape: Float = 16f,
-        val buttonTextSpPortrait: Float = 30f,
-        // Portrait-only adjustment to trim win button text by 10%.
-        val portraitButtonTextScale: Float = 0.9f,
-        // Half-size labels on extreme-aspect devices (ratio > 2.0).
-        val extremeAspectButtonTextScale: Float = 0.5f,
         // Landscape reward row (gems+tickets image/text) rendered at 50%.
         val landscapeRewardRowScale: Float = 0.5f,
-        val buttonHorizontalPaddingDp: Float = 30f,
         // Portrait only: push the ticket group down independently of the gem group (~1–2 % of popup height)
         val ticketGroupExtraTopDpPortrait: Float = 8f,
         val ticketGroupExtraTopDpLandscape: Float = 8f
@@ -172,6 +166,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var isPremiumAccount: Boolean = false
     private var forceNewGameOnLaunch: Boolean = false
     private var gameMenuExpandState = GameMenuBottomSheetFragment.ExpandState()
+    private var developMenuExpandState = sessionDevelopMenuExpandState
     private var pendingWinUiAfterAnimation: Boolean = false
     private var gemTotal: Int = 0
     private var ticketTotal: Int = 0
@@ -195,17 +190,22 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devGemImageHeightDpState: Float      = BASELINE_WIN_GEM_HEIGHT_DP
     private var devTicketImageHeightDpState: Float   = BASELINE_WIN_TICKET_HEIGHT_DP
     private var devGemOffsetXDpState: Float          = 0f
-    private var devGemOffsetYDpState: Float          = 0f
+    private var devGemOffsetYDpState: Float          = -100f
     private var devTicketOffsetXDpState: Float       = 0f
-    private var devTicketOffsetYDpState: Float       = 0f
+    private var devTicketOffsetYDpState: Float       = -75f
     private var devRewardTextSizeSpState: Float      = BASELINE_WIN_REWARD_TEXT_SP
     private var devGemNumberOffsetXDpState: Float    = 0f
-    private var devGemNumberOffsetYDpState: Float    = 0f
+    private var devGemNumberOffsetYDpState: Float    = -75f
     private var devTicketNumberOffsetXDpState: Float = 0f
-    private var devTicketNumberOffsetYDpState: Float = 0f
-    private var devButtonTextSizeSpState: Float      = BASELINE_WIN_BUTTON_TEXT_SP
+    private var devTicketNumberOffsetYDpState: Float = -150f
     private var devButtonRowOffsetXDpState: Float    = 0f
-    private var devButtonRowOffsetYDpState: Float    = 0f
+    private var devButtonRowOffsetYDpState: Float    = -50f
+    private var devClaimButtonScaleXState: Float     = 1f
+    private var devClaimButtonScaleYState: Float     = 3f
+    private var devClaimButtonScaleState: Float      = 1f
+    private var devMultiplierButtonScaleXState: Float = 1f
+    private var devMultiplierButtonScaleYState: Float = 3f
+    private var devMultiplierButtonScaleState: Float = 1f
     private var devVictoryTextSizeSpState: Float     = BASELINE_WIN_VICTORY_TEXT_SP
     private var devVictoryOffsetXDpState: Float      = 0f
     private var devVictoryOffsetYDpState: Float      = 0f
@@ -264,26 +264,32 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
      * Baseline is the medium tablet at 1600 × 2560 px.
      */
     private fun applyAutoWinPopupRatios() {
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
             this,
             baselinePortraitWidthPx  = 1600,
             baselinePortraitHeightPx = 2560
         ).averageRatio
-        devGemImageHeightDpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP, ratio).coerceAtLeast(8f)
-        devTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP, ratio).coerceAtLeast(8f)
-        devRewardTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_REWARD_TEXT_SP, ratio).coerceAtLeast(6f)
-        devButtonTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_BUTTON_TEXT_SP, ratio).coerceAtLeast(6f)
-        devVictoryTextSizeSpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_VICTORY_TEXT_SP, ratio).coerceAtLeast(6f)
+        devGemImageHeightDpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP, ratio)
+        devTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP, ratio)
+        devRewardTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_REWARD_TEXT_SP, ratio)
+        devVictoryTextSizeSpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_VICTORY_TEXT_SP, ratio)
         devGemOffsetXDpState      = 0f
-        devGemOffsetYDpState      = 0f
+        devGemOffsetYDpState      = (if (isLandscape) -175f else -100f) * ratio
         devTicketOffsetXDpState   = 0f
-        devTicketOffsetYDpState   = 0f
+        devTicketOffsetYDpState   = (if (isLandscape) -150f else -75f) * ratio
         devGemNumberOffsetXDpState = 0f
-        devGemNumberOffsetYDpState = 0f
+        devGemNumberOffsetYDpState = (if (isLandscape) -125f else -75f) * ratio
         devTicketNumberOffsetXDpState = 0f
-        devTicketNumberOffsetYDpState = 0f
+        devTicketNumberOffsetYDpState = (if (isLandscape) -200f else -150f) * ratio
         devButtonRowOffsetXDpState = 0f
-        devButtonRowOffsetYDpState = 0f
+        devButtonRowOffsetYDpState = -50f * ratio
+        devClaimButtonScaleXState = 1f
+        devClaimButtonScaleYState = 3f
+        devClaimButtonScaleState = 1f
+        devMultiplierButtonScaleXState = 1f
+        devMultiplierButtonScaleYState = 3f
+        devMultiplierButtonScaleState = 1f
         devVictoryOffsetXDpState  = 0f
         devVictoryOffsetYDpState  = 0f
     }
@@ -305,11 +311,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         private const val STARBURST_PIVOT_MARKER_TAG = "starburst_pivot_marker"
         private const val STARBURST_PIVOT_DEBUG_TEXT_TAG = "starburst_pivot_debug_text"
         // Win popup element baselines tuned on the medium tablet (1600 × 2560 px).
-        private const val BASELINE_WIN_GEM_HEIGHT_DP     = 52f
-        private const val BASELINE_WIN_TICKET_HEIGHT_DP  = 35f
-        private const val BASELINE_WIN_REWARD_TEXT_SP    = 20f
-        private const val BASELINE_WIN_BUTTON_TEXT_SP    = 20f
-        private const val BASELINE_WIN_VICTORY_TEXT_SP   = 34f
+        private const val BASELINE_WIN_GEM_HEIGHT_DP     = 60f
+        private const val BASELINE_WIN_TICKET_HEIGHT_DP  = 180f
+        private const val BASELINE_WIN_REWARD_TEXT_SP    = 60f
+        private const val BASELINE_WIN_VICTORY_TEXT_SP   = 60f
+        private var sessionDevelopMenuExpandState = DevelopMenuDialogFragment.ExpandState()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -591,7 +597,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             return
         }
 
-        val adMultiplier = if (isPremiumAccount) 5 else 2
+        val adMultiplier = if (isPremiumAccount) 3 else 2
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_win_reward_choice, null)
         val starburstView = configureWinPopupArtwork(dialogView)
@@ -605,8 +611,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         rewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.gems)
         ticketRewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.tickets)
-        continueButton.text = getString(R.string.win_reward_popup_continue)
-        multiplierButton.text = getString(R.string.win_reward_popup_multiplier, adMultiplier)
+        multiplierButton.apply {
+            setBackgroundResource(
+                if (isPremiumAccount) {
+                    R.drawable.ic_button_orange_orange_x3_with_ad
+                } else {
+                    R.drawable.ic_button_orange_orange_x2_with_ad
+                }
+            )
+            text = ""
+            minWidth = 0
+            minHeight = 0
+            setPadding(0, 0, 0, 0)
+        }
 
         val dialogScale = getWinPopupScale(winPopupUiConfig)
         val widthPercent = getWinPopupWidthPercent(winPopupUiConfig)
@@ -681,9 +698,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         dialogView.findViewById<TextView>(R.id.tv_reward_popup_title)?.visibility = View.GONE
 
-        dialogView.findViewById<View>(R.id.layout_reward_row)?.bringToFront()
-        dialogView.findViewById<View>(R.id.layout_buttons_row)?.bringToFront()
-
         val starburstView = dialogView.findViewById<ImageView>(R.id.iv_win_popup_starburst)
         starburstView?.apply {
             setImageResource(R.drawable.ic_star_burst_yellow)
@@ -693,9 +707,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             translationY = testerStarburstPositionYPx.toFloat()
             scaleX = testerStarburstScale
             scaleY = testerStarburstScale
-            elevation = dpToPx(24f).toFloat()
-            bringToFront()
+            elevation = -1f
         }
+
+        // Keep the rotating starburst behind the popup frame/content.
+        dialogView.findViewById<View>(R.id.layout_popup_body)?.bringToFront()
 
         return starburstView
     }
@@ -998,20 +1014,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val buttonGapPx = dpToPx(config.buttonGapDp)
 
         dialogView.findViewById<Button>(R.id.btn_win_continue)?.let { button ->
-            applyWinPopupButtonConfig(button, continueButtonWidthPx, config, endMarginPx = buttonGapPx)
+            applyWinPopupButtonConfig(button, continueButtonWidthPx, endMarginPx = buttonGapPx)
         }
         dialogView.findViewById<Button>(R.id.btn_win_multiplier)?.let { button ->
-            applyWinPopupButtonConfig(button, multiplierButtonWidthPx, config, endMarginPx = 0)
+            applyWinPopupButtonConfig(button, multiplierButtonWidthPx, endMarginPx = 0)
         }
     }
 
     /**
-     * Apply dev-adjustable (and ratio-scaled) sizes to individual win popup elements:
-     * gem/ticket image heights, reward text sizes, button text sizes, VICTORY! text.
+     * Apply dev-adjustable (and ratio-scaled) sizes to individual win popup elements.
      */
     private fun applyWinPopupElementSizes(dialogView: View) {
+        // Ensure no clipping on any ancestor that could crop translated children
+        (dialogView as? ViewGroup)?.clipChildren = false
+        (dialogView as? ViewGroup)?.clipToPadding = false
+        dialogView.findViewById<ViewGroup>(R.id.layout_popup_body)?.let {
+            it.clipChildren = false; it.clipToPadding = false
+        }
+        dialogView.findViewById<ViewGroup>(R.id.layout_reward_row)?.let {
+            it.clipChildren = false; it.clipToPadding = false
+        }
+
         // Gem image height
         dialogView.findViewById<ImageView>(R.id.iv_main_reward_gems)?.let { iv ->
+            (iv.parent as? ViewGroup)?.let { p -> p.clipChildren = false; p.clipToPadding = false }
             val lp = iv.layoutParams
             lp.height = dpToPx(devGemImageHeightDpState)
             iv.layoutParams = lp
@@ -1020,6 +1046,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
         // Ticket image height
         dialogView.findViewById<ImageView>(R.id.iv_main_reward_tickets)?.let { iv ->
+            (iv.parent as? ViewGroup)?.let { p -> p.clipChildren = false; p.clipToPadding = false }
             val lp = iv.layoutParams
             lp.height = dpToPx(devTicketImageHeightDpState)
             iv.layoutParams = lp
@@ -1037,14 +1064,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             tv.translationX = dpToPxFloatSigned(devTicketNumberOffsetXDpState)
             tv.translationY = dpToPxFloatSigned(devTicketNumberOffsetYDpState)
         }
-        // Button text sizes
-        dialogView.findViewById<Button>(R.id.btn_win_continue)
-            ?.setTextSize(TypedValue.COMPLEX_UNIT_SP, devButtonTextSizeSpState)
-        dialogView.findViewById<Button>(R.id.btn_win_multiplier)
-            ?.setTextSize(TypedValue.COMPLEX_UNIT_SP, devButtonTextSizeSpState)
         dialogView.findViewById<LinearLayout>(R.id.layout_buttons_row)?.let { row ->
             row.translationX = dpToPxFloatSigned(devButtonRowOffsetXDpState)
             row.translationY = dpToPxFloatSigned(devButtonRowOffsetYDpState)
+        }
+        dialogView.findViewById<Button>(R.id.btn_win_continue)?.let { button ->
+            val scaleX = (devClaimButtonScaleXState * devClaimButtonScaleState).coerceAtLeast(0.1f)
+            val scaleY = (devClaimButtonScaleYState * devClaimButtonScaleState).coerceAtLeast(0.1f)
+            button.scaleX = scaleX
+            button.scaleY = scaleY
+        }
+        dialogView.findViewById<Button>(R.id.btn_win_multiplier)?.let { button ->
+            val scaleX = (devMultiplierButtonScaleXState * devMultiplierButtonScaleState).coerceAtLeast(0.1f)
+            val scaleY = (devMultiplierButtonScaleYState * devMultiplierButtonScaleState).coerceAtLeast(0.1f)
+            button.scaleX = scaleX
+            button.scaleY = scaleY
         }
         // VICTORY! text
         dialogView.findViewById<TextView>(R.id.tv_win_victory)?.let { tv ->
@@ -1052,6 +1086,97 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             tv.translationX = dpToPxFloatSigned(devVictoryOffsetXDpState)
             tv.translationY = dpToPxFloatSigned(devVictoryOffsetYDpState)
         }
+
+        // Scaled popup buttons can render outside their original bounds; remap touch hit testing
+        // against transformed geometry so the full visible button surface is clickable.
+        dialogView.post { wireWinPopupScaledButtonTouchDelegation(dialogView) }
+    }
+
+    private fun wireWinPopupScaledButtonTouchDelegation(dialogView: View) {
+        val popupBody = dialogView.findViewById<ViewGroup>(R.id.layout_popup_body) ?: return
+        val continueButton = dialogView.findViewById<Button>(R.id.btn_win_continue) ?: return
+        val multiplierButton = dialogView.findViewById<Button>(R.id.btn_win_multiplier) ?: return
+
+        var activeTarget: Button? = null
+        popupBody.setOnTouchListener { _, event ->
+            val continueHit = isPointInsideTransformedChild(
+                parentX = event.x,
+                parentY = event.y,
+                child = continueButton,
+                ancestor = popupBody
+            )
+            val multiplierHit = isPointInsideTransformedChild(
+                parentX = event.x,
+                parentY = event.y,
+                child = multiplierButton,
+                ancestor = popupBody
+            )
+
+            val target = when {
+                continueHit -> continueButton
+                multiplierHit -> multiplierButton
+                else -> null
+            }
+
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    activeTarget = target
+                    activeTarget != null
+                }
+
+                MotionEvent.ACTION_MOVE -> activeTarget != null
+
+                MotionEvent.ACTION_UP -> {
+                    val upTarget = target
+                    val shouldClick = activeTarget != null && activeTarget == upTarget
+                    activeTarget = null
+                    if (shouldClick) {
+                        upTarget?.performClick()
+                        true
+                    } else {
+                        false
+                    }
+                }
+
+                MotionEvent.ACTION_CANCEL -> {
+                    activeTarget = null
+                    false
+                }
+
+                else -> false
+            }
+        }
+    }
+
+    private fun isPointInsideTransformedChild(
+        parentX: Float,
+        parentY: Float,
+        child: View,
+        ancestor: ViewGroup
+    ): Boolean {
+        if (child.visibility != View.VISIBLE || child.width <= 0 || child.height <= 0) return false
+        val bounds = getTransformedBoundsInAncestor(child, ancestor)
+        return bounds.contains(parentX + ancestor.scrollX, parentY + ancestor.scrollY)
+    }
+
+    /**
+     * Returns the child's visual (post-transform) bounding rect in the coordinate space of
+     * [ancestor], walking every intermediate parent and applying each view's matrix + offset.
+     */
+    private fun getTransformedBoundsInAncestor(child: View, ancestor: ViewGroup): RectF {
+        val bounds = RectF(0f, 0f, child.width.toFloat(), child.height.toFloat())
+        var current: View = child
+        var currentParent = current.parent as? ViewGroup
+        while (currentParent != null) {
+            // Apply the current view's own transformation (scale/rotation/translation).
+            current.matrix.mapRect(bounds)
+            // Shift by the view's layout position inside its parent.
+            bounds.offset(current.left.toFloat() - currentParent.scrollX, current.top.toFloat() - currentParent.scrollY)
+            if (currentParent === ancestor) break
+            current = currentParent
+            currentParent = current.parent as? ViewGroup
+        }
+        return bounds
     }
 
     private fun refreshActiveWinPopupElementSizing() {
@@ -1083,26 +1208,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private fun getWinPopupButtonTextSp(config: WinPopupUiConfig): Float {
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val baseTextSp = if (isLandscape) {
-            config.buttonTextSpLandscape
-        } else {
-            config.buttonTextSpPortrait * config.portraitButtonTextScale
-        }
-
-        val isExtremeAspect = UiScaleUtil.calculateBaselineScaleFactors(this).isExtremeAspect
-        return if (isExtremeAspect) {
-            baseTextSp * config.extremeAspectButtonTextScale
-        } else {
-            baseTextSp
-        }
-    }
-
-    private fun applyWinPopupButtonConfig(button: Button, widthPx: Int, config: WinPopupUiConfig, endMarginPx: Int) {
-        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, getWinPopupButtonTextSp(config))
-        val horizontalPadding = dpToPx(config.buttonHorizontalPaddingDp)
-        button.setPaddingRelative(horizontalPadding, button.paddingTop, horizontalPadding, button.paddingBottom)
+    private fun applyWinPopupButtonConfig(button: Button, widthPx: Int, endMarginPx: Int) {
+        // Win popup button artwork contains text/icons; keep as edge-to-edge images.
+        button.text = ""
+        button.minWidth = 0
+        button.minHeight = 0
+        button.setPadding(0, 0, 0, 0)
         (button.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
             lp.width = widthPx
             lp.marginEnd = endMarginPx
@@ -1173,11 +1284,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             rewards = listOf(
                 RewardPopupDialog.RewardItem(
                     count = baseRewards.gems,
-                    imageResId = R.drawable.gems_purple_3_1024x1024
+                    imageResId = R.drawable.ic_treasure_3_gem_green
                 ),
                 RewardPopupDialog.RewardItem(
                     count = baseRewards.tickets,
-                    imageResId = R.drawable.ticket_yellow_on_green_768x384
+                    imageResId = R.drawable.ic_ticket_green_yellow_helper
                 )
             ),
             buttonTexts = listOf(
@@ -1315,7 +1426,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun showDevelopMenu() {
         if (supportFragmentManager.findFragmentByTag(DevelopMenuDialogFragment.TAG) != null) return
-        DevelopMenuDialogFragment.newInstance().show(supportFragmentManager, DevelopMenuDialogFragment.TAG)
+        DevelopMenuDialogFragment.newInstance(developMenuExpandState)
+            .show(supportFragmentManager, DevelopMenuDialogFragment.TAG)
     }
 
     // ------------------------------------------------------------------
@@ -1477,9 +1589,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devGemNumberOffsetYDp(): Float = devGemNumberOffsetYDpState
     override fun devTicketNumberOffsetXDp(): Float = devTicketNumberOffsetXDpState
     override fun devTicketNumberOffsetYDp(): Float = devTicketNumberOffsetYDpState
-    override fun devButtonTextSizeSp(): Float = devButtonTextSizeSpState
     override fun devButtonRowOffsetXDp(): Float = devButtonRowOffsetXDpState
     override fun devButtonRowOffsetYDp(): Float = devButtonRowOffsetYDpState
+    override fun devClaimScaleX(): Float = devClaimButtonScaleXState
+    override fun devClaimScaleY(): Float = devClaimButtonScaleYState
+    override fun devClaimScale(): Float = devClaimButtonScaleState
+    override fun devMultiplierScaleX(): Float = devMultiplierButtonScaleXState
+    override fun devMultiplierScaleY(): Float = devMultiplierButtonScaleYState
+    override fun devMultiplierScale(): Float = devMultiplierButtonScaleState
     override fun devVictoryTextSizeSp(): Float = devVictoryTextSizeSpState
     override fun devVictoryOffsetXDp(): Float = devVictoryOffsetXDpState
     override fun devVictoryOffsetYDp(): Float = devVictoryOffsetYDpState
@@ -1495,15 +1612,25 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetGemNumberOffsetY(value: Float) { devGemNumberOffsetYDpState = value }
     override fun onDevSetTicketNumberOffsetX(value: Float) { devTicketNumberOffsetXDpState = value }
     override fun onDevSetTicketNumberOffsetY(value: Float) { devTicketNumberOffsetYDpState = value }
-    override fun onDevSetButtonTextSize(value: Float) { devButtonTextSizeSpState = value.coerceAtLeast(4f) }
     override fun onDevSetButtonRowOffsetX(value: Float) { devButtonRowOffsetXDpState = value }
     override fun onDevSetButtonRowOffsetY(value: Float) { devButtonRowOffsetYDpState = value }
+    override fun onDevSetClaimScaleX(value: Float) { devClaimButtonScaleXState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetClaimScaleY(value: Float) { devClaimButtonScaleYState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetClaimScale(value: Float) { devClaimButtonScaleState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetMultiplierScaleX(value: Float) { devMultiplierButtonScaleXState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetMultiplierScaleY(value: Float) { devMultiplierButtonScaleYState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetMultiplierScale(value: Float) { devMultiplierButtonScaleState = value.coerceAtLeast(0.1f) }
     override fun onDevSetVictoryTextSize(value: Float) { devVictoryTextSizeSpState = value.coerceAtLeast(4f) }
     override fun onDevSetVictoryOffsetX(value: Float) { devVictoryOffsetXDpState = value }
     override fun onDevSetVictoryOffsetY(value: Float) { devVictoryOffsetYDpState = value }
 
     override fun onDevApplyAutoWinPopupRatios() {
         applyAutoWinPopupRatios()
+    }
+
+    override fun onDevExpandStateChanged(state: DevelopMenuDialogFragment.ExpandState) {
+        developMenuExpandState = state
+        sessionDevelopMenuExpandState = state
     }
 
     // ------------------------------------------------------------------

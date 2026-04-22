@@ -23,6 +23,11 @@ import java.util.Locale
 
 class DevelopMenuDialogFragment : DialogFragment() {
 
+    data class ExpandState(
+        val starburstExpanded: Boolean = true,
+        val popupExpanded: Boolean = true
+    )
+
     interface Host {
         fun testerStarburstPivotOffsetX(): Int
         fun testerStarburstPivotOffsetY(): Int
@@ -57,9 +62,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devGemNumberOffsetYDp(): Float
         fun devTicketNumberOffsetXDp(): Float
         fun devTicketNumberOffsetYDp(): Float
-        fun devButtonTextSizeSp(): Float
         fun devButtonRowOffsetXDp(): Float
         fun devButtonRowOffsetYDp(): Float
+        fun devClaimScaleX(): Float
+        fun devClaimScaleY(): Float
+        fun devClaimScale(): Float
+        fun devMultiplierScaleX(): Float
+        fun devMultiplierScaleY(): Float
+        fun devMultiplierScale(): Float
         fun devVictoryTextSizeSp(): Float
         fun devVictoryOffsetXDp(): Float
         fun devVictoryOffsetYDp(): Float
@@ -75,13 +85,19 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetGemNumberOffsetY(value: Float)
         fun onDevSetTicketNumberOffsetX(value: Float)
         fun onDevSetTicketNumberOffsetY(value: Float)
-        fun onDevSetButtonTextSize(value: Float)
         fun onDevSetButtonRowOffsetX(value: Float)
         fun onDevSetButtonRowOffsetY(value: Float)
+        fun onDevSetClaimScaleX(value: Float)
+        fun onDevSetClaimScaleY(value: Float)
+        fun onDevSetClaimScale(value: Float)
+        fun onDevSetMultiplierScaleX(value: Float)
+        fun onDevSetMultiplierScaleY(value: Float)
+        fun onDevSetMultiplierScale(value: Float)
         fun onDevSetVictoryTextSize(value: Float)
         fun onDevSetVictoryOffsetX(value: Float)
         fun onDevSetVictoryOffsetY(value: Float)
         fun onDevApplyAutoWinPopupRatios()
+        fun onDevExpandStateChanged(state: ExpandState)
     }
 
     private var btnStarburstPivotXValue: MaterialButton? = null
@@ -118,21 +134,26 @@ class DevelopMenuDialogFragment : DialogFragment() {
         val starburstHeader = view.findViewById<View>(R.id.layout_develop_starburst_header)
         val starburstArrow = view.findViewById<TextView>(R.id.tv_develop_starburst_arrow)
         val starburstContent = view.findViewById<LinearLayout>(R.id.layout_develop_starburst_content)
-        var starburstExpanded = true
+        var expandState = readExpandStateFromArgs()
+        var starburstExpanded = expandState.starburstExpanded
         setSectionExpanded(starburstContent, starburstArrow, starburstExpanded)
         starburstHeader.setOnClickListener {
             starburstExpanded = !starburstExpanded
             setSectionExpanded(starburstContent, starburstArrow, starburstExpanded)
+            expandState = expandState.copy(starburstExpanded = starburstExpanded)
+            host.onDevExpandStateChanged(expandState)
         }
 
         val popupHeader = view.findViewById<View>(R.id.layout_develop_popup_header)
         val popupArrow = view.findViewById<TextView>(R.id.tv_develop_popup_arrow)
         val popupContent = view.findViewById<LinearLayout>(R.id.layout_develop_popup_content)
-        var popupExpanded = true
+        var popupExpanded = expandState.popupExpanded
         setSectionExpanded(popupContent, popupArrow, popupExpanded)
         popupHeader.setOnClickListener {
             popupExpanded = !popupExpanded
             setSectionExpanded(popupContent, popupArrow, popupExpanded)
+            expandState = expandState.copy(popupExpanded = popupExpanded)
+            host.onDevExpandStateChanged(expandState)
         }
 
         bindStarburstControls(view, host)
@@ -260,9 +281,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_gem_number_offset_y, R.string.develop_menu_gem_number_offset_y, host::devGemNumberOffsetYDp, host::onDevSetGemNumberOffsetY)
         bindDecimal(R.id.btn_dev_ticket_number_offset_x, R.string.develop_menu_ticket_number_offset_x, host::devTicketNumberOffsetXDp, host::onDevSetTicketNumberOffsetX)
         bindDecimal(R.id.btn_dev_ticket_number_offset_y, R.string.develop_menu_ticket_number_offset_y, host::devTicketNumberOffsetYDp, host::onDevSetTicketNumberOffsetY)
-        bindDecimal(R.id.btn_dev_button_text_size, R.string.develop_menu_button_text_size, host::devButtonTextSizeSp, host::onDevSetButtonTextSize)
         bindDecimal(R.id.btn_dev_button_row_offset_x, R.string.develop_menu_button_row_offset_x, host::devButtonRowOffsetXDp, host::onDevSetButtonRowOffsetX)
         bindDecimal(R.id.btn_dev_button_row_offset_y, R.string.develop_menu_button_row_offset_y, host::devButtonRowOffsetYDp, host::onDevSetButtonRowOffsetY)
+        bindDecimal(R.id.btn_dev_claim_scale_x, R.string.develop_menu_claim_scale_x, host::devClaimScaleX, host::onDevSetClaimScaleX)
+        bindDecimal(R.id.btn_dev_claim_scale_y, R.string.develop_menu_claim_scale_y, host::devClaimScaleY, host::onDevSetClaimScaleY)
+        bindDecimal(R.id.btn_dev_claim_scale, R.string.develop_menu_claim_scale, host::devClaimScale, host::onDevSetClaimScale)
+        bindDecimal(R.id.btn_dev_multiplier_scale_x, R.string.develop_menu_multiplier_scale_x, host::devMultiplierScaleX, host::onDevSetMultiplierScaleX)
+        bindDecimal(R.id.btn_dev_multiplier_scale_y, R.string.develop_menu_multiplier_scale_y, host::devMultiplierScaleY, host::onDevSetMultiplierScaleY)
+        bindDecimal(R.id.btn_dev_multiplier_scale, R.string.develop_menu_multiplier_scale, host::devMultiplierScale, host::onDevSetMultiplierScale)
         bindDecimal(R.id.btn_dev_victory_text_size, R.string.develop_menu_victory_text_size, host::devVictoryTextSizeSp, host::onDevSetVictoryTextSize)
         bindDecimal(R.id.btn_dev_victory_offset_x, R.string.develop_menu_victory_offset_x, host::devVictoryOffsetXDp, host::onDevSetVictoryOffsetX)
         bindDecimal(R.id.btn_dev_victory_offset_y, R.string.develop_menu_victory_offset_y, host::devVictoryOffsetYDp, host::onDevSetVictoryOffsetY)
@@ -297,9 +323,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_gem_number_offset_y).text = fmt(host.devGemNumberOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_number_offset_x).text = fmt(host.devTicketNumberOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_number_offset_y).text = fmt(host.devTicketNumberOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_button_text_size).text = fmt(host.devButtonTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_button_row_offset_x).text = fmt(host.devButtonRowOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_button_row_offset_y).text = fmt(host.devButtonRowOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_claim_scale_x).text = fmt(host.devClaimScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_claim_scale_y).text = fmt(host.devClaimScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_claim_scale).text = fmt(host.devClaimScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_multiplier_scale_x).text = fmt(host.devMultiplierScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_multiplier_scale_y).text = fmt(host.devMultiplierScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_multiplier_scale).text = fmt(host.devMultiplierScale())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_text_size).text = fmt(host.devVictoryTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_x).text = fmt(host.devVictoryOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_y).text = fmt(host.devVictoryOffsetYDp())
@@ -310,6 +341,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
     private fun setSectionExpanded(content: View, arrow: TextView, expanded: Boolean) {
         content.visibility = if (expanded) View.VISIBLE else View.GONE
         arrow.text = if (expanded) "▴" else "▾"
+    }
+
+    private fun readExpandStateFromArgs(): ExpandState {
+        val b = arguments ?: return ExpandState()
+        return ExpandState(
+            starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, true),
+            popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, true)
+        )
     }
 
     private fun showSetValueDialog(label: String, current: Int, onValueSet: (Int) -> Unit) {
@@ -384,6 +423,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
 
     companion object {
         const val TAG = "develop_menu_dialog"
-        fun newInstance(): DevelopMenuDialogFragment = DevelopMenuDialogFragment()
+        private const val ARG_STARBURST_EXPANDED = "arg_starburst_expanded"
+        private const val ARG_POPUP_EXPANDED = "arg_popup_expanded"
+
+        fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
+            return DevelopMenuDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean(ARG_STARBURST_EXPANDED, state.starburstExpanded)
+                    putBoolean(ARG_POPUP_EXPANDED, state.popupExpanded)
+                }
+            }
+        }
     }
 }

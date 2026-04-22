@@ -24,6 +24,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/iv_win_popup_starburst"
+        android:layout_width="94dp"
+        android:layout_height="133dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_star_burst_yellow"
+        android:translationY="-6dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/layout_popup_body"
+        app:layout_constraintStart_toStartOf="@id/layout_popup_body"
+        app:layout_constraintTop_toTopOf="@id/layout_popup_body" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_popup_body"
         android:layout_width="0dp"
@@ -121,6 +135,8 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             app:layout_constraintBottom_toTopOf="@id/guideline_reward_bottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -133,7 +149,9 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:layout_marginEnd="28dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/iv_main_reward_gems"
@@ -142,7 +160,7 @@
                     android:adjustViewBounds="true"
                     android:contentDescription="@null"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/gems_purple_3_1024x1024" />
+                    android:src="@drawable/ic_treasure_3_gem_green" />
 
                 <TextView
                     android:id="@+id/tv_main_reward_amount"
@@ -163,7 +181,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/iv_main_reward_tickets"
@@ -172,7 +192,7 @@
                     android:adjustViewBounds="true"
                     android:contentDescription="@null"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ticket_yellow_on_green_768x384" />
+                    android:src="@drawable/ic_ticket_green_yellow_helper" />
 
                 <TextView
                     android:id="@+id/tv_ticket_reward_amount"
@@ -204,11 +224,12 @@
                 android:id="@+id/btn_win_continue"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="@drawable/button_horizontal_lt_green_512x256"
+                android:background="@drawable/ic_button_orange_orange_claim"
                 android:gravity="center"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:text="@string/win_reward_popup_continue"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text=""
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="20sp" />
@@ -219,9 +240,8 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/button_horizontal_lt_green_512x256"
                 android:gravity="center"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:text="@string/win_reward_popup_multiplier_preview"
+                android:padding="0dp"
+                android:text=""
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="20sp" />
@@ -229,19 +249,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ImageView
-        android:id="@+id/iv_win_popup_starburst"
-        android:layout_width="94dp"
-        android:layout_height="133dp"
-        android:adjustViewBounds="true"
-        android:contentDescription="@null"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_star_burst_yellow"
-        android:translationY="-6dp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="@id/layout_popup_body"
-        app:layout_constraintStart_toStartOf="@id/layout_popup_body"
-        app:layout_constraintTop_toTopOf="@id/layout_popup_body" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

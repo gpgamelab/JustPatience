@@ -125,7 +125,7 @@
                 android:layout_height="22dp"
                 android:contentDescription="@string/tickets_total_label"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ticket_yellow_on_green_768x384" />
+                android:src="@drawable/ic_ticket_green_yellow_helper" />
         </LinearLayout>
     </LinearLayout>
 

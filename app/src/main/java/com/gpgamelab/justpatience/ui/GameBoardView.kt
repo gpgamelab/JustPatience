@@ -190,7 +190,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         updateOffsetsForOrientation()
         loadTabletopImage()
         // Initialize coupon drawable
-        couponDrawable = ContextCompat.getDrawable(context, R.drawable.ticket_yellow_on_green_768x384)
+        couponDrawable = ContextCompat.getDrawable(context, R.drawable.ic_ticket_green_yellow_helper)
     }
 
     private fun updateOffsetsForOrientation() {
