@@ -338,22 +338,13 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-
-        val bottomSheetDialog = dialog as? BottomSheetDialog ?: return
-        val bottomSheet = bottomSheetDialog.findViewById<View>(MaterialR.id.design_bottom_sheet) ?: return
-        val behavior = BottomSheetBehavior.from(bottomSheet)
-
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val maxHeightFraction = if (isLandscape) 0.375f else 0.225f
-        val maxHeight = (resources.displayMetrics.heightPixels * maxHeightFraction).toInt().coerceAtLeast(1)
-
-        bottomSheet.layoutParams = bottomSheet.layoutParams.apply {
-            height = maxHeight
+        dialog?.window?.let { window ->
+            val heightPx = (resources.displayMetrics.heightPixels * 0.9).toInt()
+            window.setLayout(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                heightPx
+            )
         }
-
-        behavior.skipCollapsed = true
-        behavior.peekHeight = maxHeight
-        behavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     private fun dismissAndRun(action: () -> Unit) {
@@ -458,6 +449,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 }
+
+
 
 
 
