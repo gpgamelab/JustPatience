@@ -765,7 +765,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         if (testerStarburstRotationEnabled) {
             activeStarburstAnimator = startStarburstRotation(starburstView)
         }
-        showStarburstPivotMarker(starburstView)
     }
 
     private fun estimateInitialStarburstTopOverflowPx(): Int {
@@ -810,55 +809,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         val marginPx = dpToPx(STARBURST_OVERFLOW_MARGIN_DP)
         return (-minY + marginPx).toInt().coerceAtLeast(marginPx)
-    }
-
-    private fun showStarburstPivotMarker(starburstView: ImageView) {
-        val parent = starburstView.parent as? ViewGroup ?: return
-
-        // Replace any existing marker for this popup instance.
-        parent.findViewWithTag<View>(STARBURST_PIVOT_MARKER_TAG)?.let { parent.removeView(it) }
-        parent.findViewWithTag<View>(STARBURST_PIVOT_DEBUG_TEXT_TAG)?.let { parent.removeView(it) }
-
-        val markerSizePx = dpToPx(8f)
-        val marker = View(this).apply {
-            tag = STARBURST_PIVOT_MARKER_TAG
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.OVAL
-                setColor(0x88FF0000.toInt())
-                setStroke(dpToPx(1f), 0xFFFF0000.toInt())
-            }
-            layoutParams = ViewGroup.LayoutParams(markerSizePx, markerSizePx)
-            isClickable = false
-            isFocusable = false
-            alpha = 0.95f
-            elevation = starburstView.elevation + 2f
-        }
-
-        parent.addView(marker)
-
-        // Convert local starburst pivot to parent coordinates and center the marker on it.
-        val pivotOnParent = mapLocalPointToParent(starburstView, starburstView.pivotX, starburstView.pivotY)
-        val pivotOnParentX = pivotOnParent.first
-        val pivotOnParentY = pivotOnParent.second
-        marker.x = pivotOnParentX - markerSizePx / 2f
-        marker.y = pivotOnParentY - markerSizePx / 2f
-
-        if (!SHOW_STARBURST_PIVOT_DEBUG_TEXT) return
-
-        val debugText = buildStarburstPivotDebugText(starburstView, pivotOnParentX, pivotOnParentY)
-        val debugView = TextView(this).apply {
-            tag = STARBURST_PIVOT_DEBUG_TEXT_TAG
-            text = debugText
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
-            setTextColor(0xFFFFFFFF.toInt())
-            setBackgroundColor(0xAA000000.toInt())
-            setPadding(dpToPx(6f), dpToPx(4f), dpToPx(6f), dpToPx(4f))
-            elevation = marker.elevation + 2f
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        }
-        parent.addView(debugView)
-        debugView.x = dpToPx(6f).toFloat()
-        debugView.y = dpToPx(6f).toFloat()
     }
 
     private fun buildStarburstPivotDebugText(starburstView: ImageView, pivotParentX: Float, pivotParentY: Float): String {
