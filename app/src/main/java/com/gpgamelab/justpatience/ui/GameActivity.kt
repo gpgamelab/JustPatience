@@ -1642,6 +1642,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         showGameEndDialog(true)
     }
 
+    override fun onTesterTriggerDailyBonus() {
+        showDailyBonusPopup(currentUtcIsoDate())
+    }
+
+    override fun onTesterTriggerNoTicketsPopup() {
+        showNoCouponsDialog(HelpControlAction.HINT) {
+            // Action callback for when hint is executed
+        }
+    }
+
     // ------------------------------------------------------------------
 
     override fun onGameMenuStatisticsSummary() {

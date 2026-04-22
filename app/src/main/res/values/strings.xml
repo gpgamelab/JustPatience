@@ -344,6 +344,8 @@ Locale: %7$s</string>
     <string name="tester_menu_reset_confirm_message">This will wipe ALL game data: gems, coupons, statistics, settings, and saved game — restoring the app to a fresh-install state. This cannot be undone.</string>
     <string name="tester_menu_reset_confirm_yes">YES, RESET ALL</string>
     <string name="tester_menu_trigger_win">▶  Trigger Win Sequence</string>
+    <string name="tester_menu_trigger_daily_bonus">▶  Trigger Daily Bonus</string>
+    <string name="tester_menu_trigger_no_tickets">▶  Trigger No Tickets Popup</string>
 
     <!-- Develop Menu -->
     <string name="develop_menu_title">Develop Menu</string>

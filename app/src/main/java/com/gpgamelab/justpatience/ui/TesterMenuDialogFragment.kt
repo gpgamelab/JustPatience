@@ -29,6 +29,8 @@ class TesterMenuDialogFragment : DialogFragment() {
         fun onTesterSetPremium(enabled: Boolean)
         fun onTesterResetEverything(onComplete: () -> Unit)
         fun onTesterTriggerWinSequence()
+        fun onTesterTriggerDailyBonus()
+        fun onTesterTriggerNoTicketsPopup()
     }
 
     private var tvPremiumStatus: TextView? = null
@@ -92,11 +94,21 @@ class TesterMenuDialogFragment : DialogFragment() {
         }
         // Close
         view.findViewById<MaterialButton>(R.id.btn_tester_close).setOnClickListener { dismiss() }
-        // Trigger Win Sequence
-        view.findViewById<MaterialButton>(R.id.btn_tester_trigger_win).setOnClickListener {
-            dismiss()
-            host.onTesterTriggerWinSequence()
-        }
+         // Trigger Win Sequence
+         view.findViewById<MaterialButton>(R.id.btn_tester_trigger_win).setOnClickListener {
+             dismiss()
+             host.onTesterTriggerWinSequence()
+         }
+         // Trigger Daily Bonus
+         view.findViewById<MaterialButton>(R.id.btn_tester_trigger_daily_bonus).setOnClickListener {
+             dismiss()
+             host.onTesterTriggerDailyBonus()
+         }
+         // Trigger No Tickets Popup
+         view.findViewById<MaterialButton>(R.id.btn_tester_trigger_no_tickets).setOnClickListener {
+             dismiss()
+             host.onTesterTriggerNoTicketsPopup()
+         }
     }
     override fun onStart() {
         super.onStart()
