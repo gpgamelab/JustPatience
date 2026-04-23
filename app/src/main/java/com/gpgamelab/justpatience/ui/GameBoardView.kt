@@ -39,7 +39,8 @@ import android.os.SystemClock
 
 private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:b_0001"
 private const val NEW_GAME_DEAL_CARD_INTERVAL_MS = 70L
-
+private const val MAX_VISIBLE_WASTE_CARDS = 4
+private const val WASTE_COUNT_BADGE_MIN_VISIBLE_COUNT = 4
 
 class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
@@ -290,7 +291,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     ): RectF? {
         return when (stackType) {
             StackType.STOCK -> getStockRect()
-            StackType.WASTE -> getWasteRect()
+            StackType.WASTE -> getWasteTopCardRect()
             StackType.FOUNDATION -> getFoundationRect(stackIndex)
             StackType.TABLEAU -> {
                 val x = columnX.getOrNull(stackIndex) ?: return null
@@ -519,6 +520,35 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
         }
         return RectF(x, y, x + cardW, y + cardH)
+    }
+
+    private fun getWasteFanOffsetX(): Float = (cardW * 0.3f).coerceIn(12f, 45f)
+
+    private fun getWasteFanDirection(): Float = if (isMirrored) -1f else 1f
+
+    private fun getVisibleWasteCardCount(wasteSize: Int): Int = min(wasteSize, MAX_VISIBLE_WASTE_CARDS)
+
+    private fun getWasteVisibleCardRect(visibleIndex: Int): RectF {
+        val base = getWasteRect()
+        val shift = getWasteFanOffsetX() * visibleIndex * getWasteFanDirection()
+        return RectF(base.left + shift, base.top, base.right + shift, base.bottom)
+    }
+
+    private fun getWasteTopCardRect(): RectF {
+        val visibleCount = getVisibleWasteCardCount(viewModel.game.value.waste.size())
+        val topVisibleIndex = (visibleCount - 1).coerceAtLeast(0)
+        return getWasteVisibleCardRect(topVisibleIndex)
+    }
+
+    private fun getWasteHitRect(): RectF {
+        val base = getWasteRect()
+        val top = getWasteTopCardRect()
+        return RectF(
+            min(base.left, top.left),
+            min(base.top, top.top),
+            max(base.right, top.right),
+            max(base.bottom, top.bottom)
+        )
     }
 
     private fun getFoundationRect(index: Int): RectF {
@@ -862,13 +892,22 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         // Waste
         val wasteRect = getWasteRect()
         val waste = viewModel.game.value.waste
-        if (!waste.isEmpty() && !(isDragging && dragStackType == StackType.WASTE)) {
-            waste.peek()?.let { drawCard(canvas, it, wasteRect) }
-        } else
+        if (!waste.isEmpty()) {
+            val visibleCount = getVisibleWasteCardCount(waste.size())
+            val visibleCards = waste.asList().takeLast(visibleCount)
+            visibleCards.forEachIndexed { visibleIndex, card ->
+                val isTopVisible = visibleIndex == visibleCards.lastIndex
+                if (isDragging && dragStackType == StackType.WASTE && isTopVisible) return@forEachIndexed
+                drawCard(canvas, card, getWasteVisibleCardRect(visibleIndex))
+            }
+        } else {
             canvas.drawRoundRect(wasteRect, cardRadius, cardRadius, placeholderPaint)
+        }
 
         drawPileCountBadge(canvas, stockRect, stock.size())
-        drawPileCountBadge(canvas, wasteRect, waste.size())
+        if (waste.size() >= WASTE_COUNT_BADGE_MIN_VISIBLE_COUNT) {
+            drawPileCountBadge(canvas, getWasteTopCardRect(), waste.size())
+        }
 
         // Foundations: portrait keeps top row placement; landscape moves them left of tableau.
         for (i in 0..3) {
@@ -1271,12 +1310,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     ) {
         val moved = when (glowState.sourceStackType) {
             StackType.WASTE -> when (dest.destStackType) {
-                StackType.TABLEAU    -> { viewModel.tryMoveWasteToTableau(dest.destStackIndex); true }
+                StackType.TABLEAU   -> { viewModel.tryMoveWasteToTableau(dest.destStackIndex); true }
                 StackType.FOUNDATION -> viewModel.tryMoveWasteToFoundation(dest.destStackIndex)
                 else -> false
             }
             StackType.TABLEAU -> when (dest.destStackType) {
-                StackType.TABLEAU    -> viewModel.tryMoveTableauToTableau(
+                StackType.TABLEAU   -> viewModel.tryMoveTableauToTableau(
                     glowState.sourceStackIndex, glowState.sourceCardIndex, dest.destStackIndex
                 )
                 StackType.FOUNDATION -> viewModel.tryMoveTableauToFoundation(
@@ -1313,7 +1352,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
 
             StackType.WASTE -> {
-                getWasteRect()
+                getWasteTopCardRect()
             }
 
             StackType.FOUNDATION -> {
@@ -1577,7 +1616,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             if (getStockRect().contains(x, y)) {
                 return Triple(StackType.STOCK, 0, -1)
             }
-            if (getWasteRect().contains(x, y)) {
+            if (getWasteHitRect().contains(x, y)) {
                 return Triple(StackType.WASTE, 0, -1)
             }
         }
@@ -1592,7 +1631,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         // In portrait mode, check stock and waste in top row using their actual rects
         if (!isLandscape) {
             if (getStockRect().contains(x, y)) return Triple(StackType.STOCK, 0, -1)
-            if (getWasteRect().contains(x, y)) return Triple(StackType.WASTE, 0, -1)
+            if (getWasteHitRect().contains(x, y)) return Triple(StackType.WASTE, 0, -1)
         }
 
         // Check tableau
