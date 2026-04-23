@@ -10,6 +10,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.graphics.RectF
+import android.media.AudioAttributes
+import android.media.SoundPool
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -69,6 +71,10 @@ import android.graphics.drawable.GradientDrawable
 import java.util.Locale
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, TesterMenuDialogFragment.Host, DevelopMenuDialogFragment.Host {
+
+    private var devShuffleSecondClipDelayMsState: Float = 140f
+    private var devShuffleTailDelayMsState: Float = 120f
+    private var devDealCardIntervalMsState: Float = 70f
 
     private enum class HelpControlAction(
         val storageKey: String,
@@ -179,6 +185,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private lateinit var statsManager: GameStatsManager
     private lateinit var settingsManager: SettingsManager
     private lateinit var rewardPopupDialog: RewardPopupDialog
+    private var moveSoundPool: SoundPool? = null
+    private var moveSoundId: Int = 0
+    private var moveSoundLoaded: Boolean = false
+    private var shuffleSound1Id: Int = 0
+    private var shuffleSound1Loaded: Boolean = false
+    private var shuffleSound2Id: Int = 0
+    private var shuffleSound2Loaded: Boolean = false
+    private var winPopupSoundId: Int = 0
+    private var winPopupSoundLoaded: Boolean = false
+    private var muteCardSounds: Boolean = false
+    private var muteWinSound: Boolean = false
 
     private var helpControlFlowInProgress = false
     private var couponPendingOnRestartConfirm = false
@@ -440,6 +457,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         // Wire AssetResolver into GameBoardView
         binding.gameBoardView.assetResolver = AndroidAssetResolver(this)
+        binding.gameBoardView.onClickMoveSoundRequested = { playCardClickMoveSound() }
+        binding.gameBoardView.onShuffleSoundRequested = { playShuffleSoundSequence() }
         binding.gameBoardView.bindToViewModel(this)
 
         // Optional manager (no heavy rendering here)
@@ -455,6 +474,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         statsManager = GameStatsManager(applicationContext)
         settingsManager = SettingsManager(applicationContext)
         rewardPopupDialog = RewardPopupDialog(this)
+        initializeMoveSoundPool()
         renderGemHud(gemTotal)
         renderTicketHud(ticketTotal)
 
@@ -467,6 +487,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 launch {
                     settingsManager.gamePlaySettingsFlow.collect { settings ->
                         isPremiumAccount = settings.premiumAcct
+                        muteCardSounds = settings.muteCardSound
+                        muteWinSound = settings.muteWinSound
                     }
                 }
 
@@ -555,7 +577,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
         binding.btnNewGame.setOnClickListener {
             winCelebrationPlayed = false
-            viewModel.startNewGame()
+            startNewGameWithShuffleAndDealAnimation()
         }
         findViewById<Button>(R.id.btn_restart).setOnClickListener { buttonView ->
             onHelpControlClicked(HelpControlAction.RESTART, buttonView) { handleRestartClick() }
@@ -575,7 +597,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 buttonView.isEnabled = false
                 lifecycleScope.launch {
                     try {
-                        val movesMade = viewModel.performAutoMove()
+                        val movesMade = viewModel.performAutoMove(onCardMoved = { playCardClickMoveSound() })
                         if (movesMade == 0) {
                             Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
                         }
@@ -595,6 +617,92 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val minutes = seconds / 60
         val secs = seconds % 60
         return String.format("%02d:%02d", minutes, secs)
+    }
+
+    private fun initializeMoveSoundPool() {
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
+        moveSoundPool = SoundPool.Builder()
+            .setAudioAttributes(audioAttributes)
+            .setMaxStreams(4)
+            .build()
+            .also { pool ->
+                pool.setOnLoadCompleteListener { _, sampleId, status ->
+                    if (status == 0) {
+                        when (sampleId) {
+                            moveSoundId    -> moveSoundLoaded    = true
+                            shuffleSound1Id -> shuffleSound1Loaded = true
+                            shuffleSound2Id -> shuffleSound2Loaded = true
+                            winPopupSoundId -> winPopupSoundLoaded = true
+                        }
+                    }
+                }
+                moveSoundId     = pool.load(this, R.raw.card_game_movement_deal_single_whoosh_light_03, 1)
+                shuffleSound1Id = pool.load(this, R.raw.card_game_movement_shuffle_light_02, 1)
+                shuffleSound2Id = pool.load(this, R.raw.card_game_movement_shuffle_light_03, 1)
+                winPopupSoundId = pool.load(this, R.raw.floraphonic_tada_military_3_183975, 1)
+            }
+    }
+
+    private fun playCardClickMoveSound() {
+        if (muteCardSounds || !moveSoundLoaded || moveSoundId == 0) return
+        moveSoundPool?.play(moveSoundId, 1f, 1f, 1, 0, 1f)
+    }
+
+    private fun playWinPopupSoundIfAllowed() {
+        if (muteWinSound || !winPopupSoundLoaded || winPopupSoundId == 0) return
+        moveSoundPool?.play(winPopupSoundId, 1f, 1f, 1, 0, 1f)
+    }
+
+    private fun playShuffleSoundSequence(onComplete: (() -> Unit)? = null) {
+        if (muteCardSounds) {
+            onComplete?.invoke()
+            return
+        }
+
+        if (shuffleSound1Loaded && shuffleSound1Id != 0) {
+            moveSoundPool?.play(shuffleSound1Id, 1f, 1f, 1, 0, 1f)
+        }
+
+        lifecycleScope.launch {
+            delay(devShuffleSecondClipDelayMsState.toLong().coerceAtLeast(0L))
+            if (shuffleSound2Loaded && shuffleSound2Id != 0) {
+                moveSoundPool?.play(shuffleSound2Id, 1f, 1f, 1, 0, 1f)
+            }
+            delay(devShuffleTailDelayMsState.toLong().coerceAtLeast(0L))
+            onComplete?.invoke()
+        }
+    }
+
+    private fun startNewGameWithShuffleAndDealAnimation() {
+        playShuffleSoundSequence {
+            if (isFinishing || isDestroyed) return@playShuffleSoundSequence
+            viewModel.startNewGame()
+            binding.gameBoardView.post {
+                if (isFinishing || isDestroyed) return@post
+                binding.gameBoardView.startNewGameDealAnimation(
+                    dealCardIntervalMs = devDealCardIntervalMsState.toLong().coerceAtLeast(0L),
+                    onCardDealt = { playCardClickMoveSound() }
+                )
+            }
+        }
+    }
+
+    private fun restartGameWithShuffleAndDealAnimation() {
+        playShuffleSoundSequence {
+            if (isFinishing || isDestroyed) return@playShuffleSoundSequence
+            viewModel.restartGame()
+            binding.gameBoardView.post {
+                if (isFinishing || isDestroyed) return@post
+                binding.gameBoardView.startNewGameDealAnimation(
+                    dealCardIntervalMs = devDealCardIntervalMsState.toLong().coerceAtLeast(0L),
+                    onCardDealt = { playCardClickMoveSound() }
+                )
+            }
+        }
     }
 
     private fun renderGemHud(total: Int) {
@@ -628,7 +736,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         pendingCouponTargetView = null
                         animateAndConsumeHelpCoupon(targetView)
                     }
-                    viewModel.restartGame()
+                    restartGameWithShuffleAndDealAnimation()
                 }
             }
             .setNegativeButton(android.R.string.cancel) { _, _ ->
@@ -773,6 +881,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
         dialog.show()
         dialog.window?.setLayout(widthPx, heightPx)
+        playWinPopupSoundIfAllowed()
 
         // Start rotation only after the view is measured, so pivot uses true center.
         starburstView?.post {
@@ -1303,7 +1412,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         awardGems(rewardsToAward.gems)
         awardTickets(rewardsToAward.tickets)
         winCelebrationPlayed = false
-        viewModel.startNewGame()
+        startNewGameWithShuffleAndDealAnimation()
     }
 
     private fun maybeShowDailyBonusOnFirstLaunch() {
@@ -1626,7 +1735,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             applyAutoDailyPopupRatios()
             renderGemHud(gemTotal)
             renderTicketHud(ticketTotal)
-            viewModel.startNewGame()
+            startNewGameWithShuffleAndDealAnimation()
             onComplete()
         }
     }
@@ -1742,6 +1851,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devUnlockCancelBtnScaleY(): Float = devUnlockCancelBtnScaleYState
     override fun devUnlockCancelBtnOffsetXDp(): Float = devUnlockCancelBtnOffsetXDpState
     override fun devUnlockCancelBtnOffsetYDp(): Float = devUnlockCancelBtnOffsetYDpState
+    override fun devShuffleSecondClipDelayMs(): Float = devShuffleSecondClipDelayMsState
+    override fun devShuffleTailDelayMs(): Float = devShuffleTailDelayMsState
+    override fun devDealCardIntervalMs(): Float = devDealCardIntervalMsState
 
     override fun onDevSetUnlockFrameScaleX(value: Float) { devUnlockFrameScaleXState = value.coerceAtLeast(0.1f) }
     override fun onDevSetUnlockFrameScaleY(value: Float) { devUnlockFrameScaleYState = value.coerceAtLeast(0.1f) }
@@ -1756,6 +1868,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetUnlockCancelBtnScaleY(value: Float) { devUnlockCancelBtnScaleYState = value.coerceAtLeast(0.1f) }
     override fun onDevSetUnlockCancelBtnOffsetX(value: Float) { devUnlockCancelBtnOffsetXDpState = value }
     override fun onDevSetUnlockCancelBtnOffsetY(value: Float) { devUnlockCancelBtnOffsetYDpState = value }
+    override fun onDevSetShuffleSecondClipDelayMs(value: Float) { devShuffleSecondClipDelayMsState = value.coerceAtLeast(0f) }
+    override fun onDevSetShuffleTailDelayMs(value: Float) { devShuffleTailDelayMsState = value.coerceAtLeast(0f) }
+    override fun onDevSetDealCardIntervalMs(value: Float) { devDealCardIntervalMsState = value.coerceAtLeast(0f) }
 
     override fun onDevApplyAutoWinPopupRatios() {
         applyAutoWinPopupRatios()
@@ -2437,6 +2552,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    override fun onDestroy() {
+        moveSoundPool?.release()
+        moveSoundPool = null
+        super.onDestroy()
+    }
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         applyImmersiveFullscreen()
@@ -2649,11 +2770,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun handleUndoClick() {
-        viewModel.undo()
+        if (viewModel.undo()) playCardClickMoveSound()
     }
 
     private fun handleRedoClick() {
-        viewModel.redo()
+        if (viewModel.redo()) playCardClickMoveSound()
     }
 
     private fun handleRestartClick() {

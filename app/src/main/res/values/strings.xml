@@ -128,6 +128,9 @@
     <string name="develop_menu_unlock_cancel_btn_scale_y">Cancel btn scale Y</string>
     <string name="develop_menu_unlock_cancel_btn_offset_x">Cancel btn offset X (dp)</string>
     <string name="develop_menu_unlock_cancel_btn_offset_y">Cancel btn offset Y (dp)</string>
+    <string name="develop_menu_shuffle_second_clip_delay_ms">Shuffle clip 2 delay (ms)</string>
+    <string name="develop_menu_shuffle_tail_delay_ms">Shuffle tail delay (ms)</string>
+    <string name="develop_menu_deal_card_interval_ms">Deal card interval (ms)</string>
 
     <string name="switch_to_register">Don\'t have an account? Register</string>
     <string name="login_title_text">User Login</string>

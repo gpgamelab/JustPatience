@@ -315,9 +315,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         saveGame()
     }
 
-    fun drawFromStock() {
+    enum class DrawResult { NORMAL_DRAW, RECYCLE_SHUFFLE, NO_MOVE }
+
+    fun drawFromStock(): DrawResult {
         val game = _game.value
         var moved = false
+        var recycled = false
         var newGame = game
 
         // Determine how many cards to draw (<=0 defaults to 1)
@@ -346,10 +349,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             // Recycle waste -> stock only if recycle limit allows it.
             if (!game.waste.isEmpty() && canRecycleWaste(game)) {
-                val recycled = game.recycleWasteToStock()
-                if (recycled != null) {
-                    newGame = recycled.copy(recycleCountUsed = game.recycleCountUsed + 1)
+                val r = game.recycleWasteToStock()
+                if (r != null) {
+                    newGame = r.copy(recycleCountUsed = game.recycleCountUsed + 1)
                     moved = true
+                    recycled = true
                 }
             }
         }
@@ -361,6 +365,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val updatedWithScore = updateAfterMove(newGame)  // scoreDelta = 0 for simple scoring
             _game.value = updatedWithScore
             updateUndoRedoState()
+        }
+        return when {
+            !moved   -> DrawResult.NO_MOVE
+            recycled -> DrawResult.RECYCLE_SHUFFLE
+            else     -> DrawResult.NORMAL_DRAW
         }
     }
 
@@ -398,9 +407,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun tryMoveWasteToTableau(index: Int, animate: Boolean = true) {
+    fun tryMoveWasteToTableau(index: Int, animate: Boolean = true): Boolean {
         val game = _game.value
-        val wasteCard = game.waste.peek() ?: return
+        val wasteCard = game.waste.peek() ?: return false
         val updated = game.moveWasteToTableau(index)
 
         if (updated != null) {
@@ -422,7 +431,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _game.value = updatedWithScore
             saveGame()
             updateUndoRedoState()
+            return true
         }
+        return false
     }
 
     fun tryMoveTableauToTableau(
@@ -738,9 +749,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      *     otherwise move to the first valid tableau.
      * - If can move to multiple tableaus → move immediately to first valid tableau.
      */
-    fun handleSingleClickOnWaste() {
+    fun handleSingleClickOnWaste(): Boolean {
         val game = _game.value
-        val wasteCard = game.waste.peek() ?: return
+        val wasteCard = game.waste.peek() ?: return false
 
         // Collect valid destinations
         val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
@@ -752,21 +763,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             // Foundation only and threshold prefers foundation → move there.
             canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
-                    if (tryMoveWasteToFoundation(i)) return
+                    if (tryMoveWasteToFoundation(i)) return true
                 }
+                return false
             }
             // Tableau only → move to first valid tableau
             tableauDests.isNotEmpty() && !canFoundation -> {
-                tryMoveWasteToTableau(tableauDests[0])
+                return tryMoveWasteToTableau(tableauDests[0])
             }
             // Both available → use the same threshold rule as top-tableau cards
             canFoundation && tableauDests.isNotEmpty() -> {
                 if (shouldPreferFoundation) {
                     for (i in game.foundations.indices) {
-                        if (tryMoveWasteToFoundation(i)) return
+                        if (tryMoveWasteToFoundation(i)) return true
                     }
+                    return false
                 } else {
-                    tryMoveWasteToTableau(tableauDests[0])
+                    return tryMoveWasteToTableau(tableauDests[0])
                 }
             }
             // Foundation-only but threshold does not prefer foundation → require explicit confirm tap.
@@ -777,8 +790,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     sourceCardIndex = -1,
                     destinations = listOf(GlowDestination(StackType.FOUNDATION, game.foundations.indices.first { game.moveWasteToFoundation(it) != null }))
                 )
+                return false
             }
         }
+        return false
     }
 
     /**
@@ -789,9 +804,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * - Top cards prefer foundation when the card is within the lowest-foundation
      *   threshold rule; otherwise they keep the richer tableau/glow behavior.
      */
-    fun handleSingleClickOnTableau(tableauIndex: Int, tappedCardIndex: Int) {
+    fun handleSingleClickOnTableau(tableauIndex: Int, tappedCardIndex: Int): Boolean {
         val game = _game.value
-        val pile = game.tableau.getOrNull(tableauIndex) ?: return
+        val pile = game.tableau.getOrNull(tableauIndex) ?: return false
         val cards = pile.asList()
 
         // Find the top face-up card
@@ -802,7 +817,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 break
             }
         }
-        if (topFaceUpIndex < 0) return
+        if (topFaceUpIndex < 0) return false
 
         // Use the tapped card when it is a valid face-up card in this pile.
         val sourceIndex = if (
@@ -828,24 +843,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         when {
             // Non-top runs should move directly to the first valid tableau destination.
             !isTopCard && tableauDests.isNotEmpty() -> {
-                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
+                return tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
             }
             // Top cards should move to foundation immediately when they satisfy the threshold rule.
             shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
-                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return
+                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return true
                 }
+                return false
             }
             // Tableau-only destinations should move immediately to the first valid tableau.
             tableauDests.isNotEmpty() && !canFoundation -> {
-                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
+                return tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
             }
             // Can move to foundation only AND threshold says to prefer foundation → move immediately.
             // If threshold says no, fall through to the glow branch so the user must confirm.
             canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
-                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return
+                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return true
                 }
+                return false
             }
             // Multiple destinations (tableau or foundation) → show all destination glows
             tableauDests.isNotEmpty() || canFoundation -> {
@@ -867,8 +884,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     sourceCardIndex = sourceIndex,
                     destinations = dests
                 )
+                return false
             }
         }
+        return false
     }
 
     /** Clear single-click glow display (called on any player action or when dismissing). */
@@ -881,7 +900,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Priority: tableau to foundation, then waste to foundation.
      * Returns the number of moves made.
      */
-    suspend fun performAutoMove(): Int {
+    suspend fun performAutoMove(onCardMoved: (() -> Unit)? = null): Int {
         pauseHintTimerForNonPlayerActivity()
         var moveCount = 0
         var madeMoveThisPass = true
@@ -893,6 +912,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (tryAutoMoveTableauTopToFoundation(tableauIndex, respectThreshold = true)) {
                     moveCount++
                     madeMoveThisPass = true
+                    onCardMoved?.invoke()
                     if (_showCardAnimations.value) {
                         delay(CARD_MOVE_ANIMATION_MS)
                     }
@@ -903,6 +923,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (!madeMoveThisPass && tryAutoMoveWasteToFoundation(respectThreshold = true)) {
                 moveCount++
                 madeMoveThisPass = true
+                onCardMoved?.invoke()
                 if (_showCardAnimations.value) {
                     delay(CARD_MOVE_ANIMATION_MS)
                 }
@@ -1031,7 +1052,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun undo() {
+    fun undo(): Boolean {
         if (undoStack.isNotEmpty()) {
             resetHintTimer()
             val current = _game.value
@@ -1039,17 +1060,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _game.value = undoStack.removeLast()
             saveGame()
             updateUndoRedoState()
+            return true
         }
+        return false
     }
 
-    fun redo() {
-        if (redoStack.isEmpty()) return
+    fun redo(): Boolean {
+        if (redoStack.isEmpty()) return false
         resetHintTimer()
         val current = _game.value
         undoStack.addLast(current)
         _game.value = redoStack.removeLast()
         saveGame()
         updateUndoRedoState()
+        return true
     }
 
     private fun saveGameIfInProgress() {

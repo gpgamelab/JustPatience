@@ -171,6 +171,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetUnlockCancelBtnOffsetX(value: Float)
         fun onDevSetUnlockCancelBtnOffsetY(value: Float)
 
+        // Shuffle/deal timing
+        fun devShuffleSecondClipDelayMs(): Float
+        fun devShuffleTailDelayMs(): Float
+        fun devDealCardIntervalMs(): Float
+        fun onDevSetShuffleSecondClipDelayMs(value: Float)
+        fun onDevSetShuffleTailDelayMs(value: Float)
+        fun onDevSetDealCardIntervalMs(value: Float)
+
         fun onDevExpandStateChanged(state: ExpandState)
     }
 
@@ -390,6 +398,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_victory_text_size, R.string.develop_menu_victory_text_size, host::devVictoryTextSizeSp, host::onDevSetVictoryTextSize)
         bindDecimal(R.id.btn_dev_victory_offset_x, R.string.develop_menu_victory_offset_x, host::devVictoryOffsetXDp, host::onDevSetVictoryOffsetX)
         bindDecimal(R.id.btn_dev_victory_offset_y, R.string.develop_menu_victory_offset_y, host::devVictoryOffsetYDp, host::onDevSetVictoryOffsetY)
+        bindDecimal(R.id.btn_dev_shuffle_second_clip_delay_ms, R.string.develop_menu_shuffle_second_clip_delay_ms, host::devShuffleSecondClipDelayMs, host::onDevSetShuffleSecondClipDelayMs)
+        bindDecimal(R.id.btn_dev_shuffle_tail_delay_ms, R.string.develop_menu_shuffle_tail_delay_ms, host::devShuffleTailDelayMs, host::onDevSetShuffleTailDelayMs)
+        bindDecimal(R.id.btn_dev_deal_card_interval_ms, R.string.develop_menu_deal_card_interval_ms, host::devDealCardIntervalMs, host::onDevSetDealCardIntervalMs)
 
         view.findViewById<MaterialButton>(R.id.btn_dev_daily_popup_apply_auto).setOnClickListener {
             host.onDevApplyAutoDailyPopupRatios()
@@ -474,6 +485,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_text_size).text = fmt(host.devVictoryTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_x).text = fmt(host.devVictoryOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_y).text = fmt(host.devVictoryOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_second_clip_delay_ms).text = fmt(host.devShuffleSecondClipDelayMs())
+        root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_tail_delay_ms).text = fmt(host.devShuffleTailDelayMs())
+        root.findViewById<MaterialButton>(R.id.btn_dev_deal_card_interval_ms).text = fmt(host.devDealCardIntervalMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_offset_y).text = fmt(host.devDailyTitleOffsetYPx())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_text_size).text = fmt(host.devDailyTitleTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_image_height).text = fmt(host.devDailyGemImageHeightDp())

@@ -38,12 +38,15 @@ import kotlin.math.min
 import android.os.SystemClock
 
 private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:b_0001"
+private const val NEW_GAME_DEAL_CARD_INTERVAL_MS = 70L
 
 
 class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     lateinit var viewModel: GameViewModel
     lateinit var assetResolver: AssetResolver
+    var onClickMoveSoundRequested: (() -> Unit)? = null
+    var onShuffleSoundRequested: (() -> Unit)? = null
 
     private val currentSetId = "default"
 
@@ -162,6 +165,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var animationStartTimeMs: Long = 0
     private val ANIMATION_DURATION_MS = 250L
     private var isAnimating = false
+
+    // New-game deal reveal animation state.
+    private var newGameDealActive = false
+    private var newGameDealRevealCount = 0
+    private var newGameDealOrderByCard = hashMapOf<Int, Int>()
+    private var newGameDealStepRunnable: Runnable? = null
 
     // hint glow state (driven by GameViewModel.hintDisplayState)
     private var hintDisplayState: HintDisplayState? = null
@@ -986,6 +995,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
             } else {
                 cards.forEachIndexed { index, card ->
+                    if (shouldHideCardForNewGameDeal(colIdx, index)) {
+                        y += if (card.isFaceUp) cardW * 0.4f else cardW * 0.1f
+                        return@forEachIndexed
+                    }
 
                     // Skip cards that are currently being dragged
                     if (isDragging &&
@@ -1015,6 +1028,73 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
         }
     }
+
+    /**
+     * Plays a simple tableau reveal in Klondike dealing order (0..6, 1..6, ... 6)
+     * and invokes [onCardDealt] for each card to sync whoosh SFX.
+     */
+    fun startNewGameDealAnimation(
+        dealCardIntervalMs: Long = NEW_GAME_DEAL_CARD_INTERVAL_MS,
+        onCardDealt: (() -> Unit)? = null
+    ) {
+        if (!::viewModel.isInitialized) return
+        cancelNewGameDealAnimation()
+
+        val game = viewModel.game.value
+        val order = hashMapOf<Int, Int>()
+        var ordinal = 0
+        for (row in 0..6) {
+            for (col in row..6) {
+                val pileSize = game.tableau.getOrNull(col)?.size() ?: 0
+                if (row < pileSize) {
+                    order[dealKey(col, row)] = ordinal++
+                }
+            }
+        }
+
+        if (order.isEmpty()) return
+
+        newGameDealOrderByCard = order
+        newGameDealRevealCount = 0
+        newGameDealActive = true
+        invalidate()
+
+        val step = object : Runnable {
+            override fun run() {
+                if (!newGameDealActive) return
+                newGameDealRevealCount++
+                onCardDealt?.invoke()
+                invalidate()
+
+                if (newGameDealRevealCount >= newGameDealOrderByCard.size) {
+                    cancelNewGameDealAnimation()
+                    return
+                }
+                postDelayed(this, dealCardIntervalMs.coerceAtLeast(0L))
+            }
+        }
+        newGameDealStepRunnable = step
+        post(step)
+    }
+
+    fun cancelNewGameDealAnimation() {
+        newGameDealStepRunnable?.let { removeCallbacks(it) }
+        newGameDealStepRunnable = null
+        if (newGameDealActive || newGameDealRevealCount != 0 || newGameDealOrderByCard.isNotEmpty()) {
+            newGameDealActive = false
+            newGameDealRevealCount = 0
+            newGameDealOrderByCard.clear()
+            invalidate()
+        }
+    }
+
+    private fun shouldHideCardForNewGameDeal(colIdx: Int, cardIdx: Int): Boolean {
+        if (!newGameDealActive) return false
+        val order = newGameDealOrderByCard[dealKey(colIdx, cardIdx)] ?: return false
+        return order >= newGameDealRevealCount
+    }
+
+    private fun dealKey(colIdx: Int, cardIdx: Int): Int = (colIdx shl 8) or (cardIdx and 0xFF)
 
     private fun drawCard(canvas: Canvas, card: Card, rect: RectF) {
         val targetW = max(1, rect.width().toInt())
@@ -1093,15 +1173,23 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         when (type) {
             StackType.STOCK -> {
-                viewModel.drawFromStock()
+                when (viewModel.drawFromStock()) {
+                    GameViewModel.DrawResult.NORMAL_DRAW   -> onClickMoveSoundRequested?.invoke()
+                    GameViewModel.DrawResult.RECYCLE_SHUFFLE -> onShuffleSoundRequested?.invoke()
+                    GameViewModel.DrawResult.NO_MOVE       -> Unit
+                }
             }
 
             StackType.WASTE -> {
-                viewModel.handleSingleClickOnWaste()
+                if (viewModel.handleSingleClickOnWaste()) {
+                    onClickMoveSoundRequested?.invoke()
+                }
             }
 
             StackType.TABLEAU -> {
-                viewModel.handleSingleClickOnTableau(stackIndex, cardIndex)
+                if (viewModel.handleSingleClickOnTableau(stackIndex, cardIndex)) {
+                    onClickMoveSoundRequested?.invoke()
+                }
             }
 
             StackType.FOUNDATION -> {
@@ -1118,8 +1206,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun handleDoubleTap(x: Float, y: Float) {
         val (type, stackIndex, _) = findStackAt(x, y)
         when (type) {
-            StackType.WASTE -> viewModel.tryAutoMoveWasteToFoundation()
-            StackType.TABLEAU -> viewModel.tryAutoMoveTableauTopToFoundation(stackIndex)
+            StackType.WASTE -> if (viewModel.tryAutoMoveWasteToFoundation()) {
+                onClickMoveSoundRequested?.invoke()
+            }
+            StackType.TABLEAU -> if (viewModel.tryAutoMoveTableauTopToFoundation(stackIndex)) {
+                onClickMoveSoundRequested?.invoke()
+            }
             else -> handleTap(x, y)
         }
     }
@@ -1195,6 +1287,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
         // Safety-net: clear glow if the move somehow didn't clear it
         if (!moved) viewModel.clearSingleClickGlow()
+        if (moved) onClickMoveSoundRequested?.invoke()
     }
 
     private fun clearDragState() {
@@ -1269,7 +1362,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
 
         // Block all input while animation is running
-        if (isAnimationActive()) {
+        if (isAnimationActive() || newGameDealActive) {
             return true  // Consume the event but don't process it
         }
 
@@ -1574,6 +1667,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         cancelPendingSingleTap()
+        cancelNewGameDealAnimation()
         tabletopBitmap?.recycle()
         tabletopBitmap = null
     }
