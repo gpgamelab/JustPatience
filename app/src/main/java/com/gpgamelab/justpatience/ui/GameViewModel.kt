@@ -104,6 +104,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _allowFoundationToTableauDrag = MutableStateFlow(false)
     val allowFoundationToTableauDrag: StateFlow<Boolean> = _allowFoundationToTableauDrag
 
+    private val _enforceFoundationBalanceEnabled = MutableStateFlow(false)
+    val enforceFoundationBalanceEnabled: StateFlow<Boolean> = _enforceFoundationBalanceEnabled
+
     private val _autoCompleteEnabled = MutableStateFlow(true)
     val autoCompleteEnabled: StateFlow<Boolean> = _autoCompleteEnabled
 
@@ -199,6 +202,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _showWinAnimation.value = settings.showWinAnimation
                 _isMirroredLayout.value = settings.boardLayout == "left_hand"
                 _allowFoundationToTableauDrag.value = settings.allowFoundationToTableauDrag
+                _enforceFoundationBalanceEnabled.value = settings.enforceFoundationBalance
                 _autoCompleteEnabled.value = settings.autoComplete
                 _hapticsEnabled.value = settings.haptics
                 _tapToMoveEnabled.value = settings.tapToMove
@@ -504,7 +508,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val game = _game.value
         val wasteCard = game.waste.peek() ?: return false
 
-        if (respectThreshold && !shouldPreferFoundationOnSingleTap(game, wasteCard)) {
+        if (respectThreshold && !foundationBalanceAllowsMoveToFoundation(game, wasteCard)) {
             return false
         }
 
@@ -543,7 +547,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val topCard = pile.peek()
 
         if (topCard?.isFaceUp != true) return false
-        if (respectThreshold && !shouldPreferFoundationOnSingleTap(game, topCard)) return false
+        if (respectThreshold && !foundationBalanceAllowsMoveToFoundation(game, topCard)) return false
 
         for (i in game.foundations.indices) {
             val updated = game.moveTableauToFoundation(tableauIndex, topIndex, i)
@@ -736,6 +740,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return (card.rank.sortOrder - lowestFoundation) < 3
     }
 
+    private fun foundationBalanceAllowsMoveToFoundation(game: Game, card: Card): Boolean {
+        return !_enforceFoundationBalanceEnabled.value || shouldPreferFoundationOnSingleTap(game, card)
+    }
+
     // ─────────────────────────────────────────────────────────────
     // Single-click glow system (independent from hints)
     // ─────────────────────────────────────────────────────────────
@@ -757,7 +765,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
         val tableauDests = (0..6).filter { game.moveWasteToTableau(it) != null }
 
-        val shouldPreferFoundation = canFoundation && shouldPreferFoundationOnSingleTap(game, wasteCard)
+        val shouldPreferFoundation = canFoundation && foundationBalanceAllowsMoveToFoundation(game, wasteCard)
 
         when {
             // Foundation only and threshold prefers foundation → move there.
@@ -838,7 +846,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val canFoundation = isTopCard && (0..3).any { foundIdx ->
             game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null
         }
-        val shouldPreferFoundation = isTopCard && canFoundation && shouldPreferFoundationOnSingleTap(game, cards[sourceIndex])
+        val shouldPreferFoundation = isTopCard && canFoundation && foundationBalanceAllowsMoveToFoundation(game, cards[sourceIndex])
 
         when {
             // Non-top runs should move directly to the first valid tableau destination.
@@ -909,7 +917,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             madeMoveThisPass = false
 
             for (tableauIndex in _game.value.tableau.indices) {
-                if (tryAutoMoveTableauTopToFoundation(tableauIndex, respectThreshold = true)) {
+                if (tryAutoMoveTableauTopToFoundation(tableauIndex, respectThreshold = _enforceFoundationBalanceEnabled.value)) {
                     moveCount++
                     madeMoveThisPass = true
                     onCardMoved?.invoke()
@@ -920,7 +928,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            if (!madeMoveThisPass && tryAutoMoveWasteToFoundation(respectThreshold = true)) {
+            if (!madeMoveThisPass && tryAutoMoveWasteToFoundation(respectThreshold = _enforceFoundationBalanceEnabled.value)) {
                 moveCount++
                 madeMoveThisPass = true
                 onCardMoved?.invoke()

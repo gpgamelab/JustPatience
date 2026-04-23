@@ -1206,6 +1206,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun handleDoubleTap(x: Float, y: Float) {
         val (type, stackIndex, _) = findStackAt(x, y)
         when (type) {
+            // Double-tap is an explicit user action; always allow auto-move attempt.
             StackType.WASTE -> if (viewModel.tryAutoMoveWasteToFoundation()) {
                 onClickMoveSoundRequested?.invoke()
             }

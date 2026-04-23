@@ -62,6 +62,7 @@ class SettingsManager(private val context: Context) {
         val SHOW_CARD_ANIMATIONS = booleanPreferencesKey("show_card_animations")
         val SHOW_WIN_ANIMATION = booleanPreferencesKey("show_win_animation")
         val ALLOW_FOUNDATION_TO_TABLEAU_DRAG = booleanPreferencesKey("allow_foundation_to_tableau_drag")
+        val ENFORCE_FOUNDATION_BALANCE = booleanPreferencesKey("enforce_foundation_balance")
         val PREMIUM_ACCT = booleanPreferencesKey("premium_acct")
         val SHOW_GAME_TIMER = booleanPreferencesKey("show_game_timer")
         val SHOW_SCORE = booleanPreferencesKey("show_score")
@@ -97,6 +98,7 @@ class SettingsManager(private val context: Context) {
         val showCardAnimations: Boolean = true,
         val showWinAnimation: Boolean = true,
         val allowFoundationToTableauDrag: Boolean = false,
+        val enforceFoundationBalance: Boolean = false,
         val premiumAcct: Boolean = false,
         val showGameTimer: Boolean = true,
         val showScore: Boolean = true,
@@ -423,6 +425,7 @@ class SettingsManager(private val context: Context) {
                 showCardAnimations = preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] ?: true,
                 showWinAnimation = preferences[PreferencesKeys.SHOW_WIN_ANIMATION] ?: true,
                 allowFoundationToTableauDrag = preferences[PreferencesKeys.ALLOW_FOUNDATION_TO_TABLEAU_DRAG] ?: false,
+                enforceFoundationBalance = preferences[PreferencesKeys.ENFORCE_FOUNDATION_BALANCE] ?: false,
                 premiumAcct = preferences[PreferencesKeys.PREMIUM_ACCT] ?: false,
                 showGameTimer = preferences[PreferencesKeys.SHOW_GAME_TIMER] ?: true,
                 showScore = preferences[PreferencesKeys.SHOW_SCORE] ?: true,
@@ -451,6 +454,7 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] = settings.showCardAnimations
             preferences[PreferencesKeys.SHOW_WIN_ANIMATION] = settings.showWinAnimation
             preferences[PreferencesKeys.ALLOW_FOUNDATION_TO_TABLEAU_DRAG] = settings.allowFoundationToTableauDrag
+            preferences[PreferencesKeys.ENFORCE_FOUNDATION_BALANCE] = settings.enforceFoundationBalance
             preferences[PreferencesKeys.PREMIUM_ACCT] = settings.premiumAcct
             preferences[PreferencesKeys.SHOW_GAME_TIMER] = settings.showGameTimer
             preferences[PreferencesKeys.SHOW_SCORE] = settings.showScore

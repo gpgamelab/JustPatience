@@ -1581,7 +1581,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 currentHaptics = currentSettings.haptics,
                 currentTapToMove = currentSettings.tapToMove,
                 currentScoreMethod = currentSettings.scoreMethod,
-                currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag
+                currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag,
+                currentEnforceFoundationBalance = currentSettings.enforceFoundationBalance
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
@@ -2241,6 +2242,23 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     val latest = settingsManager.gamePlaySettingsFlow.first()
                     settingsManager.saveGamePlaySettings(
                         latest.copy(allowFoundationToTableauDrag = enabled)
+                    )
+                }
+            }
+        }
+    }
+
+    override fun onGameMenuEnforceFoundationBalanceToggle() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showEnableDisableDialog(
+                title = getString(R.string.game_menu_enforce_foundation_balance),
+                enabled = currentSettings.enforceFoundationBalance
+            ) { enabled ->
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(
+                        latest.copy(enforceFoundationBalance = enabled)
                     )
                 }
             }

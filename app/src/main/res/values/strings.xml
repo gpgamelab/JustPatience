@@ -329,6 +329,8 @@ Locale: %7$s</string>
     <!-- Foundation to Tableau -->
     <string name="game_menu_foundation_to_tableau">Allow Foundation to Tableau</string>
     <string name="game_menu_foundation_to_tableau_with_value">Allow Foundation to Tableau: %1$s</string>
+    <string name="game_menu_enforce_foundation_balance">Enforce Foundation Balance</string>
+    <string name="game_menu_enforce_foundation_balance_with_value">Enforce Foundation Balance: %1$s</string>
     <string name="game_menu_premium_acct">Premium Acct</string>
     <string name="game_menu_premium_acct_with_value">Premium Acct: %1$s</string>
     <string name="board_button_testers">Testers</string>
