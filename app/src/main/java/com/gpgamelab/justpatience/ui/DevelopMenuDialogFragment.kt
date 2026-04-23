@@ -29,7 +29,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
         val tableauExpanded: Boolean = false,
         val dailyPopupExpanded: Boolean = false,
         val unlockPopupExpanded: Boolean = false,
-        val shuffleExpanded: Boolean = false
+        val shuffleExpanded: Boolean = false,
+        val magicWandsExpanded: Boolean = false
     )
 
     interface Host {
@@ -197,6 +198,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetShuffleTailDelayMs(value: Float)
         fun onDevSetDealCardIntervalMs(value: Float)
 
+        fun devMagicWandCount(): Int
+        fun onDevSetMagicWandCount(value: Int)
+
         fun onDevExpandStateChanged(state: ExpandState)
     }
 
@@ -301,6 +305,18 @@ class DevelopMenuDialogFragment : DialogFragment() {
             tableauExpanded = !tableauExpanded
             setSectionExpanded(tableauContent, tableauArrow, tableauExpanded)
             expandState = expandState.copy(tableauExpanded = tableauExpanded)
+            host.onDevExpandStateChanged(expandState)
+        }
+
+        val magicWandsHeader = view.findViewById<View>(R.id.layout_develop_magic_wands_header)
+        val magicWandsArrow = view.findViewById<TextView>(R.id.tv_develop_magic_wands_arrow)
+        val magicWandsContent = view.findViewById<LinearLayout>(R.id.layout_develop_magic_wands_content)
+        var magicWandsExpanded = expandState.magicWandsExpanded
+        setSectionExpanded(magicWandsContent, magicWandsArrow, magicWandsExpanded)
+        magicWandsHeader.setOnClickListener {
+            magicWandsExpanded = !magicWandsExpanded
+            setSectionExpanded(magicWandsContent, magicWandsArrow, magicWandsExpanded)
+            expandState = expandState.copy(magicWandsExpanded = magicWandsExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -444,6 +460,13 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_shuffle_tail_delay_ms, R.string.develop_menu_shuffle_tail_delay_ms, host::devShuffleTailDelayMs, host::onDevSetShuffleTailDelayMs)
         bindDecimal(R.id.btn_dev_deal_card_interval_ms, R.string.develop_menu_deal_card_interval_ms, host::devDealCardIntervalMs, host::onDevSetDealCardIntervalMs)
 
+        view.findViewById<MaterialButton>(R.id.btn_dev_magic_wand_count).setOnClickListener {
+            showSetValueDialog(getString(R.string.develop_menu_magic_wand_count), host.devMagicWandCount()) {
+                host.onDevSetMagicWandCount(it)
+                refreshPopupDisplays(view, host)
+            }
+        }
+
         view.findViewById<MaterialButton>(R.id.btn_dev_daily_popup_apply_auto).setOnClickListener {
             host.onDevApplyAutoDailyPopupRatios()
             refreshPopupDisplays(view, host)
@@ -538,6 +561,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_second_clip_delay_ms).text = fmt(host.devShuffleSecondClipDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_tail_delay_ms).text = fmt(host.devShuffleTailDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_deal_card_interval_ms).text = fmt(host.devDealCardIntervalMs())
+        root.findViewById<MaterialButton>(R.id.btn_dev_magic_wand_count).text = host.devMagicWandCount().toString()
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_offset_y).text = fmt(host.devDailyTitleOffsetYPx())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_text_size).text = fmt(host.devDailyTitleTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_image_height).text = fmt(host.devDailyGemImageHeightDp())
@@ -598,7 +622,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
             tableauExpanded = b.getBoolean(ARG_TABLEAU_EXPANDED, false),
             dailyPopupExpanded = b.getBoolean(ARG_DAILY_POPUP_EXPANDED, false),
             unlockPopupExpanded = b.getBoolean(ARG_UNLOCK_POPUP_EXPANDED, false),
-            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
+            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false),
+            magicWandsExpanded = b.getBoolean(ARG_MAGIC_WANDS_EXPANDED, false)
         )
     }
 
@@ -680,6 +705,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         private const val ARG_DAILY_POPUP_EXPANDED = "arg_daily_popup_expanded"
         private const val ARG_UNLOCK_POPUP_EXPANDED = "arg_unlock_popup_expanded"
         private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
+        private const val ARG_MAGIC_WANDS_EXPANDED = "arg_magic_wands_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
             return DevelopMenuDialogFragment().apply {
@@ -690,6 +716,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
                     putBoolean(ARG_DAILY_POPUP_EXPANDED, state.dailyPopupExpanded)
                     putBoolean(ARG_UNLOCK_POPUP_EXPANDED, state.unlockPopupExpanded)
                     putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
+                    putBoolean(ARG_MAGIC_WANDS_EXPANDED, state.magicWandsExpanded)
                 }
             }
         }

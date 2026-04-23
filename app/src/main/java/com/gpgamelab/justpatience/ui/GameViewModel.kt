@@ -60,6 +60,13 @@ private data class SavedGameEnvelope(
  */
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
+    private data class WandCandidate(
+        val sourceType: StackType,          // TABLEAU, STOCK, or WASTE
+        val sourceTableauIndex: Int,        // meaningful only for TABLEAU
+        val sourceCardIndex: Int,           // meaningful only for TABLEAU / STOCK
+        val card: Card
+    )
+
     private val settingsManager = SettingsManager(application.applicationContext)
     private val tokenManager = TokenManager(application.applicationContext)
     private val repository = GameRepository(settingsManager, tokenManager)
@@ -1013,6 +1020,172 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         return false
+    }
+
+    fun tryUseMagicWandOnTarget(targetType: StackType, targetIndex: Int, targetCardIndex: Int): Boolean {
+        val game = _game.value
+        val targetIsValid = when (targetType) {
+            StackType.TABLEAU -> {
+                val pile = game.tableau.getOrNull(targetIndex) ?: return false
+                val targetCard = pile.peekAt(targetCardIndex) ?: return false
+                targetCard.isFaceUp
+            }
+            StackType.FOUNDATION -> {
+                val top = game.foundations.getOrNull(targetIndex)?.peek() ?: return false
+                top.isFaceUp
+            }
+            else -> return false
+        }
+        if (!targetIsValid) return false
+
+        val candidate = findFirstMagicWandCandidate(game, targetType, targetIndex) ?: return false
+
+        val candidateFaceUp = candidate.card.copy(isFaceUp = true)
+
+        val wandAppliedGame: Game = when (candidate.sourceType) {
+            StackType.TABLEAU -> {
+                val sourcePile = game.tableau.getOrNull(candidate.sourceTableauIndex) ?: return false
+                val sourceCards = sourcePile.asList().toMutableList()
+                if (candidate.sourceCardIndex !in sourceCards.indices) return false
+                sourceCards.removeAt(candidate.sourceCardIndex)
+                var rebuiltSourcePile = TableauPile(sourceCards.map { it.copy() }.toMutableList())
+                rebuiltSourcePile = rebuiltSourcePile.withTopCardFlipped()
+                val newTableau = game.tableau.toMutableList()
+                newTableau[candidate.sourceTableauIndex] = rebuiltSourcePile
+
+                when (targetType) {
+                    StackType.TABLEAU -> {
+                        val targetPile = game.tableau.getOrNull(targetIndex) ?: return false
+                        val updatedTarget = targetPile.withCardsAdded(listOf(candidateFaceUp))
+                        if (updatedTarget === targetPile) return false
+                        newTableau[targetIndex] = updatedTarget
+                        game.copy(tableau = newTableau)
+                    }
+                    StackType.FOUNDATION -> {
+                        val targetFoundation = game.foundations.getOrNull(targetIndex) ?: return false
+                        val updatedFoundation = targetFoundation.withCardAdded(candidateFaceUp)
+                        if (updatedFoundation === targetFoundation) return false
+                        val newFoundations = game.foundations.toMutableList()
+                        newFoundations[targetIndex] = updatedFoundation
+                        game.copy(tableau = newTableau, foundations = newFoundations)
+                    }
+                    else -> return false
+                }
+            }
+            StackType.STOCK -> {
+                // Remove the card from stock, place face-up on target
+                val stockCards = game.stock.asList().toMutableList()
+                if (candidate.sourceCardIndex !in stockCards.indices) return false
+                stockCards.removeAt(candidate.sourceCardIndex)
+                val newStock = Stock(stockCards.map { it.copy() }.toMutableList())
+
+                when (targetType) {
+                    StackType.TABLEAU -> {
+                        val newTableau = game.tableau.toMutableList()
+                        val targetPile = game.tableau.getOrNull(targetIndex) ?: return false
+                        val updatedTarget = targetPile.withCardsAdded(listOf(candidateFaceUp))
+                        if (updatedTarget === targetPile) return false
+                        newTableau[targetIndex] = updatedTarget
+                        game.copy(stock = newStock, tableau = newTableau)
+                    }
+                    StackType.FOUNDATION -> {
+                        val targetFoundation = game.foundations.getOrNull(targetIndex) ?: return false
+                        val updatedFoundation = targetFoundation.withCardAdded(candidateFaceUp)
+                        if (updatedFoundation === targetFoundation) return false
+                        val newFoundations = game.foundations.toMutableList()
+                        newFoundations[targetIndex] = updatedFoundation
+                        game.copy(stock = newStock, foundations = newFoundations)
+                    }
+                    else -> return false
+                }
+            }
+            StackType.WASTE -> {
+                // Remove the specific waste card (may not be the top) and place face-up on target
+                val wasteCardsList = game.waste.asList().toMutableList()
+                if (candidate.sourceCardIndex !in wasteCardsList.indices) return false
+                wasteCardsList.removeAt(candidate.sourceCardIndex)
+                val newWaste = Waste().also { w -> wasteCardsList.forEach { c -> w.push(c) } }
+
+                when (targetType) {
+                    StackType.TABLEAU -> {
+                        val newTableau = game.tableau.toMutableList()
+                        val targetPile = game.tableau.getOrNull(targetIndex) ?: return false
+                        val updatedTarget = targetPile.withCardsAdded(listOf(candidateFaceUp))
+                        if (updatedTarget === targetPile) return false
+                        newTableau[targetIndex] = updatedTarget
+                        game.copy(waste = newWaste, tableau = newTableau)
+                    }
+                    StackType.FOUNDATION -> {
+                        val targetFoundation = game.foundations.getOrNull(targetIndex) ?: return false
+                        val updatedFoundation = targetFoundation.withCardAdded(candidateFaceUp)
+                        if (updatedFoundation === targetFoundation) return false
+                        val newFoundations = game.foundations.toMutableList()
+                        newFoundations[targetIndex] = updatedFoundation
+                        game.copy(waste = newWaste, foundations = newFoundations)
+                    }
+                    else -> return false
+                }
+            }
+            else -> return false
+        }
+
+        clearSingleClickGlow()
+        resetHintTimer()
+        undoStack.addLast(game)
+        redoStack.clear()
+        _game.value = updateAfterMove(wandAppliedGame)
+        saveGame()
+        updateUndoRedoState()
+        return true
+    }
+
+    private fun findFirstMagicWandCandidate(game: Game, targetType: StackType, targetIndex: Int): WandCandidate? {
+        // Helper: does this face-up card satisfy the target slot?
+        fun canSatisfy(candidateFaceUp: Card, sourcePileIndex: Int): Boolean = when (targetType) {
+            StackType.TABLEAU -> {
+                if (sourcePileIndex == targetIndex) false
+                else game.tableau.getOrNull(targetIndex)?.canPush(candidateFaceUp) == true
+            }
+            StackType.FOUNDATION -> game.foundations.getOrNull(targetIndex)?.canPush(candidateFaceUp) == true
+            else -> false
+        }
+
+        // ── 1. Facedown tableau cards (existing behaviour) ──────
+        for (sourcePileIndex in game.tableau.indices) {
+            if (!game.extraTableauUnlocked && sourcePileIndex == Game.LOCKED_TABLEAU_INDEX) continue
+            val sourceCards = game.tableau[sourcePileIndex].asList()
+            for (cardIndex in sourceCards.lastIndex downTo 0) {
+                val facedown = sourceCards[cardIndex]
+                if (facedown.isFaceUp) continue
+                val candidateFaceUp = facedown.copy(isFaceUp = true)
+                if (canSatisfy(candidateFaceUp, sourcePileIndex)) {
+                    return WandCandidate(StackType.TABLEAU, sourcePileIndex, cardIndex, facedown)
+                }
+            }
+        }
+
+        // ── 2. Facedown cards in the stock (draw pile) ──────────
+        val stockCards = game.stock.asList()
+        for (cardIndex in stockCards.indices) {
+            val facedown = stockCards[cardIndex]
+            if (facedown.isFaceUp) continue
+            val candidateFaceUp = facedown.copy(isFaceUp = true)
+            if (canSatisfy(candidateFaceUp, -1)) {
+                return WandCandidate(StackType.STOCK, -1, cardIndex, facedown)
+            }
+        }
+
+        // ── 3. All faceup cards in the waste pile (top first) ───
+        val wasteCards = game.waste.asList()
+        for (cardIndex in wasteCards.lastIndex downTo 0) {
+            val wasteCard = wasteCards[cardIndex]
+            if (!wasteCard.isFaceUp) continue
+            if (canSatisfy(wasteCard, -1)) {
+                return WandCandidate(StackType.WASTE, -1, cardIndex, wasteCard)
+            }
+        }
+
+        return null
     }
 
     private fun updateAfterMove(game: Game, scoreDelta: Int = 0): Game {

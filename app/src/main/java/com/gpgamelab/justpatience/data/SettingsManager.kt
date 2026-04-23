@@ -53,6 +53,7 @@ class SettingsManager(private val context: Context) {
         val SAVED_GAME_STATE_JSON = stringPreferencesKey("saved_game_state_json")
         val TOTAL_GEMS = intPreferencesKey("total_gems")
         val TOTAL_TICKETS = intPreferencesKey("total_tickets")
+        val TOTAL_MAGIC_WANDS = intPreferencesKey("total_magic_wands")
         val LAST_DAILY_BONUS_DATE = stringPreferencesKey("last_daily_bonus_date")
 
         // Game Play Settings
@@ -321,6 +322,24 @@ class SettingsManager(private val context: Context) {
     suspend fun setTotalTickets(total: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.TOTAL_TICKETS] = total.coerceAtLeast(0)
+        }
+    }
+
+    fun getTotalMagicWandsFlow(): Flow<Int> = dataStore.data
+        .map { preferences ->
+            (preferences[PreferencesKeys.TOTAL_MAGIC_WANDS] ?: 0).coerceAtLeast(0)
+        }
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(0)
+            } else {
+                throw exception
+            }
+        }
+
+    suspend fun setTotalMagicWands(total: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TOTAL_MAGIC_WANDS] = total.coerceAtLeast(0)
         }
     }
 

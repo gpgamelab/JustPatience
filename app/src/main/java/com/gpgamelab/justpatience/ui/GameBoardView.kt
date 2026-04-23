@@ -50,6 +50,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     var onClickMoveSoundRequested: (() -> Unit)? = null
     var onShuffleSoundRequested: (() -> Unit)? = null
     var onLockedTableauUnlockRequested: (() -> Unit)? = null
+    var onMagicWandTargetSelected: ((StackType, Int, Int) -> Unit)? = null
 
     private val currentSetId = "default"
 
@@ -200,6 +201,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // single-click glow state (shows all valid destinations simultaneously)
     private var singleClickGlowState: SingleClickGlowState? = null
+    private var magicWandSelectionMode = false
 
     // coupon flight animation state
     private val couponFlightAnimator = CouponFlightAnimator()
@@ -411,6 +413,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         clearDragState()
         clearAnimationState()
         cancelNewGameDealAnimation()
+        invalidate()
+    }
+
+    fun setMagicWandSelectionMode(enabled: Boolean) {
+        magicWandSelectionMode = enabled
+        clearDragState()
         invalidate()
     }
 
@@ -1295,6 +1303,27 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun handleTap(x: Float, y: Float) {
+        if (magicWandSelectionMode) {
+            val (type, stackIndex, cardIndex) = findStackAt(x, y)
+            when (type) {
+                StackType.TABLEAU -> {
+                    val pile = viewModel.game.value.tableau.getOrNull(stackIndex) ?: return
+                    val card = pile.peekAt(cardIndex)
+                    if (card?.isFaceUp == true) {
+                        onMagicWandTargetSelected?.invoke(type, stackIndex, cardIndex)
+                    }
+                }
+                StackType.FOUNDATION -> {
+                    val top = viewModel.game.value.foundations.getOrNull(stackIndex)?.peek()
+                    if (top?.isFaceUp == true) {
+                        onMagicWandTargetSelected?.invoke(type, stackIndex, -1)
+                    }
+                }
+                else -> Unit
+            }
+            return
+        }
+
         // ── Glow-destination intercept ────────────────────────────
         // When multiple destinations are highlighted, the next tap either:
         //   • lands inside a destination rect  → execute the move there
@@ -1506,6 +1535,26 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // touch handling for drag & drop
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (magicWandSelectionMode) {
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = event.x
+                    downY = event.y
+                    return true
+                }
+                MotionEvent.ACTION_MOVE -> return true
+                MotionEvent.ACTION_UP -> {
+                    val dx = abs(event.x - downX)
+                    val dy = abs(event.y - downY)
+                    if (dx < touchSlop && dy < touchSlop) {
+                        handleTap(event.x, event.y)
+                    }
+                    return true
+                }
+                else -> return true
+            }
+        }
+
         // Any touch = player activity → reset the hint inactivity timer
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
             if (::viewModel.isInitialized) viewModel.resetHintTimer()

@@ -104,6 +104,13 @@
     <string name="daily_bonus_x3">x3 Reward</string>
     <string name="daily_bonus_multiplier_unavailable_fallback">x%1$d reward unavailable. Base daily bonus claimed.</string>
     <string name="daily_bonus_x2_unavailable_fallback">x2 reward unavailable. Base daily bonus claimed.</string>
+    <string name="magic_wand_content_description">Magic wand</string>
+    <string name="magic_wand_watch_ad_content_description">Watch ad for magic wand</string>
+    <string name="magic_wand_select_target_prompt">Magic Wand ready. Tap any face-up tableau or foundation card.</string>
+    <string name="magic_wand_no_match">No face-down card can satisfy that target.</string>
+    <string name="magic_wand_ad_title">Get Magic Wand</string>
+    <string name="magic_wand_ad_message">Watch an ad to add 1 Magic Wand?</string>
+    <string name="magic_wand_watch_ad">Watch Ad</string>
     <string name="no_saved_game_to_continue">No saved game to continue.</string>
     <string name="help_unlock_description_format">You have no more Help Coupons. Your options are: Spend Gems, Watch an AD. Either will unlock %1$s for the next %2$d hours.</string>
     <string name="help_unlock_gems_format">%1$d gems</string>
@@ -130,6 +137,8 @@
     <string name="develop_menu_unlock_cancel_btn_offset_y">Cancel btn offset Y (dp)</string>
     <string name="develop_menu_shuffle_section">Shuffle / Deal Timing</string>
     <string name="develop_menu_tableau_section">Tableau Adjustments</string>
+    <string name="develop_menu_magic_wand_section">Magic Wands</string>
+    <string name="develop_menu_magic_wand_count">Available magic wands</string>
     <string name="develop_menu_shuffle_second_clip_delay_ms">Shuffle clip 2 delay (ms)</string>
     <string name="develop_menu_shuffle_tail_delay_ms">Shuffle tail delay (ms)</string>
     <string name="develop_menu_deal_card_interval_ms">Deal card interval (ms)</string>

@@ -97,11 +97,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private data class WinRewards(
         val gems: Int,
-        val tickets: Int
+        val tickets: Int,
+        val wands: Int
     ) {
         fun withMultiplier(multiplier: Int): WinRewards {
             val safeMultiplier = multiplier.coerceAtLeast(1)
-            return copy(gems = gems * safeMultiplier, tickets = tickets * safeMultiplier)
+            return copy(
+                gems = gems * safeMultiplier,
+                tickets = tickets * safeMultiplier,
+                wands = wands * safeMultiplier
+            )
         }
     }
 
@@ -219,6 +224,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var pendingWinUiAfterAnimation: Boolean = false
     private var gemTotal: Int = 0
     private var ticketTotal: Int = 0
+    private var magicWandTotal: Int = 0
+    private var isMagicWandSelectionMode: Boolean = false
     private var dailyBonusPromptShownThisLaunch: Boolean = false
     private var testerStarburstPositionXPx: Int = winPopupUiConfig.starburstOffsetXPx.toInt()
     private var testerStarburstPositionYPx: Int = winPopupUiConfig.starburstOffsetYPx.toInt()
@@ -468,6 +475,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.gameBoardView.onClickMoveSoundRequested = { playCardClickMoveSound() }
         binding.gameBoardView.onShuffleSoundRequested = { playShuffleSoundSequence() }
         binding.gameBoardView.onLockedTableauUnlockRequested = { onLockedTableauUnlockRequested() }
+        binding.gameBoardView.onMagicWandTargetSelected = { type, index, cardIndex ->
+            onMagicWandTargetSelected(type, index, cardIndex)
+        }
         applyLockedPileAdIconDevConfigToBoard()
         binding.gameBoardView.bindToViewModel(this)
 
@@ -487,6 +497,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         initializeMoveSoundPool()
         renderGemHud(gemTotal)
         renderTicketHud(ticketTotal)
+        renderMagicWandHud(magicWandTotal)
 
         // Launcher starts directly in GameActivity; default behavior is resume-or-new.
         forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
@@ -513,6 +524,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     settingsManager.getTotalTicketsFlow().collect { persistedTotal ->
                         ticketTotal = persistedTotal
                         renderTicketHud(ticketTotal)
+                    }
+                }
+
+                launch {
+                    settingsManager.getTotalMagicWandsFlow().collect { persistedTotal ->
+                        magicWandTotal = persistedTotal
+                        renderMagicWandHud(magicWandTotal)
                     }
                 }
 
@@ -602,6 +620,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.btnStats.setOnClickListener { showGameMenu() }
         binding.btnTesters.setOnClickListener { showTesterMenu() }
         binding.btnDevelop.setOnClickListener { showDevelopMenu() }
+        binding.magicWandContainer?.setOnClickListener { onMagicWandClicked() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             onHelpControlClicked(HelpControlAction.AUTO, buttonView) {
                 buttonView.isEnabled = false
@@ -728,6 +747,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.ivTicketIcon.contentDescription = getString(R.string.tickets_count_content_description, safeTotal)
     }
 
+    private fun renderMagicWandHud(total: Int) {
+        val safeTotal = total.coerceAtLeast(0)
+        binding.tvMagicWandCount?.text = safeTotal.toString()
+        binding.tvMagicWandCount?.visibility = if (safeTotal > 0) View.VISIBLE else View.GONE
+        binding.ivMagicWandAdBadge?.visibility = if (safeTotal == 0) View.VISIBLE else View.GONE
+    }
+
 
     private fun showRestartDialog() {
         val restartButton = findViewById<Button>(R.id.btn_restart)
@@ -759,7 +785,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         winDialogShowing = true
         val baseRewards = WinRewards(
             gems = 10,
-            tickets = if (isPremiumAccount) 4 else 2
+            tickets = if (isPremiumAccount) 4 else 2,
+            wands = if (isPremiumAccount) 2 else 1
         )
 
         if (isPremiumAccount) {
@@ -1415,11 +1442,91 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    private fun awardMagicWands(amount: Int) {
+        magicWandTotal = (magicWandTotal + amount).coerceAtLeast(0)
+        renderMagicWandHud(magicWandTotal)
+        lifecycleScope.launch {
+            settingsManager.setTotalMagicWands(magicWandTotal)
+        }
+    }
+
+    private fun consumeMagicWand(): Boolean {
+        if (magicWandTotal <= 0) return false
+        magicWandTotal = (magicWandTotal - 1).coerceAtLeast(0)
+        renderMagicWandHud(magicWandTotal)
+        lifecycleScope.launch {
+            settingsManager.setTotalMagicWands(magicWandTotal)
+        }
+        return true
+    }
+
     private fun completeWinRewardFlow(rewardsToAward: WinRewards) {
         awardGems(rewardsToAward.gems)
         awardTickets(rewardsToAward.tickets)
+        awardMagicWands(rewardsToAward.wands)
         winCelebrationPlayed = false
         startNewGameWithShuffleAndDealAnimation()
+    }
+
+    private fun setMagicWandSelectionMode(enabled: Boolean) {
+        isMagicWandSelectionMode = enabled
+        binding.magicWandContainer?.alpha = if (enabled) 0.7f else 1f
+        binding.gameBoardView.setMagicWandSelectionMode(enabled)
+    }
+
+    private fun onMagicWandClicked() {
+        if (isMagicWandSelectionMode) {
+            setMagicWandSelectionMode(false)
+            return
+        }
+
+        if (magicWandTotal > 0) {
+            setMagicWandSelectionMode(true)
+            Toast.makeText(this, R.string.magic_wand_select_target_prompt, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        showMagicWandAdPrompt()
+    }
+
+    private fun showMagicWandAdPrompt() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.magic_wand_ad_title)
+            .setMessage(R.string.magic_wand_ad_message)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.magic_wand_watch_ad) { _, _ ->
+                val shown = adManager.showRewardedAd(
+                    onFinished = { rewardEarned ->
+                        if (rewardEarned) {
+                            awardMagicWands(1)
+                        } else {
+                            Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+
+                if (!shown) {
+                    adManager.loadRewardedAd()
+                    Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
+    }
+
+    private fun onMagicWandTargetSelected(
+        targetType: com.gpgamelab.justpatience.model.StackType,
+        targetIndex: Int,
+        targetCardIndex: Int
+    ) {
+        if (!isMagicWandSelectionMode) return
+        val used = viewModel.tryUseMagicWandOnTarget(targetType, targetIndex, targetCardIndex)
+        if (used) {
+            consumeMagicWand()
+            playCardClickMoveSound()
+        } else {
+            Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
+        }
+        setMagicWandSelectionMode(false)
     }
 
     private fun maybeShowDailyBonusOnFirstLaunch() {
@@ -1495,6 +1602,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun claimDailyBonus(baseRewards: WinRewards, todayIsoDate: String) {
         awardGems(baseRewards.gems)
         awardTickets(baseRewards.tickets)
+        awardMagicWands(baseRewards.wands)
         dailyBonusPromptShownThisLaunch = true
         lifecycleScope.launch {
             settingsManager.setLastDailyBonusDate(todayIsoDate)
@@ -1510,18 +1618,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun selectDailyBonusRewards(isPremium: Boolean): WinRewards {
+        val wandReward = if (isPremium) 2 else 1
         val band = pickDailyBonusBand()
         return if (isPremium) {
             when (band) {
-                DailyBonusBand.LOW -> WinRewards(gems = 10, tickets = 4)
-                DailyBonusBand.MID -> WinRewards(gems = 20, tickets = 5)
-                DailyBonusBand.HIGH -> WinRewards(gems = 40, tickets = 6)
+                DailyBonusBand.LOW -> WinRewards(gems = 10, tickets = 4, wands = wandReward)
+                DailyBonusBand.MID -> WinRewards(gems = 20, tickets = 5, wands = wandReward)
+                DailyBonusBand.HIGH -> WinRewards(gems = 40, tickets = 6, wands = wandReward)
             }
         } else {
             when (band) {
-                DailyBonusBand.LOW -> WinRewards(gems = 5, tickets = 2)
-                DailyBonusBand.MID -> WinRewards(gems = 10, tickets = 3)
-                DailyBonusBand.HIGH -> WinRewards(gems = 20, tickets = 4)
+                DailyBonusBand.LOW -> WinRewards(gems = 5, tickets = 2, wands = wandReward)
+                DailyBonusBand.MID -> WinRewards(gems = 10, tickets = 3, wands = wandReward)
+                DailyBonusBand.HIGH -> WinRewards(gems = 20, tickets = 4, wands = wandReward)
             }
         }
     }
@@ -1729,6 +1838,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             // Reset in-memory state immediately (flows will also catch up asynchronously)
             gemTotal = 0
             ticketTotal = 0
+            magicWandTotal = 0
+            setMagicWandSelectionMode(false)
             isPremiumAccount = false
             winCelebrationPlayed = false
             dailyBonusPromptShownThisLaunch = false
@@ -1743,6 +1854,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             applyAutoDailyPopupRatios()
             renderGemHud(gemTotal)
             renderTicketHud(ticketTotal)
+            renderMagicWandHud(magicWandTotal)
             startNewGameWithShuffleAndDealAnimation()
             onComplete()
         }
@@ -1870,6 +1982,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devShuffleSecondClipDelayMs(): Float = devShuffleSecondClipDelayMsState
     override fun devShuffleTailDelayMs(): Float = devShuffleTailDelayMsState
     override fun devDealCardIntervalMs(): Float = devDealCardIntervalMsState
+    override fun devMagicWandCount(): Int = magicWandTotal
 
     override fun onDevSetUnlockFrameScaleX(value: Float) { devUnlockFrameScaleXState = value.coerceAtLeast(0.1f) }
     override fun onDevSetUnlockFrameScaleY(value: Float) { devUnlockFrameScaleYState = value.coerceAtLeast(0.1f) }
@@ -1919,6 +2032,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetShuffleSecondClipDelayMs(value: Float) { devShuffleSecondClipDelayMsState = value.coerceAtLeast(0f) }
     override fun onDevSetShuffleTailDelayMs(value: Float) { devShuffleTailDelayMsState = value.coerceAtLeast(0f) }
     override fun onDevSetDealCardIntervalMs(value: Float) { devDealCardIntervalMsState = value.coerceAtLeast(0f) }
+    override fun onDevSetMagicWandCount(value: Int) {
+        magicWandTotal = value.coerceAtLeast(0)
+        if (magicWandTotal == 0 && isMagicWandSelectionMode) {
+            setMagicWandSelectionMode(false)
+        }
+        renderMagicWandHud(magicWandTotal)
+        lifecycleScope.launch {
+            settingsManager.setTotalMagicWands(magicWandTotal)
+        }
+    }
 
     override fun onDevApplyAutoWinPopupRatios() {
         applyAutoWinPopupRatios()
@@ -2604,6 +2727,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     override fun onPause() {
         super.onPause()
+        setMagicWandSelectionMode(false)
         // Avoid recording losses on transient pauses (ads, dialogs, rotation).
         viewModel.saveGame()
         // Pause hints while the activity is not in foreground (ad overlay, etc.).
