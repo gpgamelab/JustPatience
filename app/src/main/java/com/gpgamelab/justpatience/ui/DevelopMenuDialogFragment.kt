@@ -24,8 +24,9 @@ import java.util.Locale
 class DevelopMenuDialogFragment : DialogFragment() {
 
     data class ExpandState(
-        val starburstExpanded: Boolean = true,
-        val popupExpanded: Boolean = true
+        val starburstExpanded: Boolean = false,
+        val popupExpanded: Boolean = false,
+        val dailyPopupExpanded: Boolean = false
     )
 
     interface Host {
@@ -73,6 +74,27 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devVictoryTextSizeSp(): Float
         fun devVictoryOffsetXDp(): Float
         fun devVictoryOffsetYDp(): Float
+        fun devDailyTitleOffsetYPx(): Float
+        fun devDailyTitleTextSizeSp(): Float
+        fun devDailyGemImageHeightDp(): Float
+        fun devDailyGemOffsetXDp(): Float
+        fun devDailyGemOffsetYDp(): Float
+        fun devDailyTicketImageHeightDp(): Float
+        fun devDailyTicketOffsetXDp(): Float
+        fun devDailyTicketOffsetYDp(): Float
+        fun devDailyRewardTextSizeSp(): Float
+        fun devDailyGemNumberOffsetXDp(): Float
+        fun devDailyGemNumberOffsetYDp(): Float
+        fun devDailyTicketNumberOffsetXDp(): Float
+        fun devDailyTicketNumberOffsetYDp(): Float
+        fun devDailyButtonRowOffsetXDp(): Float
+        fun devDailyButtonRowOffsetYDp(): Float
+        fun devDailyClaimScaleX(): Float
+        fun devDailyClaimScaleY(): Float
+        fun devDailyClaimScale(): Float
+        fun devDailyMultiplierScaleX(): Float
+        fun devDailyMultiplierScaleY(): Float
+        fun devDailyMultiplierScale(): Float
 
         fun onDevSetGemImageHeight(value: Float)
         fun onDevSetGemOffsetX(value: Float)
@@ -96,7 +118,29 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetVictoryTextSize(value: Float)
         fun onDevSetVictoryOffsetX(value: Float)
         fun onDevSetVictoryOffsetY(value: Float)
+        fun onDevSetDailyTitleOffsetY(value: Float)
+        fun onDevSetDailyTitleTextSize(value: Float)
+        fun onDevSetDailyGemImageHeight(value: Float)
+        fun onDevSetDailyGemOffsetX(value: Float)
+        fun onDevSetDailyGemOffsetY(value: Float)
+        fun onDevSetDailyTicketImageHeight(value: Float)
+        fun onDevSetDailyTicketOffsetX(value: Float)
+        fun onDevSetDailyTicketOffsetY(value: Float)
+        fun onDevSetDailyRewardTextSize(value: Float)
+        fun onDevSetDailyGemNumberOffsetX(value: Float)
+        fun onDevSetDailyGemNumberOffsetY(value: Float)
+        fun onDevSetDailyTicketNumberOffsetX(value: Float)
+        fun onDevSetDailyTicketNumberOffsetY(value: Float)
+        fun onDevSetDailyButtonRowOffsetX(value: Float)
+        fun onDevSetDailyButtonRowOffsetY(value: Float)
+        fun onDevSetDailyClaimScaleX(value: Float)
+        fun onDevSetDailyClaimScaleY(value: Float)
+        fun onDevSetDailyClaimScale(value: Float)
+        fun onDevSetDailyMultiplierScaleX(value: Float)
+        fun onDevSetDailyMultiplierScaleY(value: Float)
+        fun onDevSetDailyMultiplierScale(value: Float)
         fun onDevApplyAutoWinPopupRatios()
+        fun onDevApplyAutoDailyPopupRatios()
         fun onDevExpandStateChanged(state: ExpandState)
     }
 
@@ -153,6 +197,18 @@ class DevelopMenuDialogFragment : DialogFragment() {
             popupExpanded = !popupExpanded
             setSectionExpanded(popupContent, popupArrow, popupExpanded)
             expandState = expandState.copy(popupExpanded = popupExpanded)
+            host.onDevExpandStateChanged(expandState)
+        }
+
+        val dailyPopupHeader = view.findViewById<View>(R.id.layout_develop_daily_popup_header)
+        val dailyPopupArrow = view.findViewById<TextView>(R.id.tv_develop_daily_popup_arrow)
+        val dailyPopupContent = view.findViewById<LinearLayout>(R.id.layout_develop_daily_popup_content)
+        var dailyPopupExpanded = expandState.dailyPopupExpanded
+        setSectionExpanded(dailyPopupContent, dailyPopupArrow, dailyPopupExpanded)
+        dailyPopupHeader.setOnClickListener {
+            dailyPopupExpanded = !dailyPopupExpanded
+            setSectionExpanded(dailyPopupContent, dailyPopupArrow, dailyPopupExpanded)
+            expandState = expandState.copy(dailyPopupExpanded = dailyPopupExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -292,6 +348,33 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_victory_text_size, R.string.develop_menu_victory_text_size, host::devVictoryTextSizeSp, host::onDevSetVictoryTextSize)
         bindDecimal(R.id.btn_dev_victory_offset_x, R.string.develop_menu_victory_offset_x, host::devVictoryOffsetXDp, host::onDevSetVictoryOffsetX)
         bindDecimal(R.id.btn_dev_victory_offset_y, R.string.develop_menu_victory_offset_y, host::devVictoryOffsetYDp, host::onDevSetVictoryOffsetY)
+
+        view.findViewById<MaterialButton>(R.id.btn_dev_daily_popup_apply_auto).setOnClickListener {
+            host.onDevApplyAutoDailyPopupRatios()
+            refreshPopupDisplays(view, host)
+        }
+
+        bindDecimal(R.id.btn_dev_daily_title_offset_y, R.string.develop_menu_daily_title_offset_y, host::devDailyTitleOffsetYPx, host::onDevSetDailyTitleOffsetY)
+        bindDecimal(R.id.btn_dev_daily_title_text_size, R.string.develop_menu_daily_title_text_size, host::devDailyTitleTextSizeSp, host::onDevSetDailyTitleTextSize)
+        bindDecimal(R.id.btn_dev_daily_gem_image_height, R.string.develop_menu_gem_image_height, host::devDailyGemImageHeightDp, host::onDevSetDailyGemImageHeight)
+        bindDecimal(R.id.btn_dev_daily_gem_offset_x, R.string.develop_menu_gem_offset_x, host::devDailyGemOffsetXDp, host::onDevSetDailyGemOffsetX)
+        bindDecimal(R.id.btn_dev_daily_gem_offset_y, R.string.develop_menu_gem_offset_y, host::devDailyGemOffsetYDp, host::onDevSetDailyGemOffsetY)
+        bindDecimal(R.id.btn_dev_daily_ticket_image_height, R.string.develop_menu_ticket_image_height, host::devDailyTicketImageHeightDp, host::onDevSetDailyTicketImageHeight)
+        bindDecimal(R.id.btn_dev_daily_ticket_offset_x, R.string.develop_menu_ticket_offset_x, host::devDailyTicketOffsetXDp, host::onDevSetDailyTicketOffsetX)
+        bindDecimal(R.id.btn_dev_daily_ticket_offset_y, R.string.develop_menu_ticket_offset_y, host::devDailyTicketOffsetYDp, host::onDevSetDailyTicketOffsetY)
+        bindDecimal(R.id.btn_dev_daily_reward_text_size, R.string.develop_menu_reward_text_size, host::devDailyRewardTextSizeSp, host::onDevSetDailyRewardTextSize)
+        bindDecimal(R.id.btn_dev_daily_gem_number_offset_x, R.string.develop_menu_gem_number_offset_x, host::devDailyGemNumberOffsetXDp, host::onDevSetDailyGemNumberOffsetX)
+        bindDecimal(R.id.btn_dev_daily_gem_number_offset_y, R.string.develop_menu_gem_number_offset_y, host::devDailyGemNumberOffsetYDp, host::onDevSetDailyGemNumberOffsetY)
+        bindDecimal(R.id.btn_dev_daily_ticket_number_offset_x, R.string.develop_menu_ticket_number_offset_x, host::devDailyTicketNumberOffsetXDp, host::onDevSetDailyTicketNumberOffsetX)
+        bindDecimal(R.id.btn_dev_daily_ticket_number_offset_y, R.string.develop_menu_ticket_number_offset_y, host::devDailyTicketNumberOffsetYDp, host::onDevSetDailyTicketNumberOffsetY)
+        bindDecimal(R.id.btn_dev_daily_button_row_offset_x, R.string.develop_menu_button_row_offset_x, host::devDailyButtonRowOffsetXDp, host::onDevSetDailyButtonRowOffsetX)
+        bindDecimal(R.id.btn_dev_daily_button_row_offset_y, R.string.develop_menu_button_row_offset_y, host::devDailyButtonRowOffsetYDp, host::onDevSetDailyButtonRowOffsetY)
+        bindDecimal(R.id.btn_dev_daily_claim_scale_x, R.string.develop_menu_claim_scale_x, host::devDailyClaimScaleX, host::onDevSetDailyClaimScaleX)
+        bindDecimal(R.id.btn_dev_daily_claim_scale_y, R.string.develop_menu_claim_scale_y, host::devDailyClaimScaleY, host::onDevSetDailyClaimScaleY)
+        bindDecimal(R.id.btn_dev_daily_claim_scale, R.string.develop_menu_claim_scale, host::devDailyClaimScale, host::onDevSetDailyClaimScale)
+        bindDecimal(R.id.btn_dev_daily_multiplier_scale_x, R.string.develop_menu_multiplier_scale_x, host::devDailyMultiplierScaleX, host::onDevSetDailyMultiplierScaleX)
+        bindDecimal(R.id.btn_dev_daily_multiplier_scale_y, R.string.develop_menu_multiplier_scale_y, host::devDailyMultiplierScaleY, host::onDevSetDailyMultiplierScaleY)
+        bindDecimal(R.id.btn_dev_daily_multiplier_scale, R.string.develop_menu_multiplier_scale, host::devDailyMultiplierScale, host::onDevSetDailyMultiplierScale)
     }
 
     private fun refreshAllDisplays(root: View, host: Host) {
@@ -334,6 +417,27 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_text_size).text = fmt(host.devVictoryTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_x).text = fmt(host.devVictoryOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_y).text = fmt(host.devVictoryOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_offset_y).text = fmt(host.devDailyTitleOffsetYPx())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_text_size).text = fmt(host.devDailyTitleTextSizeSp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_image_height).text = fmt(host.devDailyGemImageHeightDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_offset_x).text = fmt(host.devDailyGemOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_offset_y).text = fmt(host.devDailyGemOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_image_height).text = fmt(host.devDailyTicketImageHeightDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_offset_x).text = fmt(host.devDailyTicketOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_offset_y).text = fmt(host.devDailyTicketOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_reward_text_size).text = fmt(host.devDailyRewardTextSizeSp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_number_offset_x).text = fmt(host.devDailyGemNumberOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_number_offset_y).text = fmt(host.devDailyGemNumberOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_number_offset_x).text = fmt(host.devDailyTicketNumberOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_number_offset_y).text = fmt(host.devDailyTicketNumberOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_button_row_offset_x).text = fmt(host.devDailyButtonRowOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_button_row_offset_y).text = fmt(host.devDailyButtonRowOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_claim_scale_x).text = fmt(host.devDailyClaimScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_claim_scale_y).text = fmt(host.devDailyClaimScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_claim_scale).text = fmt(host.devDailyClaimScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale_x).text = fmt(host.devDailyMultiplierScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale_y).text = fmt(host.devDailyMultiplierScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale).text = fmt(host.devDailyMultiplierScale())
     }
 
     private fun fmt(value: Float): String = String.format(Locale.US, "%.2f", value)
@@ -346,8 +450,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
     private fun readExpandStateFromArgs(): ExpandState {
         val b = arguments ?: return ExpandState()
         return ExpandState(
-            starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, true),
-            popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, true)
+            starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, false),
+            popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
+            dailyPopupExpanded = b.getBoolean(ARG_DAILY_POPUP_EXPANDED, false)
         )
     }
 
@@ -425,12 +530,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         const val TAG = "develop_menu_dialog"
         private const val ARG_STARBURST_EXPANDED = "arg_starburst_expanded"
         private const val ARG_POPUP_EXPANDED = "arg_popup_expanded"
+        private const val ARG_DAILY_POPUP_EXPANDED = "arg_daily_popup_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
             return DevelopMenuDialogFragment().apply {
                 arguments = Bundle().apply {
                     putBoolean(ARG_STARBURST_EXPANDED, state.starburstExpanded)
                     putBoolean(ARG_POPUP_EXPANDED, state.popupExpanded)
+                    putBoolean(ARG_DAILY_POPUP_EXPANDED, state.dailyPopupExpanded)
                 }
             }
         }

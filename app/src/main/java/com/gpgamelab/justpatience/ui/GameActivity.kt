@@ -125,24 +125,48 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     // Single tweak cluster for the custom win popup. Adjust these values instead of
     // searching through the XML when you want to nudge positions/sizes.
     private val winPopupUiConfig = WinPopupUiConfig()
-    private val dailyBonusPopupUiConfig = RewardPopupDialog.UiConfig(
-        dialogWidthPercentLandscape = 0.32f,
-        dialogWidthPercentPortrait = 0.684f,
-        dialogHeightPercentLandscape = 0.64f,
-        dialogHeightPercentPortrait = 0.576f,
-        buttonRowWidthPercentLandscape = 0.70f,
-        buttonRowWidthPercentPortrait = 0.70f,
-        titleBottomPercent = 0.16f,
-        titleOffsetInchesLandscape = 0.10f,
-        titleOffsetInchesPortrait = 0.20f,
-        titleTextSp = 22f,
-        rewardImageScalePortrait = 3f,
-        rewardTextScalePortrait = 2f,
-        rewardImageScaleLandscape = 2f,
-        rewardTextScaleLandscape = 1f,
-        buttonTextOffsetInchesLandscape = 0f,
-        buttonsTopPercent = 0.78f
-    )
+    private fun buildDailyBonusPopupUiConfig(): RewardPopupDialog.UiConfig {
+        return RewardPopupDialog.UiConfig(
+            dialogWidthPercentLandscape = 0.32f,
+            dialogWidthPercentPortrait = 0.684f,
+            dialogHeightPercentLandscape = 0.64f,
+            dialogHeightPercentPortrait = 0.576f,
+            buttonRowWidthPercentLandscape = 0.70f,
+            buttonRowWidthPercentPortrait = 0.70f,
+            titleBottomPercent = 0.16f,
+            titleOffsetInchesLandscape = 0.10f,
+            titleOffsetInchesPortrait = 0.20f,
+            titleOffsetPxLandscape = devDailyTitleOffsetYPxState,
+            titleOffsetPxPortrait = devDailyTitleOffsetYPxState,
+            titleTextSp = devDailyTitleTextSizeSpState,
+            rewardImageScalePortrait = 3f,
+            rewardTextScalePortrait = 2f,
+            rewardImageScaleLandscape = 2f,
+            rewardTextScaleLandscape = 1f,
+            buttonTextOffsetInchesLandscape = 0f,
+            buttonsTopPercent = 0.78f,
+            showWinOnlyVictory = false,
+            gemImageHeightDp = devDailyGemImageHeightDpState,
+            gemOffsetXDp = devDailyGemOffsetXDpState,
+            gemOffsetYDp = devDailyGemOffsetYDpState,
+            ticketImageHeightDp = devDailyTicketImageHeightDpState,
+            ticketOffsetXDp = devDailyTicketOffsetXDpState,
+            ticketOffsetYDp = devDailyTicketOffsetYDpState,
+            rewardTextOverrideSp = devDailyRewardTextSizeSpState,
+            gemNumberOffsetXDp = devDailyGemNumberOffsetXDpState,
+            gemNumberOffsetYDp = devDailyGemNumberOffsetYDpState,
+            ticketNumberOffsetXDp = devDailyTicketNumberOffsetXDpState,
+            ticketNumberOffsetYDp = devDailyTicketNumberOffsetYDpState,
+            buttonRowOffsetXDp = devDailyButtonRowOffsetXDpState,
+            buttonRowOffsetYDp = devDailyButtonRowOffsetYDpState,
+            claimButtonScaleX = devDailyClaimButtonScaleXState,
+            claimButtonScaleY = devDailyClaimButtonScaleYState,
+            claimButtonScale = devDailyClaimButtonScaleState,
+            multiplierButtonScaleX = devDailyMultiplierButtonScaleXState,
+            multiplierButtonScaleY = devDailyMultiplierButtonScaleYState,
+            multiplierButtonScale = devDailyMultiplierButtonScaleState
+        )
+    }
 
     private lateinit var binding: ActivityGameBinding
     private val viewModel: GameViewModel by viewModels()
@@ -209,6 +233,29 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devVictoryTextSizeSpState: Float     = BASELINE_WIN_VICTORY_TEXT_SP
     private var devVictoryOffsetXDpState: Float      = 0f
     private var devVictoryOffsetYDpState: Float      = 0f
+
+    // Daily popup element sizes – separated from win popup tuning so both can be adjusted independently.
+    private var devDailyTitleOffsetYPxState: Float       = 100f
+    private var devDailyTitleTextSizeSpState: Float      = 60f
+    private var devDailyGemImageHeightDpState: Float      = BASELINE_WIN_GEM_HEIGHT_DP
+    private var devDailyTicketImageHeightDpState: Float   = BASELINE_WIN_TICKET_HEIGHT_DP
+    private var devDailyGemOffsetXDpState: Float          = 0f
+    private var devDailyGemOffsetYDpState: Float          = 40f
+    private var devDailyTicketOffsetXDpState: Float       = 0f
+    private var devDailyTicketOffsetYDpState: Float       = 75f
+    private var devDailyRewardTextSizeSpState: Float      = BASELINE_WIN_REWARD_TEXT_SP
+    private var devDailyGemNumberOffsetXDpState: Float    = 0f
+    private var devDailyGemNumberOffsetYDpState: Float    = 65f
+    private var devDailyTicketNumberOffsetXDpState: Float = 0f
+    private var devDailyTicketNumberOffsetYDpState: Float = 0f
+    private var devDailyButtonRowOffsetXDpState: Float    = 0f
+    private var devDailyButtonRowOffsetYDpState: Float    = 0f
+    private var devDailyClaimButtonScaleXState: Float     = 0.8f
+    private var devDailyClaimButtonScaleYState: Float     = 3f
+    private var devDailyClaimButtonScaleState: Float      = 1f
+    private var devDailyMultiplierButtonScaleXState: Float = 0.7f
+    private var devDailyMultiplierButtonScaleYState: Float = 3f
+    private var devDailyMultiplierButtonScaleState: Float = 1f
 
     // -------------------------------------------------------------------------
     // Auto starburst layout profile
@@ -294,6 +341,36 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devVictoryOffsetYDpState  = 0f
     }
 
+    private fun applyAutoDailyPopupRatios() {
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
+            this,
+            baselinePortraitWidthPx  = 1600,
+            baselinePortraitHeightPx = 2560
+        ).averageRatio
+        devDailyTitleOffsetYPxState = 200f
+        devDailyTitleTextSizeSpState = 60f
+        devDailyGemImageHeightDpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP, ratio)
+        devDailyTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP, ratio)
+        devDailyRewardTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_REWARD_TEXT_SP, ratio)
+        devDailyGemOffsetXDpState      = 0f
+        devDailyGemOffsetYDpState      = 40f
+        devDailyTicketOffsetXDpState   = 0f
+        devDailyTicketOffsetYDpState   = 75f
+        devDailyGemNumberOffsetXDpState = 0f
+        devDailyGemNumberOffsetYDpState = 65f
+        devDailyTicketNumberOffsetXDpState = 0f
+        devDailyTicketNumberOffsetYDpState = 0f
+        devDailyButtonRowOffsetXDpState = 0f
+        devDailyButtonRowOffsetYDpState = 0f
+        devDailyClaimButtonScaleXState = 0.8f
+        devDailyClaimButtonScaleYState = 3f
+        devDailyClaimButtonScaleState = 1f
+        devDailyMultiplierButtonScaleXState = 0.7f
+        devDailyMultiplierButtonScaleYState = 3f
+        devDailyMultiplierButtonScaleState = 1f
+    }
+
     // -------------------------------------------------------------------------
 
     private companion object {
@@ -328,6 +405,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // every device/orientation gets sensible defaults without manual tuning.
         applyAutoStarburstProfile()
         applyAutoWinPopupRatios()
+        applyAutoDailyPopupRatios()
 
         // Apply BuildConfig-driven visibility for overlay debug buttons.
         binding.btnTesters.visibility = if (BuildConfig.SHOW_TESTER_BUTTON) View.VISIBLE else View.GONE
@@ -1228,6 +1306,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         if (isFinishing || isDestroyed) return
 
         val baseRewards = selectDailyBonusRewards(isPremiumAccount)
+        val adMultiplier = if (isPremiumAccount) 3 else 2
 
         val popupModel = RewardPopupDialog.Model(
             title = getString(R.string.daily_bonus_title),
@@ -1241,16 +1320,32 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     imageResId = R.drawable.ic_ticket_green_yellow_helper
                 )
             ),
-            buttonTexts = listOf(
-                getString(R.string.daily_bonus_claim),
-                getString(R.string.daily_bonus_x2)
+            buttons = listOf(
+                RewardPopupDialog.ButtonItem(
+                    backgroundResId = R.drawable.ic_button_orange_orange_claim,
+                    contentDescription = getString(R.string.daily_bonus_claim)
+                ),
+                RewardPopupDialog.ButtonItem(
+                    backgroundResId = if (adMultiplier == 3) {
+                        R.drawable.ic_button_orange_orange_x3_with_ad
+                    } else {
+                        R.drawable.ic_button_orange_orange_x2_with_ad
+                    },
+                    contentDescription = getString(
+                        if (adMultiplier == 3) {
+                            R.string.daily_bonus_x3
+                        } else {
+                            R.string.daily_bonus_x2
+                        }
+                    )
+                )
             )
         )
 
         rewardPopupDialog.show(
             model = popupModel,
-            baseImageResId = R.drawable.popup_frame_golden_vector,
-            uiConfig = dailyBonusPopupUiConfig,
+            baseImageResId = R.drawable.ic_popup_rect_blue,
+            uiConfig = buildDailyBonusPopupUiConfig(),
             onButtonClick = { index, dialog ->
                 dialog.dismiss()
                 val claimDate = todayIsoDate ?: return@show
@@ -1258,7 +1353,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     0 -> claimDailyBonus(baseRewards, claimDate)
                     1 -> claimDailyBonusWithMultiplier(
                         baseRewards,
-                        multiplier = 2,
+                        multiplier = adMultiplier,
                         todayIsoDate = claimDate
                     )
                 }
@@ -1315,6 +1410,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         multiplier: Int,
         todayIsoDate: String
     ) {
+        val fallbackMessage = getString(R.string.daily_bonus_multiplier_unavailable_fallback, multiplier)
         val shown = adManager.showRewardedAd(
             onFinished = { rewardEarned ->
                 val rewardsToAward = if (rewardEarned) {
@@ -1323,14 +1419,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     baseRewards
                 }
                 if (!rewardEarned) {
-                    Toast.makeText(this, R.string.daily_bonus_x2_unavailable_fallback, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, fallbackMessage, Toast.LENGTH_SHORT).show()
                 }
                 claimDailyBonus(rewardsToAward, todayIsoDate)
             }
         )
 
         if (!shown) {
-            Toast.makeText(this, R.string.daily_bonus_x2_unavailable_fallback, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, fallbackMessage, Toast.LENGTH_SHORT).show()
             claimDailyBonus(baseRewards, todayIsoDate)
             adManager.loadRewardedAd()
         }
@@ -1512,6 +1608,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             testerStarburstRotationEnabled = false
             // Reset win popup element sizes to auto-scaled defaults.
             applyAutoWinPopupRatios()
+            applyAutoDailyPopupRatios()
             renderGemHud(gemTotal)
             renderTicketHud(ticketTotal)
             viewModel.startNewGame()
@@ -1550,6 +1647,27 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devVictoryTextSizeSp(): Float = devVictoryTextSizeSpState
     override fun devVictoryOffsetXDp(): Float = devVictoryOffsetXDpState
     override fun devVictoryOffsetYDp(): Float = devVictoryOffsetYDpState
+    override fun devDailyTitleOffsetYPx(): Float = devDailyTitleOffsetYPxState
+    override fun devDailyTitleTextSizeSp(): Float = devDailyTitleTextSizeSpState
+    override fun devDailyGemImageHeightDp(): Float = devDailyGemImageHeightDpState
+    override fun devDailyGemOffsetXDp(): Float = devDailyGemOffsetXDpState
+    override fun devDailyGemOffsetYDp(): Float = devDailyGemOffsetYDpState
+    override fun devDailyTicketImageHeightDp(): Float = devDailyTicketImageHeightDpState
+    override fun devDailyTicketOffsetXDp(): Float = devDailyTicketOffsetXDpState
+    override fun devDailyTicketOffsetYDp(): Float = devDailyTicketOffsetYDpState
+    override fun devDailyRewardTextSizeSp(): Float = devDailyRewardTextSizeSpState
+    override fun devDailyGemNumberOffsetXDp(): Float = devDailyGemNumberOffsetXDpState
+    override fun devDailyGemNumberOffsetYDp(): Float = devDailyGemNumberOffsetYDpState
+    override fun devDailyTicketNumberOffsetXDp(): Float = devDailyTicketNumberOffsetXDpState
+    override fun devDailyTicketNumberOffsetYDp(): Float = devDailyTicketNumberOffsetYDpState
+    override fun devDailyButtonRowOffsetXDp(): Float = devDailyButtonRowOffsetXDpState
+    override fun devDailyButtonRowOffsetYDp(): Float = devDailyButtonRowOffsetYDpState
+    override fun devDailyClaimScaleX(): Float = devDailyClaimButtonScaleXState
+    override fun devDailyClaimScaleY(): Float = devDailyClaimButtonScaleYState
+    override fun devDailyClaimScale(): Float = devDailyClaimButtonScaleState
+    override fun devDailyMultiplierScaleX(): Float = devDailyMultiplierButtonScaleXState
+    override fun devDailyMultiplierScaleY(): Float = devDailyMultiplierButtonScaleYState
+    override fun devDailyMultiplierScale(): Float = devDailyMultiplierButtonScaleState
 
     override fun onDevSetGemImageHeight(value: Float) { devGemImageHeightDpState = value.coerceAtLeast(4f) }
     override fun onDevSetGemOffsetX(value: Float) { devGemOffsetXDpState = value }
@@ -1573,9 +1691,34 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetVictoryTextSize(value: Float) { devVictoryTextSizeSpState = value.coerceAtLeast(4f) }
     override fun onDevSetVictoryOffsetX(value: Float) { devVictoryOffsetXDpState = value }
     override fun onDevSetVictoryOffsetY(value: Float) { devVictoryOffsetYDpState = value }
+    override fun onDevSetDailyTitleOffsetY(value: Float) { devDailyTitleOffsetYPxState = value }
+    override fun onDevSetDailyTitleTextSize(value: Float) { devDailyTitleTextSizeSpState = value.coerceAtLeast(4f) }
+    override fun onDevSetDailyGemImageHeight(value: Float) { devDailyGemImageHeightDpState = value.coerceAtLeast(4f) }
+    override fun onDevSetDailyGemOffsetX(value: Float) { devDailyGemOffsetXDpState = value }
+    override fun onDevSetDailyGemOffsetY(value: Float) { devDailyGemOffsetYDpState = value }
+    override fun onDevSetDailyTicketImageHeight(value: Float) { devDailyTicketImageHeightDpState = value.coerceAtLeast(4f) }
+    override fun onDevSetDailyTicketOffsetX(value: Float) { devDailyTicketOffsetXDpState = value }
+    override fun onDevSetDailyTicketOffsetY(value: Float) { devDailyTicketOffsetYDpState = value }
+    override fun onDevSetDailyRewardTextSize(value: Float) { devDailyRewardTextSizeSpState = value.coerceAtLeast(4f) }
+    override fun onDevSetDailyGemNumberOffsetX(value: Float) { devDailyGemNumberOffsetXDpState = value }
+    override fun onDevSetDailyGemNumberOffsetY(value: Float) { devDailyGemNumberOffsetYDpState = value }
+    override fun onDevSetDailyTicketNumberOffsetX(value: Float) { devDailyTicketNumberOffsetXDpState = value }
+    override fun onDevSetDailyTicketNumberOffsetY(value: Float) { devDailyTicketNumberOffsetYDpState = value }
+    override fun onDevSetDailyButtonRowOffsetX(value: Float) { devDailyButtonRowOffsetXDpState = value }
+    override fun onDevSetDailyButtonRowOffsetY(value: Float) { devDailyButtonRowOffsetYDpState = value }
+    override fun onDevSetDailyClaimScaleX(value: Float) { devDailyClaimButtonScaleXState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetDailyClaimScaleY(value: Float) { devDailyClaimButtonScaleYState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetDailyClaimScale(value: Float) { devDailyClaimButtonScaleState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetDailyMultiplierScaleX(value: Float) { devDailyMultiplierButtonScaleXState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetDailyMultiplierScaleY(value: Float) { devDailyMultiplierButtonScaleYState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetDailyMultiplierScale(value: Float) { devDailyMultiplierButtonScaleState = value.coerceAtLeast(0.1f) }
 
     override fun onDevApplyAutoWinPopupRatios() {
         applyAutoWinPopupRatios()
+    }
+
+    override fun onDevApplyAutoDailyPopupRatios() {
+        applyAutoDailyPopupRatios()
     }
 
     override fun onDevExpandStateChanged(state: DevelopMenuDialogFragment.ExpandState) {

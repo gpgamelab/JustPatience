@@ -101,6 +101,8 @@
     <string name="daily_bonus_title">Daily Bonus</string>
     <string name="daily_bonus_claim">Claim</string>
     <string name="daily_bonus_x2">x2 Reward</string>
+    <string name="daily_bonus_x3">x3 Reward</string>
+    <string name="daily_bonus_multiplier_unavailable_fallback">x%1$d reward unavailable. Base daily bonus claimed.</string>
     <string name="daily_bonus_x2_unavailable_fallback">x2 reward unavailable. Base daily bonus claimed.</string>
     <string name="no_saved_game_to_continue">No saved game to continue.</string>
     <string name="help_unlock_description_format">You have no more Help Coupons. Your options are: Spend Gems, Watch an AD. Either will unlock %1$s for the next %2$d hours.</string>
@@ -352,6 +354,10 @@ Locale: %7$s</string>
     <string name="develop_menu_win_starburst_section">Win Starburst Adjustments</string>
     <string name="develop_menu_win_popup_section">Win Popup Elements</string>
     <string name="develop_menu_apply_auto_popup">Apply Auto Popup Ratios</string>
+    <string name="develop_menu_daily_popup_section">Daily Popup Elements</string>
+    <string name="develop_menu_apply_auto_daily_popup">Apply Auto Daily Popup Ratios</string>
+    <string name="develop_menu_daily_title_offset_y">Daily title offset Y (px)</string>
+    <string name="develop_menu_daily_title_text_size">Daily title text size (sp)</string>
     <string name="develop_menu_gem_image_height">Gem image height (dp)</string>
     <string name="develop_menu_gem_offset_x">Gem image offset X (dp)</string>
     <string name="develop_menu_gem_offset_y">Gem image offset Y (dp)</string>
