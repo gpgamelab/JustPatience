@@ -1,59 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="20dp">
+    android:minHeight="160dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
-    <TextView
-        android:id="@+id/tv_help_unlock_title"
+    <ImageView
+        android:id="@+id/iv_unlock_popup_bg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textColor="@android:color/white"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp"
-        android:text="UNDO" />
-
-    <TextView
-        android:id="@+id/tv_help_unlock_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:lineSpacingExtra="2dp"
-        android:layout_marginBottom="16dp"
-        android:text="You have no more Help Coupons." />
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_popup_rect_blue"
+        android:scaleType="fitXY" />
 
     <LinearLayout
+        android:id="@+id/layout_unlock_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_unlock_with_gems"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/button_horizontal_lt_green_512x256"
+        <TextView
+            android:id="@+id/tv_help_unlock_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:textStyle="bold"
-            android:textAllCaps="false"
-            android:text="3 gems" />
+            android:textSize="14sp"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/help_unlock_ad_only_description_default" />
 
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/btn_unlock_with_ad"
-            android:layout_width="72dp"
-            android:layout_height="56dp"
-            android:background="@drawable/button_horizontal_lt_green_512x256"
-            android:padding="10dp"
-            android:contentDescription="@string/help_unlock_watch_ad"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_play_ad_01" />
+        <LinearLayout
+            android:id="@+id/layout_unlock_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="4dp">
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/btn_unlock_with_ad"
+                android:layout_width="50dp"
+                android:layout_height="150dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/ic_button_orange_orange_ad_unlock"
+                android:padding="0dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/help_unlock_watch_ad" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/btn_unlock_cancel"
+                android:layout_width="50dp"
+                android:layout_height="150dp"
+                android:layout_weight="1"
+                android:background="@drawable/ic_button_orange_orange_cancel"
+                android:padding="0dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/cancel" />
+
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
-
+</FrameLayout>

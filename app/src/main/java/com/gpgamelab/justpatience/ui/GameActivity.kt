@@ -257,6 +257,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devDailyMultiplierButtonScaleYState: Float = 3f
     private var devDailyMultiplierButtonScaleState: Float = 1f
 
+    // Unlock help popup dev state
+    private var devUnlockFrameScaleXState: Float = 1.0f
+    private var devUnlockFrameScaleYState: Float = 1.0f
+    private var devUnlockDescTextSizeSpState: Float = 20.0f
+    private var devUnlockDescOffsetXDpState: Float = 0.0f
+    private var devUnlockDescOffsetYDpState: Float = 60.0f
+    private var devUnlockAdBtnScaleXState: Float = 0.7f
+    private var devUnlockAdBtnScaleYState: Float = 1.4f
+    private var devUnlockAdBtnOffsetXDpState: Float = 50.0f
+    private var devUnlockAdBtnOffsetYDpState: Float = 50.0f
+    private var devUnlockCancelBtnScaleXState: Float = 0.7f
+    private var devUnlockCancelBtnScaleYState: Float = 1.0f
+    private var devUnlockCancelBtnOffsetXDpState: Float = -50.0f
+    private var devUnlockCancelBtnOffsetYDpState: Float = 48.0f
+
     // -------------------------------------------------------------------------
     // Auto starburst layout profile
     // -------------------------------------------------------------------------
@@ -1713,6 +1728,35 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetDailyMultiplierScaleY(value: Float) { devDailyMultiplierButtonScaleYState = value.coerceAtLeast(0.1f) }
     override fun onDevSetDailyMultiplierScale(value: Float) { devDailyMultiplierButtonScaleState = value.coerceAtLeast(0.1f) }
 
+    // Unlock popup dev getters/setters
+    override fun devUnlockFrameScaleX(): Float = devUnlockFrameScaleXState
+    override fun devUnlockFrameScaleY(): Float = devUnlockFrameScaleYState
+    override fun devUnlockDescTextSizeSp(): Float = devUnlockDescTextSizeSpState
+    override fun devUnlockDescOffsetXDp(): Float = devUnlockDescOffsetXDpState
+    override fun devUnlockDescOffsetYDp(): Float = devUnlockDescOffsetYDpState
+    override fun devUnlockAdBtnScaleX(): Float = devUnlockAdBtnScaleXState
+    override fun devUnlockAdBtnScaleY(): Float = devUnlockAdBtnScaleYState
+    override fun devUnlockAdBtnOffsetXDp(): Float = devUnlockAdBtnOffsetXDpState
+    override fun devUnlockAdBtnOffsetYDp(): Float = devUnlockAdBtnOffsetYDpState
+    override fun devUnlockCancelBtnScaleX(): Float = devUnlockCancelBtnScaleXState
+    override fun devUnlockCancelBtnScaleY(): Float = devUnlockCancelBtnScaleYState
+    override fun devUnlockCancelBtnOffsetXDp(): Float = devUnlockCancelBtnOffsetXDpState
+    override fun devUnlockCancelBtnOffsetYDp(): Float = devUnlockCancelBtnOffsetYDpState
+
+    override fun onDevSetUnlockFrameScaleX(value: Float) { devUnlockFrameScaleXState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetUnlockFrameScaleY(value: Float) { devUnlockFrameScaleYState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetUnlockDescTextSize(value: Float) { devUnlockDescTextSizeSpState = value.coerceAtLeast(4f) }
+    override fun onDevSetUnlockDescOffsetX(value: Float) { devUnlockDescOffsetXDpState = value }
+    override fun onDevSetUnlockDescOffsetY(value: Float) { devUnlockDescOffsetYDpState = value }
+    override fun onDevSetUnlockAdBtnScaleX(value: Float) { devUnlockAdBtnScaleXState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetUnlockAdBtnScaleY(value: Float) { devUnlockAdBtnScaleYState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetUnlockAdBtnOffsetX(value: Float) { devUnlockAdBtnOffsetXDpState = value }
+    override fun onDevSetUnlockAdBtnOffsetY(value: Float) { devUnlockAdBtnOffsetYDpState = value }
+    override fun onDevSetUnlockCancelBtnScaleX(value: Float) { devUnlockCancelBtnScaleXState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetUnlockCancelBtnScaleY(value: Float) { devUnlockCancelBtnScaleYState = value.coerceAtLeast(0.1f) }
+    override fun onDevSetUnlockCancelBtnOffsetX(value: Float) { devUnlockCancelBtnOffsetXDpState = value }
+    override fun onDevSetUnlockCancelBtnOffsetY(value: Float) { devUnlockCancelBtnOffsetYDpState = value }
+
     override fun onDevApplyAutoWinPopupRatios() {
         applyAutoWinPopupRatios()
     }
@@ -2522,41 +2566,23 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun showNoCouponsDialog(control: HelpControlAction, action: () -> Unit) {
-        val unlockHours = if (isPremiumAccount) 10 else 4
-        val gemCost = if (isPremiumAccount) 1 else 3
+        val unlockHours = if (isPremiumAccount) 10 else 6
         val dialogView = layoutInflater.inflate(R.layout.dialog_help_coupon_unlock, null)
-        val titleView = dialogView.findViewById<TextView>(R.id.tv_help_unlock_title)
         val descriptionView = dialogView.findViewById<TextView>(R.id.tv_help_unlock_description)
-        val gemButton = dialogView.findViewById<AppCompatButton>(R.id.btn_unlock_with_gems)
         val adButton = dialogView.findViewById<AppCompatImageButton>(R.id.btn_unlock_with_ad)
+        val cancelButton = dialogView.findViewById<AppCompatImageButton>(R.id.btn_unlock_cancel)
 
-        titleView.text = control.titleLabel
-        descriptionView.text = getString(
-            R.string.help_unlock_description_format,
-            control.titleLabel,
-            unlockHours
-        )
-        gemButton.text = getString(R.string.help_unlock_gems_format, gemCost)
+        descriptionView.text = getString(R.string.help_unlock_ad_only_description_format, unlockHours)
+
+        applyUnlockPopupDevConfig(dialogView)
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setCancelable(true)
             .create()
 
-        gemButton.setOnClickListener {
-            if (gemTotal < gemCost) {
-                Toast.makeText(this, R.string.help_unlock_not_enough_gems, Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            lifecycleScope.launch {
-                helpControlFlowInProgress = true
-                awardGems(-gemCost)
-                unlockHelpControl(control, unlockHours)
-                helpControlFlowInProgress = false
-                dialog.dismiss()
-                action()
-            }
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
         }
 
         adButton.setOnClickListener {
@@ -2585,6 +2611,35 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         dialog.show()
+        dialog.window?.apply {
+            setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            val widthPx = (resources.displayMetrics.widthPixels * 0.85f).toInt()
+            setLayout(widthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
+    }
+
+    private fun applyUnlockPopupDevConfig(dialogView: View) {
+        dialogView.findViewById<ImageView>(R.id.iv_unlock_popup_bg)?.let { bg ->
+            bg.scaleX = devUnlockFrameScaleXState
+            bg.scaleY = devUnlockFrameScaleYState
+        }
+        dialogView.findViewById<TextView>(R.id.tv_help_unlock_description)?.let { tv ->
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, devUnlockDescTextSizeSpState)
+            tv.translationX = dpToPxFloatSigned(devUnlockDescOffsetXDpState)
+            tv.translationY = dpToPxFloatSigned(devUnlockDescOffsetYDpState)
+        }
+        dialogView.findViewById<AppCompatImageButton>(R.id.btn_unlock_with_ad)?.let { btn ->
+            btn.scaleX = devUnlockAdBtnScaleXState
+            btn.scaleY = devUnlockAdBtnScaleYState
+            btn.translationX = dpToPxFloatSigned(devUnlockAdBtnOffsetXDpState)
+            btn.translationY = dpToPxFloatSigned(devUnlockAdBtnOffsetYDpState)
+        }
+        dialogView.findViewById<AppCompatImageButton>(R.id.btn_unlock_cancel)?.let { btn ->
+            btn.scaleX = devUnlockCancelBtnScaleXState
+            btn.scaleY = devUnlockCancelBtnScaleYState
+            btn.translationX = dpToPxFloatSigned(devUnlockCancelBtnOffsetXDpState)
+            btn.translationY = dpToPxFloatSigned(devUnlockCancelBtnOffsetYDpState)
+        }
     }
 
     private suspend fun unlockHelpControl(control: HelpControlAction, hours: Int) {

@@ -110,6 +110,24 @@
     <string name="help_unlock_watch_ad">Watch AD</string>
     <string name="help_unlock_not_enough_gems">Not enough gems.</string>
     <string name="help_unlock_ad_not_ready">Ad not ready right now.</string>
+    <string name="help_unlock_ad_only_description_format">You are out of Help Coupons.\nYou can unlock this help function for %1$d hours by watching an Ad.</string>
+    <string name="help_unlock_ad_only_description_default">You are out of Help Coupons.\nYou can unlock this help function for 6 hours by watching an Ad.</string>
+
+    <!-- Develop Menu – Unlock Popup section -->
+    <string name="develop_menu_unlock_popup_section">Unlock Help Popup</string>
+    <string name="develop_menu_unlock_frame_scale_x">Frame scale X</string>
+    <string name="develop_menu_unlock_frame_scale_y">Frame scale Y</string>
+    <string name="develop_menu_unlock_desc_text_size">Desc text size (sp)</string>
+    <string name="develop_menu_unlock_desc_offset_x">Desc offset X (dp)</string>
+    <string name="develop_menu_unlock_desc_offset_y">Desc offset Y (dp)</string>
+    <string name="develop_menu_unlock_ad_btn_scale_x">Watch AD btn scale X</string>
+    <string name="develop_menu_unlock_ad_btn_scale_y">Watch AD btn scale Y</string>
+    <string name="develop_menu_unlock_ad_btn_offset_x">Watch AD btn offset X (dp)</string>
+    <string name="develop_menu_unlock_ad_btn_offset_y">Watch AD btn offset Y (dp)</string>
+    <string name="develop_menu_unlock_cancel_btn_scale_x">Cancel btn scale X</string>
+    <string name="develop_menu_unlock_cancel_btn_scale_y">Cancel btn scale Y</string>
+    <string name="develop_menu_unlock_cancel_btn_offset_x">Cancel btn offset X (dp)</string>
+    <string name="develop_menu_unlock_cancel_btn_offset_y">Cancel btn offset Y (dp)</string>
 
     <string name="switch_to_register">Don\'t have an account? Register</string>
     <string name="login_title_text">User Login</string>

@@ -26,7 +26,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
     data class ExpandState(
         val starburstExpanded: Boolean = false,
         val popupExpanded: Boolean = false,
-        val dailyPopupExpanded: Boolean = false
+        val dailyPopupExpanded: Boolean = false,
+        val unlockPopupExpanded: Boolean = false
     )
 
     interface Host {
@@ -141,6 +142,35 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetDailyMultiplierScale(value: Float)
         fun onDevApplyAutoWinPopupRatios()
         fun onDevApplyAutoDailyPopupRatios()
+
+        // Unlock help popup
+        fun devUnlockFrameScaleX(): Float
+        fun devUnlockFrameScaleY(): Float
+        fun devUnlockDescTextSizeSp(): Float
+        fun devUnlockDescOffsetXDp(): Float
+        fun devUnlockDescOffsetYDp(): Float
+        fun devUnlockAdBtnScaleX(): Float
+        fun devUnlockAdBtnScaleY(): Float
+        fun devUnlockAdBtnOffsetXDp(): Float
+        fun devUnlockAdBtnOffsetYDp(): Float
+        fun devUnlockCancelBtnScaleX(): Float
+        fun devUnlockCancelBtnScaleY(): Float
+        fun devUnlockCancelBtnOffsetXDp(): Float
+        fun devUnlockCancelBtnOffsetYDp(): Float
+        fun onDevSetUnlockFrameScaleX(value: Float)
+        fun onDevSetUnlockFrameScaleY(value: Float)
+        fun onDevSetUnlockDescTextSize(value: Float)
+        fun onDevSetUnlockDescOffsetX(value: Float)
+        fun onDevSetUnlockDescOffsetY(value: Float)
+        fun onDevSetUnlockAdBtnScaleX(value: Float)
+        fun onDevSetUnlockAdBtnScaleY(value: Float)
+        fun onDevSetUnlockAdBtnOffsetX(value: Float)
+        fun onDevSetUnlockAdBtnOffsetY(value: Float)
+        fun onDevSetUnlockCancelBtnScaleX(value: Float)
+        fun onDevSetUnlockCancelBtnScaleY(value: Float)
+        fun onDevSetUnlockCancelBtnOffsetX(value: Float)
+        fun onDevSetUnlockCancelBtnOffsetY(value: Float)
+
         fun onDevExpandStateChanged(state: ExpandState)
     }
 
@@ -209,6 +239,18 @@ class DevelopMenuDialogFragment : DialogFragment() {
             dailyPopupExpanded = !dailyPopupExpanded
             setSectionExpanded(dailyPopupContent, dailyPopupArrow, dailyPopupExpanded)
             expandState = expandState.copy(dailyPopupExpanded = dailyPopupExpanded)
+            host.onDevExpandStateChanged(expandState)
+        }
+
+        val unlockPopupHeader = view.findViewById<View>(R.id.layout_develop_unlock_popup_header)
+        val unlockPopupArrow = view.findViewById<TextView>(R.id.tv_develop_unlock_popup_arrow)
+        val unlockPopupContent = view.findViewById<LinearLayout>(R.id.layout_develop_unlock_popup_content)
+        var unlockPopupExpanded = expandState.unlockPopupExpanded
+        setSectionExpanded(unlockPopupContent, unlockPopupArrow, unlockPopupExpanded)
+        unlockPopupHeader.setOnClickListener {
+            unlockPopupExpanded = !unlockPopupExpanded
+            setSectionExpanded(unlockPopupContent, unlockPopupArrow, unlockPopupExpanded)
+            expandState = expandState.copy(unlockPopupExpanded = unlockPopupExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -375,6 +417,21 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_daily_multiplier_scale_x, R.string.develop_menu_multiplier_scale_x, host::devDailyMultiplierScaleX, host::onDevSetDailyMultiplierScaleX)
         bindDecimal(R.id.btn_dev_daily_multiplier_scale_y, R.string.develop_menu_multiplier_scale_y, host::devDailyMultiplierScaleY, host::onDevSetDailyMultiplierScaleY)
         bindDecimal(R.id.btn_dev_daily_multiplier_scale, R.string.develop_menu_multiplier_scale, host::devDailyMultiplierScale, host::onDevSetDailyMultiplierScale)
+
+        // Unlock popup controls
+        bindDecimal(R.id.btn_dev_unlock_frame_scale_x, R.string.develop_menu_unlock_frame_scale_x, host::devUnlockFrameScaleX, host::onDevSetUnlockFrameScaleX)
+        bindDecimal(R.id.btn_dev_unlock_frame_scale_y, R.string.develop_menu_unlock_frame_scale_y, host::devUnlockFrameScaleY, host::onDevSetUnlockFrameScaleY)
+        bindDecimal(R.id.btn_dev_unlock_desc_text_size, R.string.develop_menu_unlock_desc_text_size, host::devUnlockDescTextSizeSp, host::onDevSetUnlockDescTextSize)
+        bindDecimal(R.id.btn_dev_unlock_desc_offset_x, R.string.develop_menu_unlock_desc_offset_x, host::devUnlockDescOffsetXDp, host::onDevSetUnlockDescOffsetX)
+        bindDecimal(R.id.btn_dev_unlock_desc_offset_y, R.string.develop_menu_unlock_desc_offset_y, host::devUnlockDescOffsetYDp, host::onDevSetUnlockDescOffsetY)
+        bindDecimal(R.id.btn_dev_unlock_ad_btn_scale_x, R.string.develop_menu_unlock_ad_btn_scale_x, host::devUnlockAdBtnScaleX, host::onDevSetUnlockAdBtnScaleX)
+        bindDecimal(R.id.btn_dev_unlock_ad_btn_scale_y, R.string.develop_menu_unlock_ad_btn_scale_y, host::devUnlockAdBtnScaleY, host::onDevSetUnlockAdBtnScaleY)
+        bindDecimal(R.id.btn_dev_unlock_ad_btn_offset_x, R.string.develop_menu_unlock_ad_btn_offset_x, host::devUnlockAdBtnOffsetXDp, host::onDevSetUnlockAdBtnOffsetX)
+        bindDecimal(R.id.btn_dev_unlock_ad_btn_offset_y, R.string.develop_menu_unlock_ad_btn_offset_y, host::devUnlockAdBtnOffsetYDp, host::onDevSetUnlockAdBtnOffsetY)
+        bindDecimal(R.id.btn_dev_unlock_cancel_btn_scale_x, R.string.develop_menu_unlock_cancel_btn_scale_x, host::devUnlockCancelBtnScaleX, host::onDevSetUnlockCancelBtnScaleX)
+        bindDecimal(R.id.btn_dev_unlock_cancel_btn_scale_y, R.string.develop_menu_unlock_cancel_btn_scale_y, host::devUnlockCancelBtnScaleY, host::onDevSetUnlockCancelBtnScaleY)
+        bindDecimal(R.id.btn_dev_unlock_cancel_btn_offset_x, R.string.develop_menu_unlock_cancel_btn_offset_x, host::devUnlockCancelBtnOffsetXDp, host::onDevSetUnlockCancelBtnOffsetX)
+        bindDecimal(R.id.btn_dev_unlock_cancel_btn_offset_y, R.string.develop_menu_unlock_cancel_btn_offset_y, host::devUnlockCancelBtnOffsetYDp, host::onDevSetUnlockCancelBtnOffsetY)
     }
 
     private fun refreshAllDisplays(root: View, host: Host) {
@@ -438,6 +495,20 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale_x).text = fmt(host.devDailyMultiplierScaleX())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale_y).text = fmt(host.devDailyMultiplierScaleY())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale).text = fmt(host.devDailyMultiplierScale())
+        // Unlock popup
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_frame_scale_x).text = fmt(host.devUnlockFrameScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_frame_scale_y).text = fmt(host.devUnlockFrameScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_desc_text_size).text = fmt(host.devUnlockDescTextSizeSp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_desc_offset_x).text = fmt(host.devUnlockDescOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_desc_offset_y).text = fmt(host.devUnlockDescOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_scale_x).text = fmt(host.devUnlockAdBtnScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_scale_y).text = fmt(host.devUnlockAdBtnScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_offset_x).text = fmt(host.devUnlockAdBtnOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_offset_y).text = fmt(host.devUnlockAdBtnOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_scale_x).text = fmt(host.devUnlockCancelBtnScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_scale_y).text = fmt(host.devUnlockCancelBtnScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_offset_x).text = fmt(host.devUnlockCancelBtnOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_offset_y).text = fmt(host.devUnlockCancelBtnOffsetYDp())
     }
 
     private fun fmt(value: Float): String = String.format(Locale.US, "%.2f", value)
@@ -452,7 +523,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
         return ExpandState(
             starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, false),
             popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
-            dailyPopupExpanded = b.getBoolean(ARG_DAILY_POPUP_EXPANDED, false)
+            dailyPopupExpanded = b.getBoolean(ARG_DAILY_POPUP_EXPANDED, false),
+            unlockPopupExpanded = b.getBoolean(ARG_UNLOCK_POPUP_EXPANDED, false)
         )
     }
 
@@ -531,6 +603,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         private const val ARG_STARBURST_EXPANDED = "arg_starburst_expanded"
         private const val ARG_POPUP_EXPANDED = "arg_popup_expanded"
         private const val ARG_DAILY_POPUP_EXPANDED = "arg_daily_popup_expanded"
+        private const val ARG_UNLOCK_POPUP_EXPANDED = "arg_unlock_popup_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
             return DevelopMenuDialogFragment().apply {
@@ -538,6 +611,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
                     putBoolean(ARG_STARBURST_EXPANDED, state.starburstExpanded)
                     putBoolean(ARG_POPUP_EXPANDED, state.popupExpanded)
                     putBoolean(ARG_DAILY_POPUP_EXPANDED, state.dailyPopupExpanded)
+                    putBoolean(ARG_UNLOCK_POPUP_EXPANDED, state.unlockPopupExpanded)
                 }
             }
         }
