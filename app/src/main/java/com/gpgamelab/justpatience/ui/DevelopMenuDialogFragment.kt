@@ -26,8 +26,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
     data class ExpandState(
         val starburstExpanded: Boolean = false,
         val popupExpanded: Boolean = false,
+        val tableauExpanded: Boolean = false,
         val dailyPopupExpanded: Boolean = false,
-        val unlockPopupExpanded: Boolean = false
+        val unlockPopupExpanded: Boolean = false,
+        val shuffleExpanded: Boolean = false
     )
 
     interface Host {
@@ -157,6 +159,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devUnlockCancelBtnScaleY(): Float
         fun devUnlockCancelBtnOffsetXDp(): Float
         fun devUnlockCancelBtnOffsetYDp(): Float
+        fun devLockedPileAdOffsetXPortraitPx(): Float
+        fun devLockedPileAdOffsetYPortraitPx(): Float
+        fun devLockedPileAdScaleXPortrait(): Float
+        fun devLockedPileAdScaleYPortrait(): Float
+        fun devLockedPileAdOffsetXLandscapePx(): Float
+        fun devLockedPileAdOffsetYLandscapePx(): Float
+        fun devLockedPileAdScaleXLandscape(): Float
+        fun devLockedPileAdScaleYLandscape(): Float
         fun onDevSetUnlockFrameScaleX(value: Float)
         fun onDevSetUnlockFrameScaleY(value: Float)
         fun onDevSetUnlockDescTextSize(value: Float)
@@ -170,6 +180,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetUnlockCancelBtnScaleY(value: Float)
         fun onDevSetUnlockCancelBtnOffsetX(value: Float)
         fun onDevSetUnlockCancelBtnOffsetY(value: Float)
+        fun onDevSetLockedPileAdOffsetXPortraitPx(value: Float)
+        fun onDevSetLockedPileAdOffsetYPortraitPx(value: Float)
+        fun onDevSetLockedPileAdScaleXPortrait(value: Float)
+        fun onDevSetLockedPileAdScaleYPortrait(value: Float)
+        fun onDevSetLockedPileAdOffsetXLandscapePx(value: Float)
+        fun onDevSetLockedPileAdOffsetYLandscapePx(value: Float)
+        fun onDevSetLockedPileAdScaleXLandscape(value: Float)
+        fun onDevSetLockedPileAdScaleYLandscape(value: Float)
 
         // Shuffle/deal timing
         fun devShuffleSecondClipDelayMs(): Float
@@ -259,6 +277,30 @@ class DevelopMenuDialogFragment : DialogFragment() {
             unlockPopupExpanded = !unlockPopupExpanded
             setSectionExpanded(unlockPopupContent, unlockPopupArrow, unlockPopupExpanded)
             expandState = expandState.copy(unlockPopupExpanded = unlockPopupExpanded)
+            host.onDevExpandStateChanged(expandState)
+        }
+
+        val shuffleHeader = view.findViewById<View>(R.id.layout_develop_shuffle_header)
+        val shuffleArrow = view.findViewById<TextView>(R.id.tv_develop_shuffle_arrow)
+        val shuffleContent = view.findViewById<LinearLayout>(R.id.layout_develop_shuffle_content)
+        var shuffleExpanded = expandState.shuffleExpanded
+        setSectionExpanded(shuffleContent, shuffleArrow, shuffleExpanded)
+        shuffleHeader.setOnClickListener {
+            shuffleExpanded = !shuffleExpanded
+            setSectionExpanded(shuffleContent, shuffleArrow, shuffleExpanded)
+            expandState = expandState.copy(shuffleExpanded = shuffleExpanded)
+            host.onDevExpandStateChanged(expandState)
+        }
+
+        val tableauHeader = view.findViewById<View>(R.id.layout_develop_tableau_header)
+        val tableauArrow = view.findViewById<TextView>(R.id.tv_develop_tableau_arrow)
+        val tableauContent = view.findViewById<LinearLayout>(R.id.layout_develop_tableau_content)
+        var tableauExpanded = expandState.tableauExpanded
+        setSectionExpanded(tableauContent, tableauArrow, tableauExpanded)
+        tableauHeader.setOnClickListener {
+            tableauExpanded = !tableauExpanded
+            setSectionExpanded(tableauContent, tableauArrow, tableauExpanded)
+            expandState = expandState.copy(tableauExpanded = tableauExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -443,6 +485,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_unlock_cancel_btn_scale_y, R.string.develop_menu_unlock_cancel_btn_scale_y, host::devUnlockCancelBtnScaleY, host::onDevSetUnlockCancelBtnScaleY)
         bindDecimal(R.id.btn_dev_unlock_cancel_btn_offset_x, R.string.develop_menu_unlock_cancel_btn_offset_x, host::devUnlockCancelBtnOffsetXDp, host::onDevSetUnlockCancelBtnOffsetX)
         bindDecimal(R.id.btn_dev_unlock_cancel_btn_offset_y, R.string.develop_menu_unlock_cancel_btn_offset_y, host::devUnlockCancelBtnOffsetYDp, host::onDevSetUnlockCancelBtnOffsetY)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_offset_x_portrait, R.string.develop_menu_locked_pile_ad_offset_x_portrait, host::devLockedPileAdOffsetXPortraitPx, host::onDevSetLockedPileAdOffsetXPortraitPx)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_offset_y_portrait, R.string.develop_menu_locked_pile_ad_offset_y_portrait, host::devLockedPileAdOffsetYPortraitPx, host::onDevSetLockedPileAdOffsetYPortraitPx)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_scale_x_portrait, R.string.develop_menu_locked_pile_ad_scale_x_portrait, host::devLockedPileAdScaleXPortrait, host::onDevSetLockedPileAdScaleXPortrait)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_scale_y_portrait, R.string.develop_menu_locked_pile_ad_scale_y_portrait, host::devLockedPileAdScaleYPortrait, host::onDevSetLockedPileAdScaleYPortrait)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_offset_x_landscape, R.string.develop_menu_locked_pile_ad_offset_x_landscape, host::devLockedPileAdOffsetXLandscapePx, host::onDevSetLockedPileAdOffsetXLandscapePx)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_offset_y_landscape, R.string.develop_menu_locked_pile_ad_offset_y_landscape, host::devLockedPileAdOffsetYLandscapePx, host::onDevSetLockedPileAdOffsetYLandscapePx)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_scale_x_landscape, R.string.develop_menu_locked_pile_ad_scale_x_landscape, host::devLockedPileAdScaleXLandscape, host::onDevSetLockedPileAdScaleXLandscape)
+        bindDecimal(R.id.btn_dev_locked_pile_ad_scale_y_landscape, R.string.develop_menu_locked_pile_ad_scale_y_landscape, host::devLockedPileAdScaleYLandscape, host::onDevSetLockedPileAdScaleYLandscape)
     }
 
     private fun refreshAllDisplays(root: View, host: Host) {
@@ -523,6 +573,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_scale_y).text = fmt(host.devUnlockCancelBtnScaleY())
         root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_offset_x).text = fmt(host.devUnlockCancelBtnOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_offset_y).text = fmt(host.devUnlockCancelBtnOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_offset_x_portrait).text = fmt(host.devLockedPileAdOffsetXPortraitPx())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_offset_y_portrait).text = fmt(host.devLockedPileAdOffsetYPortraitPx())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_scale_x_portrait).text = fmt(host.devLockedPileAdScaleXPortrait())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_scale_y_portrait).text = fmt(host.devLockedPileAdScaleYPortrait())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_offset_x_landscape).text = fmt(host.devLockedPileAdOffsetXLandscapePx())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_offset_y_landscape).text = fmt(host.devLockedPileAdOffsetYLandscapePx())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_scale_x_landscape).text = fmt(host.devLockedPileAdScaleXLandscape())
+        root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_scale_y_landscape).text = fmt(host.devLockedPileAdScaleYLandscape())
     }
 
     private fun fmt(value: Float): String = String.format(Locale.US, "%.2f", value)
@@ -537,8 +595,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         return ExpandState(
             starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, false),
             popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
+            tableauExpanded = b.getBoolean(ARG_TABLEAU_EXPANDED, false),
             dailyPopupExpanded = b.getBoolean(ARG_DAILY_POPUP_EXPANDED, false),
-            unlockPopupExpanded = b.getBoolean(ARG_UNLOCK_POPUP_EXPANDED, false)
+            unlockPopupExpanded = b.getBoolean(ARG_UNLOCK_POPUP_EXPANDED, false),
+            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
         )
     }
 
@@ -616,16 +676,20 @@ class DevelopMenuDialogFragment : DialogFragment() {
         const val TAG = "develop_menu_dialog"
         private const val ARG_STARBURST_EXPANDED = "arg_starburst_expanded"
         private const val ARG_POPUP_EXPANDED = "arg_popup_expanded"
+        private const val ARG_TABLEAU_EXPANDED = "arg_tableau_expanded"
         private const val ARG_DAILY_POPUP_EXPANDED = "arg_daily_popup_expanded"
         private const val ARG_UNLOCK_POPUP_EXPANDED = "arg_unlock_popup_expanded"
+        private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
             return DevelopMenuDialogFragment().apply {
                 arguments = Bundle().apply {
                     putBoolean(ARG_STARBURST_EXPANDED, state.starburstExpanded)
                     putBoolean(ARG_POPUP_EXPANDED, state.popupExpanded)
+                    putBoolean(ARG_TABLEAU_EXPANDED, state.tableauExpanded)
                     putBoolean(ARG_DAILY_POPUP_EXPANDED, state.dailyPopupExpanded)
                     putBoolean(ARG_UNLOCK_POPUP_EXPANDED, state.unlockPopupExpanded)
+                    putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
                 }
             }
         }

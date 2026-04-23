@@ -24,10 +24,14 @@ data class Game(
     val score: Int,
     val moves: Int,
     val savedGameTime: Long,
-    val recycleCountUsed: Int = 0
+    val recycleCountUsed: Int = 0,
+    val extraTableauUnlocked: Boolean = false
 ) : Serializable {
 
     companion object {
+        const val LOCKED_TABLEAU_INDEX = 0
+        const val TOTAL_TABLEAU_PILES = 8
+        const val DEALT_TABLEAU_COUNT = 7
 
         /**
          * Creates and deals a brand-new game of Solitaire using 1 deck, no Jokers.
@@ -36,17 +40,18 @@ data class Game(
             val fullDeck = FullDeck(deckCount = 1, includeJokers = false)
             fullDeck.shuffle()
 
-            // Tableau: 7 piles with increasing number of cards.
-            val tableauPiles = List(7) { TableauPile().apply { setDealInProgress() } }
+            // Tableau: 8 piles total. Index 0 starts locked/empty; deal into indices 1..7.
+            val tableauPiles = List(TOTAL_TABLEAU_PILES) { TableauPile().apply { setDealInProgress() } }
 
             var index = 0
-            for (pile in 0 until 7) {
-                for (cardIndex in 0..pile) {
+            for (dealtOffset in 0 until DEALT_TABLEAU_COUNT) {
+                val pile = dealtOffset + 1
+                for (cardIndex in 0..dealtOffset) {
                     val card = fullDeck.cards[index++]
-                    tableauPiles[pile].push(card.copy(isFaceUp = (cardIndex == pile)))
+                    tableauPiles[pile].push(card.copy(isFaceUp = (cardIndex == dealtOffset)))
                 }
             }
-            for (pile in 0 until 7) {
+            for (pile in 0 until TOTAL_TABLEAU_PILES) {
                 tableauPiles[pile].clearDealInProgress()
             }
 
@@ -63,12 +68,18 @@ data class Game(
                 score = 0,
                 moves = 0,
                 savedGameTime = System.currentTimeMillis(),
-                recycleCountUsed = 0
+                recycleCountUsed = 0,
+                extraTableauUnlocked = false
             )
         }
     }
 
+    private fun isLockedTableau(index: Int): Boolean {
+        return !extraTableauUnlocked && index == LOCKED_TABLEAU_INDEX
+    }
+
     fun moveWasteToTableau(tableauIndex: Int): Game? {
+        if (isLockedTableau(tableauIndex)) return null
         val wasteCard = this.waste.peek() ?: return null
         val tableauPile = tableau.getOrNull(tableauIndex) ?: return null
 
@@ -94,6 +105,7 @@ data class Game(
         toIndex: Int
     ): Game? {
         if (fromIndex == toIndex) return null
+        if (isLockedTableau(fromIndex) || isLockedTableau(toIndex)) return null
 
         val fromPile = tableau.getOrNull(fromIndex) ?: return null
         val toPile = tableau.getOrNull(toIndex) ?: return null
@@ -145,6 +157,7 @@ data class Game(
         cardIndex: Int,
         foundationIndex: Int
     ): Game? {
+        if (isLockedTableau(tableauIndex)) return null
         val fromPile = tableau.getOrNull(tableauIndex) ?: return null
         val toPile = foundations.getOrNull(foundationIndex) ?: return null
 
@@ -177,6 +190,7 @@ data class Game(
         foundationIndex: Int,
         tableauIndex: Int
     ): Game? {
+        if (isLockedTableau(tableauIndex)) return null
         val fromPile = foundations.getOrNull(foundationIndex) ?: return null
         val toPile = tableau.getOrNull(tableauIndex) ?: return null
 
@@ -261,7 +275,8 @@ data class Game(
             score = score,
             moves = moves,
             savedGameTime = savedGameTime,
-            recycleCountUsed = recycleCountUsed
+            recycleCountUsed = recycleCountUsed,
+            extraTableauUnlocked = extraTableauUnlocked
         )
     }
 }

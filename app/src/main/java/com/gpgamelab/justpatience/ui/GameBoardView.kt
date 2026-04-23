@@ -24,6 +24,7 @@ import com.gpgamelab.justpatience.assets.AssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.model.Card
 import com.gpgamelab.justpatience.model.CardSuit
+import com.gpgamelab.justpatience.model.Game
 import com.gpgamelab.justpatience.model.HintDisplayState
 import com.gpgamelab.justpatience.model.HintPhase
 import com.gpgamelab.justpatience.model.SingleClickGlowState
@@ -48,6 +49,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     lateinit var assetResolver: AssetResolver
     var onClickMoveSoundRequested: (() -> Unit)? = null
     var onShuffleSoundRequested: (() -> Unit)? = null
+    var onLockedTableauUnlockRequested: (() -> Unit)? = null
 
     private val currentSetId = "default"
 
@@ -135,7 +137,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private var cardW = 0f
     private var cardH = 0f
-    private var columns = 7
+    private var columns = Game.TOTAL_TABLEAU_PILES
     private val columnX = mutableListOf<Float>()
 
     // drag state
@@ -155,6 +157,24 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val recycleIndicatorBitmap: Bitmap? by lazy(LazyThreadSafetyMode.NONE) {
         BitmapFactory.decodeResource(resources, R.drawable.ic_recycle_green_512x512)
     }
+    private val lockedPileAdDrawable by lazy(LazyThreadSafetyMode.NONE) {
+        ContextCompat.getDrawable(context, R.drawable.ic_play_ad_lt_blue)
+    }
+    private val lockedPileLockDrawable by lazy(LazyThreadSafetyMode.NONE) {
+        ContextCompat.getDrawable(context, R.drawable.ic_lock_02_a)
+    }
+    private val lockedPileOverlayPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#7A000000")
+        style = Paint.Style.FILL
+    }
+    private var lockedPileAdOffsetXPxPortrait = 0f
+    private var lockedPileAdOffsetYPxPortrait = 0f
+    private var lockedPileAdScaleXPortrait = 1f
+    private var lockedPileAdScaleYPortrait = 1f
+    private var lockedPileAdOffsetXPxLandscape = 0f
+    private var lockedPileAdOffsetYPxLandscape = 0f
+    private var lockedPileAdScaleXLandscape = 1f
+    private var lockedPileAdScaleYLandscape = 1f
 
     // animation state for auto moves
     private var animationCard: Card? = null
@@ -172,6 +192,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var newGameDealRevealCount = 0
     private var newGameDealOrderByCard = hashMapOf<Int, Int>()
     private var newGameDealStepRunnable: Runnable? = null
+    private var newGameDealStartedAtMs: Long = 0L
+    private var newGameDealMaxDurationMs: Long = 0L
 
     // hint glow state (driven by GameViewModel.hintDisplayState)
     private var hintDisplayState: HintDisplayState? = null
@@ -280,6 +302,32 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
+    fun setLockedPileAdIconTuning(
+        portraitOffsetX: Float,
+        portraitOffsetY: Float,
+        portraitScaleX: Float,
+        portraitScaleY: Float,
+        landscapeOffsetX: Float,
+        landscapeOffsetY: Float,
+        landscapeScaleX: Float,
+        landscapeScaleY: Float
+    ) {
+        lockedPileAdOffsetXPxPortrait = portraitOffsetX
+        lockedPileAdOffsetYPxPortrait = portraitOffsetY
+        lockedPileAdScaleXPortrait = portraitScaleX.coerceAtLeast(0.1f)
+        lockedPileAdScaleYPortrait = portraitScaleY.coerceAtLeast(0.1f)
+        lockedPileAdOffsetXPxLandscape = landscapeOffsetX
+        lockedPileAdOffsetYPxLandscape = landscapeOffsetY
+        lockedPileAdScaleXLandscape = landscapeScaleX.coerceAtLeast(0.1f)
+        lockedPileAdScaleYLandscape = landscapeScaleY.coerceAtLeast(0.1f)
+        invalidate()
+    }
+
+    private fun isLockedTableauPile(index: Int): Boolean {
+        if (!::viewModel.isInitialized) return false
+        return !viewModel.game.value.extraTableauUnlocked && index == Game.LOCKED_TABLEAU_INDEX
+    }
+
     /**
      * Get rect for a card at a specific position.
      * Used for calculating animation source positions.
@@ -353,6 +401,17 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         if (wasAnimating && ::viewModel.isInitialized) {
             viewModel.resumeHintTimerAfterNonPlayerActivity()
         }
+    }
+
+    /**
+     * Clears transient rendering state that can otherwise survive across a hard board reset
+     * (restart/new hand) and hide cards until the next interaction.
+     */
+    fun resetTransientVisualState() {
+        clearDragState()
+        clearAnimationState()
+        cancelNewGameDealAnimation()
+        invalidate()
     }
 
     private fun isAnimatingIntoFoundation(index: Int): Boolean {
@@ -478,8 +537,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         if (!isLandscape) {
             val topY = getTopRowY()
             val y = topY + topPileVerticalShiftPx()
-            // Mirrored: stock is at the far-right column (col 6); Classic: col 0
-            val x = if (isMirrored) columnX[6] else columnX[0]
+            // Portrait with locked col 0: classic stock shifts to col 1, mirrored remains far-right.
+            val x = if (isMirrored) columnX[7] else columnX[1]
             return RectF(x, y, x + cardW, y + cardH)
         }
 
@@ -502,8 +561,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         if (!isLandscape) {
             val topY = getTopRowY()
             val y = topY + topPileVerticalShiftPx()
-            // Mirrored: waste is at col 5; Classic: col 1
-            val x = if (isMirrored) columnX[5] else columnX[1]
+            // Portrait with locked col 0: classic waste shifts to col 2, mirrored is one left of stock.
+            val x = if (isMirrored) columnX[6] else columnX[2]
             return RectF(x, y, x + cardW, y + cardH)
         }
 
@@ -554,8 +613,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun getFoundationRect(index: Int): RectF {
         if (!isLandscape) {
             val topY = getTopRowY()
-            // Mirrored: foundations at col 0-3; Classic: col 3-6
-            val x = if (isMirrored) columnX[index] else columnX[3 + index]
+            // Portrait with locked col 0: classic foundations shift right to cols 4..7.
+            val x = if (isMirrored) columnX[index] else columnX[4 + index]
             return RectF(x, topY, x + cardW, topY + cardH)
         }
 
@@ -1029,6 +1088,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             val x = columnX[colIdx]
             var y = startY
             val cards = pile.asList()
+            if (isLockedTableauPile(colIdx)) {
+                val rect = RectF(x, y, x + cardW, y + cardH)
+                drawLockedTableauPlaceholder(canvas, rect)
+                return@forEachIndexed
+            }
             if (cards.isEmpty()) {
                 val rect = RectF(x, y, x + cardW, y + cardH)
                 canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
@@ -1068,6 +1132,36 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
+    private fun drawLockedTableauPlaceholder(canvas: Canvas, rect: RectF) {
+        canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
+        canvas.drawRoundRect(rect, cardRadius, cardRadius, lockedPileOverlayPaint)
+
+        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val adScaleX = if (isLandscapeNow) lockedPileAdScaleXLandscape else lockedPileAdScaleXPortrait
+        val adScaleY = if (isLandscapeNow) lockedPileAdScaleYLandscape else lockedPileAdScaleYPortrait
+        val adOffsetX = if (isLandscapeNow) lockedPileAdOffsetXPxLandscape else lockedPileAdOffsetXPxPortrait
+        val adOffsetY = if (isLandscapeNow) lockedPileAdOffsetYPxLandscape else lockedPileAdOffsetYPxPortrait
+
+        lockedPileAdDrawable?.let { drawable ->
+            val baseW = rect.width() * 0.60f
+            val baseH = rect.height() * 0.45f
+            val iconW = (baseW * adScaleX).coerceAtLeast(12f)
+            val iconH = (baseH * adScaleY).coerceAtLeast(12f)
+            val left = rect.centerX() - iconW / 2f + adOffsetX
+            val top = rect.centerY() - iconH / 2f + adOffsetY
+            drawable.bounds = Rect(left.toInt(), top.toInt(), (left + iconW).toInt(), (top + iconH).toInt())
+            drawable.draw(canvas)
+        }
+
+        lockedPileLockDrawable?.let { drawable ->
+            val size = min(rect.width(), rect.height()) * 0.28f
+            val left = rect.left + cardPadding * 0.35f
+            val top = rect.top + cardPadding * 0.35f
+            drawable.bounds = Rect(left.toInt(), top.toInt(), (left + size).toInt(), (top + size).toInt())
+            drawable.draw(canvas)
+        }
+    }
+
     /**
      * Plays a simple tableau reveal in Klondike dealing order (0..6, 1..6, ... 6)
      * and invokes [onCardDealt] for each card to sync whoosh SFX.
@@ -1083,7 +1177,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val order = hashMapOf<Int, Int>()
         var ordinal = 0
         for (row in 0..6) {
-            for (col in row..6) {
+            for (dealtCol in row..6) {
+                val col = dealtCol + 1
                 val pileSize = game.tableau.getOrNull(col)?.size() ?: 0
                 if (row < pileSize) {
                     order[dealKey(col, row)] = ordinal++
@@ -1093,9 +1188,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         if (order.isEmpty()) return
 
+        val safeInterval = dealCardIntervalMs.coerceAtLeast(0L)
         newGameDealOrderByCard = order
         newGameDealRevealCount = 0
         newGameDealActive = true
+        newGameDealStartedAtMs = SystemClock.elapsedRealtime()
+        newGameDealMaxDurationMs = (order.size * safeInterval) + 1500L
         invalidate()
 
         val step = object : Runnable {
@@ -1109,7 +1207,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     cancelNewGameDealAnimation()
                     return
                 }
-                postDelayed(this, dealCardIntervalMs.coerceAtLeast(0L))
+                postDelayed(this, safeInterval)
             }
         }
         newGameDealStepRunnable = step
@@ -1123,12 +1221,20 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             newGameDealActive = false
             newGameDealRevealCount = 0
             newGameDealOrderByCard.clear()
+            newGameDealStartedAtMs = 0L
+            newGameDealMaxDurationMs = 0L
             invalidate()
         }
     }
 
     private fun shouldHideCardForNewGameDeal(colIdx: Int, cardIdx: Int): Boolean {
         if (!newGameDealActive) return false
+        val elapsed = SystemClock.elapsedRealtime() - newGameDealStartedAtMs
+        if (newGameDealMaxDurationMs > 0L && elapsed > newGameDealMaxDurationMs) {
+            // Safety net: never keep cards hidden if a reveal runnable gets interrupted.
+            cancelNewGameDealAnimation()
+            return false
+        }
         val order = newGameDealOrderByCard[dealKey(colIdx, cardIdx)] ?: return false
         return order >= newGameDealRevealCount
     }
@@ -1226,6 +1332,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
 
             StackType.TABLEAU -> {
+                if (stackIndex == Game.LOCKED_TABLEAU_INDEX && !viewModel.game.value.extraTableauUnlocked) {
+                    onLockedTableauUnlockRequested?.invoke()
+                    return
+                }
                 if (viewModel.handleSingleClickOnTableau(stackIndex, cardIndex)) {
                     onClickMoveSoundRequested?.invoke()
                 }
@@ -1416,6 +1526,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 val (stackType, stackIndex, cardIndex) = findStackAt(event.x, event.y)
 
                 if (stackType == StackType.TABLEAU) {
+                    if (stackIndex == Game.LOCKED_TABLEAU_INDEX && !viewModel.game.value.extraTableauUnlocked) {
+                        return true
+                    }
                     val pile = viewModel.game.value.tableau[stackIndex]
                     val cards = pile.asList()
 
@@ -1547,7 +1660,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                         }
                     }
 
-                    // 2️⃣ TABLEU DROP (only if foundation failed)
+                    // 2️⃣ TABLEAU DROP (only if foundation failed)
                     if (!moveSucceeded) {
                         val startY = getTableauStartY()
 
@@ -1559,8 +1672,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                                 when (dragStackType) {
 
                                     StackType.WASTE -> {
-                                        viewModel.tryMoveWasteToTableau(index, animate = false)
-                                        moveSucceeded = true
+                                        moveSucceeded = viewModel.tryMoveWasteToTableau(index, animate = false)
                                     }
 
                                     StackType.TABLEAU -> {

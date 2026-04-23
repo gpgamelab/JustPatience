@@ -13,6 +13,7 @@ import com.google.gson.JsonParseException
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
+import com.google.gson.JsonParser
 import com.gpgamelab.justpatience.data.GameStatsManager
 import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.TokenManager
@@ -47,6 +48,11 @@ import java.lang.reflect.Type
 import java.util.Locale
 
 private const val CARD_MOVE_ANIMATION_MS = 250L
+
+private data class SavedGameEnvelope(
+    val currentGame: Game,
+    val initialGameState: Game?
+)
 
 /**
  * ViewModel that holds the current Game state and provides actions for UI.
@@ -135,7 +141,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val undoStack = ArrayDeque<Game>()
     private val redoStack = ArrayDeque<Game>()
-    private var initialGameState: Game? = null  // Store the game state at the start of the hand
+    private var initialGameState: Game? = null  // Start-of-hand anchor used by Restart.
     private var currentHandRecorded = false
     private var launchInitialized = false
 
@@ -179,7 +185,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         redoStack.clear()
         currentHandRecorded = false
         val newGame = controller.newGameWithClearHistory()
-        initialGameState = newGame
+        initialGameState = newGame.deepCopy()
         _game.value = newGame
         resetTimerForNewHand()
         saveGame()
@@ -286,7 +292,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         currentHandRecorded = false
         viewModelScope.launch {
             val newGame = controller.newGameWithClearHistory()
-            initialGameState = newGame
+            initialGameState = newGame.deepCopy()
             _game.value = newGame
             saveGame()
         }
@@ -297,13 +303,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         pauseHintTimerForNonPlayerActivity()
         val initial = initialGameState
         if (initial == null) {
+            val wasUnlocked = _game.value.extraTableauUnlocked
             undoStack.clear()
             redoStack.clear()
             currentHandRecorded = false
             viewModelScope.launch {
                 val newGame = controller.newGameWithClearHistory()
-                initialGameState = newGame
-                _game.value = newGame
+                initialGameState = newGame.deepCopy()
+                _game.value = newGame.copy(extraTableauUnlocked = wasUnlocked)
                 resetTimerForNewHand()
                 updateUndoRedoState()
                 saveGame()
@@ -312,7 +319,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
         undoStack.clear()
         redoStack.clear()
-        _game.value = initial
+        _game.value = initial.copy(extraTableauUnlocked = _game.value.extraTableauUnlocked)
         resetTimerForNewHand()
         currentHandRecorded = false
         updateUndoRedoState()
@@ -763,7 +770,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Collect valid destinations
         val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
-        val tableauDests = (0..6).filter { game.moveWasteToTableau(it) != null }
+        val tableauDests = game.tableau.indices.filter { game.moveWasteToTableau(it) != null }
 
         val shouldPreferFoundation = canFoundation && foundationBalanceAllowsMoveToFoundation(game, wasteCard)
 
@@ -837,7 +844,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Check tableau destinations (any face-up card can go)
-        val tableauDests = (0..6).filter { destIdx ->
+        val tableauDests = game.tableau.indices.filter { destIdx ->
             destIdx != tableauIndex && game.moveTableauToTableau(tableauIndex, sourceIndex, destIdx) != null
         }
 
@@ -1015,7 +1022,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val updatedGame = game.copy(
                 status = GameStatus.WON,
                 score = game.score + scoreDelta,
-                moves = game.moves + 1
+                moves = game.moves + 1,
+                extraTableauUnlocked = false
             )
             // Record the win in stats
             recordGameCompletion(updatedGame, isWin = true)
@@ -1101,7 +1109,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val gameToSave = _game.value.copy(savedGameTime = gameTime.value)
-                val json = gson.toJson(gameToSave)
+                val initialToSave = initialGameState?.copy(savedGameTime = 0L)
+                val json = gson.toJson(
+                    SavedGameEnvelope(
+                        currentGame = gameToSave,
+                        initialGameState = initialToSave
+                    )
+                )
                 repository.saveCurrentGameState(json)
                 // Mirror session state: true while an in-progress game exists in storage,
                 // false once the game has reached a terminal state.
@@ -1116,19 +1130,30 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return try {
             val saved = repository.getCurrentGameState().firstOrNull()
             if (!saved.isNullOrEmpty()) {
-                val parsedGame = gson.fromJson(saved, Game::class.java)
-                val (savedGame, wasMigrated) = migrateSavedGameImagePaths(parsedGame)
-                if (savedGame.status == GameStatus.IN_PROGRESS) {
-                    // Keep a restart anchor even when resuming from persisted state.
-                    initialGameState = savedGame
-                    _game.value = savedGame
-                    gameTime.value = savedGame.savedGameTime
-                    hasRegisteredFirstMove = savedGame.savedGameTime > 0
+                val parsed = parseSavedPayload(saved) ?: return false
+                val (savedGame, initialFromSave, usedLegacyPayload) = parsed
+                val (migratedCurrent, currentMigrated) = migrateSavedGameImagePaths(savedGame)
+                val (migratedInitial, initialMigrated) = initialFromSave
+                    ?.let { migrateSavedGameImagePaths(it) }
+                    ?: Pair(null, false)
+                val restartAnchor = (migratedInitial ?: migratedCurrent.deepCopy()).copy(savedGameTime = 0L)
+
+                if (migratedCurrent.status == GameStatus.IN_PROGRESS) {
+                    initialGameState = restartAnchor
+                    _game.value = migratedCurrent
+                    gameTime.value = migratedCurrent.savedGameTime
+                    hasRegisteredFirstMove = migratedCurrent.savedGameTime > 0
                     currentHandRecorded = false
 
-                    // Persist one-time migration to heal legacy image paths on device.
-                    if (wasMigrated) {
-                        repository.saveCurrentGameState(gson.toJson(savedGame))
+                    // Persist one-time migrations + legacy payload upgrade.
+                    if (currentMigrated || initialMigrated || usedLegacyPayload || initialFromSave == null) {
+                        val upgradedJson = gson.toJson(
+                            SavedGameEnvelope(
+                                currentGame = migratedCurrent,
+                                initialGameState = restartAnchor
+                            )
+                        )
+                        repository.saveCurrentGameState(upgradedJson)
                     }
 
                     // Keep the session marker aligned with the resumed in-progress game.
@@ -1146,8 +1171,41 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun parseSavedPayload(saved: String): Triple<Game, Game?, Boolean>? {
+        return try {
+            val root = JsonParser.parseString(saved)
+            if (root.isJsonObject && root.asJsonObject.has("currentGame")) {
+                val envelope = gson.fromJson(root, SavedGameEnvelope::class.java)
+                Triple(envelope.currentGame, envelope.initialGameState, false)
+            } else {
+                Triple(gson.fromJson(root, Game::class.java), null, true)
+            }
+        } catch (t: Throwable) {
+            Log.w("GameViewModel", "parseSavedPayload failed: ${t.message}")
+            null
+        }
+    }
+
     private fun migrateSavedGameImagePaths(game: Game): Pair<Game, Boolean> {
         var changed = false
+
+        val normalizedTableau = when {
+            game.tableau.size == Game.DEALT_TABLEAU_COUNT -> {
+                changed = true
+                listOf(TableauPile()) + game.tableau
+            }
+            game.tableau.size < Game.TOTAL_TABLEAU_PILES -> {
+                changed = true
+                game.tableau + List(Game.TOTAL_TABLEAU_PILES - game.tableau.size) { TableauPile() }
+            }
+            else -> game.tableau
+        }
+
+        val normalizedGame = if (normalizedTableau !== game.tableau) {
+            game.copy(tableau = normalizedTableau)
+        } else {
+            game
+        }
 
         fun normalizeCard(card: Card): Card {
             val targetFacePath = expectedFaceImagePath(card)
@@ -1162,24 +1220,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             return migrated
         }
 
-        val migratedStock = Stock(game.stock.asList().map(::normalizeCard).toMutableList())
+        val migratedStock = Stock(normalizedGame.stock.asList().map(::normalizeCard).toMutableList())
 
         val migratedWaste = Waste().also { newWaste ->
-            game.waste.asList().map(::normalizeCard).forEach { card ->
+            normalizedGame.waste.asList().map(::normalizeCard).forEach { card ->
                 newWaste.push(card)
             }
         }
 
-        val migratedTableau = game.tableau.map { pile ->
+        val migratedTableau = normalizedGame.tableau.map { pile ->
             TableauPile(pile.asList().map(::normalizeCard).toMutableList())
         }
 
-        val migratedFoundations = game.foundations.map { pile ->
+        val migratedFoundations = normalizedGame.foundations.map { pile ->
             FoundationPile(pile.asList().map(::normalizeCard).toMutableList())
         }
 
         return Pair(
-            game.copy(
+            normalizedGame.copy(
                 stock = migratedStock,
                 waste = migratedWaste,
                 tableau = migratedTableau,
@@ -1223,13 +1281,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         runBlocking {
             try {
                 val gameToSave = current.copy(savedGameTime = gameTime.value)
-                val json = gson.toJson(gameToSave)
+                val json = gson.toJson(
+                    SavedGameEnvelope(
+                        currentGame = gameToSave,
+                        initialGameState = initialGameState?.copy(savedGameTime = 0L)
+                    )
+                )
                 repository.saveCurrentGameState(json)
             } catch (t: Throwable) {
                 Log.w("GameViewModel", "stopGame save failed: ${t.message}")
             }
             settingsManager.setGameSessionActive(current.status == GameStatus.IN_PROGRESS)
         }
+    }
+
+    fun unlockExtraTableauPile() {
+        val current = _game.value
+        if (current.extraTableauUnlocked) return
+        _game.value = current.copy(extraTableauUnlocked = true)
+        saveGame()
     }
 
     /**

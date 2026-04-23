@@ -684,75 +684,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/develop_menu_shuffle_second_clip_delay_ms"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_dev_shuffle_second_clip_delay_ms"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="140"
-                    android:textColor="#FFC107"
-                    app:strokeColor="#777777" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="6dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/develop_menu_shuffle_tail_delay_ms"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_dev_shuffle_tail_delay_ms"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="120"
-                    android:textColor="#FFC107"
-                    app:strokeColor="#777777" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="6dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/develop_menu_deal_card_interval_ms"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_dev_deal_card_interval_ms"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="70"
-                    android:textColor="#FFC107"
-                    app:strokeColor="#777777" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="6dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="@string/develop_menu_gem_image_height"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp" />
@@ -855,6 +786,186 @@
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="16dp">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_victory_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
                 <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_victory_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_develop_shuffle_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/develop_menu_shuffle_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/tv_develop_shuffle_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▾"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_develop_shuffle_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/develop_menu_shuffle_second_clip_delay_ms"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_dev_shuffle_second_clip_delay_ms"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="140"
+                    android:textColor="#FFC107"
+                    app:strokeColor="#777777" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/develop_menu_shuffle_tail_delay_ms"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_dev_shuffle_tail_delay_ms"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="120"
+                    android:textColor="#FFC107"
+                    app:strokeColor="#777777" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/develop_menu_deal_card_interval_ms"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_dev_deal_card_interval_ms"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="70"
+                    android:textColor="#FFC107"
+                    app:strokeColor="#777777" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_develop_tableau_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/develop_menu_tableau_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/tv_develop_tableau_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▾"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_develop_tableau_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_offset_x_portrait" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_offset_x_portrait" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_offset_y_portrait" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_offset_y_portrait" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_scale_x_portrait" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_scale_x_portrait" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_scale_y_portrait" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_scale_y_portrait" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_offset_x_landscape" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_offset_x_landscape" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_offset_y_landscape" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_offset_y_landscape" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_scale_x_landscape" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_scale_x_landscape" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="16dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_scale_y_landscape" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_scale_y_landscape" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -997,6 +1108,7 @@
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_multiplier_scale" android:textColor="#FFFFFF" android:textSize="13sp"/>
                 <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_daily_multiplier_scale" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
             </LinearLayout>
+
         </LinearLayout>
 
         <!-- Unlock Help Popup Section -->

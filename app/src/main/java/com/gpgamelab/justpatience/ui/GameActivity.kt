@@ -75,6 +75,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devShuffleSecondClipDelayMsState: Float = 140f
     private var devShuffleTailDelayMsState: Float = 120f
     private var devDealCardIntervalMsState: Float = 70f
+    private var devLockedPileAdOffsetXPortraitPxState: Float = 0f
+    private var devLockedPileAdOffsetYPortraitPxState: Float = 0f
+    private var devLockedPileAdScaleXPortraitState: Float = 1f
+    private var devLockedPileAdScaleYPortraitState: Float = 1f
+    private var devLockedPileAdOffsetXLandscapePxState: Float = 0f
+    private var devLockedPileAdOffsetYLandscapePxState: Float = 0f
+    private var devLockedPileAdScaleXLandscapeState: Float = 1f
+    private var devLockedPileAdScaleYLandscapeState: Float = 1f
 
     private enum class HelpControlAction(
         val storageKey: String,
@@ -459,6 +467,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.gameBoardView.assetResolver = AndroidAssetResolver(this)
         binding.gameBoardView.onClickMoveSoundRequested = { playCardClickMoveSound() }
         binding.gameBoardView.onShuffleSoundRequested = { playShuffleSoundSequence() }
+        binding.gameBoardView.onLockedTableauUnlockRequested = { onLockedTableauUnlockRequested() }
+        applyLockedPileAdIconDevConfigToBoard()
         binding.gameBoardView.bindToViewModel(this)
 
         // Optional manager (no heavy rendering here)
@@ -680,6 +690,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun startNewGameWithShuffleAndDealAnimation() {
         playShuffleSoundSequence {
             if (isFinishing || isDestroyed) return@playShuffleSoundSequence
+            binding.gameBoardView.resetTransientVisualState()
             viewModel.startNewGame()
             binding.gameBoardView.post {
                 if (isFinishing || isDestroyed) return@post
@@ -694,14 +705,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun restartGameWithShuffleAndDealAnimation() {
         playShuffleSoundSequence {
             if (isFinishing || isDestroyed) return@playShuffleSoundSequence
+            binding.gameBoardView.resetTransientVisualState()
             viewModel.restartGame()
-            binding.gameBoardView.post {
-                if (isFinishing || isDestroyed) return@post
-                binding.gameBoardView.startNewGameDealAnimation(
-                    dealCardIntervalMs = devDealCardIntervalMsState.toLong().coerceAtLeast(0L),
-                    onCardDealt = { playCardClickMoveSound() }
-                )
-            }
+            // Restart should immediately restore the hand anchor without replaying the visual deal.
+            binding.gameBoardView.resetTransientVisualState()
         }
     }
 
@@ -1852,6 +1859,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devUnlockCancelBtnScaleY(): Float = devUnlockCancelBtnScaleYState
     override fun devUnlockCancelBtnOffsetXDp(): Float = devUnlockCancelBtnOffsetXDpState
     override fun devUnlockCancelBtnOffsetYDp(): Float = devUnlockCancelBtnOffsetYDpState
+    override fun devLockedPileAdOffsetXPortraitPx(): Float = devLockedPileAdOffsetXPortraitPxState
+    override fun devLockedPileAdOffsetYPortraitPx(): Float = devLockedPileAdOffsetYPortraitPxState
+    override fun devLockedPileAdScaleXPortrait(): Float = devLockedPileAdScaleXPortraitState
+    override fun devLockedPileAdScaleYPortrait(): Float = devLockedPileAdScaleYPortraitState
+    override fun devLockedPileAdOffsetXLandscapePx(): Float = devLockedPileAdOffsetXLandscapePxState
+    override fun devLockedPileAdOffsetYLandscapePx(): Float = devLockedPileAdOffsetYLandscapePxState
+    override fun devLockedPileAdScaleXLandscape(): Float = devLockedPileAdScaleXLandscapeState
+    override fun devLockedPileAdScaleYLandscape(): Float = devLockedPileAdScaleYLandscapeState
     override fun devShuffleSecondClipDelayMs(): Float = devShuffleSecondClipDelayMsState
     override fun devShuffleTailDelayMs(): Float = devShuffleTailDelayMsState
     override fun devDealCardIntervalMs(): Float = devDealCardIntervalMsState
@@ -1869,6 +1884,38 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetUnlockCancelBtnScaleY(value: Float) { devUnlockCancelBtnScaleYState = value.coerceAtLeast(0.1f) }
     override fun onDevSetUnlockCancelBtnOffsetX(value: Float) { devUnlockCancelBtnOffsetXDpState = value }
     override fun onDevSetUnlockCancelBtnOffsetY(value: Float) { devUnlockCancelBtnOffsetYDpState = value }
+    override fun onDevSetLockedPileAdOffsetXPortraitPx(value: Float) {
+        devLockedPileAdOffsetXPortraitPxState = value
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLockedPileAdOffsetYPortraitPx(value: Float) {
+        devLockedPileAdOffsetYPortraitPxState = value
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLockedPileAdScaleXPortrait(value: Float) {
+        devLockedPileAdScaleXPortraitState = value.coerceAtLeast(0.1f)
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLockedPileAdScaleYPortrait(value: Float) {
+        devLockedPileAdScaleYPortraitState = value.coerceAtLeast(0.1f)
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLockedPileAdOffsetXLandscapePx(value: Float) {
+        devLockedPileAdOffsetXLandscapePxState = value
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLockedPileAdOffsetYLandscapePx(value: Float) {
+        devLockedPileAdOffsetYLandscapePxState = value
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLockedPileAdScaleXLandscape(value: Float) {
+        devLockedPileAdScaleXLandscapeState = value.coerceAtLeast(0.1f)
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLockedPileAdScaleYLandscape(value: Float) {
+        devLockedPileAdScaleYLandscapeState = value.coerceAtLeast(0.1f)
+        applyLockedPileAdIconDevConfigToBoard()
+    }
     override fun onDevSetShuffleSecondClipDelayMs(value: Float) { devShuffleSecondClipDelayMsState = value.coerceAtLeast(0f) }
     override fun onDevSetShuffleTailDelayMs(value: Float) { devShuffleTailDelayMsState = value.coerceAtLeast(0f) }
     override fun onDevSetDealCardIntervalMs(value: Float) { devDealCardIntervalMsState = value.coerceAtLeast(0f) }
@@ -2585,6 +2632,40 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             applyAutoStarburstProfile()
             refreshActiveStarburstDebugAndMotion()
         }
+        applyLockedPileAdIconDevConfigToBoard()
+    }
+
+    private fun onLockedTableauUnlockRequested() {
+        if (viewModel.game.value.extraTableauUnlocked) return
+        viewModel.pauseHintTimerForNonPlayerActivity()
+        val shown = adManager.showRewardedAd(
+            onFinished = { rewardEarned ->
+                lifecycleScope.launch {
+                    if (rewardEarned) {
+                        viewModel.unlockExtraTableauPile()
+                    } else {
+                        Toast.makeText(this@GameActivity, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
+        if (!shown) {
+            adManager.loadRewardedAd()
+            Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun applyLockedPileAdIconDevConfigToBoard() {
+        binding.gameBoardView.setLockedPileAdIconTuning(
+            portraitOffsetX = devLockedPileAdOffsetXPortraitPxState,
+            portraitOffsetY = devLockedPileAdOffsetYPortraitPxState,
+            portraitScaleX = devLockedPileAdScaleXPortraitState,
+            portraitScaleY = devLockedPileAdScaleYPortraitState,
+            landscapeOffsetX = devLockedPileAdOffsetXLandscapePxState,
+            landscapeOffsetY = devLockedPileAdOffsetYLandscapePxState,
+            landscapeScaleX = devLockedPileAdScaleXLandscapeState,
+            landscapeScaleY = devLockedPileAdScaleYLandscapeState
+        )
     }
 
     private fun applyImmersiveFullscreen() {
