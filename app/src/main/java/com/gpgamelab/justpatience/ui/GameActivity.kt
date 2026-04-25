@@ -3332,7 +3332,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val gemCountTranslationY = if (isLandscape) {
             dpToPxFloatSigned(-14f * heightScale)
         } else {
-            dpToPxFloatSigned(-10f * heightScale)
+            dpToPxFloatSigned(-8f * heightScale)
         }
         when (val lp = binding.tvGemCount.layoutParams) {
             is LinearLayout.LayoutParams -> {
