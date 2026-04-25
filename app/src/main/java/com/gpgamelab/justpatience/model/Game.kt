@@ -25,33 +25,64 @@ data class Game(
     val moves: Int,
     val savedGameTime: Long,
     val recycleCountUsed: Int = 0,
-    val extraTableauUnlocked: Boolean = false
+    val extraTableauUnlocked: Boolean = false,
+    val deckCount: Int = DEFAULT_DECK_COUNT
 ) : Serializable {
 
     companion object {
+        const val DEFAULT_DECK_COUNT = 1
+        const val MIN_DECK_COUNT = 1
+        const val MAX_DECK_COUNT = 2
+
         const val LOCKED_TABLEAU_INDEX = 0
-        const val TOTAL_TABLEAU_PILES = 8
-        const val DEALT_TABLEAU_COUNT = 7
+        const val TOTAL_TABLEAU_PILES_1_DECK = 8
+        const val DEALT_TABLEAU_COUNT_1_DECK = 7
+        const val FOUNDATION_COUNT_1_DECK = 4
+
+        const val TOTAL_TABLEAU_PILES_2_DECK = 10
+        const val DEALT_TABLEAU_COUNT_2_DECK = 9
+        const val FOUNDATION_COUNT_2_DECK = 8
+
+        fun normalizeDeckCount(rawDeckCount: Int): Int {
+            return if (rawDeckCount == 2) 2 else 1
+        }
+
+        fun totalTableauPilesFor(deckCount: Int): Int {
+            return if (normalizeDeckCount(deckCount) == 2) TOTAL_TABLEAU_PILES_2_DECK else TOTAL_TABLEAU_PILES_1_DECK
+        }
+
+        fun dealtTableauCountFor(deckCount: Int): Int {
+            return if (normalizeDeckCount(deckCount) == 2) DEALT_TABLEAU_COUNT_2_DECK else DEALT_TABLEAU_COUNT_1_DECK
+        }
+
+        fun foundationCountFor(deckCount: Int): Int {
+            return if (normalizeDeckCount(deckCount) == 2) FOUNDATION_COUNT_2_DECK else FOUNDATION_COUNT_1_DECK
+        }
 
         /**
          * Creates and deals a brand-new game of Solitaire using 1 deck, no Jokers.
          */
-        fun newGame(): Game {
-            val fullDeck = FullDeck(deckCount = 1, includeJokers = false)
+        fun newGame(deckCount: Int = DEFAULT_DECK_COUNT): Game {
+            val normalizedDeckCount = normalizeDeckCount(deckCount)
+            val fullDeck = FullDeck(deckCount = normalizedDeckCount, includeJokers = false)
             fullDeck.shuffle()
 
-            // Tableau: 8 piles total. Index 0 starts locked/empty; deal into indices 1..7.
-            val tableauPiles = List(TOTAL_TABLEAU_PILES) { TableauPile().apply { setDealInProgress() } }
+            val totalTableauPiles = totalTableauPilesFor(normalizedDeckCount)
+            val dealtTableauCount = dealtTableauCountFor(normalizedDeckCount)
+            val foundationCount = foundationCountFor(normalizedDeckCount)
+
+            // Tableau: index 0 starts locked/empty; deal into indices 1..dealtTableauCount.
+            val tableauPiles = List(totalTableauPiles) { TableauPile().apply { setDealInProgress() } }
 
             var index = 0
-            for (dealtOffset in 0 until DEALT_TABLEAU_COUNT) {
+            for (dealtOffset in 0 until dealtTableauCount) {
                 val pile = dealtOffset + 1
                 for (cardIndex in 0..dealtOffset) {
                     val card = fullDeck.cards[index++]
                     tableauPiles[pile].push(card.copy(isFaceUp = (cardIndex == dealtOffset)))
                 }
             }
-            for (pile in 0 until TOTAL_TABLEAU_PILES) {
+            for (pile in 0 until totalTableauPiles) {
                 tableauPiles[pile].clearDealInProgress()
             }
 
@@ -63,13 +94,14 @@ data class Game(
                 stock = stock,
                 waste = Waste(),
                 tableau = tableauPiles,
-                foundations = List(4) { FoundationPile() },
+                foundations = List(foundationCount) { FoundationPile() },
                 status = GameStatus.IN_PROGRESS,
                 score = 0,
                 moves = 0,
                 savedGameTime = System.currentTimeMillis(),
                 recycleCountUsed = 0,
-                extraTableauUnlocked = false
+                extraTableauUnlocked = false,
+                deckCount = normalizedDeckCount
             )
         }
     }

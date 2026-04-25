@@ -38,6 +38,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuOpenTermsOfService()
         fun onGameMenuEditNickname()
         fun onGameMenuDrawCards()
+        fun onGameMenuDeckCount()
         fun onGameMenuWasteRecycles()
         fun onGameMenuMuteMusicToggle()
         fun onGameMenuMuteCardSoundsToggle()
@@ -78,6 +79,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         var expandState = readExpandStateFromArgs()
         val currentNickname = arguments?.getString(ARG_CURRENT_NICKNAME).orEmpty().trim()
         val currentDrawSize = arguments?.getInt(ARG_CURRENT_DRAW_SIZE, DEFAULT_DRAW_SIZE) ?: DEFAULT_DRAW_SIZE
+        val currentDeckCount = arguments?.getInt(ARG_CURRENT_DECK_COUNT, DEFAULT_DECK_COUNT) ?: DEFAULT_DECK_COUNT
         val currentInfiniteRecycles = arguments?.getBoolean(ARG_CURRENT_INFINITE_RECYCLES, true) ?: true
         val currentRecycleCount = arguments?.getInt(ARG_CURRENT_RECYCLE_COUNT, DEFAULT_RECYCLE_COUNT) ?: DEFAULT_RECYCLE_COUNT
         val currentMuteMusic = arguments?.getBoolean(ARG_CURRENT_MUTE_MUSIC, false) ?: false
@@ -105,8 +107,17 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             )
         }
         val normalizedDrawSize = if (currentDrawSize == 3) 3 else 1
+        val normalizedDeckCount = if (currentDeckCount == 2) 2 else 1
         val drawCardsLabel = view.findViewById<TextView>(R.id.menu_common_draw_cards_text)
         drawCardsLabel.text = getString(R.string.game_menu_draw_cards_with_value, normalizedDrawSize)
+
+        val deckLabel = if (normalizedDeckCount == 2) {
+            getString(R.string.game_menu_deck_two)
+        } else {
+            getString(R.string.game_menu_deck_one)
+        }
+        view.findViewById<TextView>(R.id.menu_common_deck_count_text).text =
+            getString(R.string.game_menu_deck_count_with_value, deckLabel)
 
         val recyclesLabel = view.findViewById<TextView>(R.id.menu_common_waste_recycles_text)
         recyclesLabel.text = if (currentInfiniteRecycles) {
@@ -274,6 +285,9 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_common_draw_cards_row).setOnClickListener {
             dismissAndRun { host.onGameMenuDrawCards() }
         }
+        view.findViewById<View>(R.id.menu_common_deck_count_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuDeckCount() }
+        }
         view.findViewById<View>(R.id.menu_common_waste_recycles_row).setOnClickListener {
             dismissAndRun { host.onGameMenuWasteRecycles() }
         }
@@ -392,6 +406,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_ADVANCED_EXPANDED = "arg_advanced_expanded"
         private const val ARG_CURRENT_NICKNAME = "arg_current_nickname"
         private const val ARG_CURRENT_DRAW_SIZE = "arg_current_draw_size"
+        private const val ARG_CURRENT_DECK_COUNT = "arg_current_deck_count"
         private const val ARG_CURRENT_INFINITE_RECYCLES = "arg_current_infinite_recycles"
         private const val ARG_CURRENT_RECYCLE_COUNT = "arg_current_recycle_count"
         private const val ARG_CURRENT_MUTE_MUSIC = "arg_current_mute_music"
@@ -409,12 +424,14 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_ENFORCE_FOUNDATION_BALANCE = "arg_current_enforce_foundation_balance"
         private const val MAX_MENU_NICKNAME_LENGTH = 20
         private const val DEFAULT_DRAW_SIZE = 3
+        private const val DEFAULT_DECK_COUNT = 1
         private const val DEFAULT_RECYCLE_COUNT = 3
 
         fun newInstance(
             state: ExpandState = ExpandState(),
             currentNickname: String = "",
             currentDrawSize: Int = DEFAULT_DRAW_SIZE,
+            currentDeckCount: Int = DEFAULT_DECK_COUNT,
             currentInfiniteRecycles: Boolean = true,
             currentRecycleCount: Int = DEFAULT_RECYCLE_COUNT,
             currentMuteMusic: Boolean = false,
@@ -441,6 +458,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_ADVANCED_EXPANDED, state.advancedExpanded)
                     putString(ARG_CURRENT_NICKNAME, currentNickname)
                     putInt(ARG_CURRENT_DRAW_SIZE, currentDrawSize)
+                    putInt(ARG_CURRENT_DECK_COUNT, currentDeckCount)
                     putBoolean(ARG_CURRENT_INFINITE_RECYCLES, currentInfiniteRecycles)
                     putInt(ARG_CURRENT_RECYCLE_COUNT, currentRecycleCount)
                     putBoolean(ARG_CURRENT_MUTE_MUSIC, currentMuteMusic)

@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * Room database for storing game records and history.
  * Provides a singleton instance for accessing game statistics.
  */
-@Database(entities = [GameRecord::class], version = 3)
+@Database(entities = [GameRecord::class], version = 4)
 abstract class GameDatabase : RoomDatabase() {
 
     abstract fun gameRecordDao(): GameRecordDao
@@ -30,7 +30,7 @@ abstract class GameDatabase : RoomDatabase() {
                     GameDatabase::class.java,
                     "game_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .build()
                     .also { instance = it }
             }
@@ -49,6 +49,14 @@ abstract class GameDatabase : RoomDatabase() {
                 }
                 if (!hasColumn(db, "game_records", "playerName")) {
                     db.execSQL("ALTER TABLE game_records ADD COLUMN playerName TEXT")
+                }
+            }
+        }
+
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                if (!hasColumn(db, "game_records", "deckCount")) {
+                    db.execSQL("ALTER TABLE game_records ADD COLUMN deckCount INTEGER")
                 }
             }
         }

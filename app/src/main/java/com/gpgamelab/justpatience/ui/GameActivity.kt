@@ -721,6 +721,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    private fun startDeckSwitchedNewGameWithShuffleAndDealAnimation(deckCount: Int) {
+        playShuffleSoundSequence {
+            if (isFinishing || isDestroyed) return@playShuffleSoundSequence
+            binding.gameBoardView.resetTransientVisualState()
+            viewModel.switchDeckCountAndStartNewGame(deckCount)
+            binding.gameBoardView.post {
+                if (isFinishing || isDestroyed) return@post
+                binding.gameBoardView.startNewGameDealAnimation(
+                    dealCardIntervalMs = devDealCardIntervalMsState.toLong().coerceAtLeast(0L),
+                    onCardDealt = { playCardClickMoveSound() }
+                )
+            }
+        }
+    }
+
     private fun restartGameWithShuffleAndDealAnimation() {
         playShuffleSoundSequence {
             if (isFinishing || isDestroyed) return@playShuffleSoundSequence
@@ -1684,6 +1699,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 state = gameMenuExpandState,
                 currentNickname = currentSettings.playerDisplayName,
                 currentDrawSize = currentSettings.drawSize,
+                currentDeckCount = currentSettings.deckCount,
                 currentInfiniteRecycles = currentSettings.infiniteRecycles,
                 currentRecycleCount = currentSettings.recycleCount,
                 currentMuteMusic = currentSettings.muteMusic,
@@ -2229,6 +2245,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    override fun onGameMenuDeckCount() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showDeckCountDialog(currentSettings.deckCount)
+        }
+    }
+
     override fun onGameMenuWasteRecycles() {
         lifecycleScope.launch {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
@@ -2520,6 +2543,52 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     val currentSettings = settingsManager.gamePlaySettingsFlow.first()
                     settingsManager.saveGamePlaySettings(currentSettings.copy(drawSize = selectedDrawSize))
                 }
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showDeckCountDialog(currentDeckCount: Int) {
+        val deckOptions = arrayOf(
+            getString(R.string.game_menu_deck_one),
+            getString(R.string.game_menu_deck_two)
+        )
+        val checkedItem = if (currentDeckCount == 2) 1 else 0
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.game_menu_deck_count)
+            .setSingleChoiceItems(deckOptions, checkedItem) { dialog, which ->
+                val selectedDeckCount = if (which == 1) 2 else 1
+                if (selectedDeckCount == currentDeckCount) {
+                    dialog.dismiss()
+                    return@setSingleChoiceItems
+                }
+
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(deckCount = selectedDeckCount))
+                }
+
+                val shouldWarn = viewModel.game.value.status == GameStatus.IN_PROGRESS && viewModel.game.value.moves >= 5
+                if (shouldWarn) {
+                    val label = if (selectedDeckCount == 2) {
+                        getString(R.string.game_menu_deck_two)
+                    } else {
+                        getString(R.string.game_menu_deck_one)
+                    }
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.game_menu_switch_deck_warning_title)
+                        .setMessage(getString(R.string.game_menu_switch_deck_warning_message, label))
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            startDeckSwitchedNewGameWithShuffleAndDealAnimation(selectedDeckCount)
+                        }
+                        .show()
+                } else {
+                    startDeckSwitchedNewGameWithShuffleAndDealAnimation(selectedDeckCount)
+                }
+
                 dialog.dismiss()
             }
             .setNegativeButton(R.string.cancel, null)

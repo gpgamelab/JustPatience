@@ -58,6 +58,7 @@ class SettingsManager(private val context: Context) {
 
         // Game Play Settings
         val DRAW_SIZE = intPreferencesKey("draw_size")                          // 1 or 3
+        val DECK_COUNT = intPreferencesKey("deck_count")                        // 1 or 2
         val RECYCLE_COUNT = intPreferencesKey("recycle_count")                  // 0..99
         val INFINITE_RECYCLES = booleanPreferencesKey("infinite_recycles")
         val SHOW_CARD_ANIMATIONS = booleanPreferencesKey("show_card_animations")
@@ -92,6 +93,7 @@ class SettingsManager(private val context: Context) {
      */
     data class GamePlaySettings(
         val drawSize: Int = 3,
+        val deckCount: Int = 1,
         val recycleCount: Int = 3,
         val infiniteRecycles: Boolean = true,
         val showHints: Boolean = true,
@@ -437,6 +439,7 @@ class SettingsManager(private val context: Context) {
         .map { preferences ->
             GamePlaySettings(
                 drawSize = preferences[PreferencesKeys.DRAW_SIZE] ?: 3,
+                deckCount = preferences[PreferencesKeys.DECK_COUNT] ?: 1,
                 recycleCount = preferences[PreferencesKeys.RECYCLE_COUNT] ?: 3,
                 infiniteRecycles = preferences[PreferencesKeys.INFINITE_RECYCLES] ?: true,
                 showHints = preferences[PreferencesKeys.SHOW_HINTS] ?: true,
@@ -466,6 +469,7 @@ class SettingsManager(private val context: Context) {
     suspend fun saveGamePlaySettings(settings: GamePlaySettings) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.DRAW_SIZE] = settings.drawSize
+            preferences[PreferencesKeys.DECK_COUNT] = if (settings.deckCount == 2) 2 else 1
             preferences[PreferencesKeys.RECYCLE_COUNT] = settings.recycleCount
             preferences[PreferencesKeys.INFINITE_RECYCLES] = settings.infiniteRecycles
             preferences[PreferencesKeys.SHOW_HINTS] = settings.showHints

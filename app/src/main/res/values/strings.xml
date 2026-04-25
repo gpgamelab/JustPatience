@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">JustPatience</string>
 
     <!-- Settings Activity Strings -->
@@ -16,7 +16,8 @@
     <string name="reset_stats_title">Reset Game Statistics</string>
     <string name="confirm_reset_stats_title">Confirm Reset</string>
     <string name="confirm_reset_stats_message">Are you sure you want to reset your game statistics? This action cannot be undone.</string>
-    <string name="reset">Reset</string> <string name="logout_action">Logout</string>
+    <string name="reset">Reset</string>
+    <string name="logout_action">Logout</string>
     <string name="cancel_action">Cancel</string>
     <string name="load_action">Load</string>
 
@@ -29,7 +30,7 @@
     <string name="stats_played_format">Games Played: %d</string>
     <string name="stats_high_score_format">High Score: %d</string>
     <string name="stats_reset_success">Game statistics have been reset!</string>
-<!--    <string name="stats_reset_success">Statistics successfully reset.</string>-->
+
 
     <!-- Home Activity Strings -->
     <string name="settings_button_description">Settings</string>
@@ -170,7 +171,7 @@
     <string name="how_to_play_heading">How to Play Solitaire</string>
     <string name="how_to_play_summary">Learn classic Klondike rules first, then review the optional settings available in JustPatience.</string>
     <string name="how_to_play_classic_title">Classic Klondike Rules</string>
-    <string name="how_to_play_classic_body">Goal: move all 52 cards to the 4 foundation piles (one suit per foundation, Ace to King).\n\nSetup: 7 tableau piles. Pile 1 has 1 card, pile 2 has 2 cards, up to pile 7 with 7 cards. Only the top card in each pile starts face up.\n\nTableau moves: build downward in alternating colors (red on black, black on red). You can move runs of face-up cards together. Empty tableau spaces can only be filled by a King (or a run starting with a King).\n\nStock and waste: tap the stock to draw cards to the waste. In classic play, draw 3 cards at a time and recycle the waste back to stock when empty.\n\nFoundations: start with an Ace, then build up by suit in order A-2-3-...-Q-K.\n\nWin condition: all cards are moved to the foundations.</string>
+    <string name="how_to_play_classic_body" tools:ignore="TypographyDashes,TypographyEllipsis">Goal: move all 52 cards to the 4 foundation piles (one suit per foundation, Ace to King).\n\nSetup: 7 tableau piles. Pile 1 has 1 card, pile 2 has 2 cards, up to pile 7 with 7 cards. Only the top card in each pile starts face up.\n\nTableau moves: build downward in alternating colors (red on black, black on red). You can move runs of face-up cards together. Empty tableau spaces can only be filled by a King (or a run starting with a King).\n\nStock and waste: tap the stock to draw cards to the waste. In classic play, draw 3 cards at a time and recycle the waste back to stock when empty.\n\nFoundations: start with an Ace, then build up by suit in order A-2-3-...-Q-K.\n\nWin condition: all cards are moved to the foundations.</string>
     <string name="how_to_play_adjustments_title">JustPatience Gameplay Adjustments</string>
     <string name="how_to_play_adjustments_body">Default rule settings now match classic style: Draw 3 cards and Unlimited waste recycles.\n\nIn Settings, you can customize gameplay:\n- Draw 1 or Draw 3\n- Limited recycle count or Unlimited recycles\n- Allow drag from foundation back to tableau (assistive rule)\n\nYou can also tune presentation and accessibility:\n- Hint visibility and hint delay\n- Timer display, card animations, and win animation\n- Board layout (classic or mirrored)\n- Sound toggles and player display name</string>
     <string name="about_title">About</string>
@@ -227,13 +228,13 @@ Locale: %7$s</string>
     <string name="privacy_policy_dialog_title">Just Patience Privacy Policy</string>
     <string name="privacy_policy_link_title">Policy on Website</string>
     <string name="privacy_policy_open_website">Open Website Policy</string>
-    <string name="privacy_policy_website_url">http://gnuparadigms.com/gamelab/privacy-policy-2026-03-17.html</string>
+    <string name="privacy_policy_website_url" tools:ignore="TypographyDashes">http://gnuparadigms.com/gamelab/privacy-policy-2026-03-17.html</string>
     <string name="privacy_policy_open_failed">No browser app is available right now.</string>
-    <string name="game_menu_terms_of_service">Term of Service</string>
+    <string name="game_menu_terms_of_service">Terms of Service</string>
     <string name="terms_of_service_dialog_title">Just Patience Terms of Service</string>
     <string name="terms_of_service_link_title">Terms on Website</string>
     <string name="terms_of_service_open_website">Open Website Terms</string>
-    <string name="terms_of_service_website_url">http://gnuparadigms.com/gamelab/terms-of-service-2026-03-27.html</string>
+    <string name="terms_of_service_website_url" tools:ignore="TypographyDashes">http://gnuparadigms.com/gamelab/terms-of-service-2026-03-27.html</string>
     <string name="terms_of_service_open_failed">No browser app is available right now.</string>
     <string name="game_menu_settings">Settings</string>
     <string name="game_menu_open_settings">Open Settings</string>
@@ -247,6 +248,10 @@ Locale: %7$s</string>
     <string name="game_menu_my_avatar">My Avatar</string>
     <string name="game_menu_draw_cards">Draw Cards</string>
     <string name="game_menu_draw_cards_with_value">Draw Cards: %1$d</string>
+    <string name="game_menu_deck_count">Deck Count</string>
+    <string name="game_menu_deck_count_with_value">Deck Count: %1$s</string>
+    <string name="game_menu_deck_one">1 Deck</string>
+    <string name="game_menu_deck_two">2 Decks</string>
     <string name="game_menu_waste_recycles">Waste Pile Recycles</string>
     <string name="game_menu_waste_recycles_with_value">Waste Pile Recycles: %1$s</string>
     <string name="recycles_dialog_count_label">times allowed</string>
@@ -327,6 +332,8 @@ Locale: %7$s</string>
     <string name="stats_summary_title">Statistics Summary</string>
     <string name="stats_summary_draw_one">1 Card</string>
     <string name="stats_summary_draw_three">3 Card</string>
+    <string name="stats_summary_deck_one">1 Deck</string>
+    <string name="stats_summary_deck_two">2 Decks</string>
     <string name="stats_summary_games_played">Games Played</string>
     <string name="stats_summary_games_won">Games Won</string>
     <string name="stats_summary_win_rate">Win Rate</string>
@@ -354,6 +361,8 @@ Locale: %7$s</string>
     <string name="game_menu_premium_acct_with_value">Premium Acct: %1$s</string>
     <string name="board_button_testers">Testers</string>
     <string name="board_button_develop">Develop</string>
+    <string name="game_menu_switch_deck_warning_title">Start New Deck Mode?</string>
+    <string name="game_menu_switch_deck_warning_message">Switching to %1$s will end the current game and record a loss. Continue?</string>
 
     <!-- Tester Menu -->
     <string name="tester_menu_title">Testers Menu</string>

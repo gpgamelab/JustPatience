@@ -84,6 +84,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     // Current draw size setting (supports any positive integer, <=0 defaults to 1)
     private var currentDrawSize = 1
+    private var currentDeckCount = Game.DEFAULT_DECK_COUNT
     private var currentRecycleLimit = 3
     private var currentInfiniteRecycles = false
 
@@ -191,7 +192,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         undoStack.clear()
         redoStack.clear()
         currentHandRecorded = false
-        val newGame = controller.newGameWithClearHistory()
+        val newGame = controller.newGameWithClearHistory(currentDeckCount)
         initialGameState = newGame.deepCopy()
         _game.value = newGame
         resetTimerForNewHand()
@@ -202,6 +203,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             settingsManager.gamePlaySettingsFlow.collect { settings ->
                 currentDrawSize = settings.drawSize
+                currentDeckCount = Game.normalizeDeckCount(settings.deckCount)
                 currentRecycleLimit = settings.recycleCount.coerceAtLeast(0)
                 currentInfiniteRecycles = settings.infiniteRecycles
 
@@ -298,11 +300,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         resetTimerForNewHand()
         currentHandRecorded = false
         viewModelScope.launch {
-            val newGame = controller.newGameWithClearHistory()
+            val newGame = controller.newGameWithClearHistory(currentDeckCount)
             initialGameState = newGame.deepCopy()
             _game.value = newGame
             saveGame()
         }
+    }
+
+    fun switchDeckCountAndStartNewGame(deckCount: Int) {
+        currentDeckCount = Game.normalizeDeckCount(deckCount)
+        startNewGame()
     }
 
     fun restartGame() {
@@ -315,7 +322,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             redoStack.clear()
             currentHandRecorded = false
             viewModelScope.launch {
-                val newGame = controller.newGameWithClearHistory()
+                val newGame = controller.newGameWithClearHistory(currentDeckCount)
                 initialGameState = newGame.deepCopy()
                 _game.value = newGame.copy(extraTableauUnlocked = wasUnlocked)
                 resetTimerForNewHand()
@@ -776,7 +783,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val wasteCard = game.waste.peek() ?: return false
 
         // Collect valid destinations
-        val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
+        val canFoundation = game.foundations.indices.any { game.moveWasteToFoundation(it) != null }
         val tableauDests = game.tableau.indices.filter { game.moveWasteToTableau(it) != null }
 
         val shouldPreferFoundation = canFoundation && foundationBalanceAllowsMoveToFoundation(game, wasteCard)
@@ -857,7 +864,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Foundation move is only possible from the top exposed card.
         val isTopCard = sourceIndex == cards.lastIndex
-        val canFoundation = isTopCard && (0..3).any { foundIdx ->
+        val canFoundation = isTopCard && game.foundations.indices.any { foundIdx ->
             game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null
         }
         val shouldPreferFoundation = isTopCard && canFoundation && foundationBalanceAllowsMoveToFoundation(game, cards[sourceIndex])
@@ -1216,13 +1223,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val settings = settingsManager.gamePlaySettingsFlow.firstOrNull()
             val playerName = settings?.playerDisplayName
             val cardsDraw = settings?.drawSize
+            val deckCount = game.deckCount
             statsManager.recordGame(
                 score = game.score,
                 moves = game.moves,
                 timeMs = elapsedTimeMs.coerceAtLeast(0L),
                 isWin = isWin,
                 playerName = playerName,
-                cardsDraw = cardsDraw
+                cardsDraw = cardsDraw,
+                deckCount = deckCount
             )
         } catch (e: Exception) {
             Log.e("GameViewModel", "Failed to record game completion", e)
@@ -1304,7 +1313,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val saved = repository.getCurrentGameState().firstOrNull()
             if (!saved.isNullOrEmpty()) {
                 val parsed = parseSavedPayload(saved) ?: return false
-                val (savedGame, initialFromSave, usedLegacyPayload) = parsed
+                val (savedGameRaw, initialFromSaveRaw, usedLegacyPayload) = parsed
+                val savedGame = normalizeGameForDeckMode(savedGameRaw)
+                val initialFromSave = initialFromSaveRaw?.let { normalizeGameForDeckMode(it) }
                 val (migratedCurrent, currentMigrated) = migrateSavedGameImagePaths(savedGame)
                 val (migratedInitial, initialMigrated) = initialFromSave
                     ?.let { migrateSavedGameImagePaths(it) }
@@ -1362,20 +1373,50 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private fun migrateSavedGameImagePaths(game: Game): Pair<Game, Boolean> {
         var changed = false
 
+        val normalizedDeckCount = Game.normalizeDeckCount(game.deckCount)
+        if (normalizedDeckCount != game.deckCount) changed = true
+
+        val expectedTableauCount = Game.totalTableauPilesFor(normalizedDeckCount)
+        val expectedFoundationCount = Game.foundationCountFor(normalizedDeckCount)
+
         val normalizedTableau = when {
-            game.tableau.size == Game.DEALT_TABLEAU_COUNT -> {
+            game.tableau.size == Game.dealtTableauCountFor(normalizedDeckCount) -> {
                 changed = true
                 listOf(TableauPile()) + game.tableau
             }
-            game.tableau.size < Game.TOTAL_TABLEAU_PILES -> {
+            game.tableau.size < expectedTableauCount -> {
                 changed = true
-                game.tableau + List(Game.TOTAL_TABLEAU_PILES - game.tableau.size) { TableauPile() }
+                game.tableau + List(expectedTableauCount - game.tableau.size) { TableauPile() }
+            }
+            game.tableau.size > expectedTableauCount -> {
+                changed = true
+                game.tableau.take(expectedTableauCount)
             }
             else -> game.tableau
         }
 
-        val normalizedGame = if (normalizedTableau !== game.tableau) {
-            game.copy(tableau = normalizedTableau)
+        val normalizedFoundations = when {
+            game.foundations.size < expectedFoundationCount -> {
+                changed = true
+                game.foundations + List(expectedFoundationCount - game.foundations.size) { FoundationPile() }
+            }
+            game.foundations.size > expectedFoundationCount -> {
+                changed = true
+                game.foundations.take(expectedFoundationCount)
+            }
+            else -> game.foundations
+        }
+
+        val normalizedGame = if (
+            normalizedTableau !== game.tableau ||
+            normalizedFoundations !== game.foundations ||
+            normalizedDeckCount != game.deckCount
+        ) {
+            game.copy(
+                deckCount = normalizedDeckCount,
+                tableau = normalizedTableau,
+                foundations = normalizedFoundations
+            )
         } else {
             game
         }
@@ -1443,6 +1484,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         return "drawable:ic_${suitCode}_${rankCode}"
+    }
+
+    private fun normalizeGameForDeckMode(game: Game): Game {
+        val normalizedDeckCount = Game.normalizeDeckCount(game.deckCount)
+        if (normalizedDeckCount == game.deckCount) return game
+        return game.copy(deckCount = normalizedDeckCount)
     }
 
     fun stopGame() {

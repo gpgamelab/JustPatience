@@ -452,6 +452,10 @@
                 <TextView android:id="@+id/menu_common_draw_cards_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_draw_cards" android:textColor="#CFE7CF" android:textSize="11sp" />
             </LinearLayout>
 
+            <LinearLayout android:id="@+id/menu_common_deck_count_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:id="@+id/menu_common_deck_count_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_deck_count" android:textColor="#CFE7CF" android:textSize="11sp" />
+            </LinearLayout>
+
             <LinearLayout android:id="@+id/menu_common_waste_recycles_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical">
                 <TextView android:id="@+id/menu_common_waste_recycles_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_waste_recycles" android:textColor="#CFE7CF" android:textSize="11sp" />
             </LinearLayout>

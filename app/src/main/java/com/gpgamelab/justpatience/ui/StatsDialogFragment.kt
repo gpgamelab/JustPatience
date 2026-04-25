@@ -29,6 +29,7 @@ class StatsDialogFragment : DialogFragment() {
     private var adapter: GameRecordAdapter? = null
     private lateinit var settingsManager: SettingsManager
     private var selectedDrawCount: Int = 1
+    private var selectedDeckCount: Int = 1
     private var latestRecords: List<GameRecord> = emptyList()
     private var hasAppliedInitialDrawSetting: Boolean = false
 
@@ -65,9 +66,15 @@ class StatsDialogFragment : DialogFragment() {
 
     private fun setupToggle() {
         binding.toggleDrawCount.check(binding.btnDrawOne.id)
+        binding.toggleDeckCount.check(binding.btnDeckOne.id)
         binding.toggleDrawCount.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
             selectedDrawCount = if (checkedId == binding.btnDrawThree.id) 3 else 1
+            renderFilteredStats()
+        }
+        binding.toggleDeckCount.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            selectedDeckCount = if (checkedId == binding.btnDeckTwo.id) 2 else 1
             renderFilteredStats()
         }
     }
@@ -75,10 +82,16 @@ class StatsDialogFragment : DialogFragment() {
     private fun applyCurrentDrawSetting() {
         viewLifecycleOwner.lifecycleScope.launch {
             if (hasAppliedInitialDrawSetting) return@launch
-            val drawSize = settingsManager.gamePlaySettingsFlow.first().drawSize
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            val drawSize = currentSettings.drawSize
+            val deckCount = currentSettings.deckCount
             selectedDrawCount = normalizeDrawCount(drawSize)
+            selectedDeckCount = normalizeDeckCount(deckCount)
             binding.toggleDrawCount.check(
                 if (selectedDrawCount == 3) binding.btnDrawThree.id else binding.btnDrawOne.id
+            )
+            binding.toggleDeckCount.check(
+                if (selectedDeckCount == 2) binding.btnDeckTwo.id else binding.btnDeckOne.id
             )
             hasAppliedInitialDrawSetting = true
             renderFilteredStats()
@@ -99,7 +112,10 @@ class StatsDialogFragment : DialogFragment() {
     }
 
     private fun renderFilteredStats() {
-        val filtered = latestRecords.filter { normalizeDrawCount(it.cardsDraw) == selectedDrawCount }
+        val filtered = latestRecords.filter {
+            normalizeDrawCount(it.cardsDraw) == selectedDrawCount &&
+                normalizeDeckCount(it.deckCount) == selectedDeckCount
+        }
         val gamesPlayed = filtered.size
         val gamesWon = filtered.count { it.isWin }
         val winRate = if (gamesPlayed == 0) 0.0 else (gamesWon.toDouble() / gamesPlayed) * 100.0
@@ -123,6 +139,10 @@ class StatsDialogFragment : DialogFragment() {
     private fun normalizeDrawCount(cardsDraw: Int?): Int {
         val normalized = cardsDraw ?: 1
         return if (normalized >= 3) 3 else 1
+    }
+
+    private fun normalizeDeckCount(deckCount: Int?): Int {
+        return if (deckCount == 2) 2 else 1
     }
 
     override fun onStart() {

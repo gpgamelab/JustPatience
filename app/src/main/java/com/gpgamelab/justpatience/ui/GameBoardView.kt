@@ -67,6 +67,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var BOARD_WIDTH_FRACTION = 0.70f
     private var BOARD_SHIFT_LEFT_PX = 150f
     private var BOARD_SHIFT_DOWN_PX = 120f
+    private val LANDSCAPE_DIRECTIONAL_SHIFT_PX = 20f
 
     // Portrait-specific offsets
     private val PORTRAIT_BOARD_WIDTH_FRACTION = 0.75f
@@ -133,12 +134,15 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val LANDSCAPE_TOP_PILE_SHIFT_RATIO = 0.22f
     private val LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO = 0.22f
     private val PORTRAIT_TOP_PILE_SHIFT_RATIO = 0.10f
+    private val LANDSCAPE_OUTER_GAP_FACTOR = 1.0f
+    private val LANDSCAPE_FOUNDATION_BASE_Y_SHIFT_RATIO = 0.78f
+    private val LANDSCAPE_FOUNDATION_STEP_RATIO_MULTI_COLUMN = 1.02f
 
     private var boardStartY = 0f
 
     private var cardW = 0f
     private var cardH = 0f
-    private var columns = Game.TOTAL_TABLEAU_PILES
+    private var columns = Game.TOTAL_TABLEAU_PILES_1_DECK
     private val columnX = mutableListOf<Float>()
 
     // drag state
@@ -267,6 +271,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 launch {
                     viewModel.game.collect {
                         // Game state changed -> redraw
+                        syncColumnsWithGame(it)
                         clearDragState()
                         invalidate()
                     }
@@ -285,6 +290,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 launch {
                     viewModel.isMirroredLayout.collect { mirrored ->
                         isMirrored = mirrored
+                        if (width > 0 && height > 0 && cardW > 0f) {
+                            computeColumnX()
+                        }
                         invalidate()
                     }
                 }
@@ -328,6 +336,24 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun isLockedTableauPile(index: Int): Boolean {
         if (!::viewModel.isInitialized) return false
         return !viewModel.game.value.extraTableauUnlocked && index == Game.LOCKED_TABLEAU_INDEX
+    }
+
+    private fun syncColumnsWithGame(game: Game = viewModel.game.value) {
+        val desiredColumns = game.tableau.size.coerceAtLeast(1)
+        if (columns != desiredColumns) {
+            columns = desiredColumns
+            if (width > 0 && height > 0 && cardW > 0f) {
+                computeColumnX()
+            }
+        }
+    }
+
+    private fun getFoundationCountForLayout(): Int {
+        return if (::viewModel.isInitialized) {
+            viewModel.game.value.foundations.size.coerceAtLeast(1)
+        } else {
+            Game.FOUNDATION_COUNT_1_DECK
+        }
     }
 
     /**
@@ -453,6 +479,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         if (w <= 0 || h <= 0) return
 
+        if (::viewModel.isInitialized) {
+            syncColumnsWithGame(viewModel.game.value)
+        }
+
         val density = resources.displayMetrics.density.coerceAtLeast(1f)
         // aspectFactors is still used for text-paint scaling; card dimensions use raw pixels
         // so that extreme-aspect compression never shrinks cards below what actually fits.
@@ -467,6 +497,18 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val heightLimitedCardW = calculateHeightLimitedCardWidth(h)
 
         cardW = min(widthLimitedCardW, heightLimitedCardW).coerceAtLeast(28f)
+
+        // Deck/geometry fit pass: shrink until both horizontal and vertical budgets fit.
+        val maxLayoutWidth = (w - (abs(BOARD_SHIFT_LEFT_PX) * 2f)).coerceAtLeast(1f)
+        val maxLayoutHeight = (h * if (isLandscape) 0.98f else 0.94f).coerceAtLeast(1f)
+        repeat(6) {
+            val widthRatio = maxLayoutWidth / estimateBoardWidth(cardW)
+            val heightRatio = maxLayoutHeight / estimateBoardHeight(cardW)
+            val fitRatio = min(widthRatio, heightRatio)
+            if (fitRatio >= 1f) return@repeat
+            cardW = (cardW * fitRatio * 0.98f).coerceAtLeast(24f)
+        }
+
         cardH = cardW * cardHeightRatio
 
         val spacingScale = (cardW / 70f).coerceIn(0.70f, 1.15f)
@@ -514,6 +556,54 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return (heightBasedCardH / cardHeightRatio) * CARD_SIZE_MULTIPLIER
     }
 
+    private fun estimateBoardWidth(candidateCardW: Float): Float {
+        val spacingScale = (candidateCardW / 70f).coerceIn(0.70f, 1.15f)
+        val candidatePadding = baseCardPadding * spacingScale
+        val tableauWidth =
+            (candidateCardW * columns) + (candidatePadding * (columns - 1).coerceAtLeast(0))
+
+        if (!isLandscape) return tableauWidth
+
+        val outerGap = landscapeOuterGap(candidateCardW)
+        val sideReserve = 2f * (candidateCardW + outerGap)
+        val wasteFanReserve = getWasteFanOffsetXForCardWidth(candidateCardW) * (MAX_VISIBLE_WASTE_CARDS - 1)
+        val extraFoundationColumnReserve = if (getFoundationCountForLayout() > 4) {
+            candidateCardW + (candidatePadding * 0.6f)
+        } else {
+            0f
+        }
+        return tableauWidth + sideReserve + wasteFanReserve + extraFoundationColumnReserve
+    }
+
+    private fun estimateBoardHeight(candidateCardW: Float): Float {
+        val spacingScale = (candidateCardW / 70f).coerceIn(0.70f, 1.15f)
+        val candidatePadding = baseCardPadding * spacingScale
+        val candidateTableauOffset = baseTableauOffset * spacingScale
+        val candidateCardH = candidateCardW * cardHeightRatio
+        val dealtCount = if (::viewModel.isInitialized) {
+            Game.dealtTableauCountFor(viewModel.game.value.deckCount)
+        } else {
+            (columns - 1).coerceAtLeast(1)
+        }
+        val maxCascadeCards = (dealtCount - 1).coerceAtLeast(1)
+        val estimatedTableauHeight = candidateCardH + (maxCascadeCards * candidateCardW * 0.4f)
+
+        val extraPortraitFoundationRowHeight = if (!isLandscape && getFoundationCountForLayout() > 4) {
+            candidateCardH + (candidatePadding * 0.85f)
+        } else {
+            0f
+        }
+
+        return candidateCardH +
+            (candidatePadding + candidateTableauOffset) +
+            estimatedTableauHeight +
+            extraPortraitFoundationRowHeight
+    }
+
+    private fun landscapeOuterGap(candidateCardW: Float = cardW): Float {
+        return (candidateCardW * LANDSCAPE_OUTER_GAP_FACTOR).coerceAtLeast(10f)
+    }
+
     private fun computeColumnX() {
         columnX.clear()
 
@@ -521,6 +611,21 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             (cardW * columns) + (cardPadding * (columns - 1))
 
         var startX = (width - boardWidth) / 2f - BOARD_SHIFT_LEFT_PX
+
+        if (isLandscape) {
+            startX += if (isMirrored) {
+                LANDSCAPE_DIRECTIONAL_SHIFT_PX
+            } else {
+                -LANDSCAPE_DIRECTIONAL_SHIFT_PX
+            }
+        }
+
+        // In 2-deck landscape, foundations consume a second side column.
+        // Nudge tableau toward stock/waste so both foundation columns remain visible.
+        if (isLandscape && getFoundationCountForLayout() > 4) {
+            val shiftTowardStockWaste = (cardW + cardPadding * 0.6f) * 0.55f
+            startX += if (isMirrored) shiftTowardStockWaste else -shiftTowardStockWaste
+        }
 
         var x = startX
         repeat(columns) {
@@ -533,7 +638,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private fun getTableauStartY(): Float {
         if (!isLandscape) {
-            return getTopRowY() + cardH + cardPadding + tableauOffset
+            val extraFoundationRow = if (getFoundationCountForLayout() > 4) {
+                cardH + (cardPadding * 0.85f)
+            } else {
+                0f
+            }
+            return getTopRowY() + cardH + cardPadding + tableauOffset + extraFoundationRow
         }
 
         // In landscape, align tableau top with foundation pile 1 (and stock pile)
@@ -545,16 +655,19 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         if (!isLandscape) {
             val topY = getTopRowY()
             val y = topY + topPileVerticalShiftPx()
-            // Portrait with locked col 0: classic stock shifts to col 1, mirrored remains far-right.
-            val x = if (isMirrored) columnX[7] else columnX[1]
+            val stockColumnIndex = if (isMirrored) {
+                columnX.lastIndex.coerceAtLeast(0)
+            } else {
+                1.coerceAtMost(columnX.lastIndex.coerceAtLeast(0))
+            }
+            val x = columnX.getOrElse(stockColumnIndex) { 0f }
             return RectF(x, y, x + cardW, y + cardH)
         }
 
         // Landscape: stock is outside the tableau columns
         val foundationRect = getFoundationRect(0)
         val y = foundationRect.top + topPileVerticalShiftPx()
-        // Use a full card-width gap between the outer column and the tableau (more breathing room).
-        val landscapeOuterGap = cardW
+        val landscapeOuterGap = landscapeOuterGap()
         val x = if (isMirrored) {
             // Mirrored: stock to the RIGHT of tableau
             (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
@@ -569,16 +682,19 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         if (!isLandscape) {
             val topY = getTopRowY()
             val y = topY + topPileVerticalShiftPx()
-            // Portrait with locked col 0: classic waste shifts to col 2, mirrored is one left of stock.
-            val x = if (isMirrored) columnX[6] else columnX[2]
+            val wasteColumnIndex = if (isMirrored) {
+                (columnX.lastIndex - 1).coerceAtLeast(0)
+            } else {
+                2.coerceAtMost(columnX.lastIndex.coerceAtLeast(0))
+            }
+            val x = columnX.getOrElse(wasteColumnIndex) { 0f }
             return RectF(x, y, x + cardW, y + cardH)
         }
 
         // Landscape: waste is outside the tableau columns
         val foundationRect = getFoundationRect(1)
         val y = foundationRect.top + topPileVerticalShiftPx() + (cardH * LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO)
-        // Use a full card-width gap between the outer column and the tableau (more breathing room).
-        val landscapeOuterGap = cardW
+        val landscapeOuterGap = landscapeOuterGap()
         val x = if (isMirrored) {
             // Mirrored: waste to the RIGHT of tableau (same X column as mirrored stock)
             (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
@@ -589,7 +705,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return RectF(x, y, x + cardW, y + cardH)
     }
 
-    private fun getWasteFanOffsetX(): Float = (cardW * 0.3f).coerceIn(12f, 45f)
+    private fun getWasteFanOffsetXForCardWidth(candidateCardW: Float): Float =
+        (candidateCardW * 0.3f).coerceIn(12f, 45f)
+
+    private fun getWasteFanOffsetX(): Float = getWasteFanOffsetXForCardWidth(cardW)
 
     private fun getWasteFanDirection(): Float = if (isMirrored) -1f else 1f
 
@@ -621,15 +740,21 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun getFoundationRect(index: Int): RectF {
         if (!isLandscape) {
             val topY = getTopRowY()
-            // Portrait with locked col 0: classic foundations shift right to cols 4..7.
-            val x = if (isMirrored) columnX[index] else columnX[4 + index]
-            return RectF(x, topY, x + cardW, topY + cardH)
+            val foundationCount = getFoundationCountForLayout()
+
+            val row = if (foundationCount > 4) index / 4 else 0
+            val col = if (foundationCount > 4) index % 4 else index
+            val colsInRow = if (foundationCount > 4) 4 else foundationCount
+            val foundationStartIndex = if (isMirrored) 0 else (columns - colsInRow).coerceAtLeast(0)
+            val columnIndex = (foundationStartIndex + col).coerceIn(0, columnX.lastIndex.coerceAtLeast(0))
+            val x = columnX.getOrElse(columnIndex) { 0f }
+            val y = topY + row * (cardH + cardPadding * 0.85f)
+            return RectF(x, y, x + cardW, y + cardH)
         }
 
         // Landscape: foundations are outside the tableau columns
-        // Use a full card-width gap between the tableau and the outer column (more breathing room).
-        val landscapeOuterGap = cardW
-        val x = if (isMirrored) {
+        val landscapeOuterGap = landscapeOuterGap()
+        val baseX = if (isMirrored) {
             // Mirrored: foundations to the LEFT of tableau
             (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
         } else {
@@ -637,26 +762,40 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
         }
 
-        // Y position: vertically stacked with equal gaps (same formula for both layouts)
+        val foundationCount = getFoundationCountForLayout()
+        val row = if (foundationCount > 4) index % 4 else index
+        val col = if (foundationCount > 4) (index / 4) else 0
+        val columnStep = cardW + (cardPadding * 0.6f)
+        val x = if (isMirrored) {
+            baseX - (col * columnStep)
+        } else {
+            baseX + (col * columnStep)
+        }
+
+        // Y position: vertically stacked foundations in landscape.
+        // Multi-column (2-deck) foundations use full-height spacing to avoid vertical overlap.
         val topRowY = getTopRowY()
-        val baseY = topRowY + cardH + cardPadding + tableauOffset - (cardH * 0.38f)
-        val stepY = cardH * 0.88f
-        val pileAdjustmentFractions = floatArrayOf(-0.65f, -0.40f, -0.15f, 0.15f)
-        val pileAdjust = pileAdjustmentFractions.getOrElse(index) { 0f } * cardH
-        val y = baseY + (index * stepY) + pileAdjust
+        val baseY = topRowY + cardH + cardPadding + tableauOffset -
+            (cardH * LANDSCAPE_FOUNDATION_BASE_Y_SHIFT_RATIO)
+        val stepY = if (foundationCount > 4) {
+            cardH * LANDSCAPE_FOUNDATION_STEP_RATIO_MULTI_COLUMN
+        } else {
+            cardH * 0.88f
+        }
+        val y = if (foundationCount > 4) {
+            baseY + (row * stepY)
+        } else {
+            val pileAdjustmentFractions = floatArrayOf(-0.65f, -0.40f, -0.15f, 0.15f)
+            val pileAdjust = pileAdjustmentFractions.getOrElse(index) { 0f } * cardH
+            baseY + (index * stepY) + pileAdjust
+        }
 
         return RectF(x, y, x + cardW, y + cardH)
     }
 
     private fun computeBoardStartY(viewHeight: Int) {
 
-        val topRowHeight = cardH
-        val tableauTopSpacing = cardPadding + tableauOffset
-
-        val estimatedBoardHeight =
-            topRowHeight +
-                    tableauTopSpacing +
-                    (cardH + 6 * cardW * 0.4f)  // rough estimate of tallest tableau
+        val estimatedBoardHeight = estimateBoardHeight(cardW)
 
         boardStartY = (viewHeight - estimatedBoardHeight) / 6f
     }
@@ -664,7 +803,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawTabletop(canvas)
-        if (!::viewModel.isInitialized || cardW <= 0f || cardH <= 0f || columnX.size < columns) {
+        if (!::viewModel.isInitialized) {
+            drawLoading(canvas)
+            return
+        }
+        syncColumnsWithGame()
+        if (cardW <= 0f || cardH <= 0f || columnX.size < columns) {
             drawLoading(canvas)
             return
         }
@@ -693,7 +837,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         when (dragStackType) {
 
             StackType.TABLEAU -> {
-                val pile = viewModel.game.value.tableau[dragStackIndex]
+                val pile = viewModel.game.value.tableau.getOrNull(dragStackIndex) ?: return
                 var curY = y
 
                 pile.asList()
@@ -976,8 +1120,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             drawPileCountBadge(canvas, getWasteTopCardRect(), waste.size())
         }
 
-        // Foundations: portrait keeps top row placement; landscape moves them left of tableau.
-        for (i in 0..3) {
+        // Foundations: portrait keeps top row placement; landscape moves them left/right of tableau.
+        for (i in viewModel.game.value.foundations.indices) {
             val rect = getFoundationRect(i)
             canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
 
@@ -1093,7 +1237,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun drawTableau(canvas: Canvas) {
         val startY = getTableauStartY()
         viewModel.game.value.tableau.forEachIndexed { colIdx, pile ->
-            val x = columnX[colIdx]
+            val x = columnX.getOrNull(colIdx) ?: return@forEachIndexed
             var y = startY
             val cards = pile.asList()
             if (isLockedTableauPile(colIdx)) {
@@ -1171,8 +1315,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     /**
-     * Plays a simple tableau reveal in Klondike dealing order (0..6, 1..6, ... 6)
-     * and invokes [onCardDealt] for each card to sync whoosh SFX.
+     * Plays a simple tableau reveal in dealing order and invokes [onCardDealt] for SFX sync.
      */
     fun startNewGameDealAnimation(
         dealCardIntervalMs: Long = NEW_GAME_DEAL_CARD_INTERVAL_MS,
@@ -1184,8 +1327,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val game = viewModel.game.value
         val order = hashMapOf<Int, Int>()
         var ordinal = 0
-        for (row in 0..6) {
-            for (dealtCol in row..6) {
+        val dealtCount = Game.dealtTableauCountFor(game.deckCount)
+        for (row in 0 until dealtCount) {
+            for (dealtCol in row until dealtCount) {
                 val col = dealtCol + 1
                 val pileSize = game.tableau.getOrNull(col)?.size() ?: 0
                 if (row < pileSize) {
@@ -1499,10 +1643,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
 
             StackType.TABLEAU -> {
-                val x = columnX[stackIndex]
+                val x = columnX.getOrElse(stackIndex) { return RectF(0f, 0f, cardW, cardH) }
                 var y = startTableauY
 
-                val pile = viewModel.game.value.tableau[stackIndex]
+                val pile = viewModel.game.value.tableau.getOrNull(stackIndex)
+                    ?: return RectF(x, y, x + cardW, y + cardH)
                 val cards = pile.asList()
 
                 for (i in 0 until cardIndex) {
@@ -1798,7 +1943,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         // Check tableau
         val startY = getTableauStartY()
         if (y >= startY) {
-            for (i in 0 until columns) {
+            val visibleColumns = min(columns, columnX.size)
+            for (i in 0 until visibleColumns) {
                 val cx = columnX[i]
                 if (x in cx..(cx + cardW)) {
 
