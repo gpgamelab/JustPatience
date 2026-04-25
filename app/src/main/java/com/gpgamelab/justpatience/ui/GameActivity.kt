@@ -3315,6 +3315,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.gemsContainer.clipChildren = false
         binding.gemsContainer.clipToPadding = false
 
+        // Portrait keeps the original horizontal row; landscape stacks wand -> tickets -> gems.
+        binding.boardCurrencyHudContainer.orientation = if (isLandscape) {
+            LinearLayout.VERTICAL
+        } else {
+            LinearLayout.HORIZONTAL
+        }
+        binding.boardCurrencyHudContainer.gravity = if (isLandscape) {
+            Gravity.END
+        } else {
+            Gravity.CENTER_VERTICAL
+        }
+
         // Gem count number: use signed conversion. dpToPx() clamps negatives to +1,
         // so it cannot be used for upward offsets.
         val gemCountTranslationY = if (isLandscape) {
@@ -3339,6 +3351,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         (binding.magicWandContainer.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
             lp.marginStart = 0
             lp.marginEnd = 0
+            lp.bottomMargin = if (isLandscape) dpToPx(4f * heightScale) else 0
             binding.magicWandContainer.layoutParams = lp
         }
         // Wand container: landscape moves further up, portrait moves up more than ticket
@@ -3373,7 +3386,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         when (val lp = binding.ticketsContainer.layoutParams) {
             is LinearLayout.LayoutParams -> {
                 lp.marginStart = 0
-                lp.marginEnd = dpToPx(8f * widthScale)
+                lp.marginEnd = if (isLandscape) 0 else dpToPx(8f * widthScale)
+                lp.bottomMargin = if (isLandscape) dpToPx(4f * heightScale) else 0
                 binding.ticketsContainer.layoutParams = lp
             }
             is ConstraintLayout.LayoutParams -> {
@@ -3393,6 +3407,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         (binding.gemsContainer.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
             lp.marginStart = 0
             lp.marginEnd = 0
+            lp.bottomMargin = 0
             binding.gemsContainer.layoutParams = lp
         }
         findViewById<LinearLayout>(R.id.board_currency_hud_container)?.let { boardCurrencyHud ->
