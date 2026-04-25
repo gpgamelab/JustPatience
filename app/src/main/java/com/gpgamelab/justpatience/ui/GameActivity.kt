@@ -148,7 +148,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     // searching through the XML when you want to nudge positions/sizes.
     private val winPopupUiConfig = WinPopupUiConfig()
     private fun buildDailyBonusPopupUiConfig(): RewardPopupDialog.UiConfig {
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val landscapeRewardScale = 0.65f
         return RewardPopupDialog.UiConfig(
             dialogWidthPercentLandscape = 0.32f,
@@ -163,9 +162,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             titleOffsetPxLandscape = devDailyTitleOffsetYPxState,
             titleOffsetPxPortrait = devDailyTitleOffsetYPxState,
             titleTextSp = devDailyTitleTextSizeSpState,
-            rewardImageScalePortrait = 3f,
-            rewardTextScalePortrait = 2f,
-            rewardImageScaleLandscape = 2f,
+            rewardImageScalePortrait = 1f,
+            rewardTextScalePortrait = 1f,
+            rewardImageScaleLandscape = 1f,
             rewardTextScaleLandscape = 1f,
             rewardRowScalePortrait = 1f,
             rewardRowScaleLandscape = landscapeRewardScale,
@@ -313,6 +312,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devDailyMultiplierButtonScaleYState: Float = 3f
     private var devDailyMultiplierButtonScaleState: Float = 1f
 
+    // Unlock popup dialog width scaling (for No Tickets popup)
+    private var devUnlockDialogWidthPercentPortraitState: Float = 0.85f
+    private var devUnlockDialogWidthPercentLandscapeState: Float = 0.65f
+
     // Unlock help popup dev state
     private var devUnlockFrameScaleXState: Float = 1.0f
     private var devUnlockFrameScaleYState: Float = 1.0f
@@ -424,32 +427,67 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             baselinePortraitWidthPx  = 1600,
             baselinePortraitHeightPx = 2560
         ).averageRatio
-        devDailyTitleOffsetYPxState = 200f
-        devDailyTitleTextSizeSpState = 60f
-        devDailyGemImageHeightDpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP, ratio)
-        devDailyTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP, ratio)
-        devDailyWandImageHeightDpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_MAGIC_WAND_HEIGHT_DP, ratio)
-        devDailyRewardTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_REWARD_TEXT_SP, ratio)
-        devDailyGemOffsetXDpState      = 0f
-        devDailyGemOffsetYDpState      = 40f
-        devDailyTicketOffsetXDpState   = 0f
-        devDailyTicketOffsetYDpState   = 75f
-        devDailyWandOffsetXDpState     = 0f
-        devDailyWandOffsetYDpState     = 25f
+        val safeRatio = ratio.coerceIn(0.50f, 1.30f)
+        val buttonScaleRatio = safeRatio.coerceIn(0.65f, 1.00f)
+
+        val titleBaseSp = if (isLandscape) BASELINE_DAILY_TITLE_TEXT_SP_LANDSCAPE else BASELINE_DAILY_TITLE_TEXT_SP_PORTRAIT
+        val rewardTextBaseSp = if (isLandscape) BASELINE_DAILY_REWARD_TEXT_SP_LANDSCAPE else BASELINE_DAILY_REWARD_TEXT_SP_PORTRAIT
+        val imageScale = if (isLandscape) BASELINE_DAILY_IMAGE_SCALE_LANDSCAPE else BASELINE_DAILY_IMAGE_SCALE_PORTRAIT
+
+        devDailyTitleOffsetYPxState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_DAILY_TITLE_OFFSET_Y_PX, safeRatio)
+        devDailyTitleTextSizeSpState = BaselineResolutionScaleUtil.scaleFromBaseline(titleBaseSp, safeRatio)
+        devDailyGemImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP * imageScale, safeRatio)
+        devDailyTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP * imageScale, safeRatio)
+        devDailyWandImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_MAGIC_WAND_HEIGHT_DP * imageScale, safeRatio)
+        devDailyRewardTextSizeSpState = BaselineResolutionScaleUtil.scaleFromBaseline(rewardTextBaseSp, safeRatio)
+        devDailyGemOffsetXDpState = 0f
+        devDailyGemOffsetYDpState = (if (isLandscape) BASELINE_DAILY_GEM_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_GEM_OFFSET_Y_DP_PORTRAIT) * safeRatio
+        devDailyTicketOffsetXDpState = 0f
+        devDailyTicketOffsetYDpState = (if (isLandscape) BASELINE_DAILY_TICKET_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_TICKET_OFFSET_Y_DP_PORTRAIT) * safeRatio
+        devDailyWandOffsetXDpState = 0f
+        devDailyWandOffsetYDpState = (if (isLandscape) BASELINE_DAILY_WAND_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_WAND_OFFSET_Y_DP_PORTRAIT) * safeRatio
         devDailyGemNumberOffsetXDpState = 0f
-        devDailyGemNumberOffsetYDpState = 65f
+        devDailyGemNumberOffsetYDpState = (if (isLandscape) BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_PORTRAIT) * safeRatio
         devDailyTicketNumberOffsetXDpState = 0f
-        devDailyTicketNumberOffsetYDpState = 0f
+        devDailyTicketNumberOffsetYDpState = BASELINE_DAILY_TICKET_NUMBER_OFFSET_Y_DP * safeRatio
         devDailyWandNumberOffsetXDpState = 0f
-        devDailyWandNumberOffsetYDpState = 40f
+        devDailyWandNumberOffsetYDpState = (if (isLandscape) BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT) * safeRatio
         devDailyButtonRowOffsetXDpState = 0f
         devDailyButtonRowOffsetYDpState = 0f
-        devDailyClaimButtonScaleXState = 0.8f
-        devDailyClaimButtonScaleYState = 3f
+        devDailyClaimButtonScaleXState = 0.8f * buttonScaleRatio
+        devDailyClaimButtonScaleYState = 3f * buttonScaleRatio
         devDailyClaimButtonScaleState = 1f
-        devDailyMultiplierButtonScaleXState = 0.7f
-        devDailyMultiplierButtonScaleYState = 3f
+        devDailyMultiplierButtonScaleXState = 0.7f * buttonScaleRatio
+        devDailyMultiplierButtonScaleYState = 3f * buttonScaleRatio
         devDailyMultiplierButtonScaleState = 1f
+    }
+
+    private fun applyAutoUnlockPopupRatios() {
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
+            this,
+            baselinePortraitWidthPx = 1600,
+            baselinePortraitHeightPx = 2560
+        ).averageRatio
+        val safeRatio = ratio.coerceIn(0.50f, 1.30f)
+        val buttonScaleRatio = safeRatio.coerceIn(0.60f, 1.05f)
+        val widthBoost = (1f / safeRatio).coerceIn(1f, 1.35f)
+
+        devUnlockDialogWidthPercentPortraitState = (0.85f * widthBoost).coerceIn(0.80f, 0.95f)
+        devUnlockDialogWidthPercentLandscapeState = (0.65f * widthBoost).coerceIn(0.62f, 0.92f)
+        devUnlockFrameScaleXState = 1.0f
+        devUnlockFrameScaleYState = 1.0f
+        devUnlockDescTextSizeSpState = BaselineResolutionScaleUtil.scaleFromBaseline(20f, safeRatio)
+        devUnlockDescOffsetXDpState = 0f
+        devUnlockDescOffsetYDpState = (if (isLandscape) 36f else 60f) * safeRatio
+        devUnlockAdBtnScaleXState = 0.7f * buttonScaleRatio
+        devUnlockAdBtnScaleYState = (if (isLandscape) 1.1f else 1.4f) * buttonScaleRatio
+        devUnlockAdBtnOffsetXDpState = 50f * safeRatio
+        devUnlockAdBtnOffsetYDpState = (if (isLandscape) 28f else 50f) * safeRatio
+        devUnlockCancelBtnScaleXState = 0.7f * buttonScaleRatio
+        devUnlockCancelBtnScaleYState = (if (isLandscape) 0.9f else 1.0f) * buttonScaleRatio
+        devUnlockCancelBtnOffsetXDpState = -50f * safeRatio
+        devUnlockCancelBtnOffsetYDpState = (if (isLandscape) 28f else 48f) * safeRatio
     }
 
     // -------------------------------------------------------------------------
@@ -474,6 +512,27 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         private const val BASELINE_WIN_MAGIC_WAND_HEIGHT_DP  = 100f
         private const val BASELINE_WIN_REWARD_TEXT_SP    = 60f
         private const val BASELINE_WIN_VICTORY_TEXT_SP   = 60f
+
+        // Daily popup baselines for ratio/orientation scaling
+        private const val BASELINE_DAILY_TITLE_OFFSET_Y_PX = 200f
+        private const val BASELINE_DAILY_TITLE_TEXT_SP_PORTRAIT = 52f
+        private const val BASELINE_DAILY_TITLE_TEXT_SP_LANDSCAPE = 56f
+        private const val BASELINE_DAILY_REWARD_TEXT_SP_PORTRAIT = 52f
+        private const val BASELINE_DAILY_REWARD_TEXT_SP_LANDSCAPE = 60f
+        private const val BASELINE_DAILY_IMAGE_SCALE_PORTRAIT = 0.80f
+        private const val BASELINE_DAILY_IMAGE_SCALE_LANDSCAPE = 1.00f
+        private const val BASELINE_DAILY_GEM_OFFSET_Y_DP_PORTRAIT = 40f
+        private const val BASELINE_DAILY_TICKET_OFFSET_Y_DP_PORTRAIT = 75f
+        private const val BASELINE_DAILY_WAND_OFFSET_Y_DP_PORTRAIT = 25f
+        private const val BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_PORTRAIT = 65f
+        private const val BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT = 40f
+        private const val BASELINE_DAILY_GEM_OFFSET_Y_DP_LANDSCAPE = 24f
+        private const val BASELINE_DAILY_TICKET_OFFSET_Y_DP_LANDSCAPE = 48f
+        private const val BASELINE_DAILY_WAND_OFFSET_Y_DP_LANDSCAPE = 18f
+        private const val BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_LANDSCAPE = 52f
+        private const val BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE = 28f
+        private const val BASELINE_DAILY_TICKET_NUMBER_OFFSET_Y_DP = 0f
+
         private var sessionDevelopMenuExpandState = DevelopMenuDialogFragment.ExpandState()
     }
 
@@ -488,6 +547,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyAutoStarburstProfile()
         applyAutoWinPopupRatios()
         applyAutoDailyPopupRatios()
+        applyAutoUnlockPopupRatios()
 
         // Apply BuildConfig-driven visibility for overlay debug buttons.
         binding.btnTesters.visibility = if (BuildConfig.SHOW_TESTER_BUTTON) View.VISIBLE else View.GONE
@@ -1946,6 +2006,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             // Reset win popup element sizes to auto-scaled defaults.
             applyAutoWinPopupRatios()
             applyAutoDailyPopupRatios()
+            applyAutoUnlockPopupRatios()
             renderGemHud(gemTotal)
             renderTicketHud(ticketTotal)
             renderMagicWandHud(magicWandTotal)
@@ -2908,6 +2969,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyImmersiveFullscreen()
         applyResponsiveControlSizing()
         applyAutoWinPopupRatios()
+        applyAutoDailyPopupRatios()
+        applyAutoUnlockPopupRatios()
         if (testerStarburstAutoLayoutEnabled) {
             applyAutoStarburstProfile()
             refreshActiveStarburstDebugAndMotion()
@@ -3113,7 +3176,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         dialog.show()
         dialog.window?.apply {
             setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-            val widthPx = (resources.displayMetrics.widthPixels * 0.85f).toInt()
+            val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val widthPercent = if (isLandscape) {
+                devUnlockDialogWidthPercentLandscapeState
+            } else {
+                devUnlockDialogWidthPercentPortraitState
+            }
+            val widthPx = (resources.displayMetrics.widthPixels * widthPercent)
+                .toInt()
+                .coerceAtLeast(1)
             setLayout(widthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
     }
