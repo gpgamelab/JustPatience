@@ -140,6 +140,54 @@
         app:layout_constraintTop_toBottomOf="@id/game_info_panel" />
 
 
+    <!-- Magic Wand (lower-right corner of game board area) -->
+    <FrameLayout
+        android:id="@+id/magic_wand_container"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="10dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@id/game_board_view"
+        app:layout_constraintEnd_toEndOf="@id/game_board_view">
+
+        <ImageView
+            android:id="@+id/iv_magic_wand"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/magic_wand_content_description"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_magic_wand_yellow" />
+
+        <TextView
+            android:id="@+id/tv_magic_wand_count"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="end|top"
+            android:background="@drawable/bg_gem_count_oval"
+            android:gravity="center"
+            android:minWidth="22dp"
+            android:text="0"
+            android:textColor="@android:color/white"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            tools:text="2" />
+
+        <ImageView
+            android:id="@+id/iv_magic_wand_ad_badge"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="end|top"
+            android:contentDescription="@string/magic_wand_watch_ad_content_description"
+            android:padding="1dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_play_ad_lt_blue"
+            android:visibility="gone" />
+    </FrameLayout>
+
     <!-- 3. Control Buttons Panel (Right Side) -->
     <LinearLayout
         android:id="@+id/control_buttons_layout"

@@ -63,6 +63,8 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val rewardImageScaleLandscape: Float = 1f,
         val rewardTextScalePortrait: Float = 1f,
         val rewardTextScaleLandscape: Float = 1f,
+        val rewardRowScalePortrait: Float = 1f,
+        val rewardRowScaleLandscape: Float = 1f,
         val buttonTextOffsetInchesPortrait: Float = 0f,
         val buttonTextOffsetInchesLandscape: Float = 0f,
         val buttonTextSp: Float = 20f,
@@ -77,11 +79,16 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val ticketImageHeightDp: Float? = null,
         val ticketOffsetXDp: Float = 0f,
         val ticketOffsetYDp: Float = 0f,
+        val wandImageHeightDp: Float? = null,
+        val wandOffsetXDp: Float = 0f,
+        val wandOffsetYDp: Float = 0f,
         val rewardTextOverrideSp: Float? = null,
         val gemNumberOffsetXDp: Float = 0f,
         val gemNumberOffsetYDp: Float = 0f,
         val ticketNumberOffsetXDp: Float = 0f,
         val ticketNumberOffsetYDp: Float = 0f,
+        val wandNumberOffsetXDp: Float = 0f,
+        val wandNumberOffsetYDp: Float = 0f,
         val buttonRowOffsetXDp: Float = 0f,
         val buttonRowOffsetYDp: Float = 0f,
         val claimButtonScaleX: Float = 1f,
@@ -172,11 +179,24 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val ticketGroup = root.findViewById<LinearLayout>(R.id.layout_tickets_group)
         val ticketImageView = root.findViewById<ImageView>(R.id.iv_main_reward_tickets)
         val ticketCountView = root.findViewById<TextView>(R.id.tv_ticket_reward_amount)
+        val wandGroup = root.findViewById<LinearLayout>(R.id.layout_wand_group)
+        val wandImageView = root.findViewById<ImageView>(R.id.iv_main_reward_wand)
+        val wandCountView = root.findViewById<TextView>(R.id.tv_wand_reward_amount)
+        val rewardRow = root.findViewById<LinearLayout>(R.id.layout_reward_row)
 
         val gemReward = rewards.getOrNull(0)
         val ticketReward = rewards.getOrNull(1)
+        val wandReward = rewards.getOrNull(2)
         val rewardTextSp = uiConfig.rewardTextOverrideSp
             ?: (uiConfig.rewardTextSp * getRewardTextScale(uiConfig)).coerceAtLeast(1f)
+
+        val rewardRowScale = if (activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            uiConfig.rewardRowScaleLandscape
+        } else {
+            uiConfig.rewardRowScalePortrait
+        }.coerceAtLeast(0.1f)
+        rewardRow.scaleX = rewardRowScale
+        rewardRow.scaleY = rewardRowScale
 
         gemImageView.visibility = if (gemReward != null) View.VISIBLE else View.GONE
         gemCountView.visibility = if (gemReward != null) View.VISIBLE else View.GONE
@@ -203,6 +223,20 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
             ticketCountView.setTextSize(TypedValue.COMPLEX_UNIT_SP, rewardTextSp)
             ticketCountView.translationX = dpToPxFloatSigned(uiConfig.ticketNumberOffsetXDp)
             ticketCountView.translationY = dpToPxFloatSigned(uiConfig.ticketNumberOffsetYDp)
+        }
+
+        wandGroup.visibility = if (wandReward != null) View.VISIBLE else View.GONE
+        wandImageView.visibility = if (wandReward != null) View.VISIBLE else View.GONE
+        wandCountView.visibility = if (wandReward != null) View.VISIBLE else View.GONE
+        wandReward?.let { reward ->
+            wandImageView.setImageResource(reward.imageResId)
+            wandCountView.text = reward.count.coerceAtLeast(0).toString()
+            applyImageHeight(wandImageView, uiConfig.wandImageHeightDp ?: (35f * getRewardImageScale(uiConfig)))
+            wandImageView.translationX = dpToPxFloatSigned(uiConfig.wandOffsetXDp)
+            wandImageView.translationY = dpToPxFloatSigned(uiConfig.wandOffsetYDp)
+            wandCountView.setTextSize(TypedValue.COMPLEX_UNIT_SP, rewardTextSp)
+            wandCountView.translationX = dpToPxFloatSigned(uiConfig.wandNumberOffsetXDp)
+            wandCountView.translationY = dpToPxFloatSigned(uiConfig.wandNumberOffsetYDp)
         }
     }
 

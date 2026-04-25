@@ -29,8 +29,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         val tableauExpanded: Boolean = false,
         val dailyPopupExpanded: Boolean = false,
         val unlockPopupExpanded: Boolean = false,
-        val shuffleExpanded: Boolean = false,
-        val magicWandsExpanded: Boolean = false
+        val shuffleExpanded: Boolean = false
     )
 
     interface Host {
@@ -62,11 +61,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devTicketImageHeightDp(): Float
         fun devTicketOffsetXDp(): Float
         fun devTicketOffsetYDp(): Float
+        fun devWandImageHeightDp(): Float
+        fun devWandOffsetXDp(): Float
+        fun devWandOffsetYDp(): Float
         fun devRewardTextSizeSp(): Float
         fun devGemNumberOffsetXDp(): Float
         fun devGemNumberOffsetYDp(): Float
         fun devTicketNumberOffsetXDp(): Float
         fun devTicketNumberOffsetYDp(): Float
+        fun devWandNumberOffsetXDp(): Float
+        fun devWandNumberOffsetYDp(): Float
         fun devButtonRowOffsetXDp(): Float
         fun devButtonRowOffsetYDp(): Float
         fun devClaimScaleX(): Float
@@ -86,11 +90,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devDailyTicketImageHeightDp(): Float
         fun devDailyTicketOffsetXDp(): Float
         fun devDailyTicketOffsetYDp(): Float
+        fun devDailyWandImageHeightDp(): Float
+        fun devDailyWandOffsetXDp(): Float
+        fun devDailyWandOffsetYDp(): Float
         fun devDailyRewardTextSizeSp(): Float
         fun devDailyGemNumberOffsetXDp(): Float
         fun devDailyGemNumberOffsetYDp(): Float
         fun devDailyTicketNumberOffsetXDp(): Float
         fun devDailyTicketNumberOffsetYDp(): Float
+        fun devDailyWandNumberOffsetXDp(): Float
+        fun devDailyWandNumberOffsetYDp(): Float
         fun devDailyButtonRowOffsetXDp(): Float
         fun devDailyButtonRowOffsetYDp(): Float
         fun devDailyClaimScaleX(): Float
@@ -106,11 +115,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetTicketImageHeight(value: Float)
         fun onDevSetTicketOffsetX(value: Float)
         fun onDevSetTicketOffsetY(value: Float)
+        fun onDevSetWandImageHeight(value: Float)
+        fun onDevSetWandOffsetX(value: Float)
+        fun onDevSetWandOffsetY(value: Float)
         fun onDevSetRewardTextSize(value: Float)
         fun onDevSetGemNumberOffsetX(value: Float)
         fun onDevSetGemNumberOffsetY(value: Float)
         fun onDevSetTicketNumberOffsetX(value: Float)
         fun onDevSetTicketNumberOffsetY(value: Float)
+        fun onDevSetWandNumberOffsetX(value: Float)
+        fun onDevSetWandNumberOffsetY(value: Float)
         fun onDevSetButtonRowOffsetX(value: Float)
         fun onDevSetButtonRowOffsetY(value: Float)
         fun onDevSetClaimScaleX(value: Float)
@@ -130,11 +144,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetDailyTicketImageHeight(value: Float)
         fun onDevSetDailyTicketOffsetX(value: Float)
         fun onDevSetDailyTicketOffsetY(value: Float)
+        fun onDevSetDailyWandImageHeight(value: Float)
+        fun onDevSetDailyWandOffsetX(value: Float)
+        fun onDevSetDailyWandOffsetY(value: Float)
         fun onDevSetDailyRewardTextSize(value: Float)
         fun onDevSetDailyGemNumberOffsetX(value: Float)
         fun onDevSetDailyGemNumberOffsetY(value: Float)
         fun onDevSetDailyTicketNumberOffsetX(value: Float)
         fun onDevSetDailyTicketNumberOffsetY(value: Float)
+        fun onDevSetDailyWandNumberOffsetX(value: Float)
+        fun onDevSetDailyWandNumberOffsetY(value: Float)
         fun onDevSetDailyButtonRowOffsetX(value: Float)
         fun onDevSetDailyButtonRowOffsetY(value: Float)
         fun onDevSetDailyClaimScaleX(value: Float)
@@ -197,9 +216,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetShuffleSecondClipDelayMs(value: Float)
         fun onDevSetShuffleTailDelayMs(value: Float)
         fun onDevSetDealCardIntervalMs(value: Float)
-
-        fun devMagicWandCount(): Int
-        fun onDevSetMagicWandCount(value: Int)
 
         fun onDevExpandStateChanged(state: ExpandState)
     }
@@ -305,18 +321,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
             tableauExpanded = !tableauExpanded
             setSectionExpanded(tableauContent, tableauArrow, tableauExpanded)
             expandState = expandState.copy(tableauExpanded = tableauExpanded)
-            host.onDevExpandStateChanged(expandState)
-        }
-
-        val magicWandsHeader = view.findViewById<View>(R.id.layout_develop_magic_wands_header)
-        val magicWandsArrow = view.findViewById<TextView>(R.id.tv_develop_magic_wands_arrow)
-        val magicWandsContent = view.findViewById<LinearLayout>(R.id.layout_develop_magic_wands_content)
-        var magicWandsExpanded = expandState.magicWandsExpanded
-        setSectionExpanded(magicWandsContent, magicWandsArrow, magicWandsExpanded)
-        magicWandsHeader.setOnClickListener {
-            magicWandsExpanded = !magicWandsExpanded
-            setSectionExpanded(magicWandsContent, magicWandsArrow, magicWandsExpanded)
-            expandState = expandState.copy(magicWandsExpanded = magicWandsExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -440,11 +444,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_ticket_image_height, R.string.develop_menu_ticket_image_height, host::devTicketImageHeightDp, host::onDevSetTicketImageHeight)
         bindDecimal(R.id.btn_dev_ticket_offset_x, R.string.develop_menu_ticket_offset_x, host::devTicketOffsetXDp, host::onDevSetTicketOffsetX)
         bindDecimal(R.id.btn_dev_ticket_offset_y, R.string.develop_menu_ticket_offset_y, host::devTicketOffsetYDp, host::onDevSetTicketOffsetY)
+        bindDecimal(R.id.btn_dev_wand_image_height, R.string.develop_menu_wand_image_height, host::devWandImageHeightDp, host::onDevSetWandImageHeight)
+        bindDecimal(R.id.btn_dev_wand_offset_x, R.string.develop_menu_wand_offset_x, host::devWandOffsetXDp, host::onDevSetWandOffsetX)
+        bindDecimal(R.id.btn_dev_wand_offset_y, R.string.develop_menu_wand_offset_y, host::devWandOffsetYDp, host::onDevSetWandOffsetY)
         bindDecimal(R.id.btn_dev_reward_text_size, R.string.develop_menu_reward_text_size, host::devRewardTextSizeSp, host::onDevSetRewardTextSize)
         bindDecimal(R.id.btn_dev_gem_number_offset_x, R.string.develop_menu_gem_number_offset_x, host::devGemNumberOffsetXDp, host::onDevSetGemNumberOffsetX)
         bindDecimal(R.id.btn_dev_gem_number_offset_y, R.string.develop_menu_gem_number_offset_y, host::devGemNumberOffsetYDp, host::onDevSetGemNumberOffsetY)
         bindDecimal(R.id.btn_dev_ticket_number_offset_x, R.string.develop_menu_ticket_number_offset_x, host::devTicketNumberOffsetXDp, host::onDevSetTicketNumberOffsetX)
         bindDecimal(R.id.btn_dev_ticket_number_offset_y, R.string.develop_menu_ticket_number_offset_y, host::devTicketNumberOffsetYDp, host::onDevSetTicketNumberOffsetY)
+        bindDecimal(R.id.btn_dev_wand_number_offset_x, R.string.develop_menu_wand_number_offset_x, host::devWandNumberOffsetXDp, host::onDevSetWandNumberOffsetX)
+        bindDecimal(R.id.btn_dev_wand_number_offset_y, R.string.develop_menu_wand_number_offset_y, host::devWandNumberOffsetYDp, host::onDevSetWandNumberOffsetY)
         bindDecimal(R.id.btn_dev_button_row_offset_x, R.string.develop_menu_button_row_offset_x, host::devButtonRowOffsetXDp, host::onDevSetButtonRowOffsetX)
         bindDecimal(R.id.btn_dev_button_row_offset_y, R.string.develop_menu_button_row_offset_y, host::devButtonRowOffsetYDp, host::onDevSetButtonRowOffsetY)
         bindDecimal(R.id.btn_dev_claim_scale_x, R.string.develop_menu_claim_scale_x, host::devClaimScaleX, host::onDevSetClaimScaleX)
@@ -460,13 +469,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_shuffle_tail_delay_ms, R.string.develop_menu_shuffle_tail_delay_ms, host::devShuffleTailDelayMs, host::onDevSetShuffleTailDelayMs)
         bindDecimal(R.id.btn_dev_deal_card_interval_ms, R.string.develop_menu_deal_card_interval_ms, host::devDealCardIntervalMs, host::onDevSetDealCardIntervalMs)
 
-        view.findViewById<MaterialButton>(R.id.btn_dev_magic_wand_count).setOnClickListener {
-            showSetValueDialog(getString(R.string.develop_menu_magic_wand_count), host.devMagicWandCount()) {
-                host.onDevSetMagicWandCount(it)
-                refreshPopupDisplays(view, host)
-            }
-        }
-
         view.findViewById<MaterialButton>(R.id.btn_dev_daily_popup_apply_auto).setOnClickListener {
             host.onDevApplyAutoDailyPopupRatios()
             refreshPopupDisplays(view, host)
@@ -480,11 +482,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_daily_ticket_image_height, R.string.develop_menu_ticket_image_height, host::devDailyTicketImageHeightDp, host::onDevSetDailyTicketImageHeight)
         bindDecimal(R.id.btn_dev_daily_ticket_offset_x, R.string.develop_menu_ticket_offset_x, host::devDailyTicketOffsetXDp, host::onDevSetDailyTicketOffsetX)
         bindDecimal(R.id.btn_dev_daily_ticket_offset_y, R.string.develop_menu_ticket_offset_y, host::devDailyTicketOffsetYDp, host::onDevSetDailyTicketOffsetY)
+        bindDecimal(R.id.btn_dev_daily_wand_image_height, R.string.develop_menu_wand_image_height, host::devDailyWandImageHeightDp, host::onDevSetDailyWandImageHeight)
+        bindDecimal(R.id.btn_dev_daily_wand_offset_x, R.string.develop_menu_wand_offset_x, host::devDailyWandOffsetXDp, host::onDevSetDailyWandOffsetX)
+        bindDecimal(R.id.btn_dev_daily_wand_offset_y, R.string.develop_menu_wand_offset_y, host::devDailyWandOffsetYDp, host::onDevSetDailyWandOffsetY)
         bindDecimal(R.id.btn_dev_daily_reward_text_size, R.string.develop_menu_reward_text_size, host::devDailyRewardTextSizeSp, host::onDevSetDailyRewardTextSize)
         bindDecimal(R.id.btn_dev_daily_gem_number_offset_x, R.string.develop_menu_gem_number_offset_x, host::devDailyGemNumberOffsetXDp, host::onDevSetDailyGemNumberOffsetX)
         bindDecimal(R.id.btn_dev_daily_gem_number_offset_y, R.string.develop_menu_gem_number_offset_y, host::devDailyGemNumberOffsetYDp, host::onDevSetDailyGemNumberOffsetY)
         bindDecimal(R.id.btn_dev_daily_ticket_number_offset_x, R.string.develop_menu_ticket_number_offset_x, host::devDailyTicketNumberOffsetXDp, host::onDevSetDailyTicketNumberOffsetX)
         bindDecimal(R.id.btn_dev_daily_ticket_number_offset_y, R.string.develop_menu_ticket_number_offset_y, host::devDailyTicketNumberOffsetYDp, host::onDevSetDailyTicketNumberOffsetY)
+        bindDecimal(R.id.btn_dev_daily_wand_number_offset_x, R.string.develop_menu_wand_number_offset_x, host::devDailyWandNumberOffsetXDp, host::onDevSetDailyWandNumberOffsetX)
+        bindDecimal(R.id.btn_dev_daily_wand_number_offset_y, R.string.develop_menu_wand_number_offset_y, host::devDailyWandNumberOffsetYDp, host::onDevSetDailyWandNumberOffsetY)
         bindDecimal(R.id.btn_dev_daily_button_row_offset_x, R.string.develop_menu_button_row_offset_x, host::devDailyButtonRowOffsetXDp, host::onDevSetDailyButtonRowOffsetX)
         bindDecimal(R.id.btn_dev_daily_button_row_offset_y, R.string.develop_menu_button_row_offset_y, host::devDailyButtonRowOffsetYDp, host::onDevSetDailyButtonRowOffsetY)
         bindDecimal(R.id.btn_dev_daily_claim_scale_x, R.string.develop_menu_claim_scale_x, host::devDailyClaimScaleX, host::onDevSetDailyClaimScaleX)
@@ -542,11 +549,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_image_height).text = fmt(host.devTicketImageHeightDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_offset_x).text = fmt(host.devTicketOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_offset_y).text = fmt(host.devTicketOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_wand_image_height).text = fmt(host.devWandImageHeightDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_wand_offset_x).text = fmt(host.devWandOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_wand_offset_y).text = fmt(host.devWandOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_reward_text_size).text = fmt(host.devRewardTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_gem_number_offset_x).text = fmt(host.devGemNumberOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_gem_number_offset_y).text = fmt(host.devGemNumberOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_number_offset_x).text = fmt(host.devTicketNumberOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_number_offset_y).text = fmt(host.devTicketNumberOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_wand_number_offset_x).text = fmt(host.devWandNumberOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_wand_number_offset_y).text = fmt(host.devWandNumberOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_button_row_offset_x).text = fmt(host.devButtonRowOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_button_row_offset_y).text = fmt(host.devButtonRowOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_claim_scale_x).text = fmt(host.devClaimScaleX())
@@ -561,7 +573,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_second_clip_delay_ms).text = fmt(host.devShuffleSecondClipDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_tail_delay_ms).text = fmt(host.devShuffleTailDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_deal_card_interval_ms).text = fmt(host.devDealCardIntervalMs())
-        root.findViewById<MaterialButton>(R.id.btn_dev_magic_wand_count).text = host.devMagicWandCount().toString()
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_offset_y).text = fmt(host.devDailyTitleOffsetYPx())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_text_size).text = fmt(host.devDailyTitleTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_image_height).text = fmt(host.devDailyGemImageHeightDp())
@@ -570,11 +581,16 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_image_height).text = fmt(host.devDailyTicketImageHeightDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_offset_x).text = fmt(host.devDailyTicketOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_offset_y).text = fmt(host.devDailyTicketOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_image_height).text = fmt(host.devDailyWandImageHeightDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_offset_x).text = fmt(host.devDailyWandOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_offset_y).text = fmt(host.devDailyWandOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_reward_text_size).text = fmt(host.devDailyRewardTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_number_offset_x).text = fmt(host.devDailyGemNumberOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_number_offset_y).text = fmt(host.devDailyGemNumberOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_number_offset_x).text = fmt(host.devDailyTicketNumberOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_number_offset_y).text = fmt(host.devDailyTicketNumberOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_number_offset_x).text = fmt(host.devDailyWandNumberOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_number_offset_y).text = fmt(host.devDailyWandNumberOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_button_row_offset_x).text = fmt(host.devDailyButtonRowOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_button_row_offset_y).text = fmt(host.devDailyButtonRowOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_daily_claim_scale_x).text = fmt(host.devDailyClaimScaleX())
@@ -622,8 +638,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
             tableauExpanded = b.getBoolean(ARG_TABLEAU_EXPANDED, false),
             dailyPopupExpanded = b.getBoolean(ARG_DAILY_POPUP_EXPANDED, false),
             unlockPopupExpanded = b.getBoolean(ARG_UNLOCK_POPUP_EXPANDED, false),
-            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false),
-            magicWandsExpanded = b.getBoolean(ARG_MAGIC_WANDS_EXPANDED, false)
+            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
         )
     }
 
@@ -705,7 +720,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         private const val ARG_DAILY_POPUP_EXPANDED = "arg_daily_popup_expanded"
         private const val ARG_UNLOCK_POPUP_EXPANDED = "arg_unlock_popup_expanded"
         private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
-        private const val ARG_MAGIC_WANDS_EXPANDED = "arg_magic_wands_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
             return DevelopMenuDialogFragment().apply {
@@ -716,7 +730,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
                     putBoolean(ARG_DAILY_POPUP_EXPANDED, state.dailyPopupExpanded)
                     putBoolean(ARG_UNLOCK_POPUP_EXPANDED, state.unlockPopupExpanded)
                     putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
-                    putBoolean(ARG_MAGIC_WANDS_EXPANDED, state.magicWandsExpanded)
                 }
             }
         }

@@ -138,8 +138,6 @@
     <string name="develop_menu_unlock_cancel_btn_offset_y">Cancel btn offset Y (dp)</string>
     <string name="develop_menu_shuffle_section">Shuffle / Deal Timing</string>
     <string name="develop_menu_tableau_section">Tableau Adjustments</string>
-    <string name="develop_menu_magic_wand_section">Magic Wands</string>
-    <string name="develop_menu_magic_wand_count">Available magic wands</string>
     <string name="develop_menu_shuffle_second_clip_delay_ms">Shuffle clip 2 delay (ms)</string>
     <string name="develop_menu_shuffle_tail_delay_ms">Shuffle tail delay (ms)</string>
     <string name="develop_menu_deal_card_interval_ms">Deal card interval (ms)</string>
@@ -373,6 +371,7 @@ Locale: %7$s</string>
     <string name="tester_menu_disable">Disable</string>
     <string name="tester_menu_gems_section">Gems</string>
     <string name="tester_menu_coupons_section">Coupons</string>
+    <string name="tester_menu_magic_wands_section">Magic Wands</string>
     <string name="tester_menu_starburst_pivot_section">Win Starburst Pivot (px offsets)</string>
     <string name="tester_menu_starburst_pivot_x">Center X Offset</string>
     <string name="tester_menu_starburst_pivot_y">Center Y Offset</string>
@@ -415,11 +414,16 @@ Locale: %7$s</string>
     <string name="develop_menu_ticket_image_height">Ticket image height (dp)</string>
     <string name="develop_menu_ticket_offset_x">Ticket image offset X (dp)</string>
     <string name="develop_menu_ticket_offset_y">Ticket image offset Y (dp)</string>
+    <string name="develop_menu_wand_image_height">Wand image height (dp)</string>
+    <string name="develop_menu_wand_offset_x">Wand image offset X (dp)</string>
+    <string name="develop_menu_wand_offset_y">Wand image offset Y (dp)</string>
     <string name="develop_menu_reward_text_size">Reward number text size (sp)</string>
     <string name="develop_menu_gem_number_offset_x">Gem number offset X (dp)</string>
     <string name="develop_menu_gem_number_offset_y">Gem number offset Y (dp)</string>
     <string name="develop_menu_ticket_number_offset_x">Ticket number offset X (dp)</string>
     <string name="develop_menu_ticket_number_offset_y">Ticket number offset Y (dp)</string>
+    <string name="develop_menu_wand_number_offset_x">Wand number offset X (dp)</string>
+    <string name="develop_menu_wand_number_offset_y">Wand number offset Y (dp)</string>
     <string name="develop_menu_button_row_offset_x">Popup button row offset X (dp)</string>
     <string name="develop_menu_button_row_offset_y">Popup button row offset Y (dp)</string>
     <string name="develop_menu_claim_scale_x">Claim button size X (scale)</string>
