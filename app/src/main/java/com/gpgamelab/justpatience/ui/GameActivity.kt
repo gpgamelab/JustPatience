@@ -218,6 +218,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var shuffleSound2Loaded: Boolean = false
     private var winPopupSoundId: Int = 0
     private var winPopupSoundLoaded: Boolean = false
+    private var magicWandSoundId: Int = 0
+    private var magicWandSoundLoaded: Boolean = false
     private var muteCardSounds: Boolean = false
     private var muteWinSound: Boolean = false
 
@@ -698,6 +700,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                             shuffleSound1Id -> shuffleSound1Loaded = true
                             shuffleSound2Id -> shuffleSound2Loaded = true
                             winPopupSoundId -> winPopupSoundLoaded = true
+                            magicWandSoundId -> magicWandSoundLoaded = true
                         }
                     }
                 }
@@ -705,12 +708,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 shuffleSound1Id = pool.load(this, R.raw.card_game_movement_shuffle_light_02, 1)
                 shuffleSound2Id = pool.load(this, R.raw.card_game_movement_shuffle_light_03, 1)
                 winPopupSoundId = pool.load(this, R.raw.floraphonic_tada_military_3_183975, 1)
+                magicWandSoundId = pool.load(this, R.raw.card_game_achievement_shimmer_long_01, 1)
             }
     }
 
     private fun playCardClickMoveSound() {
         if (muteCardSounds || !moveSoundLoaded || moveSoundId == 0) return
         moveSoundPool?.play(moveSoundId, 1f, 1f, 1, 0, 1f)
+    }
+
+    private fun playMagicWandSound() {
+        if (muteCardSounds || !magicWandSoundLoaded || magicWandSoundId == 0) return
+        moveSoundPool?.play(magicWandSoundId, 1f, 1f, 1, 0, 1f)
     }
 
     private fun playWinPopupSoundIfAllowed() {
@@ -1587,7 +1596,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val used = viewModel.tryUseMagicWandOnTarget(targetType, targetIndex, targetCardIndex)
         if (used) {
             consumeMagicWand()
-            playCardClickMoveSound()
+            playMagicWandSound()
         } else {
             Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
         }
