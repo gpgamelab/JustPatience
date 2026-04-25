@@ -19,6 +19,7 @@ import android.os.Looper
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
@@ -3204,13 +3205,23 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.tvMoves.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
         binding.tvTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
 
-        val gemBagBaseDp = if (isLandscape) 22f else 24f
+        val baseGemBagDp = if (isLandscape) 22f else 24f
+        // gem bag reduced to ~0.75 of old size (user tuned: 80dp → 60dp in portrait XML)
+        val gemBagBaseDp = baseGemBagDp * 2.5f
         val gemCountBaseSp = if (isLandscape) 10f else 11f
         val gemMinWidthBaseDp = if (isLandscape) 26f else 28f
+        val wandContainerBaseDp = 56f * 1.6f
+        // wand icon height reduced ~0.86 (user tuned: 58dp → 50dp in portrait XML)
+        val wandIconBaseDp = 36f * 1.38f
         val gemSizePx = dpToPx(gemBagBaseDp * textScale)
+        val ticketSizePx = dpToPx((baseGemBagDp * 3.7f) * textScale)
+        val wandContainerPx = dpToPx(wandContainerBaseDp * textScale)
+        val wandIconPx = dpToPx(wandIconBaseDp * textScale)
 
         resizeFrame(binding.ivGemBag, gemSizePx, gemSizePx)
-        resizeFrame(binding.ivTicketIcon, gemSizePx, gemSizePx)
+        resizeFrame(binding.ivTicketIcon, ticketSizePx, ticketSizePx)
+        resizeFrame(binding.magicWandContainer, wandContainerPx, wandContainerPx)
+        resizeFrame(binding.ivMagicWand, wandIconPx, wandIconPx)
         binding.tvGemCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
         binding.tvTicketCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
         binding.tvGemCount.minWidth = dpToPx(gemMinWidthBaseDp * widthScale)
@@ -3227,19 +3238,98 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             dpToPx(6f * widthScale),
             dpToPx(1f * heightScale)
         )
-        (binding.tvGemCount.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
-            lp.topMargin = 0
-            lp.marginEnd = dpToPx(6f * widthScale)
-            binding.tvGemCount.layoutParams = lp
+        // Allow count ovals to move outside their container bounds when nudged upward.
+        binding.boardCurrencyHudContainer.clipChildren = false
+        binding.boardCurrencyHudContainer.clipToPadding = false
+        binding.gemsContainer.clipChildren = false
+        binding.gemsContainer.clipToPadding = false
+
+        // Gem count number: use signed conversion. dpToPx() clamps negatives to +1,
+        // so it cannot be used for upward offsets.
+        val gemCountTranslationY = if (isLandscape) {
+            dpToPxFloatSigned(-14f * heightScale)
+        } else {
+            dpToPxFloatSigned(-10f * heightScale)
         }
-        (binding.tvTicketCount.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
-            lp.topMargin = 0
-            lp.marginEnd = dpToPx(6f * widthScale)
-            binding.tvTicketCount.layoutParams = lp
+        when (val lp = binding.tvGemCount.layoutParams) {
+            is LinearLayout.LayoutParams -> {
+                lp.topMargin = 0
+                lp.marginEnd = dpToPx(6f * widthScale)
+                binding.tvGemCount.layoutParams = lp
+            }
+            is FrameLayout.LayoutParams -> {
+                lp.gravity = Gravity.END or Gravity.TOP
+                lp.topMargin = 0
+                lp.marginEnd = 0
+                binding.tvGemCount.layoutParams = lp
+            }
         }
-        (binding.ticketsContainer.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
-            lp.marginStart = dpToPx(8f * widthScale)
-            binding.ticketsContainer.layoutParams = lp
+        binding.tvGemCount.translationY = gemCountTranslationY
+        (binding.magicWandContainer.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            lp.marginStart = 0
+            lp.marginEnd = 0
+            binding.magicWandContainer.layoutParams = lp
+        }
+        // Wand container: landscape moves further up, portrait moves up more than ticket
+        val wandTranslationY = when {
+            isLandscape -> dpToPx(-8f * heightScale).toFloat()   // landscape: move up
+            else        -> dpToPx(-10f * heightScale).toFloat()  // portrait: move up more than ticket
+        }
+        binding.magicWandContainer.translationY = wandTranslationY
+
+        // Wand count number: move upward in both orientations (same amount as gem count)
+        val wandCountTopOffset = if (isLandscape) dpToPx(-10f * heightScale) else dpToPx(-8f * heightScale)
+        (binding.tvMagicWandCount.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+            lp.gravity = Gravity.END or Gravity.TOP
+            lp.topMargin = wandCountTopOffset
+            binding.tvMagicWandCount.layoutParams = lp
+        }
+
+        // Ticket count number: unchanged (user confirmed fine)
+        when (val lp = binding.tvTicketCount.layoutParams) {
+            is LinearLayout.LayoutParams -> {
+                lp.topMargin = 0
+                lp.marginEnd = dpToPx(6f * widthScale)
+                binding.tvTicketCount.layoutParams = lp
+            }
+            is FrameLayout.LayoutParams -> {
+                lp.gravity = Gravity.END or Gravity.TOP
+                lp.topMargin = 0
+                lp.marginEnd = 0
+                binding.tvTicketCount.layoutParams = lp
+            }
+        }
+        when (val lp = binding.ticketsContainer.layoutParams) {
+            is LinearLayout.LayoutParams -> {
+                lp.marginStart = 0
+                lp.marginEnd = dpToPx(8f * widthScale)
+                binding.ticketsContainer.layoutParams = lp
+            }
+            is ConstraintLayout.LayoutParams -> {
+                lp.marginStart = 0
+                lp.marginEnd = dpToPx(8f * widthScale)
+                lp.bottomMargin = dpToPx(10f * heightScale)
+                binding.ticketsContainer.layoutParams = lp
+            }
+        }
+        // Ticket image: landscape fine as-is; portrait move up a bit
+        binding.ticketsContainer.translationY = 0f
+        val ticketImageTranslationY = when {
+            isLandscape -> dpToPx(20f * heightScale).toFloat()  // landscape: unchanged
+            else        -> dpToPx(10f * heightScale).toFloat()  // portrait: move up (~10dp less than before)
+        }
+        binding.ivTicketIcon.translationY = ticketImageTranslationY
+        (binding.gemsContainer.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            lp.marginStart = 0
+            lp.marginEnd = 0
+            binding.gemsContainer.layoutParams = lp
+        }
+        findViewById<LinearLayout>(R.id.board_currency_hud_container)?.let { boardCurrencyHud ->
+            (boardCurrencyHud.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
+                lp.marginEnd = dpToPx(8f * widthScale)
+                lp.bottomMargin = dpToPx(10f * heightScale)
+                boardCurrencyHud.layoutParams = lp
+            }
         }
     }
 
