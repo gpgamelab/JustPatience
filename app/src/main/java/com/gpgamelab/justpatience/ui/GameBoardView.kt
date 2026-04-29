@@ -1460,14 +1460,23 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             when (type) {
                 StackType.TABLEAU -> {
                     val pile = viewModel.game.value.tableau.getOrNull(stackIndex) ?: return
-                    val card = pile.peekAt(cardIndex)
-                    if (card?.isFaceUp == true) {
-                        onMagicWandTargetSelected?.invoke(type, stackIndex, cardIndex)
+                    if (pile.isEmpty()) {
+                        // Empty tableau – let the activity decide which king to fetch
+                        onMagicWandTargetSelected?.invoke(type, stackIndex, -1)
+                    } else {
+                        val card = pile.peekAt(cardIndex)
+                        if (card?.isFaceUp == true) {
+                            onMagicWandTargetSelected?.invoke(type, stackIndex, cardIndex)
+                        }
                     }
                 }
                 StackType.FOUNDATION -> {
-                    val top = viewModel.game.value.foundations.getOrNull(stackIndex)?.peek()
-                    if (top?.isFaceUp == true) {
+                    val foundation = viewModel.game.value.foundations.getOrNull(stackIndex)
+                    val top = foundation?.peek()
+                    if (foundation != null && foundation.isEmpty()) {
+                        // Empty foundation – let the activity decide which ace to fetch
+                        onMagicWandTargetSelected?.invoke(type, stackIndex, -1)
+                    } else if (top?.isFaceUp == true) {
                         onMagicWandTargetSelected?.invoke(type, stackIndex, -1)
                     }
                 }

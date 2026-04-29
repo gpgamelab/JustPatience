@@ -1738,6 +1738,35 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         targetCardIndex: Int
     ) {
         if (!isMagicWandSelectionMode) return
+
+        // Determine whether the target slot is empty (requires king/ace fetch)
+        val isEmptyTarget = when (targetType) {
+            com.gpgamelab.justpatience.model.StackType.TABLEAU ->
+                viewModel.game.value.tableau.getOrNull(targetIndex)?.isEmpty() == true
+            com.gpgamelab.justpatience.model.StackType.FOUNDATION ->
+                viewModel.game.value.foundations.getOrNull(targetIndex)?.isEmpty() == true
+            else -> false
+        }
+
+        if (isEmptyTarget) {
+            val candidates = viewModel.getMagicWandCandidatesForEmpty(targetType, targetIndex)
+            setMagicWandSelectionMode(false)
+            when {
+                candidates.isEmpty() -> {
+                    val rankName = if (targetType == com.gpgamelab.justpatience.model.StackType.FOUNDATION)
+                        getString(R.string.card_rank_ace) else getString(R.string.card_rank_king)
+                    Toast.makeText(this, getString(R.string.magic_wand_no_card_available, rankName), Toast.LENGTH_SHORT).show()
+                }
+                candidates.size == 1 -> {
+                    val used = viewModel.tryUseMagicWandWithCandidate(targetType, targetIndex, candidates[0])
+                    if (used) { consumeMagicWand(); playMagicWandSound() }
+                    else Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
+                }
+                else -> showMagicWandCardPicker(targetType, targetIndex, candidates)
+            }
+            return
+        }
+
         val used = viewModel.tryUseMagicWandOnTarget(targetType, targetIndex, targetCardIndex)
         if (used) {
             consumeMagicWand()
@@ -1746,6 +1775,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
         }
         setMagicWandSelectionMode(false)
+    }
+
+    private fun showMagicWandCardPicker(
+        targetType: com.gpgamelab.justpatience.model.StackType,
+        targetIndex: Int,
+        candidates: List<GameViewModel.MagicWandCandidate>
+    ) {
+        val labels = candidates.map { c ->
+            val suit = c.card.suit?.displayName ?: ""
+            "${c.card.rank.displayName} of $suit"
+        }.toTypedArray()
+
+        val titleRes = if (targetType == com.gpgamelab.justpatience.model.StackType.FOUNDATION)
+            R.string.magic_wand_pick_ace_title else R.string.magic_wand_pick_king_title
+
+        AlertDialog.Builder(this)
+            .setTitle(titleRes)
+            .setItems(labels) { _, which ->
+                val used = viewModel.tryUseMagicWandWithCandidate(targetType, targetIndex, candidates[which])
+                if (used) { consumeMagicWand(); playMagicWandSound() }
+                else Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun maybeShowDailyBonusOnFirstLaunch() {

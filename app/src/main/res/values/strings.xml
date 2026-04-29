@@ -107,8 +107,13 @@
     <string name="daily_bonus_x2_unavailable_fallback">x2 reward unavailable. Base daily bonus claimed.</string>
     <string name="magic_wand_content_description">Magic wand</string>
     <string name="magic_wand_watch_ad_content_description">Watch ad for magic wand</string>
-    <string name="magic_wand_select_target_prompt">Magic Wand ready. Tap any face-up tableau or foundation card.</string>
+    <string name="magic_wand_select_target_prompt">Magic Wand ready. Tap any tableau or foundation card (or an empty slot).</string>
     <string name="magic_wand_no_match">No face-down card can satisfy that target.</string>
+    <string name="magic_wand_no_card_available">No hidden %1$s available to fetch.</string>
+    <string name="magic_wand_pick_king_title">Which King to place here?</string>
+    <string name="magic_wand_pick_ace_title">Which Ace to place here?</string>
+    <string name="card_rank_king">King</string>
+    <string name="card_rank_ace">Ace</string>
     <string name="magic_wand_ad_title">Get Magic Wand</string>
     <string name="magic_wand_ad_message">Watch an ad to add 1 Magic Wand?</string>
     <string name="magic_wand_watch_ad">Watch Ad</string>
