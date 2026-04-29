@@ -53,15 +53,18 @@ class SettingsManager(private val context: Context) {
         val SAVED_GAME_STATE_JSON = stringPreferencesKey("saved_game_state_json")
         val TOTAL_GEMS = intPreferencesKey("total_gems")
         val TOTAL_TICKETS = intPreferencesKey("total_tickets")
+        val TOTAL_MAGIC_WANDS = intPreferencesKey("total_magic_wands")
         val LAST_DAILY_BONUS_DATE = stringPreferencesKey("last_daily_bonus_date")
 
         // Game Play Settings
         val DRAW_SIZE = intPreferencesKey("draw_size")                          // 1 or 3
+        val DECK_COUNT = intPreferencesKey("deck_count")                        // 1 or 2
         val RECYCLE_COUNT = intPreferencesKey("recycle_count")                  // 0..99
         val INFINITE_RECYCLES = booleanPreferencesKey("infinite_recycles")
         val SHOW_CARD_ANIMATIONS = booleanPreferencesKey("show_card_animations")
         val SHOW_WIN_ANIMATION = booleanPreferencesKey("show_win_animation")
         val ALLOW_FOUNDATION_TO_TABLEAU_DRAG = booleanPreferencesKey("allow_foundation_to_tableau_drag")
+        val ENFORCE_FOUNDATION_BALANCE = booleanPreferencesKey("enforce_foundation_balance")
         val PREMIUM_ACCT = booleanPreferencesKey("premium_acct")
         val SHOW_GAME_TIMER = booleanPreferencesKey("show_game_timer")
         val SHOW_SCORE = booleanPreferencesKey("show_score")
@@ -90,6 +93,7 @@ class SettingsManager(private val context: Context) {
      */
     data class GamePlaySettings(
         val drawSize: Int = 3,
+        val deckCount: Int = 1,
         val recycleCount: Int = 3,
         val infiniteRecycles: Boolean = true,
         val showHints: Boolean = true,
@@ -97,6 +101,7 @@ class SettingsManager(private val context: Context) {
         val showCardAnimations: Boolean = true,
         val showWinAnimation: Boolean = true,
         val allowFoundationToTableauDrag: Boolean = false,
+        val enforceFoundationBalance: Boolean = false,
         val premiumAcct: Boolean = false,
         val showGameTimer: Boolean = true,
         val showScore: Boolean = true,
@@ -322,6 +327,24 @@ class SettingsManager(private val context: Context) {
         }
     }
 
+    fun getTotalMagicWandsFlow(): Flow<Int> = dataStore.data
+        .map { preferences ->
+            (preferences[PreferencesKeys.TOTAL_MAGIC_WANDS] ?: 0).coerceAtLeast(0)
+        }
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(0)
+            } else {
+                throw exception
+            }
+        }
+
+    suspend fun setTotalMagicWands(total: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TOTAL_MAGIC_WANDS] = total.coerceAtLeast(0)
+        }
+    }
+
     fun getLastDailyBonusDateFlow(): Flow<String?> = dataStore.data
         .map { preferences -> preferences[PreferencesKeys.LAST_DAILY_BONUS_DATE] }
         .catch { exception ->
@@ -416,6 +439,7 @@ class SettingsManager(private val context: Context) {
         .map { preferences ->
             GamePlaySettings(
                 drawSize = preferences[PreferencesKeys.DRAW_SIZE] ?: 3,
+                deckCount = preferences[PreferencesKeys.DECK_COUNT] ?: 1,
                 recycleCount = preferences[PreferencesKeys.RECYCLE_COUNT] ?: 3,
                 infiniteRecycles = preferences[PreferencesKeys.INFINITE_RECYCLES] ?: true,
                 showHints = preferences[PreferencesKeys.SHOW_HINTS] ?: true,
@@ -423,6 +447,7 @@ class SettingsManager(private val context: Context) {
                 showCardAnimations = preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] ?: true,
                 showWinAnimation = preferences[PreferencesKeys.SHOW_WIN_ANIMATION] ?: true,
                 allowFoundationToTableauDrag = preferences[PreferencesKeys.ALLOW_FOUNDATION_TO_TABLEAU_DRAG] ?: false,
+                enforceFoundationBalance = preferences[PreferencesKeys.ENFORCE_FOUNDATION_BALANCE] ?: false,
                 premiumAcct = preferences[PreferencesKeys.PREMIUM_ACCT] ?: false,
                 showGameTimer = preferences[PreferencesKeys.SHOW_GAME_TIMER] ?: true,
                 showScore = preferences[PreferencesKeys.SHOW_SCORE] ?: true,
@@ -444,6 +469,7 @@ class SettingsManager(private val context: Context) {
     suspend fun saveGamePlaySettings(settings: GamePlaySettings) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.DRAW_SIZE] = settings.drawSize
+            preferences[PreferencesKeys.DECK_COUNT] = if (settings.deckCount == 2) 2 else 1
             preferences[PreferencesKeys.RECYCLE_COUNT] = settings.recycleCount
             preferences[PreferencesKeys.INFINITE_RECYCLES] = settings.infiniteRecycles
             preferences[PreferencesKeys.SHOW_HINTS] = settings.showHints
@@ -451,6 +477,7 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.SHOW_CARD_ANIMATIONS] = settings.showCardAnimations
             preferences[PreferencesKeys.SHOW_WIN_ANIMATION] = settings.showWinAnimation
             preferences[PreferencesKeys.ALLOW_FOUNDATION_TO_TABLEAU_DRAG] = settings.allowFoundationToTableauDrag
+            preferences[PreferencesKeys.ENFORCE_FOUNDATION_BALANCE] = settings.enforceFoundationBalance
             preferences[PreferencesKeys.PREMIUM_ACCT] = settings.premiumAcct
             preferences[PreferencesKeys.SHOW_GAME_TIMER] = settings.showGameTimer
             preferences[PreferencesKeys.SHOW_SCORE] = settings.showScore

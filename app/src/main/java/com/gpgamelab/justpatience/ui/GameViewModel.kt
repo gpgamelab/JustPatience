@@ -13,6 +13,7 @@ import com.google.gson.JsonParseException
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
+import com.google.gson.JsonParser
 import com.gpgamelab.justpatience.data.GameStatsManager
 import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.TokenManager
@@ -48,11 +49,23 @@ import java.util.Locale
 
 private const val CARD_MOVE_ANIMATION_MS = 250L
 
+private data class SavedGameEnvelope(
+    val currentGame: Game,
+    val initialGameState: Game?
+)
+
 /**
  * ViewModel that holds the current Game state and provides actions for UI.
  * Calls the GameController (rules engine) for all moves.
  */
 class GameViewModel(application: Application) : AndroidViewModel(application) {
+
+    private data class WandCandidate(
+        val sourceType: StackType,          // TABLEAU, STOCK, or WASTE
+        val sourceTableauIndex: Int,        // meaningful only for TABLEAU
+        val sourceCardIndex: Int,           // meaningful only for TABLEAU / STOCK
+        val card: Card
+    )
 
     private val settingsManager = SettingsManager(application.applicationContext)
     private val tokenManager = TokenManager(application.applicationContext)
@@ -71,6 +84,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     // Current draw size setting (supports any positive integer, <=0 defaults to 1)
     private var currentDrawSize = 1
+    private var currentDeckCount = Game.DEFAULT_DECK_COUNT
     private var currentRecycleLimit = 3
     private var currentInfiniteRecycles = false
 
@@ -104,6 +118,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _allowFoundationToTableauDrag = MutableStateFlow(false)
     val allowFoundationToTableauDrag: StateFlow<Boolean> = _allowFoundationToTableauDrag
 
+    private val _enforceFoundationBalanceEnabled = MutableStateFlow(false)
+    val enforceFoundationBalanceEnabled: StateFlow<Boolean> = _enforceFoundationBalanceEnabled
+
     private val _autoCompleteEnabled = MutableStateFlow(true)
     val autoCompleteEnabled: StateFlow<Boolean> = _autoCompleteEnabled
 
@@ -132,7 +149,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val undoStack = ArrayDeque<Game>()
     private val redoStack = ArrayDeque<Game>()
-    private var initialGameState: Game? = null  // Store the game state at the start of the hand
+    private var initialGameState: Game? = null  // Start-of-hand anchor used by Restart.
     private var currentHandRecorded = false
     private var launchInitialized = false
 
@@ -175,8 +192,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         undoStack.clear()
         redoStack.clear()
         currentHandRecorded = false
-        val newGame = controller.newGameWithClearHistory()
-        initialGameState = newGame
+        val newGame = controller.newGameWithClearHistory(currentDeckCount)
+        initialGameState = newGame.deepCopy()
         _game.value = newGame
         resetTimerForNewHand()
         saveGame()
@@ -186,6 +203,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             settingsManager.gamePlaySettingsFlow.collect { settings ->
                 currentDrawSize = settings.drawSize
+                currentDeckCount = Game.normalizeDeckCount(settings.deckCount)
                 currentRecycleLimit = settings.recycleCount.coerceAtLeast(0)
                 currentInfiniteRecycles = settings.infiniteRecycles
 
@@ -199,6 +217,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _showWinAnimation.value = settings.showWinAnimation
                 _isMirroredLayout.value = settings.boardLayout == "left_hand"
                 _allowFoundationToTableauDrag.value = settings.allowFoundationToTableauDrag
+                _enforceFoundationBalanceEnabled.value = settings.enforceFoundationBalance
                 _autoCompleteEnabled.value = settings.autoComplete
                 _hapticsEnabled.value = settings.haptics
                 _tapToMoveEnabled.value = settings.tapToMove
@@ -281,11 +300,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         resetTimerForNewHand()
         currentHandRecorded = false
         viewModelScope.launch {
-            val newGame = controller.newGameWithClearHistory()
-            initialGameState = newGame
+            val newGame = controller.newGameWithClearHistory(currentDeckCount)
+            initialGameState = newGame.deepCopy()
             _game.value = newGame
             saveGame()
         }
+    }
+
+    fun switchDeckCountAndStartNewGame(deckCount: Int) {
+        currentDeckCount = Game.normalizeDeckCount(deckCount)
+        startNewGame()
     }
 
     fun restartGame() {
@@ -293,13 +317,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         pauseHintTimerForNonPlayerActivity()
         val initial = initialGameState
         if (initial == null) {
+            val wasUnlocked = _game.value.extraTableauUnlocked
             undoStack.clear()
             redoStack.clear()
             currentHandRecorded = false
             viewModelScope.launch {
-                val newGame = controller.newGameWithClearHistory()
-                initialGameState = newGame
-                _game.value = newGame
+                val newGame = controller.newGameWithClearHistory(currentDeckCount)
+                initialGameState = newGame.deepCopy()
+                _game.value = newGame.copy(extraTableauUnlocked = wasUnlocked)
                 resetTimerForNewHand()
                 updateUndoRedoState()
                 saveGame()
@@ -308,16 +333,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
         undoStack.clear()
         redoStack.clear()
-        _game.value = initial
+        _game.value = initial.copy(extraTableauUnlocked = _game.value.extraTableauUnlocked)
         resetTimerForNewHand()
         currentHandRecorded = false
         updateUndoRedoState()
         saveGame()
     }
 
-    fun drawFromStock() {
+    enum class DrawResult { NORMAL_DRAW, RECYCLE_SHUFFLE, NO_MOVE }
+
+    fun drawFromStock(): DrawResult {
         val game = _game.value
         var moved = false
+        var recycled = false
         var newGame = game
 
         // Determine how many cards to draw (<=0 defaults to 1)
@@ -346,10 +374,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             // Recycle waste -> stock only if recycle limit allows it.
             if (!game.waste.isEmpty() && canRecycleWaste(game)) {
-                val recycled = game.recycleWasteToStock()
-                if (recycled != null) {
-                    newGame = recycled.copy(recycleCountUsed = game.recycleCountUsed + 1)
+                val r = game.recycleWasteToStock()
+                if (r != null) {
+                    newGame = r.copy(recycleCountUsed = game.recycleCountUsed + 1)
                     moved = true
+                    recycled = true
                 }
             }
         }
@@ -361,6 +390,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val updatedWithScore = updateAfterMove(newGame)  // scoreDelta = 0 for simple scoring
             _game.value = updatedWithScore
             updateUndoRedoState()
+        }
+        return when {
+            !moved   -> DrawResult.NO_MOVE
+            recycled -> DrawResult.RECYCLE_SHUFFLE
+            else     -> DrawResult.NORMAL_DRAW
         }
     }
 
@@ -398,9 +432,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun tryMoveWasteToTableau(index: Int, animate: Boolean = true) {
+    fun tryMoveWasteToTableau(index: Int, animate: Boolean = true): Boolean {
         val game = _game.value
-        val wasteCard = game.waste.peek() ?: return
+        val wasteCard = game.waste.peek() ?: return false
         val updated = game.moveWasteToTableau(index)
 
         if (updated != null) {
@@ -422,7 +456,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _game.value = updatedWithScore
             saveGame()
             updateUndoRedoState()
+            return true
         }
+        return false
     }
 
     fun tryMoveTableauToTableau(
@@ -493,7 +529,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val game = _game.value
         val wasteCard = game.waste.peek() ?: return false
 
-        if (respectThreshold && !shouldPreferFoundationOnSingleTap(game, wasteCard)) {
+        if (respectThreshold && !foundationBalanceAllowsMoveToFoundation(game, wasteCard)) {
             return false
         }
 
@@ -532,7 +568,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val topCard = pile.peek()
 
         if (topCard?.isFaceUp != true) return false
-        if (respectThreshold && !shouldPreferFoundationOnSingleTap(game, topCard)) return false
+        if (respectThreshold && !foundationBalanceAllowsMoveToFoundation(game, topCard)) return false
 
         for (i in game.foundations.indices) {
             val updated = game.moveTableauToFoundation(tableauIndex, topIndex, i)
@@ -725,6 +761,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return (card.rank.sortOrder - lowestFoundation) < 3
     }
 
+    private fun foundationBalanceAllowsMoveToFoundation(game: Game, card: Card): Boolean {
+        return !_enforceFoundationBalanceEnabled.value || shouldPreferFoundationOnSingleTap(game, card)
+    }
+
     // ─────────────────────────────────────────────────────────────
     // Single-click glow system (independent from hints)
     // ─────────────────────────────────────────────────────────────
@@ -738,35 +778,37 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      *     otherwise move to the first valid tableau.
      * - If can move to multiple tableaus → move immediately to first valid tableau.
      */
-    fun handleSingleClickOnWaste() {
+    fun handleSingleClickOnWaste(): Boolean {
         val game = _game.value
-        val wasteCard = game.waste.peek() ?: return
+        val wasteCard = game.waste.peek() ?: return false
 
         // Collect valid destinations
-        val canFoundation = (0..3).any { game.moveWasteToFoundation(it) != null }
-        val tableauDests = (0..6).filter { game.moveWasteToTableau(it) != null }
+        val canFoundation = game.foundations.indices.any { game.moveWasteToFoundation(it) != null }
+        val tableauDests = game.tableau.indices.filter { game.moveWasteToTableau(it) != null }
 
-        val shouldPreferFoundation = canFoundation && shouldPreferFoundationOnSingleTap(game, wasteCard)
+        val shouldPreferFoundation = canFoundation && foundationBalanceAllowsMoveToFoundation(game, wasteCard)
 
         when {
             // Foundation only and threshold prefers foundation → move there.
             canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
-                    if (tryMoveWasteToFoundation(i)) return
+                    if (tryMoveWasteToFoundation(i)) return true
                 }
+                return false
             }
             // Tableau only → move to first valid tableau
             tableauDests.isNotEmpty() && !canFoundation -> {
-                tryMoveWasteToTableau(tableauDests[0])
+                return tryMoveWasteToTableau(tableauDests[0])
             }
             // Both available → use the same threshold rule as top-tableau cards
             canFoundation && tableauDests.isNotEmpty() -> {
                 if (shouldPreferFoundation) {
                     for (i in game.foundations.indices) {
-                        if (tryMoveWasteToFoundation(i)) return
+                        if (tryMoveWasteToFoundation(i)) return true
                     }
+                    return false
                 } else {
-                    tryMoveWasteToTableau(tableauDests[0])
+                    return tryMoveWasteToTableau(tableauDests[0])
                 }
             }
             // Foundation-only but threshold does not prefer foundation → require explicit confirm tap.
@@ -777,8 +819,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     sourceCardIndex = -1,
                     destinations = listOf(GlowDestination(StackType.FOUNDATION, game.foundations.indices.first { game.moveWasteToFoundation(it) != null }))
                 )
+                return false
             }
         }
+        return false
     }
 
     /**
@@ -789,9 +833,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * - Top cards prefer foundation when the card is within the lowest-foundation
      *   threshold rule; otherwise they keep the richer tableau/glow behavior.
      */
-    fun handleSingleClickOnTableau(tableauIndex: Int, tappedCardIndex: Int) {
+    fun handleSingleClickOnTableau(tableauIndex: Int, tappedCardIndex: Int): Boolean {
         val game = _game.value
-        val pile = game.tableau.getOrNull(tableauIndex) ?: return
+        val pile = game.tableau.getOrNull(tableauIndex) ?: return false
         val cards = pile.asList()
 
         // Find the top face-up card
@@ -802,7 +846,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 break
             }
         }
-        if (topFaceUpIndex < 0) return
+        if (topFaceUpIndex < 0) return false
 
         // Use the tapped card when it is a valid face-up card in this pile.
         val sourceIndex = if (
@@ -814,38 +858,40 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Check tableau destinations (any face-up card can go)
-        val tableauDests = (0..6).filter { destIdx ->
+        val tableauDests = game.tableau.indices.filter { destIdx ->
             destIdx != tableauIndex && game.moveTableauToTableau(tableauIndex, sourceIndex, destIdx) != null
         }
 
         // Foundation move is only possible from the top exposed card.
         val isTopCard = sourceIndex == cards.lastIndex
-        val canFoundation = isTopCard && (0..3).any { foundIdx ->
+        val canFoundation = isTopCard && game.foundations.indices.any { foundIdx ->
             game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null
         }
-        val shouldPreferFoundation = isTopCard && canFoundation && shouldPreferFoundationOnSingleTap(game, cards[sourceIndex])
+        val shouldPreferFoundation = isTopCard && canFoundation && foundationBalanceAllowsMoveToFoundation(game, cards[sourceIndex])
 
         when {
             // Non-top runs should move directly to the first valid tableau destination.
             !isTopCard && tableauDests.isNotEmpty() -> {
-                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
+                return tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
             }
             // Top cards should move to foundation immediately when they satisfy the threshold rule.
             shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
-                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return
+                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return true
                 }
+                return false
             }
             // Tableau-only destinations should move immediately to the first valid tableau.
             tableauDests.isNotEmpty() && !canFoundation -> {
-                tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
+                return tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
             }
             // Can move to foundation only AND threshold says to prefer foundation → move immediately.
             // If threshold says no, fall through to the glow branch so the user must confirm.
             canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
                 for (i in game.foundations.indices) {
-                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return
+                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return true
                 }
+                return false
             }
             // Multiple destinations (tableau or foundation) → show all destination glows
             tableauDests.isNotEmpty() || canFoundation -> {
@@ -867,8 +913,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     sourceCardIndex = sourceIndex,
                     destinations = dests
                 )
+                return false
             }
         }
+        return false
     }
 
     /** Clear single-click glow display (called on any player action or when dismissing). */
@@ -881,7 +929,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Priority: tableau to foundation, then waste to foundation.
      * Returns the number of moves made.
      */
-    suspend fun performAutoMove(): Int {
+    suspend fun performAutoMove(onCardMoved: (() -> Unit)? = null): Int {
         pauseHintTimerForNonPlayerActivity()
         var moveCount = 0
         var madeMoveThisPass = true
@@ -890,9 +938,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             madeMoveThisPass = false
 
             for (tableauIndex in _game.value.tableau.indices) {
-                if (tryAutoMoveTableauTopToFoundation(tableauIndex, respectThreshold = true)) {
+                if (tryAutoMoveTableauTopToFoundation(tableauIndex, respectThreshold = _enforceFoundationBalanceEnabled.value)) {
                     moveCount++
                     madeMoveThisPass = true
+                    onCardMoved?.invoke()
                     if (_showCardAnimations.value) {
                         delay(CARD_MOVE_ANIMATION_MS)
                     }
@@ -900,9 +949,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            if (!madeMoveThisPass && tryAutoMoveWasteToFoundation(respectThreshold = true)) {
+            if (!madeMoveThisPass && tryAutoMoveWasteToFoundation(respectThreshold = _enforceFoundationBalanceEnabled.value)) {
                 moveCount++
                 madeMoveThisPass = true
+                onCardMoved?.invoke()
                 if (_showCardAnimations.value) {
                     delay(CARD_MOVE_ANIMATION_MS)
                 }
@@ -979,6 +1029,172 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return false
     }
 
+    fun tryUseMagicWandOnTarget(targetType: StackType, targetIndex: Int, targetCardIndex: Int): Boolean {
+        val game = _game.value
+        val targetIsValid = when (targetType) {
+            StackType.TABLEAU -> {
+                val pile = game.tableau.getOrNull(targetIndex) ?: return false
+                val targetCard = pile.peekAt(targetCardIndex) ?: return false
+                targetCard.isFaceUp
+            }
+            StackType.FOUNDATION -> {
+                val top = game.foundations.getOrNull(targetIndex)?.peek() ?: return false
+                top.isFaceUp
+            }
+            else -> return false
+        }
+        if (!targetIsValid) return false
+
+        val candidate = findFirstMagicWandCandidate(game, targetType, targetIndex) ?: return false
+
+        val candidateFaceUp = candidate.card.copy(isFaceUp = true)
+
+        val wandAppliedGame: Game = when (candidate.sourceType) {
+            StackType.TABLEAU -> {
+                val sourcePile = game.tableau.getOrNull(candidate.sourceTableauIndex) ?: return false
+                val sourceCards = sourcePile.asList().toMutableList()
+                if (candidate.sourceCardIndex !in sourceCards.indices) return false
+                sourceCards.removeAt(candidate.sourceCardIndex)
+                var rebuiltSourcePile = TableauPile(sourceCards.map { it.copy() }.toMutableList())
+                rebuiltSourcePile = rebuiltSourcePile.withTopCardFlipped()
+                val newTableau = game.tableau.toMutableList()
+                newTableau[candidate.sourceTableauIndex] = rebuiltSourcePile
+
+                when (targetType) {
+                    StackType.TABLEAU -> {
+                        val targetPile = game.tableau.getOrNull(targetIndex) ?: return false
+                        val updatedTarget = targetPile.withCardsAdded(listOf(candidateFaceUp))
+                        if (updatedTarget === targetPile) return false
+                        newTableau[targetIndex] = updatedTarget
+                        game.copy(tableau = newTableau)
+                    }
+                    StackType.FOUNDATION -> {
+                        val targetFoundation = game.foundations.getOrNull(targetIndex) ?: return false
+                        val updatedFoundation = targetFoundation.withCardAdded(candidateFaceUp)
+                        if (updatedFoundation === targetFoundation) return false
+                        val newFoundations = game.foundations.toMutableList()
+                        newFoundations[targetIndex] = updatedFoundation
+                        game.copy(tableau = newTableau, foundations = newFoundations)
+                    }
+                    else -> return false
+                }
+            }
+            StackType.STOCK -> {
+                // Remove the card from stock, place face-up on target
+                val stockCards = game.stock.asList().toMutableList()
+                if (candidate.sourceCardIndex !in stockCards.indices) return false
+                stockCards.removeAt(candidate.sourceCardIndex)
+                val newStock = Stock(stockCards.map { it.copy() }.toMutableList())
+
+                when (targetType) {
+                    StackType.TABLEAU -> {
+                        val newTableau = game.tableau.toMutableList()
+                        val targetPile = game.tableau.getOrNull(targetIndex) ?: return false
+                        val updatedTarget = targetPile.withCardsAdded(listOf(candidateFaceUp))
+                        if (updatedTarget === targetPile) return false
+                        newTableau[targetIndex] = updatedTarget
+                        game.copy(stock = newStock, tableau = newTableau)
+                    }
+                    StackType.FOUNDATION -> {
+                        val targetFoundation = game.foundations.getOrNull(targetIndex) ?: return false
+                        val updatedFoundation = targetFoundation.withCardAdded(candidateFaceUp)
+                        if (updatedFoundation === targetFoundation) return false
+                        val newFoundations = game.foundations.toMutableList()
+                        newFoundations[targetIndex] = updatedFoundation
+                        game.copy(stock = newStock, foundations = newFoundations)
+                    }
+                    else -> return false
+                }
+            }
+            StackType.WASTE -> {
+                // Remove the specific waste card (may not be the top) and place face-up on target
+                val wasteCardsList = game.waste.asList().toMutableList()
+                if (candidate.sourceCardIndex !in wasteCardsList.indices) return false
+                wasteCardsList.removeAt(candidate.sourceCardIndex)
+                val newWaste = Waste().also { w -> wasteCardsList.forEach { c -> w.push(c) } }
+
+                when (targetType) {
+                    StackType.TABLEAU -> {
+                        val newTableau = game.tableau.toMutableList()
+                        val targetPile = game.tableau.getOrNull(targetIndex) ?: return false
+                        val updatedTarget = targetPile.withCardsAdded(listOf(candidateFaceUp))
+                        if (updatedTarget === targetPile) return false
+                        newTableau[targetIndex] = updatedTarget
+                        game.copy(waste = newWaste, tableau = newTableau)
+                    }
+                    StackType.FOUNDATION -> {
+                        val targetFoundation = game.foundations.getOrNull(targetIndex) ?: return false
+                        val updatedFoundation = targetFoundation.withCardAdded(candidateFaceUp)
+                        if (updatedFoundation === targetFoundation) return false
+                        val newFoundations = game.foundations.toMutableList()
+                        newFoundations[targetIndex] = updatedFoundation
+                        game.copy(waste = newWaste, foundations = newFoundations)
+                    }
+                    else -> return false
+                }
+            }
+            else -> return false
+        }
+
+        clearSingleClickGlow()
+        resetHintTimer()
+        undoStack.addLast(game)
+        redoStack.clear()
+        _game.value = updateAfterMove(wandAppliedGame)
+        saveGame()
+        updateUndoRedoState()
+        return true
+    }
+
+    private fun findFirstMagicWandCandidate(game: Game, targetType: StackType, targetIndex: Int): WandCandidate? {
+        // Helper: does this face-up card satisfy the target slot?
+        fun canSatisfy(candidateFaceUp: Card, sourcePileIndex: Int): Boolean = when (targetType) {
+            StackType.TABLEAU -> {
+                if (sourcePileIndex == targetIndex) false
+                else game.tableau.getOrNull(targetIndex)?.canPush(candidateFaceUp) == true
+            }
+            StackType.FOUNDATION -> game.foundations.getOrNull(targetIndex)?.canPush(candidateFaceUp) == true
+            else -> false
+        }
+
+        // ── 1. Facedown tableau cards (existing behaviour) ──────
+        for (sourcePileIndex in game.tableau.indices) {
+            if (!game.extraTableauUnlocked && sourcePileIndex == Game.LOCKED_TABLEAU_INDEX) continue
+            val sourceCards = game.tableau[sourcePileIndex].asList()
+            for (cardIndex in sourceCards.lastIndex downTo 0) {
+                val facedown = sourceCards[cardIndex]
+                if (facedown.isFaceUp) continue
+                val candidateFaceUp = facedown.copy(isFaceUp = true)
+                if (canSatisfy(candidateFaceUp, sourcePileIndex)) {
+                    return WandCandidate(StackType.TABLEAU, sourcePileIndex, cardIndex, facedown)
+                }
+            }
+        }
+
+        // ── 2. Facedown cards in the stock (draw pile) ──────────
+        val stockCards = game.stock.asList()
+        for (cardIndex in stockCards.indices) {
+            val facedown = stockCards[cardIndex]
+            if (facedown.isFaceUp) continue
+            val candidateFaceUp = facedown.copy(isFaceUp = true)
+            if (canSatisfy(candidateFaceUp, -1)) {
+                return WandCandidate(StackType.STOCK, -1, cardIndex, facedown)
+            }
+        }
+
+        // ── 3. All faceup cards in the waste pile (top first) ───
+        val wasteCards = game.waste.asList()
+        for (cardIndex in wasteCards.lastIndex downTo 0) {
+            val wasteCard = wasteCards[cardIndex]
+            if (!wasteCard.isFaceUp) continue
+            if (canSatisfy(wasteCard, -1)) {
+                return WandCandidate(StackType.WASTE, -1, cardIndex, wasteCard)
+            }
+        }
+
+        return null
+    }
+
     private fun updateAfterMove(game: Game, scoreDelta: Int = 0): Game {
         startTimerOnFirstSuccessfulMoveIfNeeded()
         return if (game.isWinCondition()) {
@@ -986,7 +1202,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val updatedGame = game.copy(
                 status = GameStatus.WON,
                 score = game.score + scoreDelta,
-                moves = game.moves + 1
+                moves = game.moves + 1,
+                extraTableauUnlocked = false
             )
             // Record the win in stats
             recordGameCompletion(updatedGame, isWin = true)
@@ -1006,13 +1223,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val settings = settingsManager.gamePlaySettingsFlow.firstOrNull()
             val playerName = settings?.playerDisplayName
             val cardsDraw = settings?.drawSize
+            val deckCount = game.deckCount
             statsManager.recordGame(
                 score = game.score,
                 moves = game.moves,
                 timeMs = elapsedTimeMs.coerceAtLeast(0L),
                 isWin = isWin,
                 playerName = playerName,
-                cardsDraw = cardsDraw
+                cardsDraw = cardsDraw,
+                deckCount = deckCount
             )
         } catch (e: Exception) {
             Log.e("GameViewModel", "Failed to record game completion", e)
@@ -1031,7 +1250,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun undo() {
+    fun undo(): Boolean {
         if (undoStack.isNotEmpty()) {
             resetHintTimer()
             val current = _game.value
@@ -1039,17 +1258,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _game.value = undoStack.removeLast()
             saveGame()
             updateUndoRedoState()
+            return true
         }
+        return false
     }
 
-    fun redo() {
-        if (redoStack.isEmpty()) return
+    fun redo(): Boolean {
+        if (redoStack.isEmpty()) return false
         resetHintTimer()
         val current = _game.value
         undoStack.addLast(current)
         _game.value = redoStack.removeLast()
         saveGame()
         updateUndoRedoState()
+        return true
     }
 
     private fun saveGameIfInProgress() {
@@ -1069,7 +1291,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val gameToSave = _game.value.copy(savedGameTime = gameTime.value)
-                val json = gson.toJson(gameToSave)
+                val initialToSave = initialGameState?.copy(savedGameTime = 0L)
+                val json = gson.toJson(
+                    SavedGameEnvelope(
+                        currentGame = gameToSave,
+                        initialGameState = initialToSave
+                    )
+                )
                 repository.saveCurrentGameState(json)
                 // Mirror session state: true while an in-progress game exists in storage,
                 // false once the game has reached a terminal state.
@@ -1084,19 +1312,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return try {
             val saved = repository.getCurrentGameState().firstOrNull()
             if (!saved.isNullOrEmpty()) {
-                val parsedGame = gson.fromJson(saved, Game::class.java)
-                val (savedGame, wasMigrated) = migrateSavedGameImagePaths(parsedGame)
-                if (savedGame.status == GameStatus.IN_PROGRESS) {
-                    // Keep a restart anchor even when resuming from persisted state.
-                    initialGameState = savedGame
-                    _game.value = savedGame
-                    gameTime.value = savedGame.savedGameTime
-                    hasRegisteredFirstMove = savedGame.savedGameTime > 0
+                val parsed = parseSavedPayload(saved) ?: return false
+                val (savedGameRaw, initialFromSaveRaw, usedLegacyPayload) = parsed
+                val savedGame = normalizeGameForDeckMode(savedGameRaw)
+                val initialFromSave = initialFromSaveRaw?.let { normalizeGameForDeckMode(it) }
+                val (migratedCurrent, currentMigrated) = migrateSavedGameImagePaths(savedGame)
+                val (migratedInitial, initialMigrated) = initialFromSave
+                    ?.let { migrateSavedGameImagePaths(it) }
+                    ?: Pair(null, false)
+                val restartAnchor = (migratedInitial ?: migratedCurrent.deepCopy()).copy(savedGameTime = 0L)
+
+                if (migratedCurrent.status == GameStatus.IN_PROGRESS) {
+                    initialGameState = restartAnchor
+                    _game.value = migratedCurrent
+                    gameTime.value = migratedCurrent.savedGameTime
+                    hasRegisteredFirstMove = migratedCurrent.savedGameTime > 0
                     currentHandRecorded = false
 
-                    // Persist one-time migration to heal legacy image paths on device.
-                    if (wasMigrated) {
-                        repository.saveCurrentGameState(gson.toJson(savedGame))
+                    // Persist one-time migrations + legacy payload upgrade.
+                    if (currentMigrated || initialMigrated || usedLegacyPayload || initialFromSave == null) {
+                        val upgradedJson = gson.toJson(
+                            SavedGameEnvelope(
+                                currentGame = migratedCurrent,
+                                initialGameState = restartAnchor
+                            )
+                        )
+                        repository.saveCurrentGameState(upgradedJson)
                     }
 
                     // Keep the session marker aligned with the resumed in-progress game.
@@ -1114,8 +1355,71 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun parseSavedPayload(saved: String): Triple<Game, Game?, Boolean>? {
+        return try {
+            val root = JsonParser.parseString(saved)
+            if (root.isJsonObject && root.asJsonObject.has("currentGame")) {
+                val envelope = gson.fromJson(root, SavedGameEnvelope::class.java)
+                Triple(envelope.currentGame, envelope.initialGameState, false)
+            } else {
+                Triple(gson.fromJson(root, Game::class.java), null, true)
+            }
+        } catch (t: Throwable) {
+            Log.w("GameViewModel", "parseSavedPayload failed: ${t.message}")
+            null
+        }
+    }
+
     private fun migrateSavedGameImagePaths(game: Game): Pair<Game, Boolean> {
         var changed = false
+
+        val normalizedDeckCount = Game.normalizeDeckCount(game.deckCount)
+        if (normalizedDeckCount != game.deckCount) changed = true
+
+        val expectedTableauCount = Game.totalTableauPilesFor(normalizedDeckCount)
+        val expectedFoundationCount = Game.foundationCountFor(normalizedDeckCount)
+
+        val normalizedTableau = when {
+            game.tableau.size == Game.dealtTableauCountFor(normalizedDeckCount) -> {
+                changed = true
+                listOf(TableauPile()) + game.tableau
+            }
+            game.tableau.size < expectedTableauCount -> {
+                changed = true
+                game.tableau + List(expectedTableauCount - game.tableau.size) { TableauPile() }
+            }
+            game.tableau.size > expectedTableauCount -> {
+                changed = true
+                game.tableau.take(expectedTableauCount)
+            }
+            else -> game.tableau
+        }
+
+        val normalizedFoundations = when {
+            game.foundations.size < expectedFoundationCount -> {
+                changed = true
+                game.foundations + List(expectedFoundationCount - game.foundations.size) { FoundationPile() }
+            }
+            game.foundations.size > expectedFoundationCount -> {
+                changed = true
+                game.foundations.take(expectedFoundationCount)
+            }
+            else -> game.foundations
+        }
+
+        val normalizedGame = if (
+            normalizedTableau !== game.tableau ||
+            normalizedFoundations !== game.foundations ||
+            normalizedDeckCount != game.deckCount
+        ) {
+            game.copy(
+                deckCount = normalizedDeckCount,
+                tableau = normalizedTableau,
+                foundations = normalizedFoundations
+            )
+        } else {
+            game
+        }
 
         fun normalizeCard(card: Card): Card {
             val targetFacePath = expectedFaceImagePath(card)
@@ -1130,24 +1434,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             return migrated
         }
 
-        val migratedStock = Stock(game.stock.asList().map(::normalizeCard).toMutableList())
+        val migratedStock = Stock(normalizedGame.stock.asList().map(::normalizeCard).toMutableList())
 
         val migratedWaste = Waste().also { newWaste ->
-            game.waste.asList().map(::normalizeCard).forEach { card ->
+            normalizedGame.waste.asList().map(::normalizeCard).forEach { card ->
                 newWaste.push(card)
             }
         }
 
-        val migratedTableau = game.tableau.map { pile ->
+        val migratedTableau = normalizedGame.tableau.map { pile ->
             TableauPile(pile.asList().map(::normalizeCard).toMutableList())
         }
 
-        val migratedFoundations = game.foundations.map { pile ->
+        val migratedFoundations = normalizedGame.foundations.map { pile ->
             FoundationPile(pile.asList().map(::normalizeCard).toMutableList())
         }
 
         return Pair(
-            game.copy(
+            normalizedGame.copy(
                 stock = migratedStock,
                 waste = migratedWaste,
                 tableau = migratedTableau,
@@ -1182,6 +1486,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return "drawable:ic_${suitCode}_${rankCode}"
     }
 
+    private fun normalizeGameForDeckMode(game: Game): Game {
+        val normalizedDeckCount = Game.normalizeDeckCount(game.deckCount)
+        if (normalizedDeckCount == game.deckCount) return game
+        return game.copy(deckCount = normalizedDeckCount)
+    }
+
     fun stopGame() {
         val current = _game.value
 
@@ -1191,13 +1501,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         runBlocking {
             try {
                 val gameToSave = current.copy(savedGameTime = gameTime.value)
-                val json = gson.toJson(gameToSave)
+                val json = gson.toJson(
+                    SavedGameEnvelope(
+                        currentGame = gameToSave,
+                        initialGameState = initialGameState?.copy(savedGameTime = 0L)
+                    )
+                )
                 repository.saveCurrentGameState(json)
             } catch (t: Throwable) {
                 Log.w("GameViewModel", "stopGame save failed: ${t.message}")
             }
             settingsManager.setGameSessionActive(current.status == GameStatus.IN_PROGRESS)
         }
+    }
+
+    fun unlockExtraTableauPile() {
+        val current = _game.value
+        if (current.extraTableauUnlocked) return
+        _game.value = current.copy(extraTableauUnlocked = true)
+        saveGame()
     }
 
     /**
