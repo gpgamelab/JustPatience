@@ -344,7 +344,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         if (columns != desiredColumns) {
             columns = desiredColumns
             if (width > 0 && height > 0 && cardW > 0f) {
-                computeColumnX()
+                // Deck count changes can alter tableau/foundation geometry without a size change.
+                // Recompute full board metrics immediately so layout does not wait for rotation.
+                recomputeBoardGeometry(width, height)
             }
         }
     }
@@ -483,6 +485,12 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         if (::viewModel.isInitialized) {
             syncColumnsWithGame(viewModel.game.value)
         }
+
+        recomputeBoardGeometry(w, h)
+    }
+
+    private fun recomputeBoardGeometry(w: Int, h: Int) {
+        if (w <= 0 || h <= 0) return
 
         val density = resources.displayMetrics.density.coerceAtLeast(1f)
         // aspectFactors is still used for text-paint scaling; card dimensions use raw pixels
