@@ -673,9 +673,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             return RectF(x, y, x + cardW, y + cardH)
         }
 
-        // Landscape: stock is outside the tableau columns
-        val foundationRect = getFoundationRect(0)
-        val y = foundationRect.top + topPileVerticalShiftPx()
+        // Landscape: stock is outside the tableau columns (swapped — now below waste, aligned to foundation[1])
+        val foundationRect = getFoundationRect(1)
+        val y = foundationRect.top + topPileVerticalShiftPx() + (cardH * LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO) + 50f
         val landscapeOuterGap = landscapeOuterGap()
         val x = if (isMirrored) {
             // Mirrored: stock to the RIGHT of tableau
@@ -700,9 +700,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             return RectF(x, y, x + cardW, y + cardH)
         }
 
-        // Landscape: waste is outside the tableau columns
-        val foundationRect = getFoundationRect(1)
-        val y = foundationRect.top + topPileVerticalShiftPx() + (cardH * LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO)
+        // Landscape: waste is outside the tableau columns (swapped — now above stock, aligned to foundation[0])
+        val foundationRect = getFoundationRect(0)
+        val y = foundationRect.top + topPileVerticalShiftPx()
         val landscapeOuterGap = landscapeOuterGap()
         val x = if (isMirrored) {
             // Mirrored: waste to the RIGHT of tableau (same X column as mirrored stock)
