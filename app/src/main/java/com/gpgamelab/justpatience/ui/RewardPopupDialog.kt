@@ -54,7 +54,12 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val buttonRowWidthPercentLandscape: Float = 1f,
         val buttonRowWidthPercentPortrait: Float = 1f,
         val titleBottomPercent: Float = 0.15f,
+        val titleBottomPercentLandscape: Float? = null,
+        val titleBottomPercentPortrait: Float? = null,
+        val rewardBottomPercentLandscape: Float = 0.65f,
+        val rewardBottomPercentPortrait: Float = 0.65f,
         val buttonsTopPercent: Float = 0.80f,
+        val buttonsBottomPercent: Float = 0.90f,
         val titleOffsetInchesPortrait: Float = 0f,
         val titleOffsetInchesLandscape: Float = 0f,
         val titleTextSp: Float = 34f,
@@ -72,7 +77,16 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val rewardGapDp: Float = 24f,
         val titleOffsetPxPortrait: Float = 0f,
         val titleOffsetPxLandscape: Float = 0f,
+        val showTitle: Boolean = true,
         val showWinOnlyVictory: Boolean = false,
+        val victoryTextSp: Float = 34f,
+        val victoryOffsetXDp: Float = 0f,
+        val victoryOffsetYDp: Float = 0f,
+        val showStarburst: Boolean = false,
+        @DrawableRes val starburstImageResId: Int = R.drawable.ic_star_burst_yellow,
+        val starburstOffsetXPx: Float = 0f,
+        val starburstOffsetYPx: Float = 0f,
+        val starburstScale: Float = 1f,
         val gemImageHeightDp: Float? = null,
         val gemOffsetXDp: Float = 0f,
         val gemOffsetYDp: Float = 0f,
@@ -96,7 +110,10 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val claimButtonScale: Float = 1f,
         val multiplierButtonScaleX: Float = 1f,
         val multiplierButtonScaleY: Float = 1f,
-        val multiplierButtonScale: Float = 1f
+        val multiplierButtonScale: Float = 1f,
+        val singleButtonWidthPercent: Float? = null,
+        val continueButtonWidthPercent: Float? = null,
+        val multiplierButtonWidthPercent: Float? = null
     )
 
     fun show(
@@ -115,15 +132,29 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val starburstView = root.findViewById<ImageView>(R.id.iv_win_popup_starburst)
 
         // Reposition sections to generic popup zoning.
-        setGuidelinePercent(root, R.id.guideline_reward_top, uiConfig.titleBottomPercent)
+        setGuidelinePercent(root, R.id.guideline_reward_top, getTitleBottomPercent(uiConfig))
+        setGuidelinePercent(root, R.id.guideline_reward_bottom, getRewardBottomPercent(uiConfig))
         setGuidelinePercent(root, R.id.guideline_buttons_top, uiConfig.buttonsTopPercent)
+        setGuidelinePercent(root, R.id.guideline_buttons_bottom, uiConfig.buttonsBottomPercent)
 
-        titleView.visibility = View.VISIBLE
+        titleView.visibility = if (uiConfig.showTitle) View.VISIBLE else View.GONE
         titleView.text = model.title
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, uiConfig.titleTextSp)
         titleView.translationY = -inchesToPx(getTitleOffsetInches(uiConfig)) + getTitleOffsetPx(uiConfig)
         winOnlyVictoryView.visibility = if (uiConfig.showWinOnlyVictory) View.VISIBLE else View.GONE
-        starburstView.visibility = View.GONE
+        if (uiConfig.showWinOnlyVictory) {
+            winOnlyVictoryView.setTextSize(TypedValue.COMPLEX_UNIT_SP, uiConfig.victoryTextSp)
+            winOnlyVictoryView.translationX = dpToPxFloatSigned(uiConfig.victoryOffsetXDp)
+            winOnlyVictoryView.translationY = dpToPxFloatSigned(uiConfig.victoryOffsetYDp)
+        }
+        starburstView.visibility = if (uiConfig.showStarburst) View.VISIBLE else View.GONE
+        if (uiConfig.showStarburst) {
+            starburstView.setImageResource(uiConfig.starburstImageResId)
+            starburstView.translationX = uiConfig.starburstOffsetXPx
+            starburstView.translationY = uiConfig.starburstOffsetYPx
+            starburstView.scaleX = uiConfig.starburstScale.coerceAtLeast(0.1f)
+            starburstView.scaleY = uiConfig.starburstScale.coerceAtLeast(0.1f)
+        }
 
         background.setImageResource(baseImageResId)
 
@@ -143,21 +174,8 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
             .toInt()
             .coerceAtLeast(1)
         applyButtonsRowWidth(buttonsRow, widthPx, uiConfig)
+        applyButtonWidthHints(buttonsRow, widthPx, uiConfig)
         dialog.window?.setLayout(widthPx, heightPx)
-
-        // Keep the generic two-button look requested: ~40% + ~50% widths.
-        if (buttonsRow.childCount == 2) {
-            (buttonsRow.getChildAt(0).layoutParams as? LinearLayout.LayoutParams)?.let {
-                it.width = 0
-                it.weight = 4f
-                buttonsRow.getChildAt(0).layoutParams = it
-            }
-            (buttonsRow.getChildAt(1).layoutParams as? LinearLayout.LayoutParams)?.let {
-                it.width = 0
-                it.weight = 5f
-                buttonsRow.getChildAt(1).layoutParams = it
-            }
-        }
 
         for (index in 0 until buttonsRow.childCount) {
             val button = buttonsRow.getChildAt(index) as? AppCompatButton ?: continue
@@ -255,6 +273,7 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val bottomPaddingPx = baseVerticalPadding + upwardTextOffsetPx
 
         val buttonViews = listOf(continueButton, multiplierButton)
+        val gapPx = dpToPx(uiConfig.buttonGapDp)
         buttonViews.forEachIndexed { index, button ->
             val buttonItem = buttons.getOrNull(index)
             if (buttonItem == null) {
@@ -282,6 +301,10 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
                     horizontalPadding,
                     bottomPaddingPx
                 )
+            }
+            (button.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                lp.marginEnd = if (index == 0 && buttons.getOrNull(1) != null) gapPx else 0
+                button.layoutParams = lp
             }
             button.contentDescription = accessibleLabel
         }
@@ -332,6 +355,55 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
             uiConfig.buttonRowWidthPercentLandscape
         } else {
             uiConfig.buttonRowWidthPercentPortrait
+        }
+    }
+
+    private fun getTitleBottomPercent(uiConfig: UiConfig): Float {
+        return if (activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            uiConfig.titleBottomPercentLandscape ?: uiConfig.titleBottomPercent
+        } else {
+            uiConfig.titleBottomPercentPortrait ?: uiConfig.titleBottomPercent
+        }
+    }
+
+    private fun getRewardBottomPercent(uiConfig: UiConfig): Float {
+        return if (activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            uiConfig.rewardBottomPercentLandscape
+        } else {
+            uiConfig.rewardBottomPercentPortrait
+        }
+    }
+
+    private fun applyButtonWidthHints(buttonsRow: LinearLayout, dialogWidthPx: Int, uiConfig: UiConfig) {
+        if (buttonsRow.childCount <= 0) return
+        if (buttonsRow.childCount == 1) {
+            val widthPercent = uiConfig.singleButtonWidthPercent ?: return
+            val targetWidthPx = (dialogWidthPx * widthPercent).toInt().coerceAtLeast(1)
+            (buttonsRow.getChildAt(0).layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                lp.width = targetWidthPx
+                lp.weight = 0f
+                buttonsRow.getChildAt(0).layoutParams = lp
+            }
+            return
+        }
+
+        val continueWidthPercent = uiConfig.continueButtonWidthPercent
+        val multiplierWidthPercent = uiConfig.multiplierButtonWidthPercent
+        if (continueWidthPercent == null && multiplierWidthPercent == null) return
+
+        (buttonsRow.getChildAt(0).layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            if (continueWidthPercent != null) {
+                lp.width = (dialogWidthPx * continueWidthPercent).toInt().coerceAtLeast(1)
+                lp.weight = 0f
+            }
+            buttonsRow.getChildAt(0).layoutParams = lp
+        }
+        (buttonsRow.getChildAt(1).layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            if (multiplierWidthPercent != null) {
+                lp.width = (dialogWidthPx * multiplierWidthPercent).toInt().coerceAtLeast(1)
+                lp.weight = 0f
+            }
+            buttonsRow.getChildAt(1).layoutParams = lp
         }
     }
 

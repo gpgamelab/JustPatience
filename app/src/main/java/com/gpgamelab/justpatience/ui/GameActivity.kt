@@ -147,54 +147,126 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     // Single tweak cluster for the custom win popup. Adjust these values instead of
     // searching through the XML when you want to nudge positions/sizes.
     private val winPopupUiConfig = WinPopupUiConfig()
-    private fun buildDailyBonusPopupUiConfig(): RewardPopupDialog.UiConfig {
-        val landscapeRewardScale = 0.65f
+
+    private fun buildWinRewardPopupUiConfig(): RewardPopupDialog.UiConfig {
+        val widthLandscape = (winPopupUiConfig.dialogWidthPercentLandscape * winPopupUiConfig.dialogScaleLandscape)
+            .coerceIn(0.1f, 1f)
+        val widthPortrait = (winPopupUiConfig.dialogWidthPercentPortrait * winPopupUiConfig.dialogScalePortrait)
+            .coerceIn(0.1f, 1f)
+        val heightLandscape = (winPopupUiConfig.dialogHeightPercent * winPopupUiConfig.dialogScaleLandscape)
+            .coerceIn(0.1f, 1f)
+        val heightPortrait = (winPopupUiConfig.dialogHeightPercent * winPopupUiConfig.dialogScalePortrait)
+            .coerceIn(0.1f, 1f)
+
         return RewardPopupDialog.UiConfig(
-            dialogWidthPercentLandscape = 0.32f,
-            dialogWidthPercentPortrait = 0.684f,
-            dialogHeightPercentLandscape = 0.64f,
-            dialogHeightPercentPortrait = 0.576f,
-            buttonRowWidthPercentLandscape = 0.70f,
-            buttonRowWidthPercentPortrait = 0.70f,
-            titleBottomPercent = 0.16f,
-            titleOffsetInchesLandscape = 0.10f,
-            titleOffsetInchesPortrait = 0.20f,
-            titleOffsetPxLandscape = devDailyTitleOffsetYPxState,
-            titleOffsetPxPortrait = devDailyTitleOffsetYPxState,
-            titleTextSp = devDailyTitleTextSizeSpState,
-            rewardImageScalePortrait = 1f,
-            rewardTextScalePortrait = 1f,
-            rewardImageScaleLandscape = 1f,
-            rewardTextScaleLandscape = 1f,
-            rewardRowScalePortrait = 1f,
-            rewardRowScaleLandscape = landscapeRewardScale,
-            buttonTextOffsetInchesLandscape = 0f,
-            buttonsTopPercent = 0.78f,
+            dialogWidthPercentLandscape = widthLandscape,
+            dialogWidthPercentPortrait = widthPortrait,
+            dialogHeightPercentLandscape = heightLandscape,
+            dialogHeightPercentPortrait = heightPortrait,
+            titleBottomPercentLandscape = winPopupUiConfig.rewardTopPercentLandscape,
+            titleBottomPercentPortrait = winPopupUiConfig.rewardTopPercentPortrait,
+            rewardBottomPercentLandscape = winPopupUiConfig.rewardBottomPercentLandscape,
+            rewardBottomPercentPortrait = winPopupUiConfig.rewardBottomPercentPortrait,
+            buttonsTopPercent = winPopupUiConfig.buttonsTopPercent,
+            buttonsBottomPercent = winPopupUiConfig.buttonsBottomPercent,
+            showTitle = false,
+            showWinOnlyVictory = true,
+            victoryTextSp = devVictoryTextSizeSpState,
+            victoryOffsetXDp = devVictoryOffsetXDpState,
+            victoryOffsetYDp = devVictoryOffsetYDpState,
+            showStarburst = true,
+            starburstImageResId = R.drawable.ic_star_burst_yellow,
+            starburstOffsetXPx = testerStarburstPositionXPx.toFloat(),
+            starburstOffsetYPx = testerStarburstPositionYPx.toFloat(),
+            starburstScale = testerStarburstScale,
+            continueButtonWidthPercent = winPopupUiConfig.continueButtonWidthPercent,
+            multiplierButtonWidthPercent = winPopupUiConfig.multiplierButtonWidthPercent,
+            buttonGapDp = winPopupUiConfig.buttonGapDp,
+            rewardTextOverrideSp = devRewardTextSizeSpState,
+            rewardRowScalePortrait = winPopupUiConfig.portraitRewardRowScale,
+            rewardRowScaleLandscape = winPopupUiConfig.landscapeRewardRowScale,
+            gemImageHeightDp = devGemImageHeightDpState,
+            gemOffsetXDp = devGemOffsetXDpState,
+            gemOffsetYDp = devGemOffsetYDpState,
+            ticketImageHeightDp = devTicketImageHeightDpState,
+            ticketOffsetXDp = devTicketOffsetXDpState,
+            ticketOffsetYDp = devTicketOffsetYDpState,
+            wandImageHeightDp = devWandImageHeightDpState,
+            wandOffsetXDp = devWandOffsetXDpState,
+            wandOffsetYDp = devWandOffsetYDpState,
+            gemNumberOffsetXDp = devGemNumberOffsetXDpState,
+            gemNumberOffsetYDp = devGemNumberOffsetYDpState,
+            ticketNumberOffsetXDp = devTicketNumberOffsetXDpState,
+            ticketNumberOffsetYDp = devTicketNumberOffsetYDpState,
+            wandNumberOffsetXDp = devWandNumberOffsetXDpState,
+            wandNumberOffsetYDp = devWandNumberOffsetYDpState,
+            buttonRowOffsetXDp = devButtonRowOffsetXDpState,
+            buttonRowOffsetYDp = devButtonRowOffsetYDpState,
+            claimButtonScaleX = devClaimButtonScaleXState,
+            claimButtonScaleY = devClaimButtonScaleYState,
+            claimButtonScale = devClaimButtonScaleState,
+            multiplierButtonScaleX = devMultiplierButtonScaleXState,
+            multiplierButtonScaleY = devMultiplierButtonScaleYState,
+            multiplierButtonScale = devMultiplierButtonScaleState
+        )
+    }
+
+    private fun buildDailyBonusPopupUiConfig(): RewardPopupDialog.UiConfig {
+        val winBase = buildWinRewardPopupUiConfig()
+        return winBase.copy(
+            // Keep popup shell and button geometry aligned with win popup.
+            dialogWidthPercentLandscape = winBase.dialogWidthPercentLandscape,
+            dialogWidthPercentPortrait = winBase.dialogWidthPercentPortrait,
+            dialogHeightPercentLandscape = winBase.dialogHeightPercentLandscape,
+            dialogHeightPercentPortrait = winBase.dialogHeightPercentPortrait,
+            buttonRowWidthPercentLandscape = winBase.buttonRowWidthPercentLandscape,
+            buttonRowWidthPercentPortrait = winBase.buttonRowWidthPercentPortrait,
+            continueButtonWidthPercent = winBase.continueButtonWidthPercent,
+            multiplierButtonWidthPercent = winBase.multiplierButtonWidthPercent,
+            buttonGapDp = winBase.buttonGapDp,
+            showTitle = true,
             showWinOnlyVictory = false,
-            gemImageHeightDp = devDailyGemImageHeightDpState,
-            gemOffsetXDp = devDailyGemOffsetXDpState,
-            gemOffsetYDp = devDailyGemOffsetYDpState,
-            ticketImageHeightDp = devDailyTicketImageHeightDpState,
-            ticketOffsetXDp = devDailyTicketOffsetXDpState,
-            ticketOffsetYDp = devDailyTicketOffsetYDpState,
-            wandImageHeightDp = devDailyWandImageHeightDpState,
-            wandOffsetXDp = devDailyWandOffsetXDpState,
-            wandOffsetYDp = devDailyWandOffsetYDpState,
-            rewardTextOverrideSp = devDailyRewardTextSizeSpState,
-            gemNumberOffsetXDp = devDailyGemNumberOffsetXDpState,
-            gemNumberOffsetYDp = devDailyGemNumberOffsetYDpState,
-            ticketNumberOffsetXDp = devDailyTicketNumberOffsetXDpState,
-            ticketNumberOffsetYDp = devDailyTicketNumberOffsetYDpState,
-            wandNumberOffsetXDp = devDailyWandNumberOffsetXDpState,
-            wandNumberOffsetYDp = devDailyWandNumberOffsetYDpState,
-            buttonRowOffsetXDp = devDailyButtonRowOffsetXDpState,
-            buttonRowOffsetYDp = devDailyButtonRowOffsetYDpState,
-            claimButtonScaleX = devDailyClaimButtonScaleXState,
-            claimButtonScaleY = devDailyClaimButtonScaleYState,
-            claimButtonScale = devDailyClaimButtonScaleState,
-            multiplierButtonScaleX = devDailyMultiplierButtonScaleXState,
-            multiplierButtonScaleY = devDailyMultiplierButtonScaleYState,
-            multiplierButtonScale = devDailyMultiplierButtonScaleState
+            showStarburst = false,
+            titleBottomPercent = 0.16f,
+            // Use the same signed-Y behavior as the win-title (VICTORY) tuning.
+            titleOffsetInchesLandscape = 0f,
+            titleOffsetInchesPortrait = 0f,
+            titleOffsetPxLandscape = dpToPxFloatSigned(devVictoryOffsetYDpState),
+            titleOffsetPxPortrait = dpToPxFloatSigned(devVictoryOffsetYDpState),
+            titleTextSp = devDailyTitleTextSizeSpState,
+            rewardImageScalePortrait = winBase.rewardImageScalePortrait,
+            rewardTextScalePortrait = winBase.rewardTextScalePortrait,
+            rewardImageScaleLandscape = winBase.rewardImageScaleLandscape,
+            rewardTextScaleLandscape = winBase.rewardTextScaleLandscape,
+            rewardRowScalePortrait = winBase.rewardRowScalePortrait,
+            rewardRowScaleLandscape = winBase.rewardRowScaleLandscape,
+            buttonTextOffsetInchesLandscape = 0f,
+            buttonsTopPercent = winBase.buttonsTopPercent,
+            buttonsBottomPercent = winBase.buttonsBottomPercent,
+            gemImageHeightDp = devGemImageHeightDpState,
+            gemOffsetXDp = devGemOffsetXDpState,
+            gemOffsetYDp = devGemOffsetYDpState,
+            ticketImageHeightDp = devTicketImageHeightDpState,
+            ticketOffsetXDp = devTicketOffsetXDpState,
+            ticketOffsetYDp = devTicketOffsetYDpState,
+            wandImageHeightDp = devWandImageHeightDpState,
+            wandOffsetXDp = devWandOffsetXDpState,
+            wandOffsetYDp = devWandOffsetYDpState,
+            rewardTextOverrideSp = devRewardTextSizeSpState,
+            gemNumberOffsetXDp = devGemNumberOffsetXDpState,
+            gemNumberOffsetYDp = devGemNumberOffsetYDpState,
+            ticketNumberOffsetXDp = devTicketNumberOffsetXDpState,
+            ticketNumberOffsetYDp = devTicketNumberOffsetYDpState,
+            wandNumberOffsetXDp = devWandNumberOffsetXDpState,
+            wandNumberOffsetYDp = devWandNumberOffsetYDpState,
+            buttonRowOffsetXDp = devButtonRowOffsetXDpState,
+            buttonRowOffsetYDp = devButtonRowOffsetYDpState,
+            claimButtonScaleX = devClaimButtonScaleXState,
+            claimButtonScaleY = devClaimButtonScaleYState,
+            claimButtonScale = devClaimButtonScaleState,
+            multiplierButtonScaleX = devMultiplierButtonScaleXState,
+            multiplierButtonScaleY = devMultiplierButtonScaleYState,
+            multiplierButtonScale = devMultiplierButtonScaleState
         )
     }
 
@@ -260,19 +332,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devTicketImageHeightDpState: Float   = BASELINE_WIN_TICKET_HEIGHT_DP
     private var devGemOffsetXDpState: Float          = 0f
     private var devGemOffsetYDpState: Float          = -100f
-    private var devTicketOffsetXDpState: Float       = 0f
-    private var devTicketOffsetYDpState: Float       = -75f
+    private var devTicketOffsetXDpState: Float       = 20f
+    private var devTicketOffsetYDpState: Float       = -60f
     private var devWandImageHeightDpState: Float     = BASELINE_WIN_MAGIC_WAND_HEIGHT_DP
-    private var devWandOffsetXDpState: Float         = 0f
-    private var devWandOffsetYDpState: Float         = -250f
+    private var devWandOffsetXDpState: Float         = 20f
+    private var devWandOffsetYDpState: Float         = -105f
     private var devRewardTextSizeSpState: Float      = BASELINE_WIN_REWARD_TEXT_SP
     private var devGemNumberOffsetXDpState: Float    = 0f
     private var devGemNumberOffsetYDpState: Float    = -75f
-    private var devTicketNumberOffsetXDpState: Float = 0f
-    private var devTicketNumberOffsetYDpState: Float = -150f
-    private var devWandNumberOffsetXDpState: Float   = 0f
-    private var devWandNumberOffsetYDpState: Float   = -35f
-    private var devButtonRowOffsetXDpState: Float    = 0f
+    private var devTicketNumberOffsetXDpState: Float = 20f
+    private var devTicketNumberOffsetYDpState: Float = -135f
+    private var devWandNumberOffsetXDpState: Float   = 30f
+    private var devWandNumberOffsetYDpState: Float   = -102f
+    private var devButtonRowOffsetXDpState: Float    = 85f
     private var devButtonRowOffsetYDpState: Float    = -50f
     private var devClaimButtonScaleXState: Float     = 1f
     private var devClaimButtonScaleYState: Float     = 3f
@@ -384,41 +456,41 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
      * Compute ratio-scaled defaults for win-popup element sizes (everything except starburst).
      * Baseline is the medium tablet at 1600 × 2560 px.
      */
-    private fun applyAutoWinPopupRatios() {
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
-            this,
-            baselinePortraitWidthPx  = 1600,
-            baselinePortraitHeightPx = 2560
-        ).averageRatio
-        devGemImageHeightDpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP, ratio)
-        devTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP, ratio)
-        devWandImageHeightDpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_MAGIC_WAND_HEIGHT_DP, ratio)
-        devRewardTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_REWARD_TEXT_SP, ratio)
-        devVictoryTextSizeSpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_VICTORY_TEXT_SP, ratio)
-        devGemOffsetXDpState      = 0f
-        devGemOffsetYDpState      = (if (isLandscape) -175f else -100f) * ratio
-        devTicketOffsetXDpState   = 0f
-        devTicketOffsetYDpState   = (if (isLandscape) -150f else -75f) * ratio
-        devWandOffsetXDpState     = 0f
-        devWandOffsetYDpState     = (if (isLandscape) -200f else -125f) * ratio
-        devGemNumberOffsetXDpState = 0f
-        devGemNumberOffsetYDpState = (if (isLandscape) -125f else -75f) * ratio
-        devTicketNumberOffsetXDpState = 0f
-        devTicketNumberOffsetYDpState = (if (isLandscape) -200f else -150f) * ratio
-        devWandNumberOffsetXDpState = 0f
-        devWandNumberOffsetYDpState = (if (isLandscape) -150f else -100f) * ratio
-        devButtonRowOffsetXDpState = 0f
-        devButtonRowOffsetYDpState = -50f * ratio
-        devClaimButtonScaleXState = 1f
-        devClaimButtonScaleYState = 3f
-        devClaimButtonScaleState = 1f
-        devMultiplierButtonScaleXState = 1f
-        devMultiplierButtonScaleYState = 3f
-        devMultiplierButtonScaleState = 1f
-        devVictoryOffsetXDpState  = 0f
-        devVictoryOffsetYDpState  = 0f
-    }
+     private fun applyAutoWinPopupRatios() {
+         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+         val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
+             this,
+             baselinePortraitWidthPx  = 1600,
+             baselinePortraitHeightPx = 2560
+         ).averageRatio
+         devGemImageHeightDpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP, ratio)
+         devTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP, ratio)
+         devWandImageHeightDpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_MAGIC_WAND_HEIGHT_DP, ratio)
+         devRewardTextSizeSpState    = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_REWARD_TEXT_SP, ratio)
+         devVictoryTextSizeSpState   = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_VICTORY_TEXT_SP, ratio)
+         devGemOffsetXDpState      = 0f
+         devGemOffsetYDpState      = (if (isLandscape) -175f else -100f) * ratio
+         devTicketOffsetXDpState   = (if (isLandscape) BASELINE_WIN_TICKET_OFFSET_X_DP_LANDSCAPE else BASELINE_WIN_TICKET_OFFSET_X_DP_PORTRAIT) * ratio
+         devTicketOffsetYDpState   = (if (isLandscape) BASELINE_WIN_TICKET_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_TICKET_OFFSET_Y_DP_PORTRAIT) * ratio
+         devWandOffsetXDpState     = (if (isLandscape) BASELINE_WIN_WAND_OFFSET_X_DP_LANDSCAPE else BASELINE_WIN_WAND_OFFSET_X_DP_PORTRAIT) * ratio
+         devWandOffsetYDpState     = (if (isLandscape) BASELINE_WIN_WAND_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_WAND_OFFSET_Y_DP_PORTRAIT) * ratio
+         devGemNumberOffsetXDpState = 0f
+         devGemNumberOffsetYDpState = (if (isLandscape) -125f else -75f) * ratio
+         devTicketNumberOffsetXDpState = (if (isLandscape) BASELINE_WIN_TICKET_NUMBER_OFFSET_X_DP_LANDSCAPE else BASELINE_WIN_TICKET_NUMBER_OFFSET_X_DP_PORTRAIT) * ratio
+         devTicketNumberOffsetYDpState = (if (isLandscape) BASELINE_WIN_TICKET_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_TICKET_NUMBER_OFFSET_Y_DP_PORTRAIT) * ratio
+         devWandNumberOffsetXDpState = (if (isLandscape) BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_LANDSCAPE else BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_PORTRAIT) * ratio
+         devWandNumberOffsetYDpState = (if (isLandscape) BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT) * ratio
+         devButtonRowOffsetXDpState = (if (isLandscape) BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE else BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT) * ratio
+         devButtonRowOffsetYDpState = (if (isLandscape) BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_PORTRAIT) * ratio
+         devClaimButtonScaleXState = 1f
+         devClaimButtonScaleYState = 3f
+         devClaimButtonScaleState = 1f
+         devMultiplierButtonScaleXState = 1f
+         devMultiplierButtonScaleYState = 3f
+         devMultiplierButtonScaleState = 1f
+         devVictoryOffsetXDpState  = 0f
+         devVictoryOffsetYDpState  = 0f
+     }
 
     private fun applyAutoDailyPopupRatios() {
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -506,12 +578,33 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         private const val SHOW_STARBURST_PIVOT_DEBUG_TEXT = false
         private const val STARBURST_PIVOT_MARKER_TAG = "starburst_pivot_marker"
         private const val STARBURST_PIVOT_DEBUG_TEXT_TAG = "starburst_pivot_debug_text"
-        // Win popup element baselines tuned on the medium tablet (1600 × 2560 px).
-        private const val BASELINE_WIN_GEM_HEIGHT_DP     = 60f
-        private const val BASELINE_WIN_TICKET_HEIGHT_DP  = 180f
-        private const val BASELINE_WIN_MAGIC_WAND_HEIGHT_DP  = 100f
-        private const val BASELINE_WIN_REWARD_TEXT_SP    = 60f
-        private const val BASELINE_WIN_VICTORY_TEXT_SP   = 60f
+         // Win popup element baselines tuned on the medium tablet (1600 × 2560 px).
+         private const val BASELINE_WIN_GEM_HEIGHT_DP     = 60f
+         private const val BASELINE_WIN_TICKET_HEIGHT_DP  = 180f
+         private const val BASELINE_WIN_MAGIC_WAND_HEIGHT_DP  = 100f
+         private const val BASELINE_WIN_REWARD_TEXT_SP    = 60f
+         private const val BASELINE_WIN_VICTORY_TEXT_SP   = 60f
+         // Ticket/wand offset baselines for portrait and landscape
+         private const val BASELINE_WIN_TICKET_OFFSET_X_DP_PORTRAIT = 20f
+         private const val BASELINE_WIN_TICKET_OFFSET_Y_DP_PORTRAIT = -60f
+         private const val BASELINE_WIN_TICKET_OFFSET_X_DP_LANDSCAPE = 40f
+         private const val BASELINE_WIN_TICKET_OFFSET_Y_DP_LANDSCAPE = -130f
+         private const val BASELINE_WIN_WAND_OFFSET_X_DP_PORTRAIT = 20f
+         private const val BASELINE_WIN_WAND_OFFSET_Y_DP_PORTRAIT = -105f
+         private const val BASELINE_WIN_WAND_OFFSET_X_DP_LANDSCAPE = 40f
+         private const val BASELINE_WIN_WAND_OFFSET_Y_DP_LANDSCAPE = -170f
+         private const val BASELINE_WIN_TICKET_NUMBER_OFFSET_X_DP_PORTRAIT = 20f
+         private const val BASELINE_WIN_TICKET_NUMBER_OFFSET_Y_DP_PORTRAIT = -135f
+         private const val BASELINE_WIN_TICKET_NUMBER_OFFSET_X_DP_LANDSCAPE = 40f
+         private const val BASELINE_WIN_TICKET_NUMBER_OFFSET_Y_DP_LANDSCAPE = -185f
+         private const val BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_PORTRAIT = 30f
+         private const val BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT = -102f
+         private const val BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_LANDSCAPE = 40f
+         private const val BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE = -155f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT = 85f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE = 90f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_PORTRAIT = -50f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_LANDSCAPE = -30f
 
         // Daily popup baselines for ratio/orientation scaling
         private const val BASELINE_DAILY_TITLE_OFFSET_Y_PX = 200f
@@ -902,8 +995,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         winDialogShowing = true
         val baseRewards = WinRewards(
             gems = 10,
-            tickets = if (isPremiumAccount) 4 else 2,
-            wands = if (isPremiumAccount) 2 else 1
+            tickets = 0,
+            wands = 0
         )
 
         if (isPremiumAccount) {
@@ -950,77 +1043,69 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         val adMultiplier = if (isPremiumAccount) 3 else 2
-
-        val dialogView = layoutInflater.inflate(R.layout.dialog_win_reward_choice, null)
-        val starburstView = configureWinPopupArtwork(dialogView)
-        val rewardAmount = dialogView.findViewById<TextView>(R.id.tv_main_reward_amount)
-        val ticketRewardAmount = dialogView.findViewById<TextView>(R.id.tv_ticket_reward_amount)
-        val wandRewardAmount = dialogView.findViewById<TextView>(R.id.tv_wand_reward_amount)
-        val continueButton = dialogView.findViewById<Button>(R.id.btn_win_continue)
-        val multiplierButton = dialogView.findViewById<Button>(R.id.btn_win_multiplier)
-
-        applyWinPopupUiConfig(dialogView, winPopupUiConfig)
-        applyWinPopupElementSizes(dialogView)
-
-        rewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.gems)
-        ticketRewardAmount.text = getString(R.string.win_reward_popup_amount, baseRewards.tickets)
-        wandRewardAmount?.text = getString(R.string.win_reward_popup_amount, baseRewards.wands)
-        multiplierButton.apply {
-            setBackgroundResource(
-                if (isPremiumAccount) {
-                    R.drawable.ic_button_orange_orange_x3_with_ad
-                } else {
-                    R.drawable.ic_button_orange_orange_x2_with_ad
-                }
+        val popupModel = RewardPopupDialog.Model(
+            title = getString(R.string.win_dialog_title),
+            rewards = listOf(
+                RewardPopupDialog.RewardItem(
+                    count = baseRewards.gems,
+                    imageResId = R.drawable.ic_treasure_3_gem_green
+                )
+            ),
+            buttons = listOf(
+                RewardPopupDialog.ButtonItem(
+                    backgroundResId = R.drawable.ic_button_orange_orange_claim,
+                    contentDescription = getString(R.string.continue_without_reward)
+                ),
+                RewardPopupDialog.ButtonItem(
+                    backgroundResId = if (adMultiplier == 3) {
+                        R.drawable.ic_button_orange_orange_x3_with_ad
+                    } else {
+                        R.drawable.ic_button_orange_orange_x2_with_ad
+                    },
+                    contentDescription = getString(R.string.watch_optional_ad)
+                )
             )
-            text = ""
-            minWidth = 0
-            minHeight = 0
-            setPadding(0, 0, 0, 0)
-        }
+        )
+        val uiConfig = buildWinRewardPopupUiConfig()
+        val dialog = rewardPopupDialog.show(
+            model = popupModel,
+            baseImageResId = R.drawable.ic_popup_rect_blue,
+            uiConfig = uiConfig,
+            onButtonClick = { index, popupDialog ->
+                when (index) {
+                    0 -> {
+                        lifecycleScope.launch {
+                            maybeDelayWinPopupDebugPause()
+                            popupDialog.dismiss()
+                            completeWinRewardFlow(baseRewards)
+                        }
+                    }
+                    1 -> {
+                        lifecycleScope.launch {
+                            maybeDelayWinPopupDebugPause()
+                            popupDialog.dismiss()
+                            showWinMultiplierRewardAd(baseRewards, adMultiplier)
+                        }
+                    }
+                }
+            }
+        )
 
-        val dialogScale = getWinPopupScale(winPopupUiConfig)
-        val widthPercent = getWinPopupWidthPercent(winPopupUiConfig)
-        val widthPx = (
-            resources.displayMetrics.widthPixels * widthPercent * dialogScale
-            ).toInt().coerceAtLeast(1)
-        val baseHeightPx = (
-            resources.displayMetrics.heightPixels * winPopupUiConfig.dialogHeightPercent * dialogScale
-            ).toInt().coerceAtLeast(1)
+        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val dialogWidthPercent = if (isLandscapeNow) uiConfig.dialogWidthPercentLandscape else uiConfig.dialogWidthPercentPortrait
+        val dialogHeightPercent = if (isLandscapeNow) uiConfig.dialogHeightPercentLandscape else uiConfig.dialogHeightPercentPortrait
+        val widthPx = (resources.displayMetrics.widthPixels * dialogWidthPercent).toInt().coerceAtLeast(1)
+        val baseHeightPx = (resources.displayMetrics.heightPixels * dialogHeightPercent).toInt().coerceAtLeast(1)
         val initialOverflowTopPx = estimateInitialStarburstTopOverflowPx()
         val heightPx = (baseHeightPx + initialOverflowTopPx).coerceAtLeast(1)
+        dialog.window?.setLayout(widthPx, heightPx)
 
-        val dialog = Dialog(this).apply {
-            requestWindowFeature(Window.FEATURE_NO_TITLE)
-            setContentView(dialogView)
-            setCancelable(false)
-            setCanceledOnTouchOutside(false)
-            window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-            window?.setLayout(widthPx, heightPx)
-        }
+        val dialogView = dialog.findViewById<View>(R.id.layout_popup_body)?.rootView
+        val starburstView = dialog.findViewById<ImageView>(R.id.iv_win_popup_starburst)
         activeWinPopupDialog = dialog
         activeWinPopupRoot = dialogView
         activeWinPopupBaseWidthPx = widthPx
         activeWinPopupBaseHeightPx = baseHeightPx
-
-        continueButton.setOnClickListener {
-            continueButton.isEnabled = false
-            multiplierButton.isEnabled = false
-            lifecycleScope.launch {
-                maybeDelayWinPopupDebugPause()
-                dialog.dismiss()
-                completeWinRewardFlow(baseRewards)
-            }
-        }
-        multiplierButton.setOnClickListener {
-            continueButton.isEnabled = false
-            multiplierButton.isEnabled = false
-            lifecycleScope.launch {
-                maybeDelayWinPopupDebugPause()
-                dialog.dismiss()
-                showWinMultiplierRewardAd(baseRewards, adMultiplier)
-            }
-        }
 
         dialog.setOnDismissListener {
             activeStarburstAnimator?.cancel()
@@ -1032,7 +1117,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             activeWinPopupBaseHeightPx = 0
             winDialogShowing = false
         }
-        dialog.show()
         dialog.window?.setLayout(widthPx, heightPx)
         playWinPopupSoundIfAllowed()
 
@@ -2051,32 +2135,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devVictoryTextSizeSp(): Float = devVictoryTextSizeSpState
     override fun devVictoryOffsetXDp(): Float = devVictoryOffsetXDpState
     override fun devVictoryOffsetYDp(): Float = devVictoryOffsetYDpState
-    override fun devDailyTitleOffsetYPx(): Float = devDailyTitleOffsetYPxState
-    override fun devDailyTitleTextSizeSp(): Float = devDailyTitleTextSizeSpState
-    override fun devDailyGemImageHeightDp(): Float = devDailyGemImageHeightDpState
-    override fun devDailyGemOffsetXDp(): Float = devDailyGemOffsetXDpState
-    override fun devDailyGemOffsetYDp(): Float = devDailyGemOffsetYDpState
-    override fun devDailyTicketImageHeightDp(): Float = devDailyTicketImageHeightDpState
-    override fun devDailyTicketOffsetXDp(): Float = devDailyTicketOffsetXDpState
-    override fun devDailyTicketOffsetYDp(): Float = devDailyTicketOffsetYDpState
-    override fun devDailyWandImageHeightDp(): Float = devDailyWandImageHeightDpState
-    override fun devDailyWandOffsetXDp(): Float = devDailyWandOffsetXDpState
-    override fun devDailyWandOffsetYDp(): Float = devDailyWandOffsetYDpState
-    override fun devDailyRewardTextSizeSp(): Float = devDailyRewardTextSizeSpState
-    override fun devDailyGemNumberOffsetXDp(): Float = devDailyGemNumberOffsetXDpState
-    override fun devDailyGemNumberOffsetYDp(): Float = devDailyGemNumberOffsetYDpState
-    override fun devDailyTicketNumberOffsetXDp(): Float = devDailyTicketNumberOffsetXDpState
-    override fun devDailyTicketNumberOffsetYDp(): Float = devDailyTicketNumberOffsetYDpState
-    override fun devDailyWandNumberOffsetXDp(): Float = devDailyWandNumberOffsetXDpState
-    override fun devDailyWandNumberOffsetYDp(): Float = devDailyWandNumberOffsetYDpState
-    override fun devDailyButtonRowOffsetXDp(): Float = devDailyButtonRowOffsetXDpState
-    override fun devDailyButtonRowOffsetYDp(): Float = devDailyButtonRowOffsetYDpState
-    override fun devDailyClaimScaleX(): Float = devDailyClaimButtonScaleXState
-    override fun devDailyClaimScaleY(): Float = devDailyClaimButtonScaleYState
-    override fun devDailyClaimScale(): Float = devDailyClaimButtonScaleState
-    override fun devDailyMultiplierScaleX(): Float = devDailyMultiplierButtonScaleXState
-    override fun devDailyMultiplierScaleY(): Float = devDailyMultiplierButtonScaleYState
-    override fun devDailyMultiplierScale(): Float = devDailyMultiplierButtonScaleState
+
+    // Daily-popup-specific dev getters removed from DevelopMenu host contract.
 
     override fun onDevSetGemImageHeight(value: Float) { devGemImageHeightDpState = value.coerceAtLeast(4f) }
     override fun onDevSetGemOffsetX(value: Float) { devGemOffsetXDpState = value }
@@ -2105,32 +2165,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetVictoryTextSize(value: Float) { devVictoryTextSizeSpState = value.coerceAtLeast(4f) }
     override fun onDevSetVictoryOffsetX(value: Float) { devVictoryOffsetXDpState = value }
     override fun onDevSetVictoryOffsetY(value: Float) { devVictoryOffsetYDpState = value }
-    override fun onDevSetDailyTitleOffsetY(value: Float) { devDailyTitleOffsetYPxState = value }
-    override fun onDevSetDailyTitleTextSize(value: Float) { devDailyTitleTextSizeSpState = value.coerceAtLeast(4f) }
-    override fun onDevSetDailyGemImageHeight(value: Float) { devDailyGemImageHeightDpState = value.coerceAtLeast(4f) }
-    override fun onDevSetDailyGemOffsetX(value: Float) { devDailyGemOffsetXDpState = value }
-    override fun onDevSetDailyGemOffsetY(value: Float) { devDailyGemOffsetYDpState = value }
-    override fun onDevSetDailyTicketImageHeight(value: Float) { devDailyTicketImageHeightDpState = value.coerceAtLeast(4f) }
-    override fun onDevSetDailyTicketOffsetX(value: Float) { devDailyTicketOffsetXDpState = value }
-    override fun onDevSetDailyTicketOffsetY(value: Float) { devDailyTicketOffsetYDpState = value }
-    override fun onDevSetDailyWandImageHeight(value: Float) { devDailyWandImageHeightDpState = value.coerceAtLeast(4f) }
-    override fun onDevSetDailyWandOffsetX(value: Float) { devDailyWandOffsetXDpState = value }
-    override fun onDevSetDailyWandOffsetY(value: Float) { devDailyWandOffsetYDpState = value }
-    override fun onDevSetDailyRewardTextSize(value: Float) { devDailyRewardTextSizeSpState = value.coerceAtLeast(4f) }
-    override fun onDevSetDailyGemNumberOffsetX(value: Float) { devDailyGemNumberOffsetXDpState = value }
-    override fun onDevSetDailyGemNumberOffsetY(value: Float) { devDailyGemNumberOffsetYDpState = value }
-    override fun onDevSetDailyTicketNumberOffsetX(value: Float) { devDailyTicketNumberOffsetXDpState = value }
-    override fun onDevSetDailyTicketNumberOffsetY(value: Float) { devDailyTicketNumberOffsetYDpState = value }
-    override fun onDevSetDailyWandNumberOffsetX(value: Float) { devDailyWandNumberOffsetXDpState = value }
-    override fun onDevSetDailyWandNumberOffsetY(value: Float) { devDailyWandNumberOffsetYDpState = value }
-    override fun onDevSetDailyButtonRowOffsetX(value: Float) { devDailyButtonRowOffsetXDpState = value }
-    override fun onDevSetDailyButtonRowOffsetY(value: Float) { devDailyButtonRowOffsetYDpState = value }
-    override fun onDevSetDailyClaimScaleX(value: Float) { devDailyClaimButtonScaleXState = value.coerceAtLeast(0.1f) }
-    override fun onDevSetDailyClaimScaleY(value: Float) { devDailyClaimButtonScaleYState = value.coerceAtLeast(0.1f) }
-    override fun onDevSetDailyClaimScale(value: Float) { devDailyClaimButtonScaleState = value.coerceAtLeast(0.1f) }
-    override fun onDevSetDailyMultiplierScaleX(value: Float) { devDailyMultiplierButtonScaleXState = value.coerceAtLeast(0.1f) }
-    override fun onDevSetDailyMultiplierScaleY(value: Float) { devDailyMultiplierButtonScaleYState = value.coerceAtLeast(0.1f) }
-    override fun onDevSetDailyMultiplierScale(value: Float) { devDailyMultiplierButtonScaleState = value.coerceAtLeast(0.1f) }
+
+    // Daily-popup-specific dev setters removed from DevelopMenu host contract.
 
     // Unlock popup dev getters/setters
     override fun devUnlockFrameScaleX(): Float = devUnlockFrameScaleXState
@@ -2211,9 +2247,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyAutoWinPopupRatios()
     }
 
-    override fun onDevApplyAutoDailyPopupRatios() {
-        applyAutoDailyPopupRatios()
-    }
+    // Daily-popup auto-adjust action removed from DevelopMenu host contract.
 
     override fun onDevExpandStateChanged(state: DevelopMenuDialogFragment.ExpandState) {
         developMenuExpandState = state

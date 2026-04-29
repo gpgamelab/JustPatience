@@ -19,8 +19,8 @@ class GameController {
     // Mutex for thread-safety if called from multiple coroutines
     private val mutex = Mutex()
 
-    suspend fun newGameWithClearHistory(deckCount: Int = Game.DEFAULT_DECK_COUNT): Game = mutex.withLock {
-        val g = Game.newGame(deckCount)
+    suspend fun newGameWithClearHistory(): Game = mutex.withLock {
+        val g = Game.newGame()
         g
     }
 

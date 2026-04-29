@@ -398,11 +398,13 @@ class TableauPile(
     }
 
     override fun deepCopy(): TableauPile {
-        // Copy raw card order directly; replaying push() can drop cards because tableau
-        // legality checks are for gameplay moves, not structural cloning.
         val copiedCards = cards.map { it.copy() }.toMutableList()
-        return TableauPile(copiedCards).also { copy ->
-            if (dealInProgress) copy.setDealInProgress() else copy.clearDealInProgress()
+        val newTableauPile = TableauPile()
+
+        copiedCards.forEach { card ->
+            newTableauPile.push(card)
         }
+
+        return newTableauPile
     }
 }

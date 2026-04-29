@@ -27,7 +27,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         val starburstExpanded: Boolean = false,
         val popupExpanded: Boolean = false,
         val tableauExpanded: Boolean = false,
-        val dailyPopupExpanded: Boolean = false,
         val unlockPopupExpanded: Boolean = false,
         val shuffleExpanded: Boolean = false
     )
@@ -82,32 +81,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devVictoryTextSizeSp(): Float
         fun devVictoryOffsetXDp(): Float
         fun devVictoryOffsetYDp(): Float
-        fun devDailyTitleOffsetYPx(): Float
-        fun devDailyTitleTextSizeSp(): Float
-        fun devDailyGemImageHeightDp(): Float
-        fun devDailyGemOffsetXDp(): Float
-        fun devDailyGemOffsetYDp(): Float
-        fun devDailyTicketImageHeightDp(): Float
-        fun devDailyTicketOffsetXDp(): Float
-        fun devDailyTicketOffsetYDp(): Float
-        fun devDailyWandImageHeightDp(): Float
-        fun devDailyWandOffsetXDp(): Float
-        fun devDailyWandOffsetYDp(): Float
-        fun devDailyRewardTextSizeSp(): Float
-        fun devDailyGemNumberOffsetXDp(): Float
-        fun devDailyGemNumberOffsetYDp(): Float
-        fun devDailyTicketNumberOffsetXDp(): Float
-        fun devDailyTicketNumberOffsetYDp(): Float
-        fun devDailyWandNumberOffsetXDp(): Float
-        fun devDailyWandNumberOffsetYDp(): Float
-        fun devDailyButtonRowOffsetXDp(): Float
-        fun devDailyButtonRowOffsetYDp(): Float
-        fun devDailyClaimScaleX(): Float
-        fun devDailyClaimScaleY(): Float
-        fun devDailyClaimScale(): Float
-        fun devDailyMultiplierScaleX(): Float
-        fun devDailyMultiplierScaleY(): Float
-        fun devDailyMultiplierScale(): Float
 
         fun onDevSetGemImageHeight(value: Float)
         fun onDevSetGemOffsetX(value: Float)
@@ -136,34 +109,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetVictoryTextSize(value: Float)
         fun onDevSetVictoryOffsetX(value: Float)
         fun onDevSetVictoryOffsetY(value: Float)
-        fun onDevSetDailyTitleOffsetY(value: Float)
-        fun onDevSetDailyTitleTextSize(value: Float)
-        fun onDevSetDailyGemImageHeight(value: Float)
-        fun onDevSetDailyGemOffsetX(value: Float)
-        fun onDevSetDailyGemOffsetY(value: Float)
-        fun onDevSetDailyTicketImageHeight(value: Float)
-        fun onDevSetDailyTicketOffsetX(value: Float)
-        fun onDevSetDailyTicketOffsetY(value: Float)
-        fun onDevSetDailyWandImageHeight(value: Float)
-        fun onDevSetDailyWandOffsetX(value: Float)
-        fun onDevSetDailyWandOffsetY(value: Float)
-        fun onDevSetDailyRewardTextSize(value: Float)
-        fun onDevSetDailyGemNumberOffsetX(value: Float)
-        fun onDevSetDailyGemNumberOffsetY(value: Float)
-        fun onDevSetDailyTicketNumberOffsetX(value: Float)
-        fun onDevSetDailyTicketNumberOffsetY(value: Float)
-        fun onDevSetDailyWandNumberOffsetX(value: Float)
-        fun onDevSetDailyWandNumberOffsetY(value: Float)
-        fun onDevSetDailyButtonRowOffsetX(value: Float)
-        fun onDevSetDailyButtonRowOffsetY(value: Float)
-        fun onDevSetDailyClaimScaleX(value: Float)
-        fun onDevSetDailyClaimScaleY(value: Float)
-        fun onDevSetDailyClaimScale(value: Float)
-        fun onDevSetDailyMultiplierScaleX(value: Float)
-        fun onDevSetDailyMultiplierScaleY(value: Float)
-        fun onDevSetDailyMultiplierScale(value: Float)
         fun onDevApplyAutoWinPopupRatios()
-        fun onDevApplyAutoDailyPopupRatios()
 
         // Unlock help popup
         fun devUnlockFrameScaleX(): Float
@@ -273,18 +219,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
             popupExpanded = !popupExpanded
             setSectionExpanded(popupContent, popupArrow, popupExpanded)
             expandState = expandState.copy(popupExpanded = popupExpanded)
-            host.onDevExpandStateChanged(expandState)
-        }
-
-        val dailyPopupHeader = view.findViewById<View>(R.id.layout_develop_daily_popup_header)
-        val dailyPopupArrow = view.findViewById<TextView>(R.id.tv_develop_daily_popup_arrow)
-        val dailyPopupContent = view.findViewById<LinearLayout>(R.id.layout_develop_daily_popup_content)
-        var dailyPopupExpanded = expandState.dailyPopupExpanded
-        setSectionExpanded(dailyPopupContent, dailyPopupArrow, dailyPopupExpanded)
-        dailyPopupHeader.setOnClickListener {
-            dailyPopupExpanded = !dailyPopupExpanded
-            setSectionExpanded(dailyPopupContent, dailyPopupArrow, dailyPopupExpanded)
-            expandState = expandState.copy(dailyPopupExpanded = dailyPopupExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -469,38 +403,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_shuffle_tail_delay_ms, R.string.develop_menu_shuffle_tail_delay_ms, host::devShuffleTailDelayMs, host::onDevSetShuffleTailDelayMs)
         bindDecimal(R.id.btn_dev_deal_card_interval_ms, R.string.develop_menu_deal_card_interval_ms, host::devDealCardIntervalMs, host::onDevSetDealCardIntervalMs)
 
-        view.findViewById<MaterialButton>(R.id.btn_dev_daily_popup_apply_auto).setOnClickListener {
-            host.onDevApplyAutoDailyPopupRatios()
-            refreshPopupDisplays(view, host)
-        }
-
-        bindDecimal(R.id.btn_dev_daily_title_offset_y, R.string.develop_menu_daily_title_offset_y, host::devDailyTitleOffsetYPx, host::onDevSetDailyTitleOffsetY)
-        bindDecimal(R.id.btn_dev_daily_title_text_size, R.string.develop_menu_daily_title_text_size, host::devDailyTitleTextSizeSp, host::onDevSetDailyTitleTextSize)
-        bindDecimal(R.id.btn_dev_daily_gem_image_height, R.string.develop_menu_gem_image_height, host::devDailyGemImageHeightDp, host::onDevSetDailyGemImageHeight)
-        bindDecimal(R.id.btn_dev_daily_gem_offset_x, R.string.develop_menu_gem_offset_x, host::devDailyGemOffsetXDp, host::onDevSetDailyGemOffsetX)
-        bindDecimal(R.id.btn_dev_daily_gem_offset_y, R.string.develop_menu_gem_offset_y, host::devDailyGemOffsetYDp, host::onDevSetDailyGemOffsetY)
-        bindDecimal(R.id.btn_dev_daily_ticket_image_height, R.string.develop_menu_ticket_image_height, host::devDailyTicketImageHeightDp, host::onDevSetDailyTicketImageHeight)
-        bindDecimal(R.id.btn_dev_daily_ticket_offset_x, R.string.develop_menu_ticket_offset_x, host::devDailyTicketOffsetXDp, host::onDevSetDailyTicketOffsetX)
-        bindDecimal(R.id.btn_dev_daily_ticket_offset_y, R.string.develop_menu_ticket_offset_y, host::devDailyTicketOffsetYDp, host::onDevSetDailyTicketOffsetY)
-        bindDecimal(R.id.btn_dev_daily_wand_image_height, R.string.develop_menu_wand_image_height, host::devDailyWandImageHeightDp, host::onDevSetDailyWandImageHeight)
-        bindDecimal(R.id.btn_dev_daily_wand_offset_x, R.string.develop_menu_wand_offset_x, host::devDailyWandOffsetXDp, host::onDevSetDailyWandOffsetX)
-        bindDecimal(R.id.btn_dev_daily_wand_offset_y, R.string.develop_menu_wand_offset_y, host::devDailyWandOffsetYDp, host::onDevSetDailyWandOffsetY)
-        bindDecimal(R.id.btn_dev_daily_reward_text_size, R.string.develop_menu_reward_text_size, host::devDailyRewardTextSizeSp, host::onDevSetDailyRewardTextSize)
-        bindDecimal(R.id.btn_dev_daily_gem_number_offset_x, R.string.develop_menu_gem_number_offset_x, host::devDailyGemNumberOffsetXDp, host::onDevSetDailyGemNumberOffsetX)
-        bindDecimal(R.id.btn_dev_daily_gem_number_offset_y, R.string.develop_menu_gem_number_offset_y, host::devDailyGemNumberOffsetYDp, host::onDevSetDailyGemNumberOffsetY)
-        bindDecimal(R.id.btn_dev_daily_ticket_number_offset_x, R.string.develop_menu_ticket_number_offset_x, host::devDailyTicketNumberOffsetXDp, host::onDevSetDailyTicketNumberOffsetX)
-        bindDecimal(R.id.btn_dev_daily_ticket_number_offset_y, R.string.develop_menu_ticket_number_offset_y, host::devDailyTicketNumberOffsetYDp, host::onDevSetDailyTicketNumberOffsetY)
-        bindDecimal(R.id.btn_dev_daily_wand_number_offset_x, R.string.develop_menu_wand_number_offset_x, host::devDailyWandNumberOffsetXDp, host::onDevSetDailyWandNumberOffsetX)
-        bindDecimal(R.id.btn_dev_daily_wand_number_offset_y, R.string.develop_menu_wand_number_offset_y, host::devDailyWandNumberOffsetYDp, host::onDevSetDailyWandNumberOffsetY)
-        bindDecimal(R.id.btn_dev_daily_button_row_offset_x, R.string.develop_menu_button_row_offset_x, host::devDailyButtonRowOffsetXDp, host::onDevSetDailyButtonRowOffsetX)
-        bindDecimal(R.id.btn_dev_daily_button_row_offset_y, R.string.develop_menu_button_row_offset_y, host::devDailyButtonRowOffsetYDp, host::onDevSetDailyButtonRowOffsetY)
-        bindDecimal(R.id.btn_dev_daily_claim_scale_x, R.string.develop_menu_claim_scale_x, host::devDailyClaimScaleX, host::onDevSetDailyClaimScaleX)
-        bindDecimal(R.id.btn_dev_daily_claim_scale_y, R.string.develop_menu_claim_scale_y, host::devDailyClaimScaleY, host::onDevSetDailyClaimScaleY)
-        bindDecimal(R.id.btn_dev_daily_claim_scale, R.string.develop_menu_claim_scale, host::devDailyClaimScale, host::onDevSetDailyClaimScale)
-        bindDecimal(R.id.btn_dev_daily_multiplier_scale_x, R.string.develop_menu_multiplier_scale_x, host::devDailyMultiplierScaleX, host::onDevSetDailyMultiplierScaleX)
-        bindDecimal(R.id.btn_dev_daily_multiplier_scale_y, R.string.develop_menu_multiplier_scale_y, host::devDailyMultiplierScaleY, host::onDevSetDailyMultiplierScaleY)
-        bindDecimal(R.id.btn_dev_daily_multiplier_scale, R.string.develop_menu_multiplier_scale, host::devDailyMultiplierScale, host::onDevSetDailyMultiplierScale)
-
         // Unlock popup controls
         bindDecimal(R.id.btn_dev_unlock_frame_scale_x, R.string.develop_menu_unlock_frame_scale_x, host::devUnlockFrameScaleX, host::onDevSetUnlockFrameScaleX)
         bindDecimal(R.id.btn_dev_unlock_frame_scale_y, R.string.develop_menu_unlock_frame_scale_y, host::devUnlockFrameScaleY, host::onDevSetUnlockFrameScaleY)
@@ -573,32 +475,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_second_clip_delay_ms).text = fmt(host.devShuffleSecondClipDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_tail_delay_ms).text = fmt(host.devShuffleTailDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_deal_card_interval_ms).text = fmt(host.devDealCardIntervalMs())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_offset_y).text = fmt(host.devDailyTitleOffsetYPx())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_title_text_size).text = fmt(host.devDailyTitleTextSizeSp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_image_height).text = fmt(host.devDailyGemImageHeightDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_offset_x).text = fmt(host.devDailyGemOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_offset_y).text = fmt(host.devDailyGemOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_image_height).text = fmt(host.devDailyTicketImageHeightDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_offset_x).text = fmt(host.devDailyTicketOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_offset_y).text = fmt(host.devDailyTicketOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_image_height).text = fmt(host.devDailyWandImageHeightDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_offset_x).text = fmt(host.devDailyWandOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_offset_y).text = fmt(host.devDailyWandOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_reward_text_size).text = fmt(host.devDailyRewardTextSizeSp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_number_offset_x).text = fmt(host.devDailyGemNumberOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_gem_number_offset_y).text = fmt(host.devDailyGemNumberOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_number_offset_x).text = fmt(host.devDailyTicketNumberOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_ticket_number_offset_y).text = fmt(host.devDailyTicketNumberOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_number_offset_x).text = fmt(host.devDailyWandNumberOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_wand_number_offset_y).text = fmt(host.devDailyWandNumberOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_button_row_offset_x).text = fmt(host.devDailyButtonRowOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_button_row_offset_y).text = fmt(host.devDailyButtonRowOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_claim_scale_x).text = fmt(host.devDailyClaimScaleX())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_claim_scale_y).text = fmt(host.devDailyClaimScaleY())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_claim_scale).text = fmt(host.devDailyClaimScale())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale_x).text = fmt(host.devDailyMultiplierScaleX())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale_y).text = fmt(host.devDailyMultiplierScaleY())
-        root.findViewById<MaterialButton>(R.id.btn_dev_daily_multiplier_scale).text = fmt(host.devDailyMultiplierScale())
         // Unlock popup
         root.findViewById<MaterialButton>(R.id.btn_dev_unlock_frame_scale_x).text = fmt(host.devUnlockFrameScaleX())
         root.findViewById<MaterialButton>(R.id.btn_dev_unlock_frame_scale_y).text = fmt(host.devUnlockFrameScaleY())
@@ -636,7 +512,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
             starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, false),
             popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
             tableauExpanded = b.getBoolean(ARG_TABLEAU_EXPANDED, false),
-            dailyPopupExpanded = b.getBoolean(ARG_DAILY_POPUP_EXPANDED, false),
             unlockPopupExpanded = b.getBoolean(ARG_UNLOCK_POPUP_EXPANDED, false),
             shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
         )
@@ -717,7 +592,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         private const val ARG_STARBURST_EXPANDED = "arg_starburst_expanded"
         private const val ARG_POPUP_EXPANDED = "arg_popup_expanded"
         private const val ARG_TABLEAU_EXPANDED = "arg_tableau_expanded"
-        private const val ARG_DAILY_POPUP_EXPANDED = "arg_daily_popup_expanded"
         private const val ARG_UNLOCK_POPUP_EXPANDED = "arg_unlock_popup_expanded"
         private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
 
@@ -727,7 +601,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
                     putBoolean(ARG_STARBURST_EXPANDED, state.starburstExpanded)
                     putBoolean(ARG_POPUP_EXPANDED, state.popupExpanded)
                     putBoolean(ARG_TABLEAU_EXPANDED, state.tableauExpanded)
-                    putBoolean(ARG_DAILY_POPUP_EXPANDED, state.dailyPopupExpanded)
                     putBoolean(ARG_UNLOCK_POPUP_EXPANDED, state.unlockPopupExpanded)
                     putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
                 }

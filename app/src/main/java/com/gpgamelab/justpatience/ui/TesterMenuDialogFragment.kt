@@ -21,14 +21,11 @@ class TesterMenuDialogFragment : DialogFragment() {
     interface Host {
         fun testerCurrentGems(): Int
         fun testerCurrentCoupons(): Int
-        fun testerCurrentMagicWands(): Int
         fun testerIsPremium(): Boolean
         fun onTesterAdjustGems(delta: Int)
         fun onTesterSetGems(value: Int)
         fun onTesterAdjustCoupons(delta: Int)
         fun onTesterSetCoupons(value: Int)
-        fun onTesterAdjustMagicWands(delta: Int)
-        fun onTesterSetMagicWands(value: Int)
         fun onTesterSetPremium(enabled: Boolean)
         fun onTesterResetEverything(onComplete: () -> Unit)
         fun onTesterTriggerWinSequence()
@@ -40,7 +37,6 @@ class TesterMenuDialogFragment : DialogFragment() {
     private var btnPremiumToggle: MaterialButton? = null
     private var btnGemsValue: MaterialButton? = null
     private var btnCouponsValue: MaterialButton? = null
-    private var btnMagicWandsValue: MaterialButton? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +53,6 @@ class TesterMenuDialogFragment : DialogFragment() {
         btnPremiumToggle = view.findViewById(R.id.btn_tester_premium_toggle)
         btnGemsValue     = view.findViewById(R.id.btn_gems_value)
         btnCouponsValue  = view.findViewById(R.id.btn_coupons_value)
-        btnMagicWandsValue = view.findViewById(R.id.btn_magic_wands_value)
         refreshAllDisplays(host)
 
         // Gems
@@ -78,17 +73,6 @@ class TesterMenuDialogFragment : DialogFragment() {
         btnCouponsValue?.setOnClickListener {
             showSetValueDialog(getString(R.string.tester_menu_coupons_section), host.testerCurrentCoupons()) { v ->
                 host.onTesterSetCoupons(v); refreshCouponsDisplay(host)
-            }
-        }
-
-        // Magic Wands
-        view.findViewById<MaterialButton>(R.id.btn_magic_wands_minus5).setOnClickListener { host.onTesterAdjustMagicWands(-5); refreshMagicWandsDisplay(host) }
-        view.findViewById<MaterialButton>(R.id.btn_magic_wands_minus1).setOnClickListener { host.onTesterAdjustMagicWands(-1); refreshMagicWandsDisplay(host) }
-        view.findViewById<MaterialButton>(R.id.btn_magic_wands_plus1).setOnClickListener  { host.onTesterAdjustMagicWands(1);  refreshMagicWandsDisplay(host) }
-        view.findViewById<MaterialButton>(R.id.btn_magic_wands_plus5).setOnClickListener  { host.onTesterAdjustMagicWands(5);  refreshMagicWandsDisplay(host) }
-        btnMagicWandsValue?.setOnClickListener {
-            showSetValueDialog(getString(R.string.tester_menu_magic_wands_section), host.testerCurrentMagicWands()) { v ->
-                host.onTesterSetMagicWands(v); refreshMagicWandsDisplay(host)
             }
         }
 
@@ -139,7 +123,6 @@ class TesterMenuDialogFragment : DialogFragment() {
     private fun refreshAllDisplays(host: Host) {
         refreshGemsDisplay(host)
         refreshCouponsDisplay(host)
-        refreshMagicWandsDisplay(host)
         refreshPremiumDisplay(host)
     }
 
@@ -149,10 +132,6 @@ class TesterMenuDialogFragment : DialogFragment() {
 
     private fun refreshCouponsDisplay(host: Host) {
         btnCouponsValue?.text = host.testerCurrentCoupons().toString()
-    }
-
-    private fun refreshMagicWandsDisplay(host: Host) {
-        btnMagicWandsValue?.text = host.testerCurrentMagicWands().toString()
     }
 
     private fun refreshPremiumDisplay(host: Host) {
