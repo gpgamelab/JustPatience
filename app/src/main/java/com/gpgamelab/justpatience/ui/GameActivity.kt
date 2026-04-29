@@ -810,19 +810,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.btnDevelop.setOnClickListener { showDevelopMenu() }
         binding.magicWandContainer?.setOnClickListener { onMagicWandClicked() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
-            onHelpControlClicked(HelpControlAction.AUTO, buttonView) {
-                buttonView.isEnabled = false
-                lifecycleScope.launch {
-                    try {
-                        val movesMade = viewModel.performAutoMove(onCardMoved = { playCardClickMoveSound() })
-                        if (movesMade == 0) {
-                            Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
-                        }
-                    } finally {
-                        buttonView.isEnabled = true
-                    }
-                }
-            }
+            onAutoMoveClicked(buttonView)
         }
 
         applyResponsiveControlSizing()
@@ -3103,6 +3091,54 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         controller.hide(WindowInsetsCompat.Type.systemBars())
+    }
+
+    private fun onAutoMoveClicked(buttonView: View) {
+        if (helpControlFlowInProgress) return
+        val control = HelpControlAction.AUTO
+
+        lifecycleScope.launch {
+            val now = System.currentTimeMillis()
+            val unlockExpiry = settingsManager.getHelpControlUnlockExpiry(control.storageKey)
+            val isFree = unlockExpiry > now
+
+            if (!isFree && ticketTotal <= 0) {
+                showNoCouponsDialog(control) {
+                    // user unlocked via ad — run auto move without extra consume
+                    buttonView.isEnabled = false
+                    lifecycleScope.launch {
+                        try {
+                            val movesMade = viewModel.performAutoMove(onCardMoved = { playCardClickMoveSound() })
+                            if (movesMade == 0) {
+                                Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
+                            }
+                        } finally {
+                            buttonView.isEnabled = true
+                        }
+                    }
+                }
+                return@launch
+            }
+
+            // Run the auto move first, then conditionally consume a ticket
+            buttonView.isEnabled = false
+            val movesMade: Int
+            try {
+                movesMade = viewModel.performAutoMove(onCardMoved = { playCardClickMoveSound() })
+            } finally {
+                buttonView.isEnabled = true
+            }
+
+            if (movesMade == 0) {
+                Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            // Moves were made — consume a ticket (unless free period)
+            if (!isFree) {
+                animateAndConsumeHelpCoupon(buttonView)
+            }
+        }
     }
 
     private fun onHelpControlClicked(control: HelpControlAction, targetView: View?, action: () -> Unit) {
