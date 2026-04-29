@@ -125,11 +125,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val cardWidthRatio = 1.5f
     private val cardHeightRatio = 2.0f
     private var cardRadius = 20f
-    private var cardPadding = 16f
+    private var cardPadding = 1f
     private var tableauOffset = 40f
 
     private val baseCardRadius = 20f
-    private val baseCardPadding = 16f
+    private val baseCardPadding = 1f
     private val baseTableauOffset = 40f
     private val LANDSCAPE_TOP_PILE_SHIFT_RATIO = 0.22f
     private val LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO = 0.22f
@@ -189,6 +189,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var animationDestStackIndex: Int = -1
     private var animationMovedCardCount: Int = 1
     private var animationStartTimeMs: Long = 0
+    private var animationActiveThisFrame = false
     private val ANIMATION_DURATION_MS = 250L
     private var isAnimating = false
 
@@ -449,13 +450,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun isAnimatingIntoFoundation(index: Int): Boolean {
-        return isAnimationActive() &&
+        return animationActiveThisFrame &&
             animationDestStackType == StackType.FOUNDATION &&
             animationDestStackIndex == index
     }
 
     private fun isAnimatingIntoTableau(index: Int): Boolean {
-        return isAnimationActive() &&
+        return animationActiveThisFrame &&
             animationDestStackType == StackType.TABLEAU &&
             animationDestStackIndex == index
     }
@@ -804,20 +805,24 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         super.onDraw(canvas)
         drawTabletop(canvas)
         if (!::viewModel.isInitialized) {
+            animationActiveThisFrame = false
             drawLoading(canvas)
             return
         }
         syncColumnsWithGame()
         if (cardW <= 0f || cardH <= 0f || columnX.size < columns) {
+            animationActiveThisFrame = false
             drawLoading(canvas)
             return
         }
+        val frameNowMs = SystemClock.elapsedRealtime()
+        animationActiveThisFrame = isAnimating && (frameNowMs - animationStartTimeMs) < ANIMATION_DURATION_MS
         drawTopRow(canvas)
         drawTableau(canvas)
         drawHintGlows(canvas)
         drawSingleClickGlows(canvas)
         drawDragGhost(canvas)
-        drawAnimatedCard(canvas)
+        drawAnimatedCard(canvas, frameNowMs)
         drawCouponFlight(canvas)
     }
 
@@ -867,11 +872,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
-    private fun drawAnimatedCard(canvas: Canvas) {
+    private fun drawAnimatedCard(canvas: Canvas, frameNowMs: Long) {
         // Fast-exit: no animation was ever scheduled, nothing to do.
         if (!isAnimating) return
 
-        if (!isAnimationActive()) {
+        if (!animationActiveThisFrame) {
             // Animation just finished – transition out cleanly (this triggers resume of hint timer).
             clearAnimationState()
             return
@@ -881,7 +886,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val startRect = animationStartRect ?: return
         val endRect = animationEndRect ?: return
 
-        val elapsedMs = SystemClock.elapsedRealtime() - animationStartTimeMs
+        val elapsedMs = frameNowMs - animationStartTimeMs
         val progress = (elapsedMs.toFloat() / ANIMATION_DURATION_MS).coerceIn(0f, 1f)
         val eased = easeInOutCubic(progress)
 
