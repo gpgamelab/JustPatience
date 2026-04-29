@@ -1410,8 +1410,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             rect,          // scale to card rect
             null
         )
-
-        canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
     }
 
     private fun drawCardBack(canvas: Canvas, rect: RectF, verso: Verso) {
@@ -1431,8 +1429,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             rect,
             null
         )
-
-        canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
     }
 
     private fun drawStockBack(canvas: Canvas, rect: RectF) {
@@ -1443,7 +1439,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             max(1, cardH.toInt())
         )
         canvas.drawBitmap(bitmap, null, rect, null)
-        canvas.drawRoundRect(rect, cardRadius, cardRadius, borderPaint)
     }
 
     private fun handleTap(x: Float, y: Float) {

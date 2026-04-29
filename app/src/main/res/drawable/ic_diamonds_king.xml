@@ -1,44 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="212dp"
-    android:height="329dp"
-    android:viewportWidth="212"
-    android:viewportHeight="329">
+    android:width="225dp"
+    android:height="350dp"
+    android:viewportWidth="225"
+    android:viewportHeight="350">
     <group
-        android:translateX="106"
-        android:translateY="164.5">
-        <path
-            android:pathData="M -86.5 -164 H 86.5 A 19 19 0 0 1 105.5 -145 V 145 A 19 19 0 0 1 86.5 164 H -86.5 A 19 19 0 0 1 -105.5 145 V -145 A 19 19 0 0 1 -86.5 -164 Z"
-            android:fillColor="#FFFFFFFF"
-            android:strokeColor="#FF000000"
-            android:strokeWidth="1" />
+        android:translateX="225"
+        android:translateY="350">
         <group
-            android:scaleX="0.048"
-            android:scaleY="0.048"
-            android:translateX="-83"
-            android:translateY="-124">
+            android:scaleX="1.06224"
+            android:scaleY="1.0632"
+            android:translateX="-112.38"
+            android:translateY="-174.8">
+            <path
+                android:pathData="M -86.5 -164 H 86.5 A 19 19 0 0 1 105.5 -145 V 145 A 19 19 0 0 1 86.5 164 H -86.5 A 19 19 0 0 1 -105.5 145 V -145 A 19 19 0 0 1 -86.5 -164 Z"
+                android:fillColor="#FFFFFFFF"
+                android:strokeColor="#FF303030"
+                android:strokeWidth="2" />
+        </group>
+        <group
+            android:scaleX="0.0624"
+            android:scaleY="0.044"
+            android:translateX="-193.8"
+            android:translateY="-308.6">
             <path
                 android:pathData="m -285,-460 h 200 m -100,0 v 920 m -100,0 H -85 M 85,-460 h 200 m -100,20 -355,595 M 85,460 H 285 M 185,440 -10,-70"
                 android:fillColor="#00000000"
                 android:strokeColor="#FF000000"
-                android:strokeWidth="80"
+                android:strokeWidth="120"
                 android:strokeLineCap="square"
                 android:strokeMiterLimit="1.5" />
         </group>
         <group
             android:scaleX="0.048"
             android:scaleY="0.048"
-            android:translateX="80"
-            android:translateY="-124">
+            android:translateX="-36"
+            android:translateY="-311">
             <path
                 android:pathData="M -400,0 C -350,0 0,-450 0,-500 0,-450 350,0 400,0 350,0 0,450 0,500 0,450 -350,0 -400,0 Z"
                 android:fillColor="#FFFF0000" />
         </group>
         <group
-            android:scaleX="0.1"
-            android:scaleY="0.1"
-            android:translateX="-0.145685"
-            android:translateY="11.73096">
+            android:scaleX="0.0624"
+            android:scaleY="0.044"
+            android:translateX="-28.8"
+            android:translateY="-38.6">
+            <path
+                android:pathData="m -285,-460 h 200 m -100,0 v 920 m -100,0 H -85 M 85,-460 h 200 m -100,20 -355,595 M 85,460 H 285 M 185,440 -10,-70"
+                android:fillColor="#00000000"
+                android:strokeColor="#FF000000"
+                android:strokeWidth="120"
+                android:strokeLineCap="square"
+                android:strokeMiterLimit="1.5" />
+        </group>
+        <group
+            android:scaleX="0.048"
+            android:scaleY="0.048"
+            android:translateX="-196"
+            android:translateY="-41">
+            <path
+                android:pathData="M -400,0 C -350,0 0,-450 0,-500 0,-450 350,0 400,0 350,0 0,450 0,500 0,450 -350,0 -400,0 Z"
+                android:fillColor="#FFFF0000" />
+        </group>
+        <group
+            android:scaleX="0.144"
+            android:scaleY="0.144"
+            android:translateX="-108"
+            android:translateY="-178">
             <path
                 android:pathData="M -400,0 C -350,0 0,-450 0,-500 0,-450 350,0 400,0 350,0 0,450 0,500 0,450 -350,0 -400,0 Z"
                 android:fillColor="#FFFF0000" />
