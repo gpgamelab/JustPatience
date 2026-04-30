@@ -174,7 +174,7 @@
                 android:layout_height="60dp"
                 android:contentDescription="@string/gems_total_label"
                 android:scaleType="fitCenter"
-                android:src="@drawable/gems_empty_bag_1536x1536" />
+                android:src="@drawable/ic_treasure_3_gem_green" />
 
             <TextView
                 android:id="@+id/tv_gem_count"

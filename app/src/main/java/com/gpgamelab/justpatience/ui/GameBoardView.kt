@@ -23,7 +23,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.gpgamelab.justpatience.assets.AssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.model.Card
-import com.gpgamelab.justpatience.model.CardSuit
 import com.gpgamelab.justpatience.model.Game
 import com.gpgamelab.justpatience.model.HintDisplayState
 import com.gpgamelab.justpatience.model.HintPhase
@@ -37,6 +36,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import android.os.SystemClock
+import com.gpgamelab.justpatience.util.BaselineResolutionScaleUtil
 
 private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:b_0001"
 private const val NEW_GAME_DEAL_CARD_INTERVAL_MS = 70L
@@ -51,6 +51,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     var onShuffleSoundRequested: (() -> Unit)? = null
     var onLockedTableauUnlockRequested: (() -> Unit)? = null
     var onMagicWandTargetSelected: ((StackType, Int, Int) -> Unit)? = null
+
+    private var currentDeviceScaleRatio = 1f
 
     private val currentSetId = "default"
 
@@ -477,39 +479,42 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
+    override fun onSizeChanged(width: Int, height: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(width, height, oldw, oldh)
 
-        if (w <= 0 || h <= 0) return
+        if (width <= 0 || height <= 0) return
 
         if (::viewModel.isInitialized) {
             syncColumnsWithGame(viewModel.game.value)
         }
 
-        recomputeBoardGeometry(w, h)
+        recomputeBoardGeometry(width, height)
     }
 
-    private fun recomputeBoardGeometry(w: Int, h: Int) {
-        if (w <= 0 || h <= 0) return
+    private fun recomputeBoardGeometry(width: Int, height: Int) {
+        if (width <= 0 || height <= 0) return
 
+        currentDeviceScaleRatio = BaselineResolutionScaleUtil.calculateAverageRatio(width,height,
+            baselinePortraitWidthPx  = 1600,
+            baselinePortraitHeightPx = 2560).averageRatio
         val density = resources.displayMetrics.density.coerceAtLeast(1f)
         // aspectFactors is still used for text-paint scaling; card dimensions use raw pixels
         // so that extreme-aspect compression never shrinks cards below what actually fits.
-        val aspectFactors = UiScaleUtil.calculateBaselineScaleFactors(w / density, h / density)
+        val aspectFactors = UiScaleUtil.calculateBaselineScaleFactors(width / density, height / density)
 
         // Size cards from both width and height limits so narrow landscape layouts fit.
         // Do NOT pass the axis-compression/expansion factors here: on a phone in landscape
         // the GameBoardView itself has an extreme aspect ratio, which would make
         // verticalFactor = 0.5 and artificially halve the already-small height budget,
         // producing cards that are nearly invisible.
-        val widthLimitedCardW = calculateWidthLimitedCardWidth(w)
-        val heightLimitedCardW = calculateHeightLimitedCardWidth(h)
+        val widthLimitedCardW = calculateWidthLimitedCardWidth(width)
+        val heightLimitedCardW = calculateHeightLimitedCardWidth(height)
 
         cardW = min(widthLimitedCardW, heightLimitedCardW).coerceAtLeast(28f)
 
         // Deck/geometry fit pass: shrink until both horizontal and vertical budgets fit.
-        val maxLayoutWidth = (w - (abs(BOARD_SHIFT_LEFT_PX) * 2f)).coerceAtLeast(1f)
-        val maxLayoutHeight = (h * if (isLandscape) 0.98f else 0.94f).coerceAtLeast(1f)
+        val maxLayoutWidth = (width - (abs(BOARD_SHIFT_LEFT_PX) * 2f)).coerceAtLeast(1f)
+        val maxLayoutHeight = (height * if (isLandscape) 0.98f else 0.94f).coerceAtLeast(1f)
         repeat(6) {
             val widthRatio = maxLayoutWidth / estimateBoardWidth(cardW)
             val heightRatio = maxLayoutHeight / estimateBoardHeight(cardW)
@@ -523,18 +528,18 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val spacingScale = (cardW / 70f).coerceIn(0.70f, 1.15f)
         cardPadding = baseCardPadding * spacingScale
         tableauOffset = baseTableauOffset * spacingScale
-        cardRadius = baseCardRadius * spacingScale
+        cardRadius = baseCardRadius * spacingScale * currentDeviceScaleRatio
 
         // Scale border and placeholder stroke widths with card size
         borderPaint.strokeWidth = (cardW * 0.025f).coerceIn(1.5f, 4f)
         placeholderPaint.strokeWidth = (cardW * 0.05f).coerceIn(2f, 7f)
 
         computeColumnX()
-        computeBoardStartY(h)
+        computeBoardStartY(height)
 
         // Keep pile labels legible across phone/tablet sizes.
-        pileLabelPaint.textSize = (cardW * 0.22f).coerceIn(22f, 40f)
-        textPaint.textSize = ((min(w, h) * 0.10f) * aspectFactors.textCompression).coerceIn(28f, 60f)
+        pileLabelPaint.textSize = (cardW * 0.18f).coerceIn(10f, 40f)
+        textPaint.textSize = ((min(width, height) * 0.10f) * aspectFactors.textCompression).coerceIn(10f, 60f)
 
         // Count badge scales with card size.
         pileCountBadgeRadius = (cardW * 0.16f).coerceIn(10f, 22f)

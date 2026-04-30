@@ -931,10 +931,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun renderGemHud(total: Int) {
         val safeTotal = total.coerceAtLeast(0)
-        binding.ivGemBag.setImageResource(
-            if (safeTotal == 0) R.drawable.gems_empty_bag_1536x1536
-            else R.drawable.gems_purple_bag_1536x1536
-        )
+        binding.ivGemBag.setImageResource(R.drawable.ic_treasure_3_gem_green)
         binding.tvGemCount.text = safeTotal.toString()
         binding.ivGemBag.contentDescription = getString(R.string.gems_count_content_description, safeTotal)
     }
