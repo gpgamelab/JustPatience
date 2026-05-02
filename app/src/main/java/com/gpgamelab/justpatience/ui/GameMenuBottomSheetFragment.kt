@@ -20,9 +20,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
     data class ExpandState(
         val statisticsExpanded: Boolean = false,
         val informationExpanded: Boolean = false,
-        val settingsExpanded: Boolean = false,
-        val commonExpanded: Boolean = false,
-        val advancedExpanded: Boolean = false
+        val settingsExpanded: Boolean = false
     )
 
     interface Host {
@@ -40,9 +38,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuDrawCards()
         fun onGameMenuDeckCount()
         fun onGameMenuWasteRecycles()
-        fun onGameMenuMuteMusicToggle()
-        fun onGameMenuMuteCardSoundsToggle()
-        fun onGameMenuMuteWinSoundToggle()
+        fun onGameMenuSoundToggle()
         fun onGameMenuShowGameTimerToggle()
         fun onGameMenuShowScoreToggle()
         fun onGameMenuShowMovesToggle()
@@ -82,9 +78,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentDeckCount = arguments?.getInt(ARG_CURRENT_DECK_COUNT, DEFAULT_DECK_COUNT) ?: DEFAULT_DECK_COUNT
         val currentInfiniteRecycles = arguments?.getBoolean(ARG_CURRENT_INFINITE_RECYCLES, true) ?: true
         val currentRecycleCount = arguments?.getInt(ARG_CURRENT_RECYCLE_COUNT, DEFAULT_RECYCLE_COUNT) ?: DEFAULT_RECYCLE_COUNT
-        val currentMuteMusic = arguments?.getBoolean(ARG_CURRENT_MUTE_MUSIC, false) ?: false
-        val currentMuteCardSounds = arguments?.getBoolean(ARG_CURRENT_MUTE_CARD_SOUNDS, false) ?: false
-        val currentMuteWinSound = arguments?.getBoolean(ARG_CURRENT_MUTE_WIN_SOUND, false) ?: false
+        val currentSoundOn = arguments?.getBoolean(ARG_CURRENT_SOUND_ON, true) ?: true
         val currentShowGameTimer = arguments?.getBoolean(ARG_CURRENT_SHOW_GAME_TIMER, true) ?: true
         val currentShowScore = arguments?.getBoolean(ARG_CURRENT_SHOW_SCORE, true) ?: true
         val currentShowMoves = arguments?.getBoolean(ARG_CURRENT_SHOW_MOVES, true) ?: true
@@ -129,17 +123,11 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
         val stateEnabled = getString(R.string.setting_state_enabled)
         val stateDisabled = getString(R.string.setting_state_disabled)
-        view.findViewById<TextView>(R.id.menu_common_mute_music_text).text = getString(
-            R.string.game_menu_mute_game_music_with_value,
-            if (currentMuteMusic) stateEnabled else stateDisabled
-        )
-        view.findViewById<TextView>(R.id.menu_common_mute_card_sounds_text).text = getString(
-            R.string.game_menu_mute_card_movement_sounds_with_value,
-            if (currentMuteCardSounds) stateEnabled else stateDisabled
-        )
-        view.findViewById<TextView>(R.id.menu_common_mute_win_sound_text).text = getString(
-            R.string.game_menu_mute_win_sound_with_value,
-            if (currentMuteWinSound) stateEnabled else stateDisabled
+        val stateOn = getString(R.string.setting_state_on)
+        val stateOff = getString(R.string.setting_state_off)
+        view.findViewById<TextView>(R.id.menu_settings_sound_text).text = getString(
+            R.string.game_menu_sound_with_value,
+            if (currentSoundOn) stateOn else stateOff
         )
         view.findViewById<TextView>(R.id.menu_advanced_show_timer_text).text = getString(
             R.string.game_menu_show_game_timer_with_value,
@@ -200,19 +188,9 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val settingsArrow = view.findViewById<TextView>(R.id.menu_settings_arrow)
         val settingsContent = view.findViewById<LinearLayout>(R.id.menu_settings_content)
 
-        val commonHeader = view.findViewById<View>(R.id.menu_settings_common_row)
-        val commonArrow = view.findViewById<TextView>(R.id.menu_settings_common_arrow)
-        val commonContent = view.findViewById<LinearLayout>(R.id.menu_settings_common_content)
-
-        val advancedHeader = view.findViewById<View>(R.id.menu_settings_advanced_row)
-        val advancedArrow = view.findViewById<TextView>(R.id.menu_settings_advanced_arrow)
-        val advancedContent = view.findViewById<LinearLayout>(R.id.menu_settings_advanced_content)
-
         setSectionExpanded(statisticsContent, statisticsArrow, expandState.statisticsExpanded)
         setSectionExpanded(informationContent, informationArrow, expandState.informationExpanded)
         setSectionExpanded(settingsContent, settingsArrow, expandState.settingsExpanded)
-        setSectionExpanded(commonContent, commonArrow, expandState.settingsExpanded && expandState.commonExpanded)
-        setSectionExpanded(advancedContent, advancedArrow, expandState.settingsExpanded && expandState.advancedExpanded)
 
         statisticsHeader.setOnClickListener {
             val expanded = statisticsContent.visibility != View.VISIBLE
@@ -231,23 +209,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         settingsHeader.setOnClickListener {
             val expanded = settingsContent.visibility != View.VISIBLE
             setSectionExpanded(settingsContent, settingsArrow, expanded)
-            setSectionExpanded(commonContent, commonArrow, expanded && expandState.commonExpanded)
-            setSectionExpanded(advancedContent, advancedArrow, expanded && expandState.advancedExpanded)
             expandState = expandState.copy(settingsExpanded = expanded)
-            host.onGameMenuExpandStateChanged(expandState)
-        }
-
-        commonHeader.setOnClickListener {
-            val expanded = commonContent.visibility != View.VISIBLE
-            setSectionExpanded(commonContent, commonArrow, expanded)
-            expandState = expandState.copy(commonExpanded = expanded)
-            host.onGameMenuExpandStateChanged(expandState)
-        }
-
-        advancedHeader.setOnClickListener {
-            val expanded = advancedContent.visibility != View.VISIBLE
-            setSectionExpanded(advancedContent, advancedArrow, expanded)
-            expandState = expandState.copy(advancedExpanded = expanded)
             host.onGameMenuExpandStateChanged(expandState)
         }
 
@@ -291,14 +253,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_common_waste_recycles_row).setOnClickListener {
             dismissAndRun { host.onGameMenuWasteRecycles() }
         }
-        view.findViewById<View>(R.id.menu_common_mute_music_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuMuteMusicToggle() }
-        }
-        view.findViewById<View>(R.id.menu_common_mute_card_sounds_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuMuteCardSoundsToggle() }
-        }
-        view.findViewById<View>(R.id.menu_common_mute_win_sound_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuMuteWinSoundToggle() }
+        view.findViewById<View>(R.id.menu_settings_sound_row).setOnClickListener {
+            dismissAndRun { host.onGameMenuSoundToggle() }
         }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
             dismissAndRun { host.onGameMenuOpenAbout() }
@@ -391,9 +347,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         return ExpandState(
             statisticsExpanded = b.getBoolean(ARG_STATISTICS_EXPANDED, false),
             informationExpanded = b.getBoolean(ARG_INFORMATION_EXPANDED, false),
-            settingsExpanded = b.getBoolean(ARG_SETTINGS_EXPANDED, false),
-            commonExpanded = b.getBoolean(ARG_COMMON_EXPANDED, false),
-            advancedExpanded = b.getBoolean(ARG_ADVANCED_EXPANDED, false)
+            settingsExpanded = b.getBoolean(ARG_SETTINGS_EXPANDED, false)
         )
     }
 
@@ -402,16 +356,12 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_STATISTICS_EXPANDED = "arg_statistics_expanded"
         private const val ARG_INFORMATION_EXPANDED = "arg_information_expanded"
         private const val ARG_SETTINGS_EXPANDED = "arg_settings_expanded"
-        private const val ARG_COMMON_EXPANDED = "arg_common_expanded"
-        private const val ARG_ADVANCED_EXPANDED = "arg_advanced_expanded"
         private const val ARG_CURRENT_NICKNAME = "arg_current_nickname"
         private const val ARG_CURRENT_DRAW_SIZE = "arg_current_draw_size"
         private const val ARG_CURRENT_DECK_COUNT = "arg_current_deck_count"
         private const val ARG_CURRENT_INFINITE_RECYCLES = "arg_current_infinite_recycles"
         private const val ARG_CURRENT_RECYCLE_COUNT = "arg_current_recycle_count"
-        private const val ARG_CURRENT_MUTE_MUSIC = "arg_current_mute_music"
-        private const val ARG_CURRENT_MUTE_CARD_SOUNDS = "arg_current_mute_card_sounds"
-        private const val ARG_CURRENT_MUTE_WIN_SOUND = "arg_current_mute_win_sound"
+        private const val ARG_CURRENT_SOUND_ON = "arg_current_sound_on"
         private const val ARG_CURRENT_SHOW_GAME_TIMER = "arg_current_show_game_timer"
         private const val ARG_CURRENT_SHOW_SCORE = "arg_current_show_score"
         private const val ARG_CURRENT_SHOW_MOVES = "arg_current_show_moves"
@@ -434,9 +384,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentDeckCount: Int = DEFAULT_DECK_COUNT,
             currentInfiniteRecycles: Boolean = true,
             currentRecycleCount: Int = DEFAULT_RECYCLE_COUNT,
-            currentMuteMusic: Boolean = false,
-            currentMuteCardSounds: Boolean = false,
-            currentMuteWinSound: Boolean = false,
+            currentSoundOn: Boolean = true,
             currentShowGameTimer: Boolean = true,
             currentShowScore: Boolean = true,
             currentShowMoves: Boolean = true,
@@ -454,16 +402,12 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putBoolean(ARG_STATISTICS_EXPANDED, state.statisticsExpanded)
                     putBoolean(ARG_INFORMATION_EXPANDED, state.informationExpanded)
                     putBoolean(ARG_SETTINGS_EXPANDED, state.settingsExpanded)
-                    putBoolean(ARG_COMMON_EXPANDED, state.commonExpanded)
-                    putBoolean(ARG_ADVANCED_EXPANDED, state.advancedExpanded)
                     putString(ARG_CURRENT_NICKNAME, currentNickname)
                     putInt(ARG_CURRENT_DRAW_SIZE, currentDrawSize)
                     putInt(ARG_CURRENT_DECK_COUNT, currentDeckCount)
                     putBoolean(ARG_CURRENT_INFINITE_RECYCLES, currentInfiniteRecycles)
                     putInt(ARG_CURRENT_RECYCLE_COUNT, currentRecycleCount)
-                    putBoolean(ARG_CURRENT_MUTE_MUSIC, currentMuteMusic)
-                    putBoolean(ARG_CURRENT_MUTE_CARD_SOUNDS, currentMuteCardSounds)
-                    putBoolean(ARG_CURRENT_MUTE_WIN_SOUND, currentMuteWinSound)
+                    putBoolean(ARG_CURRENT_SOUND_ON, currentSoundOn)
                     putBoolean(ARG_CURRENT_SHOW_GAME_TIMER, currentShowGameTimer)
                     putBoolean(ARG_CURRENT_SHOW_SCORE, currentShowScore)
                     putBoolean(ARG_CURRENT_SHOW_MOVES, currentShowMoves)

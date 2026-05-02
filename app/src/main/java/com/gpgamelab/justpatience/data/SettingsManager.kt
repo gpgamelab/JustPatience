@@ -106,9 +106,7 @@ class SettingsManager(private val context: Context) {
         val showGameTimer: Boolean = true,
         val showScore: Boolean = true,
         val showMoves: Boolean = true,
-        val muteMusic: Boolean = false,
-        val muteCardSound: Boolean = false,
-        val muteWinSound: Boolean = false,
+        val soundOn: Boolean = true,
         val autoComplete: Boolean = true,
         val haptics: Boolean = false,
         val tapToMove: Boolean = true,
@@ -437,6 +435,11 @@ class SettingsManager(private val context: Context) {
             }
         }
         .map { preferences ->
+            val legacyAnyMute =
+                (preferences[PreferencesKeys.MUTE_MUSIC] ?: false) ||
+                (preferences[PreferencesKeys.MUTE_CARD_SOUND] ?: false) ||
+                (preferences[PreferencesKeys.MUTE_WIN_SOUND] ?: false)
+
             GamePlaySettings(
                 drawSize = preferences[PreferencesKeys.DRAW_SIZE] ?: 3,
                 deckCount = preferences[PreferencesKeys.DECK_COUNT] ?: 1,
@@ -452,9 +455,7 @@ class SettingsManager(private val context: Context) {
                 showGameTimer = preferences[PreferencesKeys.SHOW_GAME_TIMER] ?: true,
                 showScore = preferences[PreferencesKeys.SHOW_SCORE] ?: true,
                 showMoves = preferences[PreferencesKeys.SHOW_MOVES] ?: true,
-                muteMusic = preferences[PreferencesKeys.MUTE_MUSIC] ?: false,
-                muteCardSound = preferences[PreferencesKeys.MUTE_CARD_SOUND] ?: false,
-                muteWinSound = preferences[PreferencesKeys.MUTE_WIN_SOUND] ?: false,
+                soundOn = preferences[PreferencesKeys.SOUND_ON] ?: !legacyAnyMute,
                 autoComplete = preferences[PreferencesKeys.AUTO_COMPLETE] ?: true,
                 haptics = preferences[PreferencesKeys.HAPTICS] ?: false,
                 tapToMove = preferences[PreferencesKeys.TAP_TO_MOVE] ?: true,
@@ -482,9 +483,11 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.SHOW_GAME_TIMER] = settings.showGameTimer
             preferences[PreferencesKeys.SHOW_SCORE] = settings.showScore
             preferences[PreferencesKeys.SHOW_MOVES] = settings.showMoves
-            preferences[PreferencesKeys.MUTE_MUSIC] = settings.muteMusic
-            preferences[PreferencesKeys.MUTE_CARD_SOUND] = settings.muteCardSound
-            preferences[PreferencesKeys.MUTE_WIN_SOUND] = settings.muteWinSound
+            preferences[PreferencesKeys.SOUND_ON] = settings.soundOn
+            // Keep legacy keys synchronized for backward compatibility.
+            preferences[PreferencesKeys.MUTE_MUSIC] = !settings.soundOn
+            preferences[PreferencesKeys.MUTE_CARD_SOUND] = !settings.soundOn
+            preferences[PreferencesKeys.MUTE_WIN_SOUND] = !settings.soundOn
             preferences[PreferencesKeys.AUTO_COMPLETE] = settings.autoComplete
             preferences[PreferencesKeys.HAPTICS] = settings.haptics
             preferences[PreferencesKeys.TAP_TO_MOVE] = settings.tapToMove

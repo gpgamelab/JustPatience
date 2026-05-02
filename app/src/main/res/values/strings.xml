@@ -251,6 +251,8 @@ Locale: %7$s</string>
     <string name="game_menu_my_avatar">My Avatar</string>
     <string name="game_menu_draw_cards">Draw Cards</string>
     <string name="game_menu_draw_cards_with_value">Draw Cards: %1$d</string>
+    <string name="game_menu_sound">Sound</string>
+    <string name="game_menu_sound_with_value">Sound: %1$s</string>
     <string name="game_menu_deck_count">Deck Count</string>
     <string name="game_menu_deck_count_with_value">Deck Count: %1$s</string>
     <string name="game_menu_deck_one">1 Deck</string>
@@ -268,6 +270,8 @@ Locale: %7$s</string>
     <string name="game_menu_mute_win_sound_with_value">Mute WIN Sound: %1$s</string>
     <string name="setting_state_enabled">Enabled</string>
     <string name="setting_state_disabled">Disabled</string>
+    <string name="setting_state_on">On</string>
+    <string name="setting_state_off">Off</string>
     <string name="game_menu_appearance">Appearance</string>
     <string name="game_menu_show_game_timer">Show Game Timer</string>
     <string name="game_menu_show_game_timer_with_value">Show Game Timer: %1$s</string>

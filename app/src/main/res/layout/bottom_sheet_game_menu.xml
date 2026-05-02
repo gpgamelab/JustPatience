@@ -388,46 +388,7 @@
             android:id="@+id/menu_settings_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-        <!-- Common Settings (collapsible) -->
-        <LinearLayout
-            android:id="@+id/menu_settings_common_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:minHeight="33dp"
-            android:orientation="horizontal"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/game_menu_common_settings"
-                android:textColor="#D7E8D7"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/menu_settings_common_arrow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="▾"
-                android:textColor="#D7E8D7"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/menu_settings_common_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="17dp"
+            android:layout_marginStart="11dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -460,63 +421,13 @@
                 <TextView android:id="@+id/menu_common_waste_recycles_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_waste_recycles" android:textColor="#CFE7CF" android:textSize="11sp" />
             </LinearLayout>
 
-            <LinearLayout android:id="@+id/menu_common_mute_music_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical">
-                <TextView android:id="@+id/menu_common_mute_music_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_mute_game_music" android:textColor="#CFE7CF" android:textSize="11sp" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/menu_common_mute_card_sounds_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical">
-                <TextView android:id="@+id/menu_common_mute_card_sounds_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_mute_card_movement_sounds" android:textColor="#CFE7CF" android:textSize="11sp" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/menu_common_mute_win_sound_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical">
-                <TextView android:id="@+id/menu_common_mute_win_sound_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_mute_win_sound" android:textColor="#CFE7CF" android:textSize="11sp" />
+            <LinearLayout android:id="@+id/menu_settings_sound_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:id="@+id/menu_settings_sound_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_sound" android:textColor="#CFE7CF" android:textSize="11sp" />
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:enabled="false" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical">
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_appearance" android:textColor="#7F7F7F" android:textSize="11sp" />
             </LinearLayout>
-        </LinearLayout>
-
-        <!-- Advanced Settings (collapsible) -->
-        <LinearLayout
-            android:id="@+id/menu_settings_advanced_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:minHeight="33dp"
-            android:orientation="horizontal"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_advanced_section_title"
-                android:textColor="#D7E8D7"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/menu_settings_advanced_arrow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="▾"
-                android:textColor="#D7E8D7"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/menu_settings_advanced_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="17dp"
-            android:orientation="vertical"
-            android:visibility="gone">
-
             <LinearLayout android:id="@+id/menu_advanced_show_timer_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:id="@+id/menu_advanced_show_timer_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_game_timer" android:textColor="#CFE7CF" android:textSize="11sp" /></LinearLayout>
             <LinearLayout android:id="@+id/menu_advanced_show_score_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:id="@+id/menu_advanced_show_score_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_score" android:textColor="#CFE7CF" android:textSize="11sp" /></LinearLayout>
             <LinearLayout android:id="@+id/menu_advanced_show_moves_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:id="@+id/menu_advanced_show_moves_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_show_moves" android:textColor="#CFE7CF" android:textSize="11sp" /></LinearLayout>
@@ -529,7 +440,6 @@
             <LinearLayout android:id="@+id/menu_advanced_haptics_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:id="@+id/menu_advanced_haptics_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_haptics" android:textColor="#CFE7CF" android:textSize="11sp" /></LinearLayout>
             <LinearLayout android:id="@+id/menu_advanced_tap_to_move_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="?android:attr/selectableItemBackground" android:clickable="true" android:focusable="true" android:minHeight="30dp" android:orientation="horizontal" android:gravity="center_vertical"><TextView android:id="@+id/menu_advanced_tap_to_move_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/game_menu_tap_to_move" android:textColor="#CFE7CF" android:textSize="11sp" /></LinearLayout>
             <!-- Premium Account moved to Testers Menu -->
-        </LinearLayout>
 
         </LinearLayout>
 

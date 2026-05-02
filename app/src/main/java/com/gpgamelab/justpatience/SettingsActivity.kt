@@ -88,9 +88,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchFoundationToTableau.isChecked = settings.allowFoundationToTableauDrag
 
         // Sound
-        binding.switchMuteMusic.isChecked = settings.muteMusic
-        binding.switchMuteCardSound.isChecked = settings.muteCardSound
-        binding.switchMuteWinSound.isChecked = settings.muteWinSound
+        binding.switchSoundOn.isChecked = settings.soundOn
 
         // Board layout
         val boardIndex = boardLayoutKeys.indexOf(settings.boardLayout).coerceAtLeast(0)
@@ -147,17 +145,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Sound
-        binding.switchMuteMusic.setOnCheckedChangeListener { _, checked ->
+        binding.switchSoundOn.setOnCheckedChangeListener { _, checked ->
             if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
-            saveSettings(currentSettings.copy(muteMusic = checked))
-        }
-        binding.switchMuteCardSound.setOnCheckedChangeListener { _, checked ->
-            if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
-            saveSettings(currentSettings.copy(muteCardSound = checked))
-        }
-        binding.switchMuteWinSound.setOnCheckedChangeListener { _, checked ->
-            if (isBindingUi || !settingsLoaded) return@setOnCheckedChangeListener
-            saveSettings(currentSettings.copy(muteWinSound = checked))
+            saveSettings(currentSettings.copy(soundOn = checked))
         }
 
         // Board layout spinner

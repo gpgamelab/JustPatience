@@ -404,8 +404,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var winPopupSoundLoaded: Boolean = false
     private var magicWandSoundId: Int = 0
     private var magicWandSoundLoaded: Boolean = false
-    private var muteCardSounds: Boolean = false
-    private var muteWinSound: Boolean = false
+    private var soundOn: Boolean = true
 
     private var helpControlFlowInProgress = false
     private var couponPendingOnRestartConfirm = false
@@ -724,8 +723,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 launch {
                     settingsManager.gamePlaySettingsFlow.collect { settings ->
                         isPremiumAccount = settings.premiumAcct
-                        muteCardSounds = settings.muteCardSound
-                        muteWinSound = settings.muteWinSound
+                        soundOn = settings.soundOn
                     }
                 }
 
@@ -883,22 +881,22 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun playCardClickMoveSound() {
-        if (muteCardSounds || !moveSoundLoaded || moveSoundId == 0) return
+        if (!soundOn || !moveSoundLoaded || moveSoundId == 0) return
         moveSoundPool?.play(moveSoundId, 1f, 1f, 1, 0, 0.5f)
     }
 
     private fun playMagicWandSound() {
-        if (muteCardSounds || !magicWandSoundLoaded || magicWandSoundId == 0) return
+        if (!soundOn || !magicWandSoundLoaded || magicWandSoundId == 0) return
         moveSoundPool?.play(magicWandSoundId, 1f, 1f, 1, 0, 0.5f)
     }
 
     private fun playWinPopupSoundIfAllowed() {
-        if (muteWinSound || !winPopupSoundLoaded || winPopupSoundId == 0) return
+        if (!soundOn || !winPopupSoundLoaded || winPopupSoundId == 0) return
         moveSoundPool?.play(winPopupSoundId, 1f, 1f, 1, 0, 1f)
     }
 
     private fun playShuffleSoundSequence(onComplete: (() -> Unit)? = null) {
-        if (muteCardSounds) {
+        if (!soundOn) {
             onComplete?.invoke()
             return
         }
@@ -1940,9 +1938,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 currentDeckCount = currentSettings.deckCount,
                 currentInfiniteRecycles = currentSettings.infiniteRecycles,
                 currentRecycleCount = currentSettings.recycleCount,
-                currentMuteMusic = currentSettings.muteMusic,
-                currentMuteCardSounds = currentSettings.muteCardSound,
-                currentMuteWinSound = currentSettings.muteWinSound,
+                currentSoundOn = currentSettings.soundOn,
                 currentShowGameTimer = currentSettings.showGameTimer,
                 currentShowScore = currentSettings.showScore,
                 currentShowMoves = currentSettings.showMoves,
@@ -2470,46 +2466,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    override fun onGameMenuMuteMusicToggle() {
+    override fun onGameMenuSoundToggle() {
         lifecycleScope.launch {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
-            showEnableDisableDialog(
-                title = getString(R.string.game_menu_mute_game_music),
-                enabled = currentSettings.muteMusic
-            ) { enabled ->
+            showOnOffDialog(
+                title = getString(R.string.game_menu_sound),
+                isOn = currentSettings.soundOn
+            ) { isOn ->
                 lifecycleScope.launch {
                     val latest = settingsManager.gamePlaySettingsFlow.first()
-                    settingsManager.saveGamePlaySettings(latest.copy(muteMusic = enabled))
-                }
-            }
-        }
-    }
-
-    override fun onGameMenuMuteCardSoundsToggle() {
-        lifecycleScope.launch {
-            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
-            showEnableDisableDialog(
-                title = getString(R.string.game_menu_mute_card_movement_sounds),
-                enabled = currentSettings.muteCardSound
-            ) { enabled ->
-                lifecycleScope.launch {
-                    val latest = settingsManager.gamePlaySettingsFlow.first()
-                    settingsManager.saveGamePlaySettings(latest.copy(muteCardSound = enabled))
-                }
-            }
-        }
-    }
-
-    override fun onGameMenuMuteWinSoundToggle() {
-        lifecycleScope.launch {
-            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
-            showEnableDisableDialog(
-                title = getString(R.string.game_menu_mute_win_sound),
-                enabled = currentSettings.muteWinSound
-            ) { enabled ->
-                lifecycleScope.launch {
-                    val latest = settingsManager.gamePlaySettingsFlow.first()
-                    settingsManager.saveGamePlaySettings(latest.copy(muteWinSound = enabled))
+                    settingsManager.saveGamePlaySettings(latest.copy(soundOn = isOn))
                 }
             }
         }
@@ -2926,6 +2892,27 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             getString(R.string.setting_state_disabled)
         )
         val checkedItem = if (enabled) 0 else 1
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setSingleChoiceItems(options, checkedItem) { dialog, which ->
+                onSelection(which == 0)
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showOnOffDialog(
+        title: String,
+        isOn: Boolean,
+        onSelection: (Boolean) -> Unit
+    ) {
+        val options = arrayOf(
+            getString(R.string.setting_state_on),
+            getString(R.string.setting_state_off)
+        )
+        val checkedItem = if (isOn) 0 else 1
 
         MaterialAlertDialogBuilder(this)
             .setTitle(title)
