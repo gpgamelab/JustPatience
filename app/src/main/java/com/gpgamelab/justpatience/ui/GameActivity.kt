@@ -22,7 +22,6 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.view.MotionEvent
 import android.widget.Button
 import android.widget.EditText
@@ -44,9 +43,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageButton
-import com.google.android.material.button.MaterialButton
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.review.testing.FakeReviewManager
@@ -66,9 +63,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import kotlin.random.Random
-import kotlin.math.sqrt
 import kotlin.math.roundToInt
-import android.graphics.drawable.GradientDrawable
 import java.util.Locale
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, TesterMenuDialogFragment.Host, DevelopMenuDialogFragment.Host {
@@ -144,6 +139,44 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val ticketGroupExtraTopDpLandscape: Float = 8f
     )
 
+    private data class StandardPopupUiConfig(
+        val dialogWidthPercentLandscape: Float = 0.40f,
+        val dialogWidthPercentPortrait: Float = 0.95f,
+        val dialogHeightPercent: Float = 0.80f,
+        // Scale the final dialog footprint (1.0 = unchanged).
+        val dialogScaleLandscape: Float = 0.90f,
+        val dialogScalePortrait: Float = 0.60f,
+        // Visual-only starburst tweaks for win popup.
+        val starburstOffsetXPx: Float = 0f,
+        val starburstOffsetYPx: Float = 0f,
+        // Baseline visual memory value; auto-layout recalculates per device/orientation.
+        val starburstScale: Float = 4.0f,
+        // Portrait reward band (gems position is fine; tickets get an extra nudge below)
+        val rewardTopPercentPortrait: Float = 0.53f,
+        val rewardBottomPercentPortrait: Float = 0.65f,
+        // Landscape reward band: shifted 5 % lower than portrait
+        val rewardTopPercentLandscape: Float = 0.59f,
+        val rewardBottomPercentLandscape: Float = 0.71f,
+        val buttonsTopPercent: Float = 0.87f,
+        val buttonsBottomPercent: Float = buttonsTopPercent + 0.1f,
+        val continueButtonWidthPercent: Float = 0.30f,
+        val multiplierButtonWidthPercent: Float = 0.30f,
+        val buttonGapDp: Float = 10f,
+        val rewardAmountTextSp: Float = 20f,
+        // Landscape reward row (gems+tickets image/text) rendered at 50%.
+        val landscapeRewardRowScale: Float = 0.5f,
+        // Portrait reward row (gems+tickets+wand image/text) rendered ~35% smaller.
+        val portraitRewardRowScale: Float = 0.5f,
+        // Portrait only: push the ticket group down independently of the gem group (~1–2 % of popup height)
+        val ticketGroupExtraTopDpPortrait: Float = 8f,
+        val ticketGroupExtraTopDpLandscape: Float = 8f,
+        // Title display parameters
+        val titleBottomPercent: Float = 0.06f,
+        val titleOffsetPxLandscape: Float = 0f,
+        val titleOffsetPxPortrait: Float = 0f,
+        val titleTextSp: Float = 32f
+    )
+
     // Single tweak cluster for the custom win popup. Adjust these values instead of
     // searching through the XML when you want to nudge positions/sizes.
     private val winPopupUiConfig = WinPopupUiConfig()
@@ -210,39 +243,45 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             multiplierButtonScale = devMultiplierButtonScaleState
         )
     }
+    private val standardPopupUiConfig = StandardPopupUiConfig()
 
-    private fun buildDailyBonusPopupUiConfig(): RewardPopupDialog.UiConfig {
-        val winBase = buildWinRewardPopupUiConfig()
-        return winBase.copy(
-            // Keep popup shell and button geometry aligned with win popup.
-            dialogWidthPercentLandscape = winBase.dialogWidthPercentLandscape,
-            dialogWidthPercentPortrait = winBase.dialogWidthPercentPortrait,
-            dialogHeightPercentLandscape = winBase.dialogHeightPercentLandscape,
-            dialogHeightPercentPortrait = winBase.dialogHeightPercentPortrait,
-            buttonRowWidthPercentLandscape = winBase.buttonRowWidthPercentLandscape,
-            buttonRowWidthPercentPortrait = winBase.buttonRowWidthPercentPortrait,
-            continueButtonWidthPercent = winBase.continueButtonWidthPercent,
-            multiplierButtonWidthPercent = winBase.multiplierButtonWidthPercent,
-            buttonGapDp = winBase.buttonGapDp,
+    private fun buildStandardUnifiedRewardPopupUiConfig(): RewardPopupDialog.UiConfig {
+        val widthLandscape = (standardPopupUiConfig.dialogWidthPercentLandscape * standardPopupUiConfig.dialogScaleLandscape)
+            .coerceIn(0.1f, 1f)
+        val widthPortrait = (standardPopupUiConfig.dialogWidthPercentPortrait * standardPopupUiConfig.dialogScalePortrait)
+            .coerceIn(0.1f, 1f)
+        val heightLandscape = (standardPopupUiConfig.dialogHeightPercent * standardPopupUiConfig.dialogScaleLandscape)
+            .coerceIn(0.1f, 1f)
+        val heightPortrait = (standardPopupUiConfig.dialogHeightPercent * standardPopupUiConfig.dialogScalePortrait)
+            .coerceIn(0.1f, 1f)
+
+        return RewardPopupDialog.UiConfig(
+            dialogWidthPercentLandscape = widthLandscape,
+            dialogWidthPercentPortrait = widthPortrait,
+            dialogHeightPercentLandscape = heightLandscape,
+            dialogHeightPercentPortrait = heightPortrait,
+            titleBottomPercentLandscape = standardPopupUiConfig.rewardTopPercentLandscape,
+            titleBottomPercentPortrait = standardPopupUiConfig.rewardTopPercentPortrait,
+            rewardBottomPercentLandscape = standardPopupUiConfig.rewardBottomPercentLandscape,
+            rewardBottomPercentPortrait = standardPopupUiConfig.rewardBottomPercentPortrait,
+            buttonsTopPercent = standardPopupUiConfig.buttonsTopPercent,
+            buttonsBottomPercent = standardPopupUiConfig.buttonsBottomPercent,
             showTitle = true,
             showWinOnlyVictory = false,
+            victoryTextSp = devVictoryTextSizeSpState,
+            victoryOffsetXDp = devVictoryOffsetXDpState,
+            victoryOffsetYDp = devVictoryOffsetYDpState,
             showStarburst = false,
-            titleBottomPercent = 0.16f,
-            // Use the same signed-Y behavior as the win-title (VICTORY) tuning.
-            titleOffsetInchesLandscape = 0f,
-            titleOffsetInchesPortrait = 0f,
-            titleOffsetPxLandscape = dpToPxFloatSigned(devVictoryOffsetYDpState),
-            titleOffsetPxPortrait = dpToPxFloatSigned(devVictoryOffsetYDpState),
-            titleTextSp = devDailyTitleTextSizeSpState,
-            rewardImageScalePortrait = winBase.rewardImageScalePortrait,
-            rewardTextScalePortrait = winBase.rewardTextScalePortrait,
-            rewardImageScaleLandscape = winBase.rewardImageScaleLandscape,
-            rewardTextScaleLandscape = winBase.rewardTextScaleLandscape,
-            rewardRowScalePortrait = winBase.rewardRowScalePortrait,
-            rewardRowScaleLandscape = winBase.rewardRowScaleLandscape,
-            buttonTextOffsetInchesLandscape = 0f,
-            buttonsTopPercent = winBase.buttonsTopPercent,
-            buttonsBottomPercent = winBase.buttonsBottomPercent,
+            starburstImageResId = R.drawable.ic_star_burst_yellow,
+            starburstOffsetXPx = testerStarburstPositionXPx.toFloat(),
+            starburstOffsetYPx = testerStarburstPositionYPx.toFloat(),
+            starburstScale = testerStarburstScale,
+            continueButtonWidthPercent = standardPopupUiConfig.continueButtonWidthPercent,
+            multiplierButtonWidthPercent = standardPopupUiConfig.multiplierButtonWidthPercent,
+            buttonGapDp = standardPopupUiConfig.buttonGapDp,
+            rewardTextOverrideSp = devRewardTextSizeSpState,
+            rewardRowScalePortrait = standardPopupUiConfig.portraitRewardRowScale,
+            rewardRowScaleLandscape = standardPopupUiConfig.landscapeRewardRowScale,
             gemImageHeightDp = devGemImageHeightDpState,
             gemOffsetXDp = devGemOffsetXDpState,
             gemOffsetYDp = devGemOffsetYDpState,
@@ -252,7 +291,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             wandImageHeightDp = devWandImageHeightDpState,
             wandOffsetXDp = devWandOffsetXDpState,
             wandOffsetYDp = devWandOffsetYDpState,
-            rewardTextOverrideSp = devRewardTextSizeSpState,
             gemNumberOffsetXDp = devGemNumberOffsetXDpState,
             gemNumberOffsetYDp = devGemNumberOffsetYDpState,
             ticketNumberOffsetXDp = devTicketNumberOffsetXDpState,
@@ -266,8 +304,82 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             claimButtonScale = devClaimButtonScaleState,
             multiplierButtonScaleX = devMultiplierButtonScaleXState,
             multiplierButtonScaleY = devMultiplierButtonScaleYState,
-            multiplierButtonScale = devMultiplierButtonScaleState
+            multiplierButtonScale = devMultiplierButtonScaleState,
+            titleBottomPercent = standardPopupUiConfig.titleBottomPercent,
+            titleOffsetPxLandscape = standardPopupUiConfig.titleOffsetPxLandscape,
+            titleOffsetPxPortrait = standardPopupUiConfig.titleOffsetPxPortrait,
+            titleTextSp = standardPopupUiConfig.titleTextSp
         )
+    }
+
+    private enum class RewardPopupStyle {
+        WIN,
+        STANDARD
+    }
+
+    private fun buildUnifiedRewardPopupUiConfig(style: RewardPopupStyle): RewardPopupDialog.UiConfig {
+        val winBase = buildWinRewardPopupUiConfig()
+        val unifiedBase = buildStandardUnifiedRewardPopupUiConfig()
+        return when (style) {
+            RewardPopupStyle.WIN -> winBase
+            RewardPopupStyle.STANDARD -> unifiedBase
+        }
+    }
+
+    private fun showUnifiedRewardPopup(
+        model: RewardPopupDialog.Model,
+        uiConfig: RewardPopupDialog.UiConfig,
+        isWinPopup: Boolean,
+        onButtonClick: (index: Int, dialog: Dialog) -> Unit
+    ): Dialog {
+        val dialog = rewardPopupDialog.show(
+            model = model,
+            baseImageResId = R.drawable.ic_popup_rect_blue,
+            uiConfig = uiConfig,
+            onButtonClick = onButtonClick
+        )
+
+        if (!isWinPopup) {
+            return dialog
+        }
+
+        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val dialogWidthPercent = if (isLandscapeNow) uiConfig.dialogWidthPercentLandscape else uiConfig.dialogWidthPercentPortrait
+        val dialogHeightPercent = if (isLandscapeNow) uiConfig.dialogHeightPercentLandscape else uiConfig.dialogHeightPercentPortrait
+        val (usableWidthPx, usableHeightPx) = getUsableWindowSizePx()
+        val widthPx = (usableWidthPx * dialogWidthPercent).toInt().coerceAtLeast(1)
+        val baseHeightPx = (usableHeightPx * dialogHeightPercent).toInt().coerceAtLeast(1)
+        val initialOverflowTopPx = estimateInitialStarburstTopOverflowPx()
+        val heightPx = (baseHeightPx + initialOverflowTopPx).coerceAtLeast(1)
+        dialog.window?.setLayout(widthPx, heightPx)
+
+        val dialogView = dialog.findViewById<View>(R.id.layout_popup_body)?.rootView
+        val starburstView = dialog.findViewById<ImageView>(R.id.iv_win_popup_starburst)
+        activeWinPopupDialog = dialog
+        activeWinPopupRoot = dialogView
+        activeWinPopupBaseWidthPx = widthPx
+        activeWinPopupBaseHeightPx = baseHeightPx
+
+        dialog.setOnDismissListener {
+            activeStarburstAnimator?.cancel()
+            activeStarburstAnimator = null
+            activeStarburstView = null
+            activeWinPopupDialog = null
+            activeWinPopupRoot = null
+            activeWinPopupBaseWidthPx = 0
+            activeWinPopupBaseHeightPx = 0
+            winDialogShowing = false
+        }
+        dialog.window?.setLayout(widthPx, heightPx)
+        playWinPopupSoundIfAllowed()
+
+        starburstView?.post {
+            if (!dialog.isShowing) return@post
+            activeStarburstView = starburstView
+            refreshActiveStarburstDebugAndMotion()
+        }
+
+        return dialog
     }
 
     private lateinit var binding: ActivityGameBinding
@@ -344,7 +456,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devTicketNumberOffsetYDpState: Float = -135f
     private var devWandNumberOffsetXDpState: Float   = 30f
     private var devWandNumberOffsetYDpState: Float   = -102f
-    private var devButtonRowOffsetXDpState: Float    = 85f
+    private var devButtonRowOffsetXDpState: Float    = 0f
     private var devButtonRowOffsetYDpState: Float    = -50f
     private var devClaimButtonScaleXState: Float     = 1f
     private var devClaimButtonScaleYState: Float     = 3f
@@ -355,34 +467,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devVictoryTextSizeSpState: Float     = BASELINE_WIN_VICTORY_TEXT_SP
     private var devVictoryOffsetXDpState: Float      = 0f
     private var devVictoryOffsetYDpState: Float      = 0f
-
-    // Daily popup element sizes – separated from win popup tuning so both can be adjusted independently.
-    private var devDailyTitleOffsetYPxState: Float       = 100f
-    private var devDailyTitleTextSizeSpState: Float      = 60f
-    private var devDailyGemImageHeightDpState: Float      = BASELINE_WIN_GEM_HEIGHT_DP
-    private var devDailyTicketImageHeightDpState: Float   = BASELINE_WIN_TICKET_HEIGHT_DP
-    private var devDailyWandImageHeightDpState: Float     = BASELINE_WIN_MAGIC_WAND_HEIGHT_DP
-    private var devDailyGemOffsetXDpState: Float          = 0f
-    private var devDailyGemOffsetYDpState: Float          = 40f
-    private var devDailyTicketOffsetXDpState: Float       = 0f
-    private var devDailyTicketOffsetYDpState: Float       = 75f
-    private var devDailyWandOffsetXDpState: Float         = 0f
-    private var devDailyWandOffsetYDpState: Float         = -40f
-    private var devDailyRewardTextSizeSpState: Float      = BASELINE_WIN_REWARD_TEXT_SP
-    private var devDailyGemNumberOffsetXDpState: Float    = 0f
-    private var devDailyGemNumberOffsetYDpState: Float    = 65f
-    private var devDailyTicketNumberOffsetXDpState: Float = 0f
-    private var devDailyTicketNumberOffsetYDpState: Float = 0f
-    private var devDailyWandNumberOffsetXDpState: Float   = 0f
-    private var devDailyWandNumberOffsetYDpState: Float   = 95f
-    private var devDailyButtonRowOffsetXDpState: Float    = 0f
-    private var devDailyButtonRowOffsetYDpState: Float    = 0f
-    private var devDailyClaimButtonScaleXState: Float     = 0.8f
-    private var devDailyClaimButtonScaleYState: Float     = 3f
-    private var devDailyClaimButtonScaleState: Float      = 1f
-    private var devDailyMultiplierButtonScaleXState: Float = 0.7f
-    private var devDailyMultiplierButtonScaleYState: Float = 3f
-    private var devDailyMultiplierButtonScaleState: Float = 1f
 
     // Unlock popup dialog width scaling (for No Tickets popup)
     private var devUnlockDialogWidthPercentPortraitState: Float = 0.85f
@@ -492,48 +576,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
          devVictoryOffsetYDpState  = 0f
      }
 
-    private fun applyAutoDailyPopupRatios() {
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
-            this,
-            baselinePortraitWidthPx  = 1600,
-            baselinePortraitHeightPx = 2560
-        ).averageRatio
-        val safeRatio = ratio.coerceIn(0.50f, 1.30f)
-        val buttonScaleRatio = safeRatio.coerceIn(0.65f, 1.00f)
-
-        val titleBaseSp = if (isLandscape) BASELINE_DAILY_TITLE_TEXT_SP_LANDSCAPE else BASELINE_DAILY_TITLE_TEXT_SP_PORTRAIT
-        val rewardTextBaseSp = if (isLandscape) BASELINE_DAILY_REWARD_TEXT_SP_LANDSCAPE else BASELINE_DAILY_REWARD_TEXT_SP_PORTRAIT
-        val imageScale = if (isLandscape) BASELINE_DAILY_IMAGE_SCALE_LANDSCAPE else BASELINE_DAILY_IMAGE_SCALE_PORTRAIT
-
-        devDailyTitleOffsetYPxState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_DAILY_TITLE_OFFSET_Y_PX, safeRatio)
-        devDailyTitleTextSizeSpState = BaselineResolutionScaleUtil.scaleFromBaseline(titleBaseSp, safeRatio)
-        devDailyGemImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_GEM_HEIGHT_DP * imageScale, safeRatio)
-        devDailyTicketImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_TICKET_HEIGHT_DP * imageScale, safeRatio)
-        devDailyWandImageHeightDpState = BaselineResolutionScaleUtil.scaleFromBaseline(BASELINE_WIN_MAGIC_WAND_HEIGHT_DP * imageScale, safeRatio)
-        devDailyRewardTextSizeSpState = BaselineResolutionScaleUtil.scaleFromBaseline(rewardTextBaseSp, safeRatio)
-        devDailyGemOffsetXDpState = 0f
-        devDailyGemOffsetYDpState = (if (isLandscape) BASELINE_DAILY_GEM_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_GEM_OFFSET_Y_DP_PORTRAIT) * safeRatio
-        devDailyTicketOffsetXDpState = 0f
-        devDailyTicketOffsetYDpState = (if (isLandscape) BASELINE_DAILY_TICKET_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_TICKET_OFFSET_Y_DP_PORTRAIT) * safeRatio
-        devDailyWandOffsetXDpState = 0f
-        devDailyWandOffsetYDpState = (if (isLandscape) BASELINE_DAILY_WAND_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_WAND_OFFSET_Y_DP_PORTRAIT) * safeRatio
-        devDailyGemNumberOffsetXDpState = 0f
-        devDailyGemNumberOffsetYDpState = (if (isLandscape) BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_PORTRAIT) * safeRatio
-        devDailyTicketNumberOffsetXDpState = 0f
-        devDailyTicketNumberOffsetYDpState = BASELINE_DAILY_TICKET_NUMBER_OFFSET_Y_DP * safeRatio
-        devDailyWandNumberOffsetXDpState = 0f
-        devDailyWandNumberOffsetYDpState = (if (isLandscape) BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT) * safeRatio
-        devDailyButtonRowOffsetXDpState = 0f
-        devDailyButtonRowOffsetYDpState = 0f
-        devDailyClaimButtonScaleXState = 0.8f * buttonScaleRatio
-        devDailyClaimButtonScaleYState = 3f * buttonScaleRatio
-        devDailyClaimButtonScaleState = 1f
-        devDailyMultiplierButtonScaleXState = 0.7f * buttonScaleRatio
-        devDailyMultiplierButtonScaleYState = 3f * buttonScaleRatio
-        devDailyMultiplierButtonScaleState = 1f
-    }
-
     private fun applyAutoUnlockPopupRatios() {
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
@@ -601,31 +643,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
          private const val BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT = -102f
          private const val BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_LANDSCAPE = 40f
          private const val BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE = -155f
-         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT = 85f
-         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE = 90f
-         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_PORTRAIT = -50f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT = 0f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE = 0f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_PORTRAIT = -45f
          private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_LANDSCAPE = -30f
 
         // Daily popup baselines for ratio/orientation scaling
-        private const val BASELINE_DAILY_TITLE_OFFSET_Y_PX = 200f
-        private const val BASELINE_DAILY_TITLE_TEXT_SP_PORTRAIT = 52f
-        private const val BASELINE_DAILY_TITLE_TEXT_SP_LANDSCAPE = 56f
-        private const val BASELINE_DAILY_REWARD_TEXT_SP_PORTRAIT = 52f
-        private const val BASELINE_DAILY_REWARD_TEXT_SP_LANDSCAPE = 60f
-        private const val BASELINE_DAILY_IMAGE_SCALE_PORTRAIT = 0.80f
-        private const val BASELINE_DAILY_IMAGE_SCALE_LANDSCAPE = 1.00f
-        private const val BASELINE_DAILY_GEM_OFFSET_Y_DP_PORTRAIT = 40f
-        private const val BASELINE_DAILY_TICKET_OFFSET_Y_DP_PORTRAIT = 75f
-        private const val BASELINE_DAILY_WAND_OFFSET_Y_DP_PORTRAIT = 25f
-        private const val BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_PORTRAIT = 65f
-        private const val BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT = 40f
-        private const val BASELINE_DAILY_GEM_OFFSET_Y_DP_LANDSCAPE = 24f
-        private const val BASELINE_DAILY_TICKET_OFFSET_Y_DP_LANDSCAPE = 48f
-        private const val BASELINE_DAILY_WAND_OFFSET_Y_DP_LANDSCAPE = 18f
-        private const val BASELINE_DAILY_GEM_NUMBER_OFFSET_Y_DP_LANDSCAPE = 52f
-        private const val BASELINE_DAILY_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE = 28f
-        private const val BASELINE_DAILY_TICKET_NUMBER_OFFSET_Y_DP = 0f
-
         private var sessionDevelopMenuExpandState = DevelopMenuDialogFragment.ExpandState()
     }
 
@@ -639,7 +662,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // every device/orientation gets sensible defaults without manual tuning.
         applyAutoStarburstProfile()
         applyAutoWinPopupRatios()
-        applyAutoDailyPopupRatios()
         applyAutoUnlockPopupRatios()
 
         // Apply BuildConfig-driven visibility for overlay debug buttons.
@@ -667,6 +689,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             onMagicWandTargetSelected(type, index, cardIndex)
         }
         applyLockedPileAdIconDevConfigToBoard()
+        
+        // Apply device scale ratio to control buttons after the board geometry is computed
+        binding.gameBoardView.post {
+            scaleControlButtonsBasedOnDeviceRatio()
+        }
+        
         binding.gameBoardView.bindToViewModel(this)
 
         // Optional manager (no heavy rendering here)
@@ -1051,11 +1079,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 )
             )
         )
-        val uiConfig = buildWinRewardPopupUiConfig()
-        val dialog = rewardPopupDialog.show(
+        val uiConfig = buildUnifiedRewardPopupUiConfig(RewardPopupStyle.WIN)
+        showUnifiedRewardPopup(
             model = popupModel,
-            baseImageResId = R.drawable.ic_popup_rect_blue,
             uiConfig = uiConfig,
+            isWinPopup = true,
             onButtonClick = { index, popupDialog ->
                 when (index) {
                     0 -> {
@@ -1075,42 +1103,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 }
             }
         )
-
-        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val dialogWidthPercent = if (isLandscapeNow) uiConfig.dialogWidthPercentLandscape else uiConfig.dialogWidthPercentPortrait
-        val dialogHeightPercent = if (isLandscapeNow) uiConfig.dialogHeightPercentLandscape else uiConfig.dialogHeightPercentPortrait
-        val widthPx = (resources.displayMetrics.widthPixels * dialogWidthPercent).toInt().coerceAtLeast(1)
-        val baseHeightPx = (resources.displayMetrics.heightPixels * dialogHeightPercent).toInt().coerceAtLeast(1)
-        val initialOverflowTopPx = estimateInitialStarburstTopOverflowPx()
-        val heightPx = (baseHeightPx + initialOverflowTopPx).coerceAtLeast(1)
-        dialog.window?.setLayout(widthPx, heightPx)
-
-        val dialogView = dialog.findViewById<View>(R.id.layout_popup_body)?.rootView
-        val starburstView = dialog.findViewById<ImageView>(R.id.iv_win_popup_starburst)
-        activeWinPopupDialog = dialog
-        activeWinPopupRoot = dialogView
-        activeWinPopupBaseWidthPx = widthPx
-        activeWinPopupBaseHeightPx = baseHeightPx
-
-        dialog.setOnDismissListener {
-            activeStarburstAnimator?.cancel()
-            activeStarburstAnimator = null
-            activeStarburstView = null
-            activeWinPopupDialog = null
-            activeWinPopupRoot = null
-            activeWinPopupBaseWidthPx = 0
-            activeWinPopupBaseHeightPx = 0
-            winDialogShowing = false
-        }
-        dialog.window?.setLayout(widthPx, heightPx)
-        playWinPopupSoundIfAllowed()
-
-        // Start rotation only after the view is measured, so pivot uses true center.
-        starburstView?.post {
-            if (!dialog.isShowing) return@post
-            activeStarburstView = starburstView
-            refreshActiveStarburstDebugAndMotion()
-        }
     }
 
     private fun configureWinPopupArtwork(dialogView: View): ImageView? {
@@ -1455,7 +1447,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             tv.translationY = dpToPxFloatSigned(devWandNumberOffsetYDpState)
         }
         dialogView.findViewById<LinearLayout>(R.id.layout_buttons_row)?.let { row ->
-            row.translationX = dpToPxFloatSigned(devButtonRowOffsetXDpState)
+            row.translationX = dpToPxFloatSigned(devButtonRowOffsetXDpState + 30f)
             row.translationY = dpToPxFloatSigned(devButtonRowOffsetYDpState)
         }
         dialogView.findViewById<Button>(R.id.btn_win_continue)?.let { button ->
@@ -1799,6 +1791,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun showDailyBonusPopup(todayIsoDate: String?) {
         if (isFinishing || isDestroyed) return
+        val claimDate = todayIsoDate ?: return
 
         val baseRewards = selectDailyBonusRewards(isPremiumAccount)
         val adMultiplier = if (isPremiumAccount) 3 else 2
@@ -1841,13 +1834,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             )
         )
 
-        rewardPopupDialog.show(
+        showUnifiedRewardPopup(
             model = popupModel,
-            baseImageResId = R.drawable.ic_popup_rect_blue,
-            uiConfig = buildDailyBonusPopupUiConfig(),
+            uiConfig = buildUnifiedRewardPopupUiConfig(RewardPopupStyle.STANDARD),
+            isWinPopup = false,
             onButtonClick = { index, dialog ->
                 dialog.dismiss()
-                val claimDate = todayIsoDate ?: return@show
                 when (index) {
                     0 -> claimDailyBonus(baseRewards, claimDate)
                     1 -> claimDailyBonusWithMultiplier(
@@ -2127,7 +2119,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             testerStarburstRotationEnabled = false
             // Reset win popup element sizes to auto-scaled defaults.
             applyAutoWinPopupRatios()
-            applyAutoDailyPopupRatios()
             applyAutoUnlockPopupRatios()
             renderGemHud(gemTotal)
             renderTicketHud(ticketTotal)
@@ -3041,7 +3032,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyImmersiveFullscreen()
         applyResponsiveControlSizing()
         applyAutoWinPopupRatios()
-        applyAutoDailyPopupRatios()
         applyAutoUnlockPopupRatios()
         if (testerStarburstAutoLayoutEnabled) {
             applyAutoStarburstProfile()
@@ -3561,14 +3551,20 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val controlHeightScale = heightScale
         val portraitWidthBoost = 1.75f
 
+        val ratioProfile = BaselineResolutionScaleUtil.calculateAverageRatio(
+            context = this,
+            baselinePortraitWidthPx = WIN_POPUP_BASELINE_PORTRAIT_WIDTH_PX,
+            baselinePortraitHeightPx = WIN_POPUP_BASELINE_PORTRAIT_HEIGHT_PX
+        )
+
         if (!isLandscape) {
             // Portrait uses fixed button widths; portraitButtonWidthScale strips the extreme-aspect
             // compression so the existing portraitWidthBoost is not double-penalised.
-            setButtonSizeDp(binding.btnNewGame, 50f * portraitWidthBoost * portraitButtonWidthScale, 80f * controlHeightScale)
-            setButtonSizeDp(binding.btnStats, 56f * portraitWidthBoost * portraitButtonWidthScale, 80f * controlHeightScale)
-            setButtonSizeDp(btnHint, 50f * portraitWidthBoost * portraitButtonWidthScale, 72f * controlHeightScale)
-            setButtonSizeDp(btnRestart, 62f * portraitWidthBoost * portraitButtonWidthScale, 72f * controlHeightScale)
-            setButtonSizeDp(btnAuto, 52f * portraitWidthBoost * portraitButtonWidthScale, 72f * controlHeightScale)
+            setButtonSizeDp(binding.btnNewGame, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+            setButtonSizeDp(binding.btnStats, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+            setButtonSizeDp(btnHint, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+            setButtonSizeDp(btnRestart, 67f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+            setButtonSizeDp(btnAuto, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
             (controlPanel?.layoutParams)?.let { lp ->
                 lp.height = dpToPx(80f * controlHeightScale)
                 controlPanel.layoutParams = lp
@@ -3582,11 +3578,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             )
         }
 
-        applyButtonScale(binding.btnNewGame, controlTextSp, textScale)
-        applyButtonScale(binding.btnStats, controlTextSp, textScale)
-        btnHint?.let { applyButtonScale(it, controlTextSp, textScale) }
-        btnRestart?.let { applyButtonScale(it, controlTextSp, textScale) }
-        btnAuto?.let { applyButtonScale(it, controlTextSp, textScale) }
+        applyButtonScale(binding.btnNewGame, controlTextSp, textScale * ratioProfile.averageRatio)
+        applyButtonScale(binding.btnStats, controlTextSp, textScale * ratioProfile.averageRatio)
+        btnHint?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
+        btnRestart?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
+        btnAuto?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
 
         // Portrait undo/redo widths also use the baseline-only scale (no extra compression).
         val undoWidthScale = if (isLandscape) widthScale else portraitButtonWidthScale
@@ -3607,7 +3603,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             dpToPx((if (isLandscape) 4f else 2f) * heightScale)
         )
 
-        binding.btnStats.iconSize = dpToPx(48f * textScale)
+        binding.btnStats.iconSize = dpToPx(48f * textScale * ratioProfile.averageRatio)
         binding.btnStats.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
     }
 
@@ -3640,6 +3636,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun dpToPxFloatSigned(dp: Float): Float {
         return dp * resources.displayMetrics.density
+    }
+
+    private fun getUsableWindowSizePx(): Pair<Int, Int> {
+        val bounds = windowManager.currentWindowMetrics.bounds
+        val insets = windowManager.currentWindowMetrics.windowInsets.getInsetsIgnoringVisibility(
+            android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.displayCutout()
+        )
+        val usableWidth = (bounds.width() - insets.left - insets.right).coerceAtLeast(1)
+        val usableHeight = (bounds.height() - insets.top - insets.bottom).coerceAtLeast(1)
+        return usableWidth to usableHeight
     }
 
     private fun showWinCelebrationThenDialog() {
@@ -3708,5 +3714,40 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         return this.first().first // Fallback (should never reach here)
+    }
+
+    /**
+     * Scale control buttons based on the device's baseline scale ratio.
+     * The ratio represents how the current device compares to a reference device (1600x2560).
+     * On smaller phones (ratio < 1.0), buttons scale down; on larger tablets (ratio > 1.0), they scale up.
+     */
+    private fun scaleControlButtonsBasedOnDeviceRatio() {
+        // get device details
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val scaleRatio = binding.gameBoardView.getCurrentDeviceScaleRatio()
+
+        if (scaleRatio <= 0f || scaleRatio >= 5f) {
+            // Sanity check: ratio should be reasonably close to 1.0
+            return
+        }
+
+        val controlLayout = binding.controlButtonsLayout
+        val params = controlLayout.layoutParams
+
+        // In portrait, adjust height, landscape width
+        if (!isLandscape) {
+            // Scale the height of the control buttons container
+            val newHeight = (150f * scaleRatio).toInt()
+            params.height = newHeight
+            controlLayout.layoutParams = params
+            controlLayout.requestLayout()
+        } else {
+            // Scale the width of the control buttons container
+            val newWidth = (300f * scaleRatio).toInt()
+            params.width = newWidth
+            controlLayout.layoutParams = params
+            controlLayout.requestLayout()
+        }
+
     }
 }

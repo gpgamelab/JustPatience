@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -167,15 +168,15 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         dialog.setCanceledOnTouchOutside(false)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        val widthPx = (activity.resources.displayMetrics.widthPixels * getDialogWidthPercent(uiConfig))
+        val (usableWidthPx, usableHeightPx) = getUsableWindowSizePx()
+        val widthPx = (usableWidthPx * getDialogWidthPercent(uiConfig))
             .toInt()
             .coerceAtLeast(1)
-        val heightPx = (activity.resources.displayMetrics.heightPixels * getDialogHeightPercent(uiConfig))
+        val heightPx = (usableHeightPx * getDialogHeightPercent(uiConfig))
             .toInt()
             .coerceAtLeast(1)
         applyButtonsRowWidth(buttonsRow, widthPx, uiConfig)
         applyButtonWidthHints(buttonsRow, widthPx, uiConfig)
-        dialog.window?.setLayout(widthPx, heightPx)
 
         for (index in 0 until buttonsRow.childCount) {
             val button = buttonsRow.getChildAt(index) as? AppCompatButton ?: continue
@@ -183,7 +184,11 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         }
 
         dialog.show()
-        root.post { wireScaledButtonTouchDelegation(root) }
+        dialog.window?.setLayout(widthPx, heightPx)
+        root.post {
+            clampHorizontalRowTranslations(root)
+            wireScaledButtonTouchDelegation(root)
+        }
         return dialog
     }
 
@@ -467,6 +472,38 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
 
     private fun dpToPx(dp: Float): Int {
         return (dp * activity.resources.displayMetrics.density).toInt().coerceAtLeast(1)
+    }
+
+    private fun getUsableWindowSizePx(): Pair<Int, Int> {
+        val metrics = activity.windowManager.currentWindowMetrics
+        val bounds = metrics.bounds
+        val insets = metrics.windowInsets.getInsetsIgnoringVisibility(
+            WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+        )
+        val usableWidth = (bounds.width() - insets.left - insets.right).coerceAtLeast(1)
+        val usableHeight = (bounds.height() - insets.top - insets.bottom).coerceAtLeast(1)
+        return usableWidth to usableHeight
+    }
+
+    private fun clampHorizontalRowTranslations(root: View) {
+        val popupBody = root.findViewById<ViewGroup>(R.id.layout_popup_body) ?: return
+        clampHorizontalTranslationToContainer(
+            row = root.findViewById(R.id.layout_reward_row),
+            container = popupBody
+        )
+        clampHorizontalTranslationToContainer(
+            row = root.findViewById(R.id.layout_buttons_row),
+            container = popupBody
+        )
+    }
+
+    private fun clampHorizontalTranslationToContainer(row: View?, container: ViewGroup) {
+        row ?: return
+        if (container.width <= 0 || row.width <= 0) return
+
+        val rowVisualWidth = row.width * kotlin.math.abs(row.scaleX).coerceAtLeast(0.1f)
+        val maxTranslation = ((container.width - rowVisualWidth) * 0.5f).coerceAtLeast(0f)
+        row.translationX = row.translationX.coerceIn(-maxTranslation, maxTranslation)
     }
 
     private fun wireScaledButtonTouchDelegation(dialogView: View) {

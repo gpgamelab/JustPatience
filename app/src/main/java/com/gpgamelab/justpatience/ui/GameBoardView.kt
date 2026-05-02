@@ -234,6 +234,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         couponDrawable = ContextCompat.getDrawable(context, R.drawable.ic_ticket_green_yellow_helper)
     }
 
+    fun getCurrentDeviceScaleRatio(): Float = currentDeviceScaleRatio
+
     private fun updateOffsetsForOrientation() {
         if (isLandscape) {
             BOARD_WIDTH_FRACTION = LANDSCAPE_BOARD_WIDTH_FRACTION

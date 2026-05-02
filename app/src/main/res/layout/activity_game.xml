@@ -204,7 +204,7 @@
     <LinearLayout
         android:id="@+id/control_buttons_layout"
         android:layout_width="0dp"
-        android:layout_height="80dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/adView"
@@ -215,56 +215,16 @@
             android:id="@+id/btn_new_game"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="50dp"
-            android:layout_height="80dp"
+            android:layout_height="50dp"
             android:layout_marginEnd="2dp"
             android:text="@string/new_game_button_text"
             android:textColor="@color/colorPrimary"
             app:strokeColor="@color/colorPrimary" />
 
-        <!-- Button
-            android:id="@+id/btn_undo"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/undo_button_text"
-            android:layout_marginEnd="8dp"
-            android:textColor="@color/secondary_button_color"
-            app:strokeColor="@color/secondary_button_color" / -->
-
-<!--        <ImageButton
-            android:id="@+id/btnUndo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/Undo_Red"
-            android:background="@null" />
-
-        <ImageButton
-            android:id="@+id/btnRedo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/Redo_Blue"
-            android:background="@null" />-->
-
-        <FrameLayout
-            android:id="@+id/move_controls_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="2dp"
-            android:paddingStart="3dp"
-            android:paddingTop="2dp"
-            android:paddingEnd="3dp"
-            android:paddingBottom="2dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
         <FrameLayout
             android:id="@+id/btnUndo"
             android:layout_width="30dp"
-            android:layout_height="72dp"
+            android:layout_height="0dp"
             android:background="?android:attr/selectableItemBackground">
 
             <ImageView
@@ -282,7 +242,7 @@
         <FrameLayout
             android:id="@+id/btnRedo"
             android:layout_width="30dp"
-            android:layout_height="72dp"
+            android:layout_height="0dp"
             android:background="?android:attr/selectableItemBackground">
 
             <ImageView
@@ -301,34 +261,26 @@
             android:id="@+id/btn_hint"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="50dp"
-            android:layout_height="72dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="1dp"
             android:text="@string/action_hint"
             android:textColor="@color/secondary_button_color"
             app:strokeColor="@color/secondary_button_color" />
 
-        <FrameLayout
-            android:id="@+id/btnRestart"
-            android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/btn_restart"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="62dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="1dp">
-
-            <Button
-                android:id="@+id/btn_restart"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="62dp"
-                android:layout_height="72dp"
-                android:text="@string/restart_game_text"
-                android:textColor="@color/secondary_button_color"
-                app:strokeColor="@color/secondary_button_color" />
-
-        </FrameLayout>
+            android:text="@string/restart_game_text"
+            android:textColor="@color/secondary_button_color"
+            app:strokeColor="@color/secondary_button_color" />
 
         <Button
             android:id="@+id/btn_auto_move"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="52dp"
-            android:layout_height="72dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="0dp"
             android:ellipsize="end"
             android:maxLines="1"
@@ -336,16 +288,11 @@
             android:textColor="@color/secondary_button_color"
             app:strokeColor="@color/secondary_button_color" />
 
-        </LinearLayout>
-
-
-        </FrameLayout>
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_stats"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="56dp"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="2dp"
             android:contentDescription="Menu"
             android:text="MENU"

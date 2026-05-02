@@ -63,7 +63,7 @@ object BaselineResolutionScaleUtil {
 
         val widthRatio = safeCurrentWidthPx.toFloat() / baselineWidthPx.toFloat()
         val heightRatio = safeCurrentHeightPx.toFloat() / baselineHeightPx.toFloat()
-        val averageRatio = ((widthRatio + heightRatio) * 0.5f).coerceAtLeast(MIN_AVERAGE_RATIO)
+        val averageRatio = ((widthRatio + heightRatio) / 2f).coerceAtLeast(MIN_AVERAGE_RATIO)
 
         return ResolutionRatioProfile(
             currentWidthPx = safeCurrentWidthPx,
