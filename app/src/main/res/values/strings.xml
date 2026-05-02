@@ -112,6 +112,7 @@
     <string name="magic_wand_no_card_available">No hidden %1$s available to fetch.</string>
     <string name="magic_wand_pick_king_title">Which King to place here?</string>
     <string name="magic_wand_pick_ace_title">Which Ace to place here?</string>
+    <string name="magic_wand_card_label_format">%1$s of %2$s</string>
     <string name="card_rank_king">King</string>
     <string name="card_rank_ace">Ace</string>
     <string name="magic_wand_ad_title">Get Magic Wand</string>
@@ -293,6 +294,7 @@ Locale: %7$s</string>
     <string name="game_menu_exit_app">Exit App</string>
 
     <string name="auto_move_button_text">Auto</string>
+    <string name="no_moves_available">No moves available</string>
     <string name="no_hints_available">No hints available</string>
 
     <!-- Settings Sections -->

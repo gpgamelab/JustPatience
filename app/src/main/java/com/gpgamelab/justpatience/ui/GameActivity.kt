@@ -1829,7 +1829,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     ) {
         val labels = candidates.map { c ->
             val suit = c.card.suit?.displayName ?: ""
-            "${c.card.rank.displayName} of $suit"
+            getString(R.string.magic_wand_card_label_format, c.card.rank.displayName, suit)
         }.toTypedArray()
 
         val titleRes = if (targetType == com.gpgamelab.justpatience.model.StackType.FOUNDATION)
@@ -3161,7 +3161,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         try {
                             val movesMade = viewModel.performAutoMove(onCardMoved = { playCardClickMoveSound() })
                             if (movesMade == 0) {
-                                showErrorFeedback("No moves available", buttonView)
+                                showErrorFeedback(R.string.no_moves_available, buttonView)
                             }
                         } finally {
                             buttonView.isEnabled = true
@@ -3181,7 +3181,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             }
 
             if (movesMade == 0) {
-                showErrorFeedback("No moves available", buttonView)
+                showErrorFeedback(R.string.no_moves_available, buttonView)
                 return@launch
             }
 
