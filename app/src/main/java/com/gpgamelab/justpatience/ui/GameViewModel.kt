@@ -1328,6 +1328,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val playerName = settings?.playerDisplayName
             val cardsDraw = settings?.drawSize
             val deckCount = game.deckCount
+            val isPremium = settings?.premiumAcct ?: false
             statsManager.recordGame(
                 score = game.score,
                 moves = game.moves,
@@ -1337,6 +1338,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 cardsDraw = cardsDraw,
                 deckCount = deckCount
             )
+            settingsManager.recordCompletedGamePremiumFlag(isPremium)
         } catch (e: Exception) {
             Log.e("GameViewModel", "Failed to record game completion", e)
             currentHandRecorded = false

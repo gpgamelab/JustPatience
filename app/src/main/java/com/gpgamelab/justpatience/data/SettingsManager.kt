@@ -86,6 +86,24 @@ class SettingsManager(private val context: Context) {
         // Session tracking: true while an IN_PROGRESS game is saved; false after normal game end.
         // If still true on next cold start it means the process was killed mid-session.
         val GAME_SESSION_ACTIVE = booleanPreferencesKey("game_session_active")
+
+        // Internal telemetry (not user-facing UI stats)
+        val TELEMETRY_WIN_SELECTED_CLAIM_COUNT = intPreferencesKey("telemetry_win_selected_claim_count")
+        val TELEMETRY_WIN_SELECTED_MULTIPLIER_COUNT = intPreferencesKey("telemetry_win_selected_multiplier_count")
+        val TELEMETRY_GAMES_COMPLETED_PREMIUM_COUNT = intPreferencesKey("telemetry_games_completed_premium_count")
+        val TELEMETRY_GAMES_COMPLETED_STANDARD_COUNT = intPreferencesKey("telemetry_games_completed_standard_count")
+        val TELEMETRY_COUPONS_USED_UNDO = intPreferencesKey("telemetry_coupons_used_undo")
+        val TELEMETRY_COUPONS_USED_REDO = intPreferencesKey("telemetry_coupons_used_redo")
+        val TELEMETRY_COUPONS_USED_HINT = intPreferencesKey("telemetry_coupons_used_hint")
+        val TELEMETRY_COUPONS_USED_RESTART = intPreferencesKey("telemetry_coupons_used_restart")
+        val TELEMETRY_COUPONS_USED_AUTO = intPreferencesKey("telemetry_coupons_used_auto")
+        val TELEMETRY_AD_UNLOCK_UNDO = intPreferencesKey("telemetry_ad_unlock_undo")
+        val TELEMETRY_AD_UNLOCK_REDO = intPreferencesKey("telemetry_ad_unlock_redo")
+        val TELEMETRY_AD_UNLOCK_HINT = intPreferencesKey("telemetry_ad_unlock_hint")
+        val TELEMETRY_AD_UNLOCK_RESTART = intPreferencesKey("telemetry_ad_unlock_restart")
+        val TELEMETRY_AD_UNLOCK_AUTO = intPreferencesKey("telemetry_ad_unlock_auto")
+        val TELEMETRY_AD_UNLOCK_EXTRA_TABLEAU = intPreferencesKey("telemetry_ad_unlock_extra_tableau")
+        val TELEMETRY_MAGIC_WANDS_USED = intPreferencesKey("telemetry_magic_wands_used")
     }
 
     /**
@@ -137,6 +155,28 @@ class SettingsManager(private val context: Context) {
         val gamesWon: Int = 0,
         val totalScore: Int = 0,
         val highScores: List<Int> = emptyList() // Example: top 10 scores
+    )
+
+    data class InternalTelemetryStats(
+        val winSelectedClaimCount: Int = 0,
+        val winSelectedMultiplierCount: Int = 0,
+        val gamesCompletedPremiumCount: Int = 0,
+        val gamesCompletedStandardCount: Int = 0,
+        val couponsUsedUndo: Int = 0,
+        val couponsUsedRedo: Int = 0,
+        val couponsUsedHint: Int = 0,
+        val couponsUsedRestart: Int = 0,
+        val couponsUsedAuto: Int = 0,
+        val adUnlockUndo: Int = 0,
+        val adUnlockRedo: Int = 0,
+        val adUnlockHint: Int = 0,
+        val adUnlockRestart: Int = 0,
+        val adUnlockAuto: Int = 0,
+        val adUnlockExtraTableau: Int = 0,
+        val magicWandsUsed: Int = 0,
+        val totalWands: Int = 0,
+        val totalTickets: Int = 0,
+        val totalGems: Int = 0
     )
 
     // --- Flowing Settings Data ---
@@ -227,6 +267,127 @@ class SettingsManager(private val context: Context) {
             preferences[PreferencesKeys.GAMES_WON] = 0
             preferences[PreferencesKeys.TOTAL_SCORE] = 0
             preferences[PreferencesKeys.HIGH_SCORES_JSON] = "[]"
+            clearInternalTelemetry(preferences)
+        }
+    }
+
+    private fun clearInternalTelemetry(preferences: androidx.datastore.preferences.core.MutablePreferences) {
+        preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_CLAIM_COUNT] = 0
+        preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_MULTIPLIER_COUNT] = 0
+        preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_PREMIUM_COUNT] = 0
+        preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_STANDARD_COUNT] = 0
+        preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_UNDO] = 0
+        preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_REDO] = 0
+        preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_HINT] = 0
+        preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_RESTART] = 0
+        preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_AUTO] = 0
+        preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_UNDO] = 0
+        preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_REDO] = 0
+        preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_HINT] = 0
+        preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_RESTART] = 0
+        preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_AUTO] = 0
+        preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_EXTRA_TABLEAU] = 0
+        preferences[PreferencesKeys.TELEMETRY_MAGIC_WANDS_USED] = 0
+    }
+
+    suspend fun recordWinRewardSelection(selectedMultiplier: Boolean) {
+        dataStore.edit { preferences ->
+            if (selectedMultiplier) {
+                preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_MULTIPLIER_COUNT] =
+                    (preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_MULTIPLIER_COUNT] ?: 0) + 1
+            } else {
+                preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_CLAIM_COUNT] =
+                    (preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_CLAIM_COUNT] ?: 0) + 1
+            }
+        }
+    }
+
+    suspend fun recordCompletedGamePremiumFlag(isPremium: Boolean) {
+        dataStore.edit { preferences ->
+            if (isPremium) {
+                preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_PREMIUM_COUNT] =
+                    (preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_PREMIUM_COUNT] ?: 0) + 1
+            } else {
+                preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_STANDARD_COUNT] =
+                    (preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_STANDARD_COUNT] ?: 0) + 1
+            }
+        }
+    }
+
+    suspend fun incrementCouponUsedForHelpControl(controlId: String) {
+        dataStore.edit { preferences ->
+            when (controlId.lowercase()) {
+                "undo" -> preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_UNDO] =
+                    (preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_UNDO] ?: 0) + 1
+                "redo" -> preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_REDO] =
+                    (preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_REDO] ?: 0) + 1
+                "hint" -> preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_HINT] =
+                    (preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_HINT] ?: 0) + 1
+                "restart" -> preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_RESTART] =
+                    (preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_RESTART] ?: 0) + 1
+                "auto" -> preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_AUTO] =
+                    (preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_AUTO] ?: 0) + 1
+            }
+        }
+    }
+
+    suspend fun incrementAdUnlockForHelpControl(controlId: String) {
+        dataStore.edit { preferences ->
+            when (controlId.lowercase()) {
+                "undo" -> preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_UNDO] =
+                    (preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_UNDO] ?: 0) + 1
+                "redo" -> preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_REDO] =
+                    (preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_REDO] ?: 0) + 1
+                "hint" -> preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_HINT] =
+                    (preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_HINT] ?: 0) + 1
+                "restart" -> preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_RESTART] =
+                    (preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_RESTART] ?: 0) + 1
+                "auto" -> preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_AUTO] =
+                    (preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_AUTO] ?: 0) + 1
+            }
+        }
+    }
+
+    suspend fun incrementExtraTableauUnlockedByAd() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_EXTRA_TABLEAU] =
+                (preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_EXTRA_TABLEAU] ?: 0) + 1
+        }
+    }
+
+    suspend fun incrementMagicWandsUsed() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TELEMETRY_MAGIC_WANDS_USED] =
+                (preferences[PreferencesKeys.TELEMETRY_MAGIC_WANDS_USED] ?: 0) + 1
+        }
+    }
+
+    suspend fun getInternalTelemetryStats(): InternalTelemetryStats {
+        return try {
+            val preferences = dataStore.data.first()
+            InternalTelemetryStats(
+                winSelectedClaimCount = preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_CLAIM_COUNT] ?: 0,
+                winSelectedMultiplierCount = preferences[PreferencesKeys.TELEMETRY_WIN_SELECTED_MULTIPLIER_COUNT] ?: 0,
+                gamesCompletedPremiumCount = preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_PREMIUM_COUNT] ?: 0,
+                gamesCompletedStandardCount = preferences[PreferencesKeys.TELEMETRY_GAMES_COMPLETED_STANDARD_COUNT] ?: 0,
+                couponsUsedUndo = preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_UNDO] ?: 0,
+                couponsUsedRedo = preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_REDO] ?: 0,
+                couponsUsedHint = preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_HINT] ?: 0,
+                couponsUsedRestart = preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_RESTART] ?: 0,
+                couponsUsedAuto = preferences[PreferencesKeys.TELEMETRY_COUPONS_USED_AUTO] ?: 0,
+                adUnlockUndo = preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_UNDO] ?: 0,
+                adUnlockRedo = preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_REDO] ?: 0,
+                adUnlockHint = preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_HINT] ?: 0,
+                adUnlockRestart = preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_RESTART] ?: 0,
+                adUnlockAuto = preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_AUTO] ?: 0,
+                adUnlockExtraTableau = preferences[PreferencesKeys.TELEMETRY_AD_UNLOCK_EXTRA_TABLEAU] ?: 0,
+                magicWandsUsed = preferences[PreferencesKeys.TELEMETRY_MAGIC_WANDS_USED] ?: 0,
+                totalWands = (preferences[PreferencesKeys.TOTAL_MAGIC_WANDS] ?: 0).coerceAtLeast(0),
+                totalTickets = (preferences[PreferencesKeys.TOTAL_TICKETS] ?: 0).coerceAtLeast(0),
+                totalGems = (preferences[PreferencesKeys.TOTAL_GEMS] ?: 0).coerceAtLeast(0)
+            )
+        } catch (_: Exception) {
+            InternalTelemetryStats()
         }
     }
 

@@ -1052,7 +1052,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         val targetView = pendingCouponTargetView ?: restartButton
                         couponPendingOnRestartConfirm = false
                         pendingCouponTargetView = null
-                        animateAndConsumeHelpCoupon(targetView)
+                        animateAndConsumeHelpCoupon(targetView, HelpControlAction.RESTART)
                     }
                     restartGameWithShuffleAndDealAnimation()
                 }
@@ -1150,6 +1150,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 when (index) {
                     0 -> {
                         lifecycleScope.launch {
+                            settingsManager.recordWinRewardSelection(selectedMultiplier = false)
                             maybeDelayWinPopupDebugPause()
                             popupDialog.dismiss()
                             completeWinRewardFlow(baseRewards)
@@ -1157,6 +1158,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     }
                     1 -> {
                         lifecycleScope.launch {
+                            settingsManager.recordWinRewardSelection(selectedMultiplier = true)
                             maybeDelayWinPopupDebugPause()
                             popupDialog.dismiss()
                             showWinMultiplierRewardAd(baseRewards, adMultiplier)
@@ -1714,6 +1716,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         renderMagicWandHud(magicWandTotal)
         lifecycleScope.launch {
             settingsManager.setTotalMagicWands(magicWandTotal)
+            settingsManager.incrementMagicWandsUsed()
         }
         return true
     }
@@ -3111,6 +3114,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 lifecycleScope.launch {
                     if (rewardEarned) {
                         viewModel.unlockExtraTableauPile()
+                        settingsManager.incrementExtraTableauUnlockedByAd()
                     } else {
                         showAdNotReadyFeedback(R.string.help_unlock_ad_not_ready)
                     }
@@ -3189,7 +3193,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
             // Moves were made — consume a ticket (unless free period)
             if (!isFree) {
-                animateAndConsumeHelpCoupon(buttonView)
+                animateAndConsumeHelpCoupon(buttonView, control)
             }
         }
     }
@@ -3216,7 +3220,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     }
 
                     else -> {
-                        animateAndConsumeHelpCoupon(targetView)
+                        animateAndConsumeHelpCoupon(targetView, control)
                         action()
                         return@launch
                     }
@@ -3227,13 +3231,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private suspend fun consumeHelpCoupon() {
+    private suspend fun consumeHelpCoupon(control: HelpControlAction) {
         ticketTotal = (ticketTotal - 1).coerceAtLeast(0)
         renderTicketHud(ticketTotal)
         settingsManager.setTotalTickets(ticketTotal)
+        settingsManager.incrementCouponUsedForHelpControl(control.storageKey)
     }
 
-    private suspend fun animateAndConsumeHelpCoupon(targetView: View?) {
+    private suspend fun animateAndConsumeHelpCoupon(targetView: View?, control: HelpControlAction) {
         val boardView = binding.gameBoardView
         val boardLocation = IntArray(2)
         boardView.getLocationOnScreen(boardLocation)
@@ -3256,7 +3261,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         // Keep deduction synced with full coupon animation runtime, including midpoint pause.
         kotlinx.coroutines.delay(CouponFlightAnimator.TOTAL_RUNTIME_MS + 40L)
-        consumeHelpCoupon()
+        consumeHelpCoupon(control)
     }
 
     private fun viewRectInBoardSpace(
@@ -3393,6 +3398,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val durationMillis = hours.coerceAtLeast(1) * 60L * 60L * 1000L
         val expiry = System.currentTimeMillis() + durationMillis
         settingsManager.setHelpControlUnlockExpiry(control.storageKey, expiry)
+        settingsManager.incrementAdUnlockForHelpControl(control.storageKey)
     }
 
     private fun handleUndoClick() {
