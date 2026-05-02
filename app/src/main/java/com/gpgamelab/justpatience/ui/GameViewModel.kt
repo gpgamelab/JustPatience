@@ -160,6 +160,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private var initialGameState: Game? = null  // Start-of-hand anchor used by Restart.
     private var currentHandRecorded = false
     private var launchInitialized = false
+    // Two-phase recycle state: stage waste cards first, commit to stock after shuffle SFX.
+    private var pendingRecycleCards: List<Card>? = null
+    private var pendingRecycleSourceGame: Game? = null
 
     // Exposed state
     private val _game = MutableStateFlow(Game.newGame())
@@ -197,6 +200,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Skips finalizeCurrentGameIfNeeded() to avoid double-recording.
      */
     private suspend fun startNewGameInternal() {
+        clearPendingRecycleState()
         undoStack.clear()
         redoStack.clear()
         currentHandRecorded = false
@@ -301,6 +305,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startNewGame() {
+        clearPendingRecycleState()
         finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
         undoStack.clear()
@@ -321,6 +326,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun restartGame() {
+        clearPendingRecycleState()
         finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
         val initial = initialGameState
@@ -352,8 +358,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun drawFromStock(): DrawResult {
         val game = _game.value
+        if (pendingRecycleCards != null) return DrawResult.NO_MOVE
+
         var moved = false
-        var recycled = false
         var newGame = game
 
         // Determine how many cards to draw (<=0 defaults to 1)
@@ -380,14 +387,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 moved = true
             }
         } else {
-            // Recycle waste -> stock only if recycle limit allows it.
+            // Stage recycle first so UI can show emptied waste while shuffle SFX plays.
             if (!game.waste.isEmpty() && canRecycleWaste(game)) {
-                val r = game.recycleWasteToStock()
-                if (r != null) {
-                    newGame = r.copy(recycleCountUsed = game.recycleCountUsed + 1)
-                    moved = true
-                    recycled = true
-                }
+                val (newWaste, recycled) = game.waste.withAllCardsTaken()
+                if (recycled == null) return DrawResult.NO_MOVE
+
+                pendingRecycleCards = recycled
+                pendingRecycleSourceGame = game
+                _game.value = game.copy(waste = newWaste)
+                return DrawResult.RECYCLE_SHUFFLE
             }
         }
 
@@ -401,9 +409,40 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
         return when {
             !moved   -> DrawResult.NO_MOVE
-            recycled -> DrawResult.RECYCLE_SHUFFLE
             else     -> DrawResult.NORMAL_DRAW
         }
+    }
+
+    /**
+     * Commits waste->stock recycle after shuffle sound sequence completes.
+     * Returns true only when recycle is successfully applied.
+     */
+    fun completeRecycleAfterShuffleSound(): Boolean {
+        val sourceGame = pendingRecycleSourceGame ?: return false
+        val stagedCards = pendingRecycleCards ?: return false
+        val game = _game.value
+
+        if (!game.stock.isEmpty() || !game.waste.isEmpty() || !canRecycleWaste(sourceGame)) {
+            clearPendingRecycleState()
+            return false
+        }
+
+        val cardsToStock = stagedCards.reversed().map { it.copy(isFaceUp = false) }
+        val newStock = game.stock.withCardsAdded(cardsToStock)
+        val updated = game.copy(stock = newStock, recycleCountUsed = sourceGame.recycleCountUsed + 1)
+        clearPendingRecycleState()
+
+        clearSingleClickGlow()
+        undoStack.addLast(sourceGame)
+        redoStack.clear()
+        _game.value = updateAfterMove(updated)
+        updateUndoRedoState()
+        return true
+    }
+
+    private fun clearPendingRecycleState() {
+        pendingRecycleCards = null
+        pendingRecycleSourceGame = null
     }
 
     fun attemptMove(
@@ -1375,6 +1414,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     suspend fun loadSavedGame(): Boolean {
         return try {
+            clearPendingRecycleState()
             val saved = repository.getCurrentGameState().firstOrNull()
             if (!saved.isNullOrEmpty()) {
                 val parsed = parseSavedPayload(saved) ?: return false

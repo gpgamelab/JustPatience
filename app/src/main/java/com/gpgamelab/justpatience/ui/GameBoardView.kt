@@ -48,7 +48,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     lateinit var viewModel: GameViewModel
     lateinit var assetResolver: AssetResolver
     var onClickMoveSoundRequested: (() -> Unit)? = null
-    var onShuffleSoundRequested: (() -> Unit)? = null
+    var onShuffleSoundRequested: ((() -> Unit) -> Unit)? = null
     var onLockedTableauUnlockRequested: (() -> Unit)? = null
     var onMagicWandTargetSelected: ((StackType, Int, Int) -> Unit)? = null
 
@@ -1517,7 +1517,19 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             StackType.STOCK -> {
                 when (viewModel.drawFromStock()) {
                     GameViewModel.DrawResult.NORMAL_DRAW   -> onClickMoveSoundRequested?.invoke()
-                    GameViewModel.DrawResult.RECYCLE_SHUFFLE -> onShuffleSoundRequested?.invoke()
+                    GameViewModel.DrawResult.RECYCLE_SHUFFLE -> {
+                        val commitRecycle = {
+                            viewModel.completeRecycleAfterShuffleSound()
+                            Unit
+                        }
+                        val shuffleHandler = onShuffleSoundRequested
+                        if (shuffleHandler != null) {
+                            shuffleHandler.invoke(commitRecycle)
+                        } else {
+                            // Fallback for safety when no shuffle callback is wired.
+                            commitRecycle()
+                        }
+                    }
                     GameViewModel.DrawResult.NO_MOVE       -> Unit
                 }
             }

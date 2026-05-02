@@ -683,7 +683,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Wire AssetResolver into GameBoardView
         binding.gameBoardView.assetResolver = AndroidAssetResolver(this)
         binding.gameBoardView.onClickMoveSoundRequested = { playCardClickMoveSound() }
-        binding.gameBoardView.onShuffleSoundRequested = { playShuffleSoundSequence() }
+        binding.gameBoardView.onShuffleSoundRequested = { onComplete -> playShuffleSoundSequence(onComplete) }
         binding.gameBoardView.onLockedTableauUnlockRequested = { onLockedTableauUnlockRequested() }
         binding.gameBoardView.onMagicWandTargetSelected = { type, index, cardIndex ->
             onMagicWandTargetSelected(type, index, cardIndex)
@@ -884,12 +884,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun playCardClickMoveSound() {
         if (muteCardSounds || !moveSoundLoaded || moveSoundId == 0) return
-        moveSoundPool?.play(moveSoundId, 1f, 1f, 1, 0, 1f)
+        moveSoundPool?.play(moveSoundId, 1f, 1f, 1, 0, 0.5f)
     }
 
     private fun playMagicWandSound() {
         if (muteCardSounds || !magicWandSoundLoaded || magicWandSoundId == 0) return
-        moveSoundPool?.play(magicWandSoundId, 1f, 1f, 1, 0, 1f)
+        moveSoundPool?.play(magicWandSoundId, 1f, 1f, 1, 0, 0.5f)
     }
 
     private fun playWinPopupSoundIfAllowed() {
@@ -904,13 +904,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         if (shuffleSound1Loaded && shuffleSound1Id != 0) {
-            moveSoundPool?.play(shuffleSound1Id, 1f, 1f, 1, 0, 1f)
+            moveSoundPool?.play(shuffleSound1Id, 1f, 1f, 1, 0, 0.7f)
         }
 
         lifecycleScope.launch {
             delay(devShuffleSecondClipDelayMsState.toLong().coerceAtLeast(0L))
             if (shuffleSound2Loaded && shuffleSound2Id != 0) {
-                moveSoundPool?.play(shuffleSound2Id, 1f, 1f, 1, 0, 1f)
+                moveSoundPool?.play(shuffleSound2Id, 1f, 1f, 1, 0, 0.7f)
             }
             delay(devShuffleTailDelayMsState.toLong().coerceAtLeast(0L))
             onComplete?.invoke()
