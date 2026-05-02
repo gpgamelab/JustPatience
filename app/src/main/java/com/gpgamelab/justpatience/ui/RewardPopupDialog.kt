@@ -37,7 +37,7 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
 
     data class ButtonItem(
         val text: String = "",
-        @DrawableRes val backgroundResId: Int = R.drawable.button_horizontal_lt_green_512x256,
+        @DrawableRes val backgroundResId: Int = R.drawable.ic_button_orange_orange_ad_unlock,
         val contentDescription: String? = null
     )
 
@@ -489,10 +489,6 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val popupBody = root.findViewById<ViewGroup>(R.id.layout_popup_body) ?: return
         clampHorizontalTranslationToContainer(
             row = root.findViewById(R.id.layout_reward_row),
-            container = popupBody
-        )
-        clampHorizontalTranslationToContainer(
-            row = root.findViewById(R.id.layout_buttons_row),
             container = popupBody
         )
     }

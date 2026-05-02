@@ -174,7 +174,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val titleBottomPercent: Float = 0.06f,
         val titleOffsetPxLandscape: Float = 0f,
         val titleOffsetPxPortrait: Float = 0f,
-        val titleTextSp: Float = 32f
+        val titleTextSp: Float = 48f
     )
 
     // Single tweak cluster for the custom win popup. Adjust these values instead of
@@ -456,7 +456,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devTicketNumberOffsetYDpState: Float = -135f
     private var devWandNumberOffsetXDpState: Float   = 30f
     private var devWandNumberOffsetYDpState: Float   = -102f
-    private var devButtonRowOffsetXDpState: Float    = 0f
+    private var devButtonRowOffsetXDpState: Float    = 90f
     private var devButtonRowOffsetYDpState: Float    = -50f
     private var devClaimButtonScaleXState: Float     = 1f
     private var devClaimButtonScaleYState: Float     = 3f
@@ -643,8 +643,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
          private const val BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT = -102f
          private const val BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_LANDSCAPE = 40f
          private const val BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE = -155f
-         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT = 0f
-         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE = 0f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT = 90f
+         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE = 90f
          private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_PORTRAIT = -45f
          private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_LANDSCAPE = -30f
 
@@ -1447,7 +1447,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             tv.translationY = dpToPxFloatSigned(devWandNumberOffsetYDpState)
         }
         dialogView.findViewById<LinearLayout>(R.id.layout_buttons_row)?.let { row ->
-            row.translationX = dpToPxFloatSigned(devButtonRowOffsetXDpState + 30f)
+            row.translationX = dpToPxFloatSigned(devButtonRowOffsetXDpState)
             row.translationY = dpToPxFloatSigned(devButtonRowOffsetYDpState)
         }
         dialogView.findViewById<Button>(R.id.btn_win_continue)?.let { button ->
