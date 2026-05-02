@@ -151,7 +151,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         )
         view.findViewById<TextView>(R.id.menu_advanced_haptics_text).text = getString(
             R.string.game_menu_haptics_with_value,
-            if (currentHaptics) stateEnabled else stateDisabled
+            if (currentHaptics) stateOn else stateOff
         )
         view.findViewById<TextView>(R.id.menu_advanced_tap_to_move_text).text = getString(
             R.string.game_menu_tap_to_move_with_value,

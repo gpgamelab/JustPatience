@@ -48,6 +48,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     lateinit var viewModel: GameViewModel
     lateinit var assetResolver: AssetResolver
     var onClickMoveSoundRequested: (() -> Unit)? = null
+    var onDragDropResult: ((Boolean) -> Unit)? = null
     var onShuffleSoundRequested: ((() -> Unit) -> Unit)? = null
     var onLockedTableauUnlockRequested: (() -> Unit)? = null
     var onMagicWandTargetSelected: ((StackType, Int, Int) -> Unit)? = null
@@ -1858,6 +1859,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
             MotionEvent.ACTION_UP -> {
 
+                val hadDragGesture = isDragging
                 var moveSucceeded = false
 
                 if (isDragging) {
@@ -1941,6 +1943,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     if (dx < touchSlop && dy < touchSlop) {
                         dispatchTapWithDoubleTapSupport(event.x, event.y)
                     }
+                }
+
+                if (hadDragGesture) {
+                    onDragDropResult?.invoke(moveSucceeded)
                 }
 
                 // 4️⃣ ALWAYS clear drag state ONCE

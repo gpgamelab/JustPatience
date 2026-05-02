@@ -20,6 +20,7 @@ import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
 import android.view.MotionEvent
@@ -405,6 +406,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var magicWandSoundId: Int = 0
     private var magicWandSoundLoaded: Boolean = false
     private var soundOn: Boolean = true
+    private var hapticsOn: Boolean = true
 
     private var helpControlFlowInProgress = false
     private var couponPendingOnRestartConfirm = false
@@ -681,7 +683,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         // Wire AssetResolver into GameBoardView
         binding.gameBoardView.assetResolver = AndroidAssetResolver(this)
-        binding.gameBoardView.onClickMoveSoundRequested = { playCardClickMoveSound() }
+        binding.gameBoardView.onClickMoveSoundRequested = {
+            playCardClickMoveSound()
+            performSuccessHaptic(binding.gameBoardView)
+        }
+        binding.gameBoardView.onDragDropResult = { success ->
+            if (success) {
+                performSuccessHaptic(binding.gameBoardView)
+            } else {
+                performErrorHaptic(binding.gameBoardView)
+            }
+        }
         binding.gameBoardView.onShuffleSoundRequested = { onComplete -> playShuffleSoundSequence(onComplete) }
         binding.gameBoardView.onLockedTableauUnlockRequested = { onLockedTableauUnlockRequested() }
         binding.gameBoardView.onMagicWandTargetSelected = { type, index, cardIndex ->
@@ -724,6 +736,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     settingsManager.gamePlaySettingsFlow.collect { settings ->
                         isPremiumAccount = settings.premiumAcct
                         soundOn = settings.soundOn
+                        hapticsOn = settings.haptics
                     }
                 }
 
@@ -812,9 +825,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         // Simple button hookups (if present in layout)
         binding.btnUndo.setOnClickListener { buttonView ->
+            performUiActionHaptic(buttonView)
             onHelpControlClicked(HelpControlAction.UNDO, buttonView) { handleUndoClick() }
         }
         binding.btnRedo.setOnClickListener { buttonView ->
+            performUiActionHaptic(buttonView)
             onHelpControlClicked(HelpControlAction.REDO, buttonView) { handleRedoClick() }
         }
         binding.btnNewGame.setOnClickListener {
@@ -825,13 +840,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             onHelpControlClicked(HelpControlAction.RESTART, buttonView) { handleRestartClick() }
         }
         findViewById<Button>(R.id.btn_hint)?.setOnClickListener { buttonView ->
+            performUiActionHaptic(buttonView)
             onHelpControlClicked(HelpControlAction.HINT, buttonView) {
                 if (!viewModel.showManualHints()) {
-                    Toast.makeText(this@GameActivity, R.string.no_hints_available, Toast.LENGTH_SHORT).show()
+                    showErrorFeedback(R.string.no_hints_available, buttonView)
                 }
             }
         }
-        binding.btnStats.setOnClickListener { showGameMenu() }
+        binding.btnStats.setOnClickListener {
+            performUiActionHaptic(it)
+            showGameMenu()
+        }
         binding.btnTesters.setOnClickListener { showTesterMenu() }
         binding.btnDevelop.setOnClickListener { showDevelopMenu() }
         binding.magicWandContainer?.setOnClickListener { onMagicWandClicked() }
@@ -893,6 +912,51 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun playWinPopupSoundIfAllowed() {
         if (!soundOn || !winPopupSoundLoaded || winPopupSoundId == 0) return
         moveSoundPool?.play(winPopupSoundId, 1f, 1f, 1, 0, 1f)
+    }
+
+    private fun performUiActionHaptic(sourceView: View? = null) {
+        performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, sourceView)
+    }
+
+    private fun performSuccessHaptic(sourceView: View? = null) {
+        val successConstant = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            HapticFeedbackConstants.CONFIRM
+        } else {
+            HapticFeedbackConstants.KEYBOARD_TAP
+        }
+        performHapticFeedback(successConstant, sourceView)
+    }
+
+    private fun performErrorHaptic(sourceView: View? = null) {
+        val errorConstant = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            HapticFeedbackConstants.REJECT
+        } else {
+            HapticFeedbackConstants.LONG_PRESS
+        }
+        performHapticFeedback(errorConstant, sourceView)
+    }
+
+    private fun performHapticFeedback(constant: Int, sourceView: View? = null) {
+        if (!hapticsOn) return
+        (sourceView ?: binding.root).performHapticFeedback(constant)
+    }
+
+    private fun showErrorFeedback(messageResId: Int, sourceView: View? = null) {
+        performErrorHaptic(sourceView)
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showErrorFeedback(message: CharSequence, sourceView: View? = null) {
+        performErrorHaptic(sourceView)
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showAdNotReadyFeedback(messageResId: Int, sourceView: View? = null) {
+        showErrorFeedback(messageResId, sourceView)
+    }
+
+    private fun showAdNotReadyFeedback(message: CharSequence, sourceView: View? = null) {
+        showErrorFeedback(message, sourceView)
     }
 
     private fun playShuffleSoundSequence(onComplete: (() -> Unit)? = null) {
@@ -1614,7 +1678,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         )
 
         if (!shown) {
-            Toast.makeText(this, R.string.optional_ad_not_ready, Toast.LENGTH_SHORT).show()
+            showAdNotReadyFeedback(R.string.optional_ad_not_ready)
             completeWinRewardFlow(baseRewards)
             adManager.loadRewardedAd()
         }
@@ -1694,14 +1758,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         if (rewardEarned) {
                             awardMagicWands(1)
                         } else {
-                            Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                            showAdNotReadyFeedback(R.string.help_unlock_ad_not_ready)
                         }
                     }
                 )
 
                 if (!shown) {
                     adManager.loadRewardedAd()
-                    Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                    showAdNotReadyFeedback(R.string.help_unlock_ad_not_ready)
                 }
             }
             .show()
@@ -1730,12 +1794,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 candidates.isEmpty() -> {
                     val rankName = if (targetType == com.gpgamelab.justpatience.model.StackType.FOUNDATION)
                         getString(R.string.card_rank_ace) else getString(R.string.card_rank_king)
-                    Toast.makeText(this, getString(R.string.magic_wand_no_card_available, rankName), Toast.LENGTH_SHORT).show()
+                    showErrorFeedback(getString(R.string.magic_wand_no_card_available, rankName), binding.gameBoardView)
                 }
                 candidates.size == 1 -> {
                     val used = viewModel.tryUseMagicWandWithCandidate(targetType, targetIndex, candidates[0])
-                    if (used) { consumeMagicWand(); playMagicWandSound() }
-                    else Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
+                    if (used) {
+                        consumeMagicWand()
+                        playMagicWandSound()
+                        performSuccessHaptic(binding.gameBoardView)
+                    } else {
+                        showErrorFeedback(R.string.magic_wand_no_match, binding.gameBoardView)
+                    }
                 }
                 else -> showMagicWandCardPicker(targetType, targetIndex, candidates)
             }
@@ -1746,8 +1815,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         if (used) {
             consumeMagicWand()
             playMagicWandSound()
+            performSuccessHaptic(binding.gameBoardView)
         } else {
-            Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
+            showErrorFeedback(R.string.magic_wand_no_match, binding.gameBoardView)
         }
         setMagicWandSelectionMode(false)
     }
@@ -1769,8 +1839,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             .setTitle(titleRes)
             .setItems(labels) { _, which ->
                 val used = viewModel.tryUseMagicWandWithCandidate(targetType, targetIndex, candidates[which])
-                if (used) { consumeMagicWand(); playMagicWandSound() }
-                else Toast.makeText(this, R.string.magic_wand_no_match, Toast.LENGTH_SHORT).show()
+                if (used) {
+                    consumeMagicWand()
+                    playMagicWandSound()
+                    performSuccessHaptic(binding.gameBoardView)
+                } else {
+                    showErrorFeedback(R.string.magic_wand_no_match, binding.gameBoardView)
+                }
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
@@ -1854,6 +1929,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         awardGems(baseRewards.gems)
         awardTickets(baseRewards.tickets)
         awardMagicWands(baseRewards.wands)
+        performSuccessHaptic(binding.root)
         dailyBonusPromptShownThisLaunch = true
         lifecycleScope.launch {
             settingsManager.setLastDailyBonusDate(todayIsoDate)
@@ -1910,14 +1986,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     baseRewards
                 }
                 if (!rewardEarned) {
-                    Toast.makeText(this, fallbackMessage, Toast.LENGTH_SHORT).show()
+                    showAdNotReadyFeedback(fallbackMessage)
                 }
                 claimDailyBonus(rewardsToAward, todayIsoDate)
             }
         )
 
         if (!shown) {
-            Toast.makeText(this, fallbackMessage, Toast.LENGTH_SHORT).show()
+            showAdNotReadyFeedback(fallbackMessage)
             claimDailyBonus(baseRewards, todayIsoDate)
             adManager.loadRewardedAd()
         }
@@ -2366,14 +2442,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         if (shareIntent.resolveActivity(packageManager) == null) {
-            Toast.makeText(this, R.string.share_app_no_target, Toast.LENGTH_SHORT).show()
+            showErrorFeedback(R.string.share_app_no_target)
             return
         }
 
         try {
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share_app_chooser_title)))
         } catch (_: android.content.ActivityNotFoundException) {
-            Toast.makeText(this, R.string.share_app_no_target, Toast.LENGTH_SHORT).show()
+            showErrorFeedback(R.string.share_app_no_target)
         }
     }
 
@@ -2403,7 +2479,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         if (webIntent.resolveActivity(packageManager) != null) {
             startActivity(webIntent)
         } else {
-            Toast.makeText(this, R.string.contact_us_no_target, Toast.LENGTH_SHORT).show()
+            showErrorFeedback(R.string.contact_us_no_target)
         }
     }
 
@@ -2560,9 +2636,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onGameMenuHapticsToggle() {
         lifecycleScope.launch {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
-            showEnableDisableDialog(
+            showOnOffDialog(
                 title = getString(R.string.game_menu_haptics),
-                enabled = currentSettings.haptics
+                isOn = currentSettings.haptics
             ) { enabled ->
                 lifecycleScope.launch {
                     val latest = settingsManager.gamePlaySettingsFlow.first()
@@ -2929,7 +3005,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         if (browserIntent.resolveActivity(packageManager) != null) {
             startActivity(browserIntent)
         } else {
-            Toast.makeText(this, R.string.privacy_policy_open_failed, Toast.LENGTH_SHORT).show()
+            showErrorFeedback(R.string.privacy_policy_open_failed)
         }
     }
 
@@ -2938,7 +3014,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         if (browserIntent.resolveActivity(packageManager) != null) {
             startActivity(browserIntent)
         } else {
-            Toast.makeText(this, R.string.terms_of_service_open_failed, Toast.LENGTH_SHORT).show()
+            showErrorFeedback(R.string.terms_of_service_open_failed)
         }
     }
 
@@ -3036,14 +3112,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     if (rewardEarned) {
                         viewModel.unlockExtraTableauPile()
                     } else {
-                        Toast.makeText(this@GameActivity, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                        showAdNotReadyFeedback(R.string.help_unlock_ad_not_ready)
                     }
                 }
             }
         )
         if (!shown) {
             adManager.loadRewardedAd()
-            Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+            showAdNotReadyFeedback(R.string.help_unlock_ad_not_ready)
         }
     }
 
@@ -3068,6 +3144,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun onAutoMoveClicked(buttonView: View) {
+        performUiActionHaptic(buttonView)
         if (helpControlFlowInProgress) return
         val control = HelpControlAction.AUTO
 
@@ -3084,7 +3161,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         try {
                             val movesMade = viewModel.performAutoMove(onCardMoved = { playCardClickMoveSound() })
                             if (movesMade == 0) {
-                                Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
+                                showErrorFeedback("No moves available", buttonView)
                             }
                         } finally {
                             buttonView.isEnabled = true
@@ -3104,9 +3181,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             }
 
             if (movesMade == 0) {
-                Toast.makeText(this@GameActivity, "No moves available", Toast.LENGTH_SHORT).show()
+                showErrorFeedback("No moves available", buttonView)
                 return@launch
             }
+
+            performSuccessHaptic(buttonView)
 
             // Moves were made — consume a ticket (unless free period)
             if (!isFree) {
@@ -3257,7 +3336,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                             dialog.dismiss()
                             action()
                         } else {
-                            Toast.makeText(this@GameActivity, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                            showAdNotReadyFeedback(R.string.help_unlock_ad_not_ready)
                         }
                     }
                 }
@@ -3266,7 +3345,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             if (!shown) {
                 helpControlFlowInProgress = false
                 adManager.loadRewardedAd()
-                Toast.makeText(this, R.string.help_unlock_ad_not_ready, Toast.LENGTH_SHORT).show()
+                showAdNotReadyFeedback(R.string.help_unlock_ad_not_ready)
             }
         }
 
@@ -3317,11 +3396,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun handleUndoClick() {
-        if (viewModel.undo()) playCardClickMoveSound()
+        if (viewModel.undo()) {
+            playCardClickMoveSound()
+            performSuccessHaptic(binding.btnUndo)
+        } else {
+            performErrorHaptic(binding.btnUndo)
+        }
     }
 
     private fun handleRedoClick() {
-        if (viewModel.redo()) playCardClickMoveSound()
+        if (viewModel.redo()) {
+            playCardClickMoveSound()
+            performSuccessHaptic(binding.btnRedo)
+        } else {
+            performErrorHaptic(binding.btnRedo)
+        }
     }
 
     private fun handleRestartClick() {
@@ -3651,6 +3740,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Win videos are removed. Keep the win flow one-shot while status remains WON.
         if (winCelebrationPlayed) return
         winCelebrationPlayed = true
+        performSuccessHaptic(binding.root)
         showGameEndDialog(true)
     }
 
