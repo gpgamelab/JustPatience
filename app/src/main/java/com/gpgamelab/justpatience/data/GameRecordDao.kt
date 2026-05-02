@@ -83,7 +83,7 @@ interface GameRecordDao {
      * Delete all game records (for reset stats functionality).
      */
     @Query("DELETE FROM game_records")
-    suspend fun deleteAllGameRecords()
+    suspend fun deleteAllGameRecords(): Int
 
     /**
      * Get games played within a date range.
