@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * Room database for storing game records and history.
  * Provides a singleton instance for accessing game statistics.
  */
-@Database(entities = [GameRecord::class], version = 4)
+@Database(entities = [GameRecord::class], version = 4, exportSchema = false)
 abstract class GameDatabase : RoomDatabase() {
 
     abstract fun gameRecordDao(): GameRecordDao

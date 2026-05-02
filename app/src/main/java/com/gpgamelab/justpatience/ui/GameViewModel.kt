@@ -1422,12 +1422,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun parseSavedPayload(saved: String): Triple<Game, Game?, Boolean>? {
         return try {
-            val root = JsonParser.parseString(saved)
+            val root = JsonParser().parse(saved)
             if (root.isJsonObject && root.asJsonObject.has("currentGame")) {
-                val envelope = gson.fromJson(root, SavedGameEnvelope::class.java)
+                val envelope: SavedGameEnvelope = gson.fromJson(saved, SavedGameEnvelope::class.java)
                 Triple(envelope.currentGame, envelope.initialGameState, false)
             } else {
-                Triple(gson.fromJson(root, Game::class.java), null, true)
+                val legacyGame: Game = gson.fromJson(saved, Game::class.java)
+                Triple(legacyGame, null, true)
             }
         } catch (t: Throwable) {
             Log.w("GameViewModel", "parseSavedPayload failed: ${t.message}")

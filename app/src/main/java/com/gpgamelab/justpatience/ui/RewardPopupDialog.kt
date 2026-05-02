@@ -32,12 +32,12 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
 
     data class RewardItem(
         val count: Int,
-        @DrawableRes val imageResId: Int
+        @param:DrawableRes val imageResId: Int
     )
 
     data class ButtonItem(
         val text: String = "",
-        @DrawableRes val backgroundResId: Int = R.drawable.ic_button_orange_orange_ad_unlock,
+        @param:DrawableRes val backgroundResId: Int = R.drawable.ic_button_orange_orange_ad_unlock,
         val contentDescription: String? = null
     )
 
@@ -84,7 +84,7 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val victoryOffsetXDp: Float = 0f,
         val victoryOffsetYDp: Float = 0f,
         val showStarburst: Boolean = false,
-        @DrawableRes val starburstImageResId: Int = R.drawable.ic_star_burst_yellow,
+        @param:DrawableRes val starburstImageResId: Int = R.drawable.ic_star_burst_yellow,
         val starburstOffsetXPx: Float = 0f,
         val starburstOffsetYPx: Float = 0f,
         val starburstScale: Float = 1f,
