@@ -50,7 +50,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuScoreMethod()
         fun onGameMenuFoundationToTableauToggle()
         fun onGameMenuEnforceFoundationBalanceToggle()
-        fun onGameMenuOpenSettings()
         fun onGameMenuExitApp()
         fun onGameMenuExpandStateChanged(state: ExpandState)
     }
@@ -302,13 +301,6 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
         // Premium Acct toggle is now in the Testers Menu (btn_testers on the game board).
 
-        // Remaining advanced items that open settings
-        val settingsRows = intArrayOf()
-        settingsRows.forEach { id ->
-            view.findViewById<View>(id).setOnClickListener {
-                dismissAndRun { host.onGameMenuOpenSettings() }
-            }
-        }
 
         view.findViewById<View>(R.id.menu_exit_app_row).setOnClickListener {
             dismissAndRun { host.onGameMenuExitApp() }

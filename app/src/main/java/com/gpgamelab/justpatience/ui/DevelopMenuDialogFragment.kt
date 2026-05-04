@@ -27,7 +27,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         val starburstExpanded: Boolean = false,
         val popupExpanded: Boolean = false,
         val tableauExpanded: Boolean = false,
-        val unlockPopupExpanded: Boolean = false,
         val shuffleExpanded: Boolean = false
     )
 
@@ -72,12 +71,18 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devWandNumberOffsetYDp(): Float
         fun devButtonRowOffsetXDp(): Float
         fun devButtonRowOffsetYDp(): Float
-        fun devClaimScaleX(): Float
-        fun devClaimScaleY(): Float
-        fun devClaimScale(): Float
-        fun devMultiplierScaleX(): Float
-        fun devMultiplierScaleY(): Float
-        fun devMultiplierScale(): Float
+        fun devPopupButton0ScaleX(): Float
+        fun devPopupButton0ScaleY(): Float
+        fun devPopupButton0Scale(): Float
+        fun devPopupButton1ScaleX(): Float
+        fun devPopupButton1ScaleY(): Float
+        fun devPopupButton1Scale(): Float
+        fun devPopupButton2ScaleX(): Float
+        fun devPopupButton2ScaleY(): Float
+        fun devPopupButton2Scale(): Float
+        fun devPopupDescriptionTextSizeSp(): Float
+        fun devPopupDescriptionOffsetXDp(): Float
+        fun devPopupDescriptionOffsetYDp(): Float
         fun devVictoryTextSizeSp(): Float
         fun devVictoryOffsetXDp(): Float
         fun devVictoryOffsetYDp(): Float
@@ -100,31 +105,23 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetWandNumberOffsetY(value: Float)
         fun onDevSetButtonRowOffsetX(value: Float)
         fun onDevSetButtonRowOffsetY(value: Float)
-        fun onDevSetClaimScaleX(value: Float)
-        fun onDevSetClaimScaleY(value: Float)
-        fun onDevSetClaimScale(value: Float)
-        fun onDevSetMultiplierScaleX(value: Float)
-        fun onDevSetMultiplierScaleY(value: Float)
-        fun onDevSetMultiplierScale(value: Float)
+        fun onDevSetPopupButton0ScaleX(value: Float)
+        fun onDevSetPopupButton0ScaleY(value: Float)
+        fun onDevSetPopupButton0Scale(value: Float)
+        fun onDevSetPopupButton1ScaleX(value: Float)
+        fun onDevSetPopupButton1ScaleY(value: Float)
+        fun onDevSetPopupButton1Scale(value: Float)
+        fun onDevSetPopupButton2ScaleX(value: Float)
+        fun onDevSetPopupButton2ScaleY(value: Float)
+        fun onDevSetPopupButton2Scale(value: Float)
+        fun onDevSetPopupDescriptionTextSize(value: Float)
+        fun onDevSetPopupDescriptionOffsetX(value: Float)
+        fun onDevSetPopupDescriptionOffsetY(value: Float)
         fun onDevSetVictoryTextSize(value: Float)
         fun onDevSetVictoryOffsetX(value: Float)
         fun onDevSetVictoryOffsetY(value: Float)
         fun onDevApplyAutoWinPopupRatios()
 
-        // Unlock help popup
-        fun devUnlockFrameScaleX(): Float
-        fun devUnlockFrameScaleY(): Float
-        fun devUnlockDescTextSizeSp(): Float
-        fun devUnlockDescOffsetXDp(): Float
-        fun devUnlockDescOffsetYDp(): Float
-        fun devUnlockAdBtnScaleX(): Float
-        fun devUnlockAdBtnScaleY(): Float
-        fun devUnlockAdBtnOffsetXDp(): Float
-        fun devUnlockAdBtnOffsetYDp(): Float
-        fun devUnlockCancelBtnScaleX(): Float
-        fun devUnlockCancelBtnScaleY(): Float
-        fun devUnlockCancelBtnOffsetXDp(): Float
-        fun devUnlockCancelBtnOffsetYDp(): Float
         fun devLockedPileAdOffsetXPortraitPx(): Float
         fun devLockedPileAdOffsetYPortraitPx(): Float
         fun devLockedPileAdScaleXPortrait(): Float
@@ -133,19 +130,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devLockedPileAdOffsetYLandscapePx(): Float
         fun devLockedPileAdScaleXLandscape(): Float
         fun devLockedPileAdScaleYLandscape(): Float
-        fun onDevSetUnlockFrameScaleX(value: Float)
-        fun onDevSetUnlockFrameScaleY(value: Float)
-        fun onDevSetUnlockDescTextSize(value: Float)
-        fun onDevSetUnlockDescOffsetX(value: Float)
-        fun onDevSetUnlockDescOffsetY(value: Float)
-        fun onDevSetUnlockAdBtnScaleX(value: Float)
-        fun onDevSetUnlockAdBtnScaleY(value: Float)
-        fun onDevSetUnlockAdBtnOffsetX(value: Float)
-        fun onDevSetUnlockAdBtnOffsetY(value: Float)
-        fun onDevSetUnlockCancelBtnScaleX(value: Float)
-        fun onDevSetUnlockCancelBtnScaleY(value: Float)
-        fun onDevSetUnlockCancelBtnOffsetX(value: Float)
-        fun onDevSetUnlockCancelBtnOffsetY(value: Float)
         fun onDevSetLockedPileAdOffsetXPortraitPx(value: Float)
         fun onDevSetLockedPileAdOffsetYPortraitPx(value: Float)
         fun onDevSetLockedPileAdScaleXPortrait(value: Float)
@@ -219,18 +203,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
             popupExpanded = !popupExpanded
             setSectionExpanded(popupContent, popupArrow, popupExpanded)
             expandState = expandState.copy(popupExpanded = popupExpanded)
-            host.onDevExpandStateChanged(expandState)
-        }
-
-        val unlockPopupHeader = view.findViewById<View>(R.id.layout_develop_unlock_popup_header)
-        val unlockPopupArrow = view.findViewById<TextView>(R.id.tv_develop_unlock_popup_arrow)
-        val unlockPopupContent = view.findViewById<LinearLayout>(R.id.layout_develop_unlock_popup_content)
-        var unlockPopupExpanded = expandState.unlockPopupExpanded
-        setSectionExpanded(unlockPopupContent, unlockPopupArrow, unlockPopupExpanded)
-        unlockPopupHeader.setOnClickListener {
-            unlockPopupExpanded = !unlockPopupExpanded
-            setSectionExpanded(unlockPopupContent, unlockPopupArrow, unlockPopupExpanded)
-            expandState = expandState.copy(unlockPopupExpanded = unlockPopupExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -390,12 +362,18 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_wand_number_offset_y, R.string.develop_menu_wand_number_offset_y, host::devWandNumberOffsetYDp, host::onDevSetWandNumberOffsetY)
         bindDecimal(R.id.btn_dev_button_row_offset_x, R.string.develop_menu_button_row_offset_x, host::devButtonRowOffsetXDp, host::onDevSetButtonRowOffsetX)
         bindDecimal(R.id.btn_dev_button_row_offset_y, R.string.develop_menu_button_row_offset_y, host::devButtonRowOffsetYDp, host::onDevSetButtonRowOffsetY)
-        bindDecimal(R.id.btn_dev_claim_scale_x, R.string.develop_menu_claim_scale_x, host::devClaimScaleX, host::onDevSetClaimScaleX)
-        bindDecimal(R.id.btn_dev_claim_scale_y, R.string.develop_menu_claim_scale_y, host::devClaimScaleY, host::onDevSetClaimScaleY)
-        bindDecimal(R.id.btn_dev_claim_scale, R.string.develop_menu_claim_scale, host::devClaimScale, host::onDevSetClaimScale)
-        bindDecimal(R.id.btn_dev_multiplier_scale_x, R.string.develop_menu_multiplier_scale_x, host::devMultiplierScaleX, host::onDevSetMultiplierScaleX)
-        bindDecimal(R.id.btn_dev_multiplier_scale_y, R.string.develop_menu_multiplier_scale_y, host::devMultiplierScaleY, host::onDevSetMultiplierScaleY)
-        bindDecimal(R.id.btn_dev_multiplier_scale, R.string.develop_menu_multiplier_scale, host::devMultiplierScale, host::onDevSetMultiplierScale)
+        bindDecimal(R.id.btn_dev_popup_button0_scale_x, R.string.develop_menu_button0_scale_x, host::devPopupButton0ScaleX, host::onDevSetPopupButton0ScaleX)
+        bindDecimal(R.id.btn_dev_popup_button0_scale_y, R.string.develop_menu_button0_scale_y, host::devPopupButton0ScaleY, host::onDevSetPopupButton0ScaleY)
+        bindDecimal(R.id.btn_dev_popup_button0_scale, R.string.develop_menu_button0_scale, host::devPopupButton0Scale, host::onDevSetPopupButton0Scale)
+        bindDecimal(R.id.btn_dev_popup_button1_scale_x, R.string.develop_menu_button1_scale_x, host::devPopupButton1ScaleX, host::onDevSetPopupButton1ScaleX)
+        bindDecimal(R.id.btn_dev_popup_button1_scale_y, R.string.develop_menu_button1_scale_y, host::devPopupButton1ScaleY, host::onDevSetPopupButton1ScaleY)
+        bindDecimal(R.id.btn_dev_popup_button1_scale, R.string.develop_menu_button1_scale, host::devPopupButton1Scale, host::onDevSetPopupButton1Scale)
+        bindDecimal(R.id.btn_dev_popup_button2_scale_x, R.string.develop_menu_button2_scale_x, host::devPopupButton2ScaleX, host::onDevSetPopupButton2ScaleX)
+        bindDecimal(R.id.btn_dev_popup_button2_scale_y, R.string.develop_menu_button2_scale_y, host::devPopupButton2ScaleY, host::onDevSetPopupButton2ScaleY)
+        bindDecimal(R.id.btn_dev_popup_button2_scale, R.string.develop_menu_button2_scale, host::devPopupButton2Scale, host::onDevSetPopupButton2Scale)
+        bindDecimal(R.id.btn_dev_popup_desc_text_size, R.string.develop_menu_popup_desc_text_size, host::devPopupDescriptionTextSizeSp, host::onDevSetPopupDescriptionTextSize)
+        bindDecimal(R.id.btn_dev_popup_desc_offset_x, R.string.develop_menu_popup_desc_offset_x, host::devPopupDescriptionOffsetXDp, host::onDevSetPopupDescriptionOffsetX)
+        bindDecimal(R.id.btn_dev_popup_desc_offset_y, R.string.develop_menu_popup_desc_offset_y, host::devPopupDescriptionOffsetYDp, host::onDevSetPopupDescriptionOffsetY)
         bindDecimal(R.id.btn_dev_victory_text_size, R.string.develop_menu_victory_text_size, host::devVictoryTextSizeSp, host::onDevSetVictoryTextSize)
         bindDecimal(R.id.btn_dev_victory_offset_x, R.string.develop_menu_victory_offset_x, host::devVictoryOffsetXDp, host::onDevSetVictoryOffsetX)
         bindDecimal(R.id.btn_dev_victory_offset_y, R.string.develop_menu_victory_offset_y, host::devVictoryOffsetYDp, host::onDevSetVictoryOffsetY)
@@ -403,20 +381,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_shuffle_tail_delay_ms, R.string.develop_menu_shuffle_tail_delay_ms, host::devShuffleTailDelayMs, host::onDevSetShuffleTailDelayMs)
         bindDecimal(R.id.btn_dev_deal_card_interval_ms, R.string.develop_menu_deal_card_interval_ms, host::devDealCardIntervalMs, host::onDevSetDealCardIntervalMs)
 
-        // Unlock popup controls
-        bindDecimal(R.id.btn_dev_unlock_frame_scale_x, R.string.develop_menu_unlock_frame_scale_x, host::devUnlockFrameScaleX, host::onDevSetUnlockFrameScaleX)
-        bindDecimal(R.id.btn_dev_unlock_frame_scale_y, R.string.develop_menu_unlock_frame_scale_y, host::devUnlockFrameScaleY, host::onDevSetUnlockFrameScaleY)
-        bindDecimal(R.id.btn_dev_unlock_desc_text_size, R.string.develop_menu_unlock_desc_text_size, host::devUnlockDescTextSizeSp, host::onDevSetUnlockDescTextSize)
-        bindDecimal(R.id.btn_dev_unlock_desc_offset_x, R.string.develop_menu_unlock_desc_offset_x, host::devUnlockDescOffsetXDp, host::onDevSetUnlockDescOffsetX)
-        bindDecimal(R.id.btn_dev_unlock_desc_offset_y, R.string.develop_menu_unlock_desc_offset_y, host::devUnlockDescOffsetYDp, host::onDevSetUnlockDescOffsetY)
-        bindDecimal(R.id.btn_dev_unlock_ad_btn_scale_x, R.string.develop_menu_unlock_ad_btn_scale_x, host::devUnlockAdBtnScaleX, host::onDevSetUnlockAdBtnScaleX)
-        bindDecimal(R.id.btn_dev_unlock_ad_btn_scale_y, R.string.develop_menu_unlock_ad_btn_scale_y, host::devUnlockAdBtnScaleY, host::onDevSetUnlockAdBtnScaleY)
-        bindDecimal(R.id.btn_dev_unlock_ad_btn_offset_x, R.string.develop_menu_unlock_ad_btn_offset_x, host::devUnlockAdBtnOffsetXDp, host::onDevSetUnlockAdBtnOffsetX)
-        bindDecimal(R.id.btn_dev_unlock_ad_btn_offset_y, R.string.develop_menu_unlock_ad_btn_offset_y, host::devUnlockAdBtnOffsetYDp, host::onDevSetUnlockAdBtnOffsetY)
-        bindDecimal(R.id.btn_dev_unlock_cancel_btn_scale_x, R.string.develop_menu_unlock_cancel_btn_scale_x, host::devUnlockCancelBtnScaleX, host::onDevSetUnlockCancelBtnScaleX)
-        bindDecimal(R.id.btn_dev_unlock_cancel_btn_scale_y, R.string.develop_menu_unlock_cancel_btn_scale_y, host::devUnlockCancelBtnScaleY, host::onDevSetUnlockCancelBtnScaleY)
-        bindDecimal(R.id.btn_dev_unlock_cancel_btn_offset_x, R.string.develop_menu_unlock_cancel_btn_offset_x, host::devUnlockCancelBtnOffsetXDp, host::onDevSetUnlockCancelBtnOffsetX)
-        bindDecimal(R.id.btn_dev_unlock_cancel_btn_offset_y, R.string.develop_menu_unlock_cancel_btn_offset_y, host::devUnlockCancelBtnOffsetYDp, host::onDevSetUnlockCancelBtnOffsetY)
         bindDecimal(R.id.btn_dev_locked_pile_ad_offset_x_portrait, R.string.develop_menu_locked_pile_ad_offset_x_portrait, host::devLockedPileAdOffsetXPortraitPx, host::onDevSetLockedPileAdOffsetXPortraitPx)
         bindDecimal(R.id.btn_dev_locked_pile_ad_offset_y_portrait, R.string.develop_menu_locked_pile_ad_offset_y_portrait, host::devLockedPileAdOffsetYPortraitPx, host::onDevSetLockedPileAdOffsetYPortraitPx)
         bindDecimal(R.id.btn_dev_locked_pile_ad_scale_x_portrait, R.string.develop_menu_locked_pile_ad_scale_x_portrait, host::devLockedPileAdScaleXPortrait, host::onDevSetLockedPileAdScaleXPortrait)
@@ -463,32 +427,24 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_wand_number_offset_y).text = fmt(host.devWandNumberOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_button_row_offset_x).text = fmt(host.devButtonRowOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_button_row_offset_y).text = fmt(host.devButtonRowOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_claim_scale_x).text = fmt(host.devClaimScaleX())
-        root.findViewById<MaterialButton>(R.id.btn_dev_claim_scale_y).text = fmt(host.devClaimScaleY())
-        root.findViewById<MaterialButton>(R.id.btn_dev_claim_scale).text = fmt(host.devClaimScale())
-        root.findViewById<MaterialButton>(R.id.btn_dev_multiplier_scale_x).text = fmt(host.devMultiplierScaleX())
-        root.findViewById<MaterialButton>(R.id.btn_dev_multiplier_scale_y).text = fmt(host.devMultiplierScaleY())
-        root.findViewById<MaterialButton>(R.id.btn_dev_multiplier_scale).text = fmt(host.devMultiplierScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button0_scale_x).text = fmt(host.devPopupButton0ScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button0_scale_y).text = fmt(host.devPopupButton0ScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button0_scale).text = fmt(host.devPopupButton0Scale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button1_scale_x).text = fmt(host.devPopupButton1ScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button1_scale_y).text = fmt(host.devPopupButton1ScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button1_scale).text = fmt(host.devPopupButton1Scale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button2_scale_x).text = fmt(host.devPopupButton2ScaleX())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button2_scale_y).text = fmt(host.devPopupButton2ScaleY())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_button2_scale).text = fmt(host.devPopupButton2Scale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_desc_text_size).text = fmt(host.devPopupDescriptionTextSizeSp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_desc_offset_x).text = fmt(host.devPopupDescriptionOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_popup_desc_offset_y).text = fmt(host.devPopupDescriptionOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_text_size).text = fmt(host.devVictoryTextSizeSp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_x).text = fmt(host.devVictoryOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_victory_offset_y).text = fmt(host.devVictoryOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_second_clip_delay_ms).text = fmt(host.devShuffleSecondClipDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_shuffle_tail_delay_ms).text = fmt(host.devShuffleTailDelayMs())
         root.findViewById<MaterialButton>(R.id.btn_dev_deal_card_interval_ms).text = fmt(host.devDealCardIntervalMs())
-        // Unlock popup
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_frame_scale_x).text = fmt(host.devUnlockFrameScaleX())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_frame_scale_y).text = fmt(host.devUnlockFrameScaleY())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_desc_text_size).text = fmt(host.devUnlockDescTextSizeSp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_desc_offset_x).text = fmt(host.devUnlockDescOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_desc_offset_y).text = fmt(host.devUnlockDescOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_scale_x).text = fmt(host.devUnlockAdBtnScaleX())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_scale_y).text = fmt(host.devUnlockAdBtnScaleY())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_offset_x).text = fmt(host.devUnlockAdBtnOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_ad_btn_offset_y).text = fmt(host.devUnlockAdBtnOffsetYDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_scale_x).text = fmt(host.devUnlockCancelBtnScaleX())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_scale_y).text = fmt(host.devUnlockCancelBtnScaleY())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_offset_x).text = fmt(host.devUnlockCancelBtnOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_unlock_cancel_btn_offset_y).text = fmt(host.devUnlockCancelBtnOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_offset_x_portrait).text = fmt(host.devLockedPileAdOffsetXPortraitPx())
         root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_offset_y_portrait).text = fmt(host.devLockedPileAdOffsetYPortraitPx())
         root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_scale_x_portrait).text = fmt(host.devLockedPileAdScaleXPortrait())
@@ -512,7 +468,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
             starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, false),
             popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
             tableauExpanded = b.getBoolean(ARG_TABLEAU_EXPANDED, false),
-            unlockPopupExpanded = b.getBoolean(ARG_UNLOCK_POPUP_EXPANDED, false),
             shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
         )
     }
@@ -592,7 +547,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         private const val ARG_STARBURST_EXPANDED = "arg_starburst_expanded"
         private const val ARG_POPUP_EXPANDED = "arg_popup_expanded"
         private const val ARG_TABLEAU_EXPANDED = "arg_tableau_expanded"
-        private const val ARG_UNLOCK_POPUP_EXPANDED = "arg_unlock_popup_expanded"
         private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
@@ -601,7 +555,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
                     putBoolean(ARG_STARBURST_EXPANDED, state.starburstExpanded)
                     putBoolean(ARG_POPUP_EXPANDED, state.popupExpanded)
                     putBoolean(ARG_TABLEAU_EXPANDED, state.tableauExpanded)
-                    putBoolean(ARG_UNLOCK_POPUP_EXPANDED, state.unlockPopupExpanded)
                     putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
                 }
             }

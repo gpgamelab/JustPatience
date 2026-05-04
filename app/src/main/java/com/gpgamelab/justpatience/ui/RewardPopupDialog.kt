@@ -14,37 +14,35 @@ import android.view.WindowInsets
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.gpgamelab.justpatience.R
 
-/**
- * Reusable popup renderer.
- *
- * Callers pass:
- * - title text
- * - rewards array (count + image)
- * - button text array
- */
+/** Reusable popup renderer with a generic, positional-button API. */
 class RewardPopupDialog(private val activity: AppCompatActivity) {
 
-    data class RewardItem(
+    data class PopupRewardItem(
         val count: Int,
         @param:DrawableRes val imageResId: Int
     )
 
-    data class ButtonItem(
+    data class PopupButtonItem(
         val text: String = "",
         @param:DrawableRes val backgroundResId: Int = R.drawable.ic_button_orange_orange_ad_unlock,
         val contentDescription: String? = null
     )
 
-    data class Model(
+    data class PopupModel(
         val title: String,
-        val rewards: List<RewardItem>,
-        val buttons: List<ButtonItem>
+        val descriptionText: String? = null,
+        @param:ColorInt val titleColorInt: Int? = null,
+        @param:ColorInt val descriptionColorInt: Int? = null,
+        val rewards: List<PopupRewardItem>,
+        val buttons: List<PopupButtonItem>,
+        val showStarburst: Boolean = false
     )
 
     data class UiConfig(
@@ -76,13 +74,14 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val buttonTextSp: Float = 20f,
         val buttonGapDp: Float = 12f,
         val rewardGapDp: Float = 24f,
+        val titleOffsetXPxPortrait: Float = 0f,
+        val titleOffsetXPxLandscape: Float = 0f,
         val titleOffsetPxPortrait: Float = 0f,
         val titleOffsetPxLandscape: Float = 0f,
+        val descriptionTextSp: Float = 20f,
+        val descriptionOffsetXDp: Float = 0f,
+        val descriptionOffsetYDp: Float = 0f,
         val showTitle: Boolean = true,
-        val showWinOnlyVictory: Boolean = false,
-        val victoryTextSp: Float = 34f,
-        val victoryOffsetXDp: Float = 0f,
-        val victoryOffsetYDp: Float = 0f,
         val showStarburst: Boolean = false,
         @param:DrawableRes val starburstImageResId: Int = R.drawable.ic_star_burst_yellow,
         val starburstOffsetXPx: Float = 0f,
@@ -106,77 +105,88 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val wandNumberOffsetYDp: Float = 0f,
         val buttonRowOffsetXDp: Float = 0f,
         val buttonRowOffsetYDp: Float = 0f,
-        val claimButtonScaleX: Float = 1f,
-        val claimButtonScaleY: Float = 1f,
-        val claimButtonScale: Float = 1f,
-        val multiplierButtonScaleX: Float = 1f,
-        val multiplierButtonScaleY: Float = 1f,
-        val multiplierButtonScale: Float = 1f,
+        val button0ScaleX: Float = 1f,
+        val button0ScaleY: Float = 1f,
+        val button0Scale: Float = 1f,
+        val button1ScaleX: Float = 1f,
+        val button1ScaleY: Float = 1f,
+        val button1Scale: Float = 1f,
+        val button2ScaleX: Float = 1f,
+        val button2ScaleY: Float = 1f,
+        val button2Scale: Float = 1f,
         val singleButtonWidthPercent: Float? = null,
         val continueButtonWidthPercent: Float? = null,
         val multiplierButtonWidthPercent: Float? = null
     )
 
-    fun show(
-        model: Model,
+    fun showPopup(
+        model: PopupModel,
         @DrawableRes baseImageResId: Int,
         onButtonClick: (index: Int, dialog: Dialog) -> Unit,
-        uiConfig: UiConfig = UiConfig()
+        uiConfig: UiConfig = UiConfig(),
+        isCancelable: Boolean = false,
+        cancelOnTouchOutside: Boolean = false
     ): Dialog {
+        validatePopupModel(model)
+        val effectiveUiConfig = uiConfig.copy(showTitle = true, showStarburst = model.showStarburst)
         val contentRoot = activity.findViewById<ViewGroup>(android.R.id.content)
         val root = LayoutInflater.from(activity).inflate(R.layout.dialog_win_reward_choice, contentRoot, false)
 
         val titleView = root.findViewById<TextView>(R.id.tv_reward_popup_title)
+        val descriptionView = root.findViewById<TextView>(R.id.tv_popup_description)
         val buttonsRow = root.findViewById<LinearLayout>(R.id.layout_buttons_row)
         val background = root.findViewById<ImageView>(R.id.iv_win_popup_bg)
         val winOnlyVictoryView = root.findViewById<TextView>(R.id.tv_win_victory)
         val starburstView = root.findViewById<ImageView>(R.id.iv_win_popup_starburst)
 
         // Reposition sections to generic popup zoning.
-        setGuidelinePercent(root, R.id.guideline_reward_top, getTitleBottomPercent(uiConfig))
-        setGuidelinePercent(root, R.id.guideline_reward_bottom, getRewardBottomPercent(uiConfig))
-        setGuidelinePercent(root, R.id.guideline_buttons_top, uiConfig.buttonsTopPercent)
-        setGuidelinePercent(root, R.id.guideline_buttons_bottom, uiConfig.buttonsBottomPercent)
+        setGuidelinePercent(root, R.id.guideline_reward_top, getTitleBottomPercent(effectiveUiConfig))
+        setGuidelinePercent(root, R.id.guideline_reward_bottom, getRewardBottomPercent(effectiveUiConfig))
+        setGuidelinePercent(root, R.id.guideline_buttons_top, effectiveUiConfig.buttonsTopPercent)
+        setGuidelinePercent(root, R.id.guideline_buttons_bottom, effectiveUiConfig.buttonsBottomPercent)
 
-        titleView.visibility = if (uiConfig.showTitle) View.VISIBLE else View.GONE
+        titleView.visibility = if (effectiveUiConfig.showTitle) View.VISIBLE else View.GONE
         titleView.text = model.title
-        titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, uiConfig.titleTextSp)
-        titleView.translationY = -inchesToPx(getTitleOffsetInches(uiConfig)) + getTitleOffsetPx(uiConfig)
-        winOnlyVictoryView.visibility = if (uiConfig.showWinOnlyVictory) View.VISIBLE else View.GONE
-        if (uiConfig.showWinOnlyVictory) {
-            winOnlyVictoryView.setTextSize(TypedValue.COMPLEX_UNIT_SP, uiConfig.victoryTextSp)
-            winOnlyVictoryView.translationX = dpToPxFloatSigned(uiConfig.victoryOffsetXDp)
-            winOnlyVictoryView.translationY = dpToPxFloatSigned(uiConfig.victoryOffsetYDp)
-        }
-        starburstView.visibility = if (uiConfig.showStarburst) View.VISIBLE else View.GONE
-        if (uiConfig.showStarburst) {
-            starburstView.setImageResource(uiConfig.starburstImageResId)
-            starburstView.translationX = uiConfig.starburstOffsetXPx
-            starburstView.translationY = uiConfig.starburstOffsetYPx
-            starburstView.scaleX = uiConfig.starburstScale.coerceAtLeast(0.1f)
-            starburstView.scaleY = uiConfig.starburstScale.coerceAtLeast(0.1f)
+        titleView.setTextColor(model.titleColorInt ?: activity.getColor(R.color.white))
+        titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, effectiveUiConfig.titleTextSp)
+        titleView.translationX = getTitleOffsetXPx(effectiveUiConfig)
+        titleView.translationY = -inchesToPx(getTitleOffsetInches(effectiveUiConfig)) + getTitleOffsetPx(effectiveUiConfig)
+        descriptionView?.text = model.descriptionText.orEmpty()
+        descriptionView?.setTextColor(model.descriptionColorInt ?: activity.getColor(R.color.white))
+        descriptionView?.setTextSize(TypedValue.COMPLEX_UNIT_SP, effectiveUiConfig.descriptionTextSp)
+        descriptionView?.translationX = dpToPxFloatSigned(effectiveUiConfig.descriptionOffsetXDp)
+        descriptionView?.translationY = dpToPxFloatSigned(effectiveUiConfig.descriptionOffsetYDp)
+        descriptionView?.visibility = View.VISIBLE
+        winOnlyVictoryView.visibility = View.GONE
+        starburstView.visibility = if (effectiveUiConfig.showStarburst) View.VISIBLE else View.GONE
+        if (effectiveUiConfig.showStarburst) {
+            starburstView.setImageResource(effectiveUiConfig.starburstImageResId)
+            starburstView.translationX = effectiveUiConfig.starburstOffsetXPx
+            starburstView.translationY = effectiveUiConfig.starburstOffsetYPx
+            starburstView.scaleX = effectiveUiConfig.starburstScale.coerceAtLeast(0.1f)
+            starburstView.scaleY = effectiveUiConfig.starburstScale.coerceAtLeast(0.1f)
         }
 
         background.setImageResource(baseImageResId)
 
-        bindRewards(root, model.rewards, uiConfig)
-        bindButtons(root, model.buttons, uiConfig)
+        bindRewards(root, model.rewards, effectiveUiConfig)
+        bindButtons(root, model.buttons, effectiveUiConfig)
 
         val dialog = Dialog(activity)
         dialog.setContentView(root)
-        dialog.setCancelable(false)
-        dialog.setCanceledOnTouchOutside(false)
+        dialog.setCancelable(isCancelable)
+        dialog.setCanceledOnTouchOutside(cancelOnTouchOutside)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         val (usableWidthPx, usableHeightPx) = getUsableWindowSizePx()
-        val widthPx = (usableWidthPx * getDialogWidthPercent(uiConfig))
+        val widthPx = (usableWidthPx * getDialogWidthPercent(effectiveUiConfig))
             .toInt()
             .coerceAtLeast(1)
-        val heightPx = (usableHeightPx * getDialogHeightPercent(uiConfig))
+        val heightPx = (usableHeightPx * getDialogHeightPercent(effectiveUiConfig))
             .toInt()
             .coerceAtLeast(1)
-        applyButtonsRowWidth(buttonsRow, widthPx, uiConfig)
-        applyButtonWidthHints(buttonsRow, widthPx, uiConfig)
+        applyButtonsRowWidth(buttonsRow, widthPx, effectiveUiConfig)
+        applyButtonWidthHints(buttonsRow, widthPx, effectiveUiConfig)
 
         for (index in 0 until buttonsRow.childCount) {
             val button = buttonsRow.getChildAt(index) as? AppCompatButton ?: continue
@@ -194,7 +204,7 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
 
     private fun bindRewards(
         root: View,
-        rewards: List<RewardItem>,
+        rewards: List<PopupRewardItem>,
         uiConfig: UiConfig
     ) {
         val gemImageView = root.findViewById<ImageView>(R.id.iv_main_reward_gems)
@@ -265,19 +275,21 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
 
     private fun bindButtons(
         root: View,
-        buttons: List<ButtonItem>,
+        buttons: List<PopupButtonItem>,
         uiConfig: UiConfig
     ) {
         val buttonsRow = root.findViewById<LinearLayout>(R.id.layout_buttons_row)
         val continueButton = root.findViewById<AppCompatButton>(R.id.btn_win_continue)
         val multiplierButton = root.findViewById<AppCompatButton>(R.id.btn_win_multiplier)
+        val tertiaryButton = root.findViewById<AppCompatButton>(R.id.btn_popup_tertiary)
         val horizontalPadding = dpToPx(14f)
         val baseVerticalPadding = dpToPx(8f)
         val upwardTextOffsetPx = inchesToPx(getButtonTextOffsetInches(uiConfig)).toInt().coerceAtLeast(0)
         val topPaddingPx = (baseVerticalPadding - upwardTextOffsetPx).coerceAtLeast(0)
         val bottomPaddingPx = baseVerticalPadding + upwardTextOffsetPx
 
-        val buttonViews = listOf(continueButton, multiplierButton)
+        val buttonViews = listOf(continueButton, multiplierButton, tertiaryButton)
+        val visibleButtonCount = buttonViews.indices.count { buttons.getOrNull(it) != null }
         val gapPx = dpToPx(uiConfig.buttonGapDp)
         buttonViews.forEachIndexed { index, button ->
             val buttonItem = buttons.getOrNull(index)
@@ -308,7 +320,8 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
                 )
             }
             (button.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
-                lp.marginEnd = if (index == 0 && buttons.getOrNull(1) != null) gapPx else 0
+                val hasNextVisible = buttons.getOrNull(index + 1) != null
+                lp.marginEnd = if (hasNextVisible) gapPx else 0
                 button.layoutParams = lp
             }
             button.contentDescription = accessibleLabel
@@ -316,10 +329,17 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
 
         buttonsRow.translationX = dpToPxFloatSigned(uiConfig.buttonRowOffsetXDp)
         buttonsRow.translationY = dpToPxFloatSigned(uiConfig.buttonRowOffsetYDp)
-        continueButton.scaleX = (uiConfig.claimButtonScaleX * uiConfig.claimButtonScale).coerceAtLeast(0.1f)
-        continueButton.scaleY = (uiConfig.claimButtonScaleY * uiConfig.claimButtonScale).coerceAtLeast(0.1f)
-        multiplierButton.scaleX = (uiConfig.multiplierButtonScaleX * uiConfig.multiplierButtonScale).coerceAtLeast(0.1f)
-        multiplierButton.scaleY = (uiConfig.multiplierButtonScaleY * uiConfig.multiplierButtonScale).coerceAtLeast(0.1f)
+        continueButton.scaleX = (uiConfig.button0ScaleX * uiConfig.button0Scale).coerceAtLeast(0.1f)
+        continueButton.scaleY = (uiConfig.button0ScaleY * uiConfig.button0Scale).coerceAtLeast(0.1f)
+        multiplierButton.scaleX = (uiConfig.button1ScaleX * uiConfig.button1Scale).coerceAtLeast(0.1f)
+        multiplierButton.scaleY = (uiConfig.button1ScaleY * uiConfig.button1Scale).coerceAtLeast(0.1f)
+        if (visibleButtonCount == 3) {
+            tertiaryButton.scaleX = (uiConfig.button2ScaleX * uiConfig.button2Scale).coerceAtLeast(0.1f)
+            tertiaryButton.scaleY = (uiConfig.button2ScaleY * uiConfig.button2Scale).coerceAtLeast(0.1f)
+        } else {
+            tertiaryButton.scaleX = 1f
+            tertiaryButton.scaleY = 1f
+        }
     }
 
     private fun setGuidelinePercent(root: View, guidelineId: Int, percent: Float) {
@@ -381,6 +401,23 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
 
     private fun applyButtonWidthHints(buttonsRow: LinearLayout, dialogWidthPx: Int, uiConfig: UiConfig) {
         if (buttonsRow.childCount <= 0) return
+        val visibleButtons = (0 until buttonsRow.childCount)
+            .mapNotNull { buttonsRow.getChildAt(it) as? AppCompatButton }
+            .filter { it.visibility == View.VISIBLE }
+        if (visibleButtons.isEmpty()) return
+
+        if (visibleButtons.size == 3) {
+            val slotWidthPx = (dialogWidthPx * 0.28f).toInt().coerceAtLeast(1)
+            visibleButtons.forEach { button ->
+                (button.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                    lp.width = slotWidthPx
+                    lp.weight = 0f
+                    button.layoutParams = lp
+                }
+            }
+            return
+        }
+
         if (buttonsRow.childCount == 1) {
             val widthPercent = uiConfig.singleButtonWidthPercent ?: return
             val targetWidthPx = (dialogWidthPx * widthPercent).toInt().coerceAtLeast(1)
@@ -441,6 +478,14 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
             uiConfig.titleOffsetPxLandscape
         } else {
             uiConfig.titleOffsetPxPortrait
+        }
+    }
+
+    private fun getTitleOffsetXPx(uiConfig: UiConfig): Float {
+        return if (activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            uiConfig.titleOffsetXPxLandscape
+        } else {
+            uiConfig.titleOffsetXPxPortrait
         }
     }
 
@@ -506,14 +551,19 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         val popupBody = dialogView.findViewById<ViewGroup>(R.id.layout_popup_body) ?: return
         val continueButton = dialogView.findViewById<AppCompatButton>(R.id.btn_win_continue) ?: return
         val multiplierButton = dialogView.findViewById<AppCompatButton>(R.id.btn_win_multiplier) ?: return
+        val tertiaryButton = dialogView.findViewById<AppCompatButton>(R.id.btn_popup_tertiary)
 
         var activeTarget: AppCompatButton? = null
         popupBody.setOnTouchListener { _, event ->
             val continueHit = isPointInsideTransformedChild(event.x, event.y, continueButton, popupBody)
             val multiplierHit = isPointInsideTransformedChild(event.x, event.y, multiplierButton, popupBody)
+            val tertiaryHit = tertiaryButton?.let {
+                isPointInsideTransformedChild(event.x, event.y, it, popupBody)
+            } == true
             val target = when {
                 continueHit -> continueButton
                 multiplierHit -> multiplierButton
+                tertiaryHit -> tertiaryButton
                 else -> null
             }
 
@@ -565,6 +615,11 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
             currentParent = current.parent as? ViewGroup
         }
         return bounds
+    }
+
+    private fun validatePopupModel(model: PopupModel) {
+        require(model.rewards.size <= 3) { "PopupModel supports 0..3 rewards." }
+        require(model.buttons.size in 2..3) { "PopupModel supports 2..3 buttons." }
     }
 }
 

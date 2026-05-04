@@ -124,24 +124,9 @@
     <string name="help_unlock_watch_ad">Watch AD</string>
     <string name="help_unlock_not_enough_gems">Not enough gems.</string>
     <string name="help_unlock_ad_not_ready">Ad not ready right now.</string>
-    <string name="help_unlock_ad_only_description_format">You are out of Help Coupons.\nYou can unlock this help function for %1$d hours by watching an Ad.</string>
-    <string name="help_unlock_ad_only_description_default">You are out of Help Coupons.\nYou can unlock this help function for 6 hours by watching an Ad.</string>
+    <string name="help_unlock_ad_only_description_format">You are out of Help Coupons.\nYou can unlock this help function\nfor %1$d hours\nby watching an Ad.</string>
+    <string name="help_unlock_ad_only_description_default">You are out of Help Coupons.\nYou can unlock this help function\nfor X hours\nby watching an Ad.</string>
 
-    <!-- Develop Menu – Unlock Popup section -->
-    <string name="develop_menu_unlock_popup_section">Unlock Help Popup</string>
-    <string name="develop_menu_unlock_frame_scale_x">Frame scale X</string>
-    <string name="develop_menu_unlock_frame_scale_y">Frame scale Y</string>
-    <string name="develop_menu_unlock_desc_text_size">Desc text size (sp)</string>
-    <string name="develop_menu_unlock_desc_offset_x">Desc offset X (dp)</string>
-    <string name="develop_menu_unlock_desc_offset_y">Desc offset Y (dp)</string>
-    <string name="develop_menu_unlock_ad_btn_scale_x">Watch AD btn scale X</string>
-    <string name="develop_menu_unlock_ad_btn_scale_y">Watch AD btn scale Y</string>
-    <string name="develop_menu_unlock_ad_btn_offset_x">Watch AD btn offset X (dp)</string>
-    <string name="develop_menu_unlock_ad_btn_offset_y">Watch AD btn offset Y (dp)</string>
-    <string name="develop_menu_unlock_cancel_btn_scale_x">Cancel btn scale X</string>
-    <string name="develop_menu_unlock_cancel_btn_scale_y">Cancel btn scale Y</string>
-    <string name="develop_menu_unlock_cancel_btn_offset_x">Cancel btn offset X (dp)</string>
-    <string name="develop_menu_unlock_cancel_btn_offset_y">Cancel btn offset Y (dp)</string>
     <string name="develop_menu_shuffle_section">Shuffle / Deal Timing</string>
     <string name="develop_menu_tableau_section">Tableau Adjustments</string>
     <string name="develop_menu_shuffle_second_clip_delay_ms">Shuffle clip 2 delay (ms)</string>
@@ -241,8 +226,6 @@ Locale: %7$s</string>
     <string name="terms_of_service_website_url" tools:ignore="TypographyDashes">http://gnuparadigms.com/gamelab/terms-of-service-2026-03-27.html</string>
     <string name="terms_of_service_open_failed">No browser app is available right now.</string>
     <string name="game_menu_settings">Settings</string>
-    <string name="game_menu_open_settings">Open Settings</string>
-    <string name="game_menu_common_settings">Common Settings</string>
     <string name="game_menu_my_nickname">My Nickname</string>
     <string name="game_menu_my_nickname_with_value">My Nickname: %1$s</string>
     <string name="nickname_dialog_title">Set Nickname</string>
@@ -273,7 +256,6 @@ Locale: %7$s</string>
     <string name="setting_state_disabled">Disabled</string>
     <string name="setting_state_on">On</string>
     <string name="setting_state_off">Off</string>
-    <string name="game_menu_appearance">Appearance</string>
     <string name="game_menu_show_game_timer">Show Game Timer</string>
     <string name="game_menu_show_game_timer_with_value">Show Game Timer: %1$s</string>
     <string name="game_menu_show_score">Show Score</string>
@@ -433,15 +415,21 @@ Locale: %7$s</string>
     <string name="develop_menu_wand_number_offset_y">Wand number offset Y (dp)</string>
     <string name="develop_menu_button_row_offset_x">Popup button row offset X (dp)</string>
     <string name="develop_menu_button_row_offset_y">Popup button row offset Y (dp)</string>
-    <string name="develop_menu_claim_scale_x">Claim button size X (scale)</string>
-    <string name="develop_menu_claim_scale_y">Claim button size Y (scale)</string>
-    <string name="develop_menu_claim_scale">Claim button overall scale</string>
-    <string name="develop_menu_multiplier_scale_x">Multiplier button size X (scale)</string>
-    <string name="develop_menu_multiplier_scale_y">Multiplier button size Y (scale)</string>
-    <string name="develop_menu_multiplier_scale">Multiplier button overall scale</string>
-    <string name="develop_menu_victory_text_size">VICTORY text size (sp)</string>
-    <string name="develop_menu_victory_offset_x">VICTORY offset X (dp)</string>
-    <string name="develop_menu_victory_offset_y">VICTORY offset Y (dp)</string>
+    <string name="develop_menu_button0_scale_x">Button 0 scale X</string>
+    <string name="develop_menu_button0_scale_y">Button 0 scale Y</string>
+    <string name="develop_menu_button0_scale">Button 0 overall scale</string>
+    <string name="develop_menu_button1_scale_x">Button 1 scale X</string>
+    <string name="develop_menu_button1_scale_y">Button 1 scale Y</string>
+    <string name="develop_menu_button1_scale">Button 1 overall scale</string>
+    <string name="develop_menu_button2_scale_x">Button 2 scale X</string>
+    <string name="develop_menu_button2_scale_y">Button 2 scale Y</string>
+    <string name="develop_menu_button2_scale">Button 2 overall scale</string>
+    <string name="develop_menu_popup_desc_text_size">Description text size (sp)</string>
+    <string name="develop_menu_popup_desc_offset_x">Description offset X (dp)</string>
+    <string name="develop_menu_popup_desc_offset_y">Description offset Y (dp)</string>
+    <string name="develop_menu_victory_text_size">Title text size (sp)</string>
+    <string name="develop_menu_victory_offset_x">Title offset X (dp)</string>
+    <string name="develop_menu_victory_offset_y">Title offset Y (dp)</string>
     <string name="win_popup_victory_title">VICTORY!</string>
 
 </resources>
