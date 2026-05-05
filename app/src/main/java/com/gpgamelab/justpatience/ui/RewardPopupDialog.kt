@@ -128,7 +128,11 @@ class RewardPopupDialog(private val activity: AppCompatActivity) {
         cancelOnTouchOutside: Boolean = false
     ): Dialog {
         validatePopupModel(model)
-        val effectiveUiConfig = uiConfig.copy(showTitle = true, showStarburst = model.showStarburst)
+        // Starburst is shown only when both model intent and UI style allow it.
+        val effectiveUiConfig = uiConfig.copy(
+            showTitle = true,
+            showStarburst = uiConfig.showStarburst && model.showStarburst
+        )
         val contentRoot = activity.findViewById<ViewGroup>(android.R.id.content)
         val root = LayoutInflater.from(activity).inflate(R.layout.dialog_win_reward_choice, contentRoot, false)
 

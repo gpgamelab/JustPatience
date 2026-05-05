@@ -193,6 +193,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val heightPortrait = (winPopupUiConfig.dialogHeightPercent * winPopupUiConfig.dialogScalePortrait)
             .coerceIn(0.1f, 1f)
 
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         return RewardPopupDialog.UiConfig(
             dialogWidthPercentLandscape = widthLandscape,
             dialogWidthPercentPortrait = widthPortrait,
@@ -205,7 +206,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             buttonsTopPercent = winPopupUiConfig.buttonsTopPercent,
             buttonsBottomPercent = winPopupUiConfig.buttonsBottomPercent,
             showTitle = true,
-            showStarburst = true,
+            showStarburst = !(isLandscape
+                    && resources.configuration.smallestScreenWidthDp < 600),
             starburstImageResId = R.drawable.ic_star_burst_yellow,
             starburstOffsetXPx = testerStarburstPositionXPx.toFloat(),
             starburstOffsetYPx = testerStarburstPositionYPx.toFloat(),
@@ -356,18 +358,22 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             return dialog
         }
 
+        val shouldShowStarburst = uiConfig.showStarburst && model.showStarburst
         val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val dialogWidthPercent = if (isLandscapeNow) uiConfig.dialogWidthPercentLandscape else uiConfig.dialogWidthPercentPortrait
         val dialogHeightPercent = if (isLandscapeNow) uiConfig.dialogHeightPercentLandscape else uiConfig.dialogHeightPercentPortrait
         val (usableWidthPx, usableHeightPx) = getUsableWindowSizePx()
         val widthPx = (usableWidthPx * dialogWidthPercent).toInt().coerceAtLeast(1)
         val baseHeightPx = (usableHeightPx * dialogHeightPercent).toInt().coerceAtLeast(1)
-        val initialOverflowTopPx = estimateInitialStarburstTopOverflowPx()
+        val initialOverflowTopPx = if (shouldShowStarburst) estimateInitialStarburstTopOverflowPx() else 0
         val heightPx = (baseHeightPx + initialOverflowTopPx).coerceAtLeast(1)
         dialog.window?.setLayout(widthPx, heightPx)
 
         val dialogView = dialog.findViewById<View>(R.id.layout_popup_body)?.rootView
         val starburstView = dialog.findViewById<ImageView>(R.id.iv_win_popup_starburst)
+        if (!shouldShowStarburst) {
+            starburstView?.visibility = View.GONE
+        }
         activeWinPopupDialog = dialog
         activeWinPopupRoot = dialogView
         activeWinPopupBaseWidthPx = widthPx
@@ -386,10 +392,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         dialog.window?.setLayout(widthPx, heightPx)
         playWinPopupSoundIfAllowed()
 
-        starburstView?.post {
-            if (!dialog.isShowing) return@post
-            activeStarburstView = starburstView
-            refreshActiveStarburstDebugAndMotion()
+        if (shouldShowStarburst) {
+            starburstView?.post {
+                if (!dialog.isShowing) return@post
+                activeStarburstView = starburstView
+                refreshActiveStarburstDebugAndMotion()
+            }
+        } else {
+            activeStarburstAnimator?.cancel()
+            activeStarburstAnimator = null
+            activeStarburstView = null
         }
 
         return dialog
