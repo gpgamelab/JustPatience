@@ -1,4 +1,7 @@
 package com.gpgamelab.justpatience.ui
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -12,8 +15,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.google.android.material.button.MaterialButton
 import com.gpgamelab.justpatience.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 /**
  * Tester-only popup menu for adjusting game state (gems, coupons, premium, full reset).
  */
@@ -108,6 +116,11 @@ class TesterMenuDialogFragment : DialogFragment() {
                 .setNegativeButton(R.string.cancel, null)
                 .show()
         }
+        // AdMob Device ID
+        view.findViewById<MaterialButton>(R.id.btn_tester_admob_device_id).setOnClickListener {
+            fetchAndShowAdmobDeviceId()
+        }
+
         // Close
         view.findViewById<MaterialButton>(R.id.btn_tester_close).setOnClickListener { dismiss() }
          // Trigger Win Sequence
@@ -180,6 +193,48 @@ class TesterMenuDialogFragment : DialogFragment() {
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    private fun fetchAndShowAdmobDeviceId() {
+        val ctx = requireContext().applicationContext
+        CoroutineScope(Dispatchers.IO).launch {
+            val idInfo = try {
+                AdvertisingIdClient.getAdvertisingIdInfo(ctx)
+            } catch (e: Exception) {
+                null
+            }
+            val rawId = idInfo?.id ?: "unavailable"
+            // AdMob's test-device hash is the MD5 of the raw advertising ID, uppercased.
+            val admobHash = try {
+                val md = java.security.MessageDigest.getInstance("MD5")
+                md.update(rawId.toByteArray())
+                md.digest().joinToString("") { "%02X".format(it) }
+            } catch (e: Exception) {
+                rawId   // fallback: show raw ID if MD5 fails
+            }
+            withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
+                val message = "This device's advertising ID:\n$rawId\n\nAdMob test-device hash:\n$admobHash\n\n" +
+                    "(Tap OK to copy hash to clipboard)"
+                AlertDialog.Builder(requireContext())
+                    .setTitle("AdMob Device ID")
+                    .setMessage(message)
+                    .setPositiveButton("Copy hash") { _, _ ->
+                        val clipboard = requireContext()
+                            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("admob_device_id", admobHash))
+                        Toast.makeText(requireContext(), "Copied!", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNeutralButton("Copy advertising ID") { _, _ ->
+                        val clipboard = requireContext()
+                            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("gaid", rawId))
+                        Toast.makeText(requireContext(), "Copied!", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton(R.string.cancel, null)
+                    .show()
+            }
+        }
     }
 
     companion object {

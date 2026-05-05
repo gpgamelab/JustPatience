@@ -400,6 +400,23 @@
             app:backgroundTint="#B00020"
             android:layout_marginBottom="20dp" />
 
+        <!-- AdMob Device ID -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#555555"
+            android:layout_marginBottom="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_tester_admob_device_id"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AdMob Device ID"
+            android:textColor="#40C4FF"
+            app:strokeColor="#40C4FF"
+            android:layout_marginBottom="8dp" />
+
         <!-- Close Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_tester_close"
