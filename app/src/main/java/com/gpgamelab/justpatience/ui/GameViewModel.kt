@@ -29,6 +29,8 @@ import com.gpgamelab.justpatience.model.HintMove
 import com.gpgamelab.justpatience.model.HintPhase
 import com.gpgamelab.justpatience.model.FoundationPile
 import com.gpgamelab.justpatience.model.SingleClickGlowState
+import com.gpgamelab.justpatience.model.ScoreCalculator
+import com.gpgamelab.justpatience.model.ScoreMethod
 import com.gpgamelab.justpatience.model.StackType
 import com.gpgamelab.justpatience.model.StandardRank
 import com.gpgamelab.justpatience.model.Joker
@@ -113,6 +115,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _showMoves = MutableStateFlow(true)
     val showMoves: StateFlow<Boolean> = _showMoves
+
+    private val _scoreMethod = MutableStateFlow(ScoreMethod.WINDOWS)
+    val scoreMethod: StateFlow<String> = _scoreMethod
 
     private val _showCardAnimations = MutableStateFlow(true)
     val showCardAnimations: StateFlow<Boolean> = _showCardAnimations
@@ -204,7 +209,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         undoStack.clear()
         redoStack.clear()
         currentHandRecorded = false
-        val newGame = controller.newGameWithClearHistory(currentDeckCount)
+        val newGame = createNewGameWithScoring()
         initialGameState = newGame.deepCopy()
         _game.value = newGame
         resetTimerForNewHand()
@@ -226,6 +231,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _showGameTimer.value = settings.showGameTimer
                 _showScore.value = settings.showScore
                 _showMoves.value = settings.showMoves
+                _scoreMethod.value = ScoreMethod.normalize(settings.scoreMethod)
                 _showWinAnimation.value = settings.showWinAnimation
                 _isMirroredLayout.value = settings.boardLayout == "left_hand"
                 _allowFoundationToTableauDrag.value = settings.allowFoundationToTableauDrag
@@ -306,14 +312,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startNewGame() {
         clearPendingRecycleState()
-        finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
         undoStack.clear()
         redoStack.clear()
         resetTimerForNewHand()
         currentHandRecorded = false
         viewModelScope.launch {
-            val newGame = controller.newGameWithClearHistory(currentDeckCount)
+            finalizeCurrentGameIfNeededSync()
+            val newGame = createNewGameWithScoring()
             initialGameState = newGame.deepCopy()
             _game.value = newGame
             saveGame()
@@ -327,31 +333,38 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun restartGame() {
         clearPendingRecycleState()
-        finalizeCurrentGameIfNeeded()
         pauseHintTimerForNonPlayerActivity()
-        val initial = initialGameState
-        if (initial == null) {
-            val wasUnlocked = _game.value.extraTableauUnlocked
+        val wasUnlocked = _game.value.extraTableauUnlocked
+        viewModelScope.launch {
+            finalizeCurrentGameIfNeededSync()
+
+            val initial = initialGameState
+            val restartedGame = if (initial == null) {
+                createNewGameWithScoring().copy(extraTableauUnlocked = wasUnlocked)
+            } else {
+                val vegasBase = settingsManager.getVegasCumulativeBankroll()
+                withScoringChannels(
+                    initial.copy(
+                        status = GameStatus.IN_PROGRESS,
+                        moves = 0,
+                        windowsScore = 0,
+                        score = 0,
+                        vegasCumulativeBase = vegasBase,
+                        extraTableauUnlocked = wasUnlocked
+                    ),
+                    windowsScore = 0
+                )
+            }
+
             undoStack.clear()
             redoStack.clear()
             currentHandRecorded = false
-            viewModelScope.launch {
-                val newGame = controller.newGameWithClearHistory(currentDeckCount)
-                initialGameState = newGame.deepCopy()
-                _game.value = newGame.copy(extraTableauUnlocked = wasUnlocked)
-                resetTimerForNewHand()
-                updateUndoRedoState()
-                saveGame()
-            }
-            return
+            initialGameState = restartedGame.deepCopy()
+            _game.value = restartedGame
+            resetTimerForNewHand()
+            updateUndoRedoState()
+            saveGame()
         }
-        undoStack.clear()
-        redoStack.clear()
-        _game.value = initial.copy(extraTableauUnlocked = _game.value.extraTableauUnlocked)
-        resetTimerForNewHand()
-        currentHandRecorded = false
-        updateUndoRedoState()
-        saveGame()
     }
 
     enum class DrawResult { NORMAL_DRAW, RECYCLE_SHUFFLE, NO_MOVE }
@@ -466,8 +479,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (success) {
                     undoStack.addLast(game)
                     redoStack.clear()
-                    // Score is already applied by controller, just update move count
-                    val updatedWithMoves = theUpdatedGame.copy(moves = theUpdatedGame.moves + 1)
+                    val scoreDelta = theUpdatedGame.score - game.score
+                    val updatedWithMoves = updateAfterMove(
+                        theUpdatedGame.copy(
+                            score = game.score,
+                            windowsScore = game.windowsScore,
+                            moves = game.moves
+                        ),
+                        scoreDelta = scoreDelta
+                    )
                     startTimerOnFirstSuccessfulMoveIfNeeded()
                     _game.value = updatedWithMoves
                     saveGame()
@@ -1301,19 +1321,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun updateAfterMove(game: Game, scoreDelta: Int = 0): Game {
         startTimerOnFirstSuccessfulMoveIfNeeded()
-        return if (game.isWinCondition()) {
+        val windowsScore = game.windowsScore + scoreDelta
+        val scoredGame = withScoringChannels(
+            game.copy(moves = game.moves + 1),
+            windowsScore = windowsScore
+        )
+
+        return if (scoredGame.isWinCondition()) {
             stopTimer()
-            val updatedGame = game.copy(
+            val updatedGame = scoredGame.copy(
                 status = GameStatus.WON,
-                score = game.score + scoreDelta,
-                moves = game.moves + 1,
                 extraTableauUnlocked = false
             )
             // Record the win in stats
             recordGameCompletion(updatedGame, isWin = true)
             updatedGame
         } else {
-            game.copy(score = game.score + scoreDelta, moves = game.moves + 1)
+            scoredGame
         }
     }
 
@@ -1329,8 +1353,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val cardsDraw = settings?.drawSize
             val deckCount = game.deckCount
             val isPremium = settings?.premiumAcct ?: false
+            val selectedScoreMethod = ScoreMethod.normalize(settings?.scoreMethod)
             statsManager.recordGame(
-                score = game.score,
+                score = game.scoreForMethod(selectedScoreMethod),
+                windowsScore = game.windowsScore,
+                vegasScore = game.vegasScore,
+                vegasCumulativeScore = game.vegasCumulativeScore,
+                completionPercentage = game.completionPercentage,
                 moves = game.moves,
                 timeMs = elapsedTimeMs.coerceAtLeast(0L),
                 isWin = isWin,
@@ -1338,6 +1367,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 cardsDraw = cardsDraw,
                 deckCount = deckCount
             )
+            settingsManager.setVegasCumulativeBankroll(game.vegasCumulativeScore)
             settingsManager.recordCompletedGamePremiumFlag(isPremium)
         } catch (e: Exception) {
             Log.e("GameViewModel", "Failed to record game completion", e)
@@ -1386,11 +1416,43 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     // Record an in-progress game as a loss before replacing it with a new hand.
     private fun finalizeCurrentGameIfNeeded() {
+        viewModelScope.launch {
+            finalizeCurrentGameIfNeededSync()
+        }
+    }
+
+    private suspend fun finalizeCurrentGameIfNeededSync() {
         val current = _game.value
         if (current.status == GameStatus.IN_PROGRESS) {
             val elapsedTimeMs = gameTime.value * 1000L
-            recordGameCompletion(current, isWin = false, elapsedTimeMs = elapsedTimeMs)
+            recordGameCompletionInternal(current, isWin = false, elapsedTimeMs = elapsedTimeMs)
         }
+    }
+
+    private suspend fun createNewGameWithScoring(): Game {
+        val freshGame = controller.newGameWithClearHistory(currentDeckCount)
+        val vegasBase = settingsManager.getVegasCumulativeBankroll()
+        return withScoringChannels(
+            freshGame.copy(
+                windowsScore = 0,
+                score = 0,
+                vegasCumulativeBase = vegasBase
+            ),
+            windowsScore = 0
+        )
+    }
+
+    private fun withScoringChannels(game: Game, windowsScore: Int = game.windowsScore): Game {
+        val vegasScore = ScoreCalculator.computeVegasScore(game)
+        val vegasCumulativeScore = game.vegasCumulativeBase + vegasScore
+        val completionPercentage = ScoreCalculator.computeCompletionPercentage(game)
+        return game.copy(
+            score = windowsScore,
+            windowsScore = windowsScore,
+            vegasScore = vegasScore,
+            vegasCumulativeScore = vegasCumulativeScore,
+            completionPercentage = completionPercentage
+        )
     }
 
     fun saveGame() {
@@ -1423,10 +1485,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val (savedGameRaw, initialFromSaveRaw, usedLegacyPayload) = parsed
                 val savedGame = normalizeGameForDeckMode(savedGameRaw)
                 val initialFromSave = initialFromSaveRaw?.let { normalizeGameForDeckMode(it) }
-                val (migratedCurrent, currentMigrated) = migrateSavedGameImagePaths(savedGame)
+                val (migratedCurrentRaw, currentMigrated) = migrateSavedGameImagePaths(savedGame)
                 val (migratedInitial, initialMigrated) = initialFromSave
                     ?.let { migrateSavedGameImagePaths(it) }
                     ?: Pair(null, false)
+                val migratedCurrent = withScoringChannels(migratedCurrentRaw)
                 val restartAnchor = (migratedInitial ?: migratedCurrent.deepCopy()).copy(savedGameTime = 0L)
 
                 if (migratedCurrent.status == GameStatus.IN_PROGRESS) {

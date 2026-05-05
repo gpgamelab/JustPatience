@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * Room database for storing game records and history.
  * Provides a singleton instance for accessing game statistics.
  */
-@Database(entities = [GameRecord::class], version = 4, exportSchema = false)
+@Database(entities = [GameRecord::class], version = 5, exportSchema = false)
 abstract class GameDatabase : RoomDatabase() {
 
     abstract fun gameRecordDao(): GameRecordDao
@@ -30,7 +30,7 @@ abstract class GameDatabase : RoomDatabase() {
                     GameDatabase::class.java,
                     "game_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build()
                     .also { instance = it }
             }
@@ -57,6 +57,23 @@ abstract class GameDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 if (!hasColumn(db, "game_records", "deckCount")) {
                     db.execSQL("ALTER TABLE game_records ADD COLUMN deckCount INTEGER")
+                }
+            }
+        }
+
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                if (!hasColumn(db, "game_records", "windowsScore")) {
+                    db.execSQL("ALTER TABLE game_records ADD COLUMN windowsScore INTEGER")
+                }
+                if (!hasColumn(db, "game_records", "vegasScore")) {
+                    db.execSQL("ALTER TABLE game_records ADD COLUMN vegasScore INTEGER")
+                }
+                if (!hasColumn(db, "game_records", "vegasCumulativeScore")) {
+                    db.execSQL("ALTER TABLE game_records ADD COLUMN vegasCumulativeScore INTEGER")
+                }
+                if (!hasColumn(db, "game_records", "completionPercentage")) {
+                    db.execSQL("ALTER TABLE game_records ADD COLUMN completionPercentage INTEGER")
                 }
             }
         }

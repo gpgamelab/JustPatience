@@ -26,6 +26,10 @@ class GameStatsManager(context: Context) {
      */
     suspend fun recordGame(
         score: Int,
+        windowsScore: Int,
+        vegasScore: Int,
+        vegasCumulativeScore: Int,
+        completionPercentage: Int,
         moves: Int,
         timeMs: Long,
         isWin: Boolean,
@@ -39,6 +43,10 @@ class GameStatsManager(context: Context) {
         val record = GameRecord(
             playerName = playerName?.trim()?.takeIf { it.isNotEmpty() },
             score = score,
+            windowsScore = windowsScore,
+            vegasScore = vegasScore,
+            vegasCumulativeScore = vegasCumulativeScore,
+            completionPercentage = completionPercentage,
             moves = moves,
             timeMs = timeMs,
             isWin = isWin,

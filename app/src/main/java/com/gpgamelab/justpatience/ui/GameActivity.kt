@@ -765,7 +765,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
                 launch {
                     viewModel.game.collect { g ->
-                        binding.tvScore.text = getString(R.string.score_format, g.score)
+                        updateScoreLabel(g)
                         binding.tvMoves.text = getString(R.string.moves_format, g.moves)
 
                         if (g.status != GameStatus.WON) {
@@ -786,6 +786,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 launch {
                     viewModel.showGameTimer.collect { shouldShow ->
                         binding.tvTime.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                    }
+                }
+
+                launch {
+                    viewModel.scoreMethod.collect {
+                        updateScoreLabel(viewModel.game.value)
                     }
                 }
 
@@ -869,6 +875,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val minutes = seconds / 60
         val secs = seconds % 60
         return String.format("%02d:%02d", minutes, secs)
+    }
+
+    private fun updateScoreLabel(game: com.gpgamelab.justpatience.model.Game) {
+        val score = game.scoreForMethod(viewModel.scoreMethod.value)
+        binding.tvScore.text = getString(R.string.score_format, score)
     }
 
     private fun initializeMoveSoundPool() {

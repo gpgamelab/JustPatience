@@ -22,6 +22,11 @@ data class Game(
     val foundations: List<FoundationPile>,
     val status: GameStatus,
     val score: Int,
+    val windowsScore: Int = score,
+    val vegasScore: Int = 0,
+    val vegasCumulativeBase: Int = 0,
+    val vegasCumulativeScore: Int = 0,
+    val completionPercentage: Int = 0,
     val moves: Int,
     val savedGameTime: Long,
     val recycleCountUsed: Int = 0,
@@ -97,6 +102,11 @@ data class Game(
                 foundations = List(foundationCount) { FoundationPile() },
                 status = GameStatus.IN_PROGRESS,
                 score = 0,
+                windowsScore = 0,
+                vegasScore = -52 * normalizedDeckCount,
+                vegasCumulativeBase = 0,
+                vegasCumulativeScore = -52 * normalizedDeckCount,
+                completionPercentage = 0,
                 moves = 0,
                 savedGameTime = System.currentTimeMillis(),
                 recycleCountUsed = 0,
@@ -253,6 +263,17 @@ data class Game(
         }
     }
 
+    fun foundationCardsCount(): Int = foundations.sumOf { it.size() }
+
+    fun scoreForMethod(scoreMethod: String): Int {
+        return when (ScoreMethod.normalize(scoreMethod)) {
+            ScoreMethod.VEGAS -> vegasScore
+            ScoreMethod.VEGAS_CUMULATIVE -> vegasCumulativeScore
+            ScoreMethod.COMPLETION -> completionPercentage
+            else -> windowsScore
+        }
+    }
+
     private fun faceImagePath(rank: CardRank, suit: CardSuit?): String {
         if (rank == Joker) {
             return "j_${if (Math.random() < 0.5) "da" else "li"}"
@@ -305,10 +326,16 @@ data class Game(
             foundations = newFoundations,
             status = status,
             score = score,
+            windowsScore = windowsScore,
+            vegasScore = vegasScore,
+            vegasCumulativeBase = vegasCumulativeBase,
+            vegasCumulativeScore = vegasCumulativeScore,
+            completionPercentage = completionPercentage,
             moves = moves,
             savedGameTime = savedGameTime,
             recycleCountUsed = recycleCountUsed,
-            extraTableauUnlocked = extraTableauUnlocked
+            extraTableauUnlocked = extraTableauUnlocked,
+            deckCount = deckCount
         )
     }
 }

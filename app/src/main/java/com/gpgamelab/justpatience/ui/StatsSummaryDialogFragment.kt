@@ -12,6 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.data.GameRecord
 import com.gpgamelab.justpatience.databinding.DialogStatsSummaryBinding
+import com.gpgamelab.justpatience.model.ScoreMethod
 import com.gpgamelab.justpatience.viewmodel.StatsViewModel
 import com.gpgamelab.justpatience.util.UiScaleUtil
 import kotlinx.coroutines.flow.first
@@ -27,6 +28,7 @@ class StatsSummaryDialogFragment : DialogFragment() {
 
     private var selectedDrawCount: Int = 1
     private var selectedDeckCount: Int = 1
+    private var selectedScoreMethod: String = ScoreMethod.WINDOWS
     private var latestRecords: List<GameRecord> = emptyList()
     private var hasAppliedInitialDrawSetting: Boolean = false
 
@@ -69,6 +71,7 @@ class StatsSummaryDialogFragment : DialogFragment() {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
             val drawSize = currentSettings.drawSize
             val deckCount = currentSettings.deckCount
+            selectedScoreMethod = ScoreMethod.normalize(currentSettings.scoreMethod)
             if (hasAppliedInitialDrawSetting) return@launch
             selectedDrawCount = normalizeDrawCount(drawSize)
             selectedDeckCount = normalizeDeckCount(deckCount)
@@ -102,7 +105,7 @@ class StatsSummaryDialogFragment : DialogFragment() {
         val gamesPlayed = filtered.size
         val gamesWon = filtered.count { it.isWin }
         val winRate = if (gamesPlayed == 0) 0.0 else (gamesWon.toDouble() / gamesPlayed) * 100.0
-        val highestScore = filtered.maxOfOrNull { it.score } ?: 0
+        val highestScore = filtered.maxOfOrNull { it.scoreForMethod(selectedScoreMethod) } ?: 0
         val averageTimeMs = filtered.map { it.timeMs }.average().let { avg ->
             if (avg.isNaN()) null else avg.toLong()
         }

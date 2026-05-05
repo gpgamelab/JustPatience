@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gpgamelab.justpatience.data.GameRecord
 import com.gpgamelab.justpatience.databinding.ItemGameRecordBinding
+import com.gpgamelab.justpatience.model.ScoreMethod
 import com.gpgamelab.justpatience.util.UiScaleUtil
 
 /**
@@ -12,8 +13,11 @@ import com.gpgamelab.justpatience.util.UiScaleUtil
  */
 class GameRecordAdapter(
     private val records: List<GameRecord>,
+    scoreMethod: String,
     private val onFormatTime: (Long) -> String
 ) : RecyclerView.Adapter<GameRecordAdapter.GameRecordViewHolder>() {
+
+    private val selectedScoreMethod = ScoreMethod.normalize(scoreMethod)
 
     inner class GameRecordViewHolder(private val binding: ItemGameRecordBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -21,7 +25,7 @@ class GameRecordAdapter(
         fun bind(record: GameRecord) {
             binding.tvGameDate.text = record.dateString
             binding.tvGamePlayerName.text = record.playerName?.takeIf { it.isNotBlank() } ?: "N/A"
-            binding.tvGameScore.text = record.score.toString()
+            binding.tvGameScore.text = record.scoreForMethod(selectedScoreMethod).toString()
             binding.tvGameMoves.text = record.moves.toString()
             binding.tvGameTime.text = onFormatTime(record.timeMs)
             binding.tvGameCardsDraw.text = (record.cardsDraw ?: 1).toString()

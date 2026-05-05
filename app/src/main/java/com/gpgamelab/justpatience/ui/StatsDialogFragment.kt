@@ -12,6 +12,7 @@ import com.gpgamelab.justpatience.data.GameRecord
 import com.gpgamelab.justpatience.data.SettingsManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gpgamelab.justpatience.databinding.DialogStatsBinding
+import com.gpgamelab.justpatience.model.ScoreMethod
 import com.gpgamelab.justpatience.ui.adapter.GameRecordAdapter
 import com.gpgamelab.justpatience.util.UiScaleUtil
 import com.gpgamelab.justpatience.viewmodel.StatsViewModel
@@ -30,6 +31,7 @@ class StatsDialogFragment : DialogFragment() {
     private lateinit var settingsManager: SettingsManager
     private var selectedDrawCount: Int = 1
     private var selectedDeckCount: Int = 1
+    private var selectedScoreMethod: String = ScoreMethod.WINDOWS
     private var latestRecords: List<GameRecord> = emptyList()
     private var hasAppliedInitialDrawSetting: Boolean = false
 
@@ -85,6 +87,7 @@ class StatsDialogFragment : DialogFragment() {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
             val drawSize = currentSettings.drawSize
             val deckCount = currentSettings.deckCount
+            selectedScoreMethod = ScoreMethod.normalize(currentSettings.scoreMethod)
             selectedDrawCount = normalizeDrawCount(drawSize)
             selectedDeckCount = normalizeDeckCount(deckCount)
             binding.toggleDrawCount.check(
@@ -119,8 +122,11 @@ class StatsDialogFragment : DialogFragment() {
         val gamesPlayed = filtered.size
         val gamesWon = filtered.count { it.isWin }
         val winRate = if (gamesPlayed == 0) 0.0 else (gamesWon.toDouble() / gamesPlayed) * 100.0
-        val highestScore = filtered.maxOfOrNull { it.score } ?: 0
-        val averageScore = filtered.map { it.score }.average().let { if (it.isNaN()) null else it }
+        val highestScore = filtered.maxOfOrNull { it.scoreForMethod(selectedScoreMethod) } ?: 0
+        val averageScore = filtered
+            .map { it.scoreForMethod(selectedScoreMethod) }
+            .average()
+            .let { if (it.isNaN()) null else it }
         val averageTimeMs = filtered.map { it.timeMs }.average().let { if (it.isNaN()) null else it.toLong() }
 
         binding.tvGamesPlayed.text = gamesPlayed.toString()
@@ -130,7 +136,7 @@ class StatsDialogFragment : DialogFragment() {
         binding.tvAverageScore.text = averageScore?.let { String.format(Locale.getDefault(), "%.1f", it) } ?: "0"
         binding.tvAverageTime.text = averageTimeMs?.let { statsViewModel.formatTime(it) } ?: "00:00"
 
-        adapter = GameRecordAdapter(filtered) { timeMs ->
+        adapter = GameRecordAdapter(filtered, selectedScoreMethod) { timeMs ->
             statsViewModel.formatTime(timeMs)
         }
         binding.recyclerviewGameHistory.adapter = adapter

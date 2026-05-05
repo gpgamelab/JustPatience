@@ -82,6 +82,7 @@ class SettingsManager(private val context: Context) {
         val BOARD_LAYOUT = stringPreferencesKey("board_layout")                 // "right_hand", "left_hand"
         val SCORE_METHOD = stringPreferencesKey("score_method")                 // "windows", "vegas", "vegas_cumulative", "completion"
         val PLAYER_DISPLAY_NAME = stringPreferencesKey("player_display_name")
+        val VEGAS_CUMULATIVE_BANKROLL = intPreferencesKey("vegas_cumulative_bankroll")
 
         // Session tracking: true while an IN_PROGRESS game is saved; false after normal game end.
         // If still true on next cold start it means the process was killed mid-session.
@@ -525,6 +526,20 @@ class SettingsManager(private val context: Context) {
     suspend fun setLastDailyBonusDate(isoDate: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_DAILY_BONUS_DATE] = isoDate.trim()
+        }
+    }
+
+    suspend fun getVegasCumulativeBankroll(): Int {
+        return try {
+            dataStore.data.first()[PreferencesKeys.VEGAS_CUMULATIVE_BANKROLL] ?: 0
+        } catch (_: Exception) {
+            0
+        }
+    }
+
+    suspend fun setVegasCumulativeBankroll(bankroll: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.VEGAS_CUMULATIVE_BANKROLL] = bankroll
         }
     }
 
