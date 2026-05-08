@@ -3,6 +3,6 @@
     android:drawable="@mipmap/ic_just_patience_logo"
     android:insetLeft="16dp"
     android:insetTop="16dp"
-    android:insetRight="16dp"
-    android:insetBottom="16dp" />
+    android:insetRight="18dp"
+    android:insetBottom="20dp" />
 
