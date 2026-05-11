@@ -41,5 +41,10 @@
     <color name="card_background">#5F5F5F</color>
     <color name="win_popup_blue_grey">#4f2f8f</color>
 
+    <color name="scoreboard_panel_bg">#A0181818</color>
+    <color name="scoreboard_panel_stroke">#CC3A3A3A</color>
+    <color name="scoreboard_row_bg">#D0212121</color>
+    <color name="scoreboard_value_red">#DD4A4A</color>
+
     <color name="ic_launcher_logo_background">#008000</color>
 </resources>

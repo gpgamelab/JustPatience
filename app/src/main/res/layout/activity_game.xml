@@ -7,61 +7,7 @@
     android:background="@color/background_color"
     tools:context=".ui.GameActivity">
 
-    <!-- 1. Game Info Panel (Score, Moves, Time) -->
-    <LinearLayout
-        android:id="@+id/game_info_panel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/dark_surface_color"
-        android:elevation="2dp"
-        android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <!-- Score -->
-        <TextView
-            android:id="@+id/tv_score"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAlignment="viewStart"
-            android:textColor="@color/secondary_text_color"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:text="Score: 120" />
-
-        <!-- Moves -->
-        <TextView
-            android:id="@+id/tv_moves"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAlignment="center"
-            android:textColor="@color/secondary_text_color"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:text="Moves: 15" />
-
-        <!-- Time -->
-        <TextView
-            android:id="@+id/tv_time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAlignment="center"
-            android:textColor="@color/secondary_text_color"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:text="Time: 0:35" />
-
-    </LinearLayout>
-
-    <!-- 2. Custom Game Board View -->
+    <!-- 1. Custom Game Board View -->
     <!-- This is where the GameActivity.GameBoardView class will handle all card drawing and touch logic. -->
     <com.gpgamelab.justpatience.ui.GameBoardView
         android:id="@+id/game_board_view"
@@ -70,7 +16,112 @@
         app:layout_constraintBottom_toTopOf="@id/control_buttons_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/game_info_panel" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/board_scoreboard_container"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_scoreboard_panel"
+        android:orientation="vertical"
+        android:padding="4dp"
+        app:layout_constraintEnd_toEndOf="@id/game_board_view"
+        app:layout_constraintTop_toTopOf="@id/game_board_view"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="6dp">
+
+        <LinearLayout
+            android:id="@+id/row_timer"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/bg_scoreboard_row"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp">
+
+            <TextView
+                android:id="@+id/tv_timer_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/scoreboard_label_time"
+                android:textColor="@android:color/white"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_timer_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="@color/scoreboard_value_red"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="05:17" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/row_moves"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/bg_scoreboard_row"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp">
+
+            <TextView
+                android:id="@+id/tv_moves_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/scoreboard_label_moves"
+                android:textColor="@android:color/white"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_moves_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="000"
+                android:textColor="@color/scoreboard_value_red"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="032" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/row_score"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_scoreboard_row"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp">
+
+            <TextView
+                android:id="@+id/tv_score_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/scoreboard_label_score"
+                android:textColor="@android:color/white"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_score_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0000"
+                android:textColor="@color/scoreboard_value_red"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="0125" />
+        </LinearLayout>
+    </LinearLayout>
 
     <!-- Wand + tickets + gems HUD in the lower right corner of the game board -->
     <LinearLayout
@@ -347,11 +398,12 @@
         app:layout_constraintStart_toEndOf="@id/btn_testers"
         app:layout_constraintTop_toTopOf="@id/btn_testers" />
 
-    <!-- 3. Banner Ad (at the very bottom, below buttons, full width) -->
+    <!-- 2. Banner Ad (at the very bottom, below buttons, full width) -->
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="50dp"
         app:adSize="BANNER"
         app:adUnitId="@string/banner_ad_unit_id"
         app:layout_constraintBottom_toBottomOf="parent"

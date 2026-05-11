@@ -43,6 +43,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.gms.ads.AdSize
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.review.testing.FakeReviewManager
@@ -65,6 +66,12 @@ import kotlin.math.roundToInt
 
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, TesterMenuDialogFragment.Host, DevelopMenuDialogFragment.Host {
 
+    private enum class LandscapeBannerTier {
+        SMALL,
+        MEDIUM,
+        LARGE
+    }
+
     private var devShuffleSecondClipDelayMsState: Float = 140f
     private var devShuffleTailDelayMsState: Float = 120f
     private var devDealCardIntervalMsState: Float = 70f
@@ -76,6 +83,28 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devLockedPileAdOffsetYLandscapePxState: Float = 0f
     private var devLockedPileAdScaleXLandscapeState: Float = 1f
     private var devLockedPileAdScaleYLandscapeState: Float = 1f
+    private var devLandscapePileOverallOffsetXDpState: Float = 0f
+    private var devLandscapePileOverallOffsetYDpState: Float = -100f
+    private var devLandscapePileFoundationOffsetXDpState: Float = 0f
+    private var devLandscapePileFoundationOffsetYDpState: Float = 0f
+    private var devLandscapePileDrawWasteOffsetXDpState: Float = 0f
+    private var devLandscapePileDrawWasteOffsetYDpState: Float = 0f
+    private var devLandscapePileTableauOffsetXDpState: Float = 0f
+    private var devLandscapePileTableauOffsetYDpState: Float = 0f
+    private var devPortraitPileOverallOffsetXDpState: Float = 0f
+    private var devPortraitPileOverallOffsetYDpState: Float = 0f
+    private var devPortraitPileFoundationOffsetXDpState: Float = 0f
+    private var devPortraitPileFoundationOffsetYDpState: Float = 0f
+    private var devPortraitPileDrawWasteOffsetXDpState: Float = 0f
+    private var devPortraitPileDrawWasteOffsetYDpState: Float = 0f
+    private var devPortraitPileTableauOffsetXDpState: Float = 0f
+    private var devPortraitPileTableauOffsetYDpState: Float = 0f
+    private var devLandscapeBannerSmallWidthDpState: Float = 310f
+    private var devLandscapeBannerSmallHeightDpState: Float = 260f
+    private var devLandscapeBannerMediumWidthDpState: Float = 310f
+    private var devLandscapeBannerMediumHeightDpState: Float = 260f
+    private var devLandscapeBannerLargeWidthDpState: Float = 310f
+    private var devLandscapeBannerLargeHeightDpState: Float = 260f
 
     private enum class HelpControlAction(
         val storageKey: String,
@@ -444,6 +473,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var gameMenuExpandState = GameMenuBottomSheetFragment.ExpandState()
     private var developMenuExpandState = sessionDevelopMenuExpandState
     private var pendingWinUiAfterAnimation: Boolean = false
+    private var showTimerRow: Boolean = true
+    private var showMovesRow: Boolean = true
+    private var showScoreRow: Boolean = true
     private var gemTotal: Int = 0
     private var ticketTotal: Int = 0
     private var magicWandTotal: Int = 0
@@ -675,7 +707,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // raw baseline factor – no extreme-aspect correction – so portrait phones get
         // slightly taller touch targets while landscape phones stay compact.
         UiScaleUtil.applyScreenVerticalScale(binding.controlButtonsLayout, this)
-        UiScaleUtil.applyScreenVerticalScale(binding.gameInfoPanel, this)
+        // Removed: binding.gameInfoPanel (top bar no longer exists)
 
         // Wire viewModel into GameBoardView
         binding.gameBoardView.viewModel = viewModel
@@ -702,6 +734,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             onMagicWandTargetSelected(type, index, cardIndex)
         }
         applyLockedPileAdIconDevConfigToBoard()
+        applyLandscapePileLayoutDevConfigToBoard()
+        applyPortraitPileLayoutDevConfigToBoard()
         
         // Apply device scale ratio to control buttons after the board geometry is computed
         binding.gameBoardView.post {
@@ -716,7 +750,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Initialize and load banner ads
         adManager = AdManager(this)
         adManager.initializeAds()
-        adManager.loadBannerAd(binding.adView)
+        val initialBannerAdSizes = configureLandscapeBannerBoxAndResolveAdSizes()
+        adManager.loadBannerAd(binding.adView, initialBannerAdSizes)
         adManager.loadRewardedAd()
         adManager.loadRewardedInterstitialAd()
 
@@ -766,7 +801,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 launch {
                     viewModel.game.collect { g ->
                         updateScoreLabel(g)
-                        binding.tvMoves.text = getString(R.string.moves_format, g.moves)
+                        binding.tvMovesValue.text = formatMovesValue(g.moves)
 
                         if (g.status != GameStatus.WON) {
                             winCelebrationPlayed = false
@@ -779,13 +814,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
                 launch {
                     viewModel.gameTime.collect { seconds ->
-                        binding.tvTime.text = formatTime(seconds)
+                        binding.tvTimerValue.text = formatTime(seconds)
                     }
                 }
 
                 launch {
                     viewModel.showGameTimer.collect { shouldShow ->
-                        binding.tvTime.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                        showTimerRow = shouldShow
+                        binding.rowTimer.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                        updateScoreboardVisibility()
                     }
                 }
 
@@ -797,13 +834,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
                 launch {
                     viewModel.showScore.collect { shouldShow ->
-                        binding.tvScore.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                        showScoreRow = shouldShow
+                        binding.rowScore.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                        updateScoreboardVisibility()
                     }
                 }
 
                 launch {
                     viewModel.showMoves.collect { shouldShow ->
-                        binding.tvMoves.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                        showMovesRow = shouldShow
+                        binding.rowMoves.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                        updateScoreboardVisibility()
                     }
                 }
 
@@ -879,7 +920,24 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun updateScoreLabel(game: com.gpgamelab.justpatience.model.Game) {
         val score = game.scoreForMethod(viewModel.scoreMethod.value)
-        binding.tvScore.text = getString(R.string.score_format, score)
+        binding.tvScoreValue.text = formatScoreValue(score)
+    }
+
+    private fun formatMovesValue(moves: Int): String {
+        return getString(R.string.scoreboard_moves_value_format, moves.coerceIn(0, 999))
+    }
+
+    private fun formatScoreValue(score: Int): String {
+        return if (score >= 0) {
+            getString(R.string.scoreboard_score_value_format, score.coerceAtMost(9999))
+        } else {
+            "-${kotlin.math.abs(score).coerceAtMost(999).toString().padStart(3, '0')}"
+        }
+    }
+
+    private fun updateScoreboardVisibility() {
+        val visibleRows = listOf(showTimerRow, showMovesRow, showScoreRow).count { it }
+        binding.boardScoreboardContainer.visibility = if (visibleRows == 0) View.GONE else View.VISIBLE
     }
 
     private fun initializeMoveSoundPool() {
@@ -1970,6 +2028,28 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devLockedPileAdOffsetYLandscapePx(): Float = devLockedPileAdOffsetYLandscapePxState
     override fun devLockedPileAdScaleXLandscape(): Float = devLockedPileAdScaleXLandscapeState
     override fun devLockedPileAdScaleYLandscape(): Float = devLockedPileAdScaleYLandscapeState
+    override fun devLandscapePileOverallOffsetXDp(): Float = devLandscapePileOverallOffsetXDpState
+    override fun devLandscapePileOverallOffsetYDp(): Float = devLandscapePileOverallOffsetYDpState
+    override fun devLandscapePileFoundationOffsetXDp(): Float = devLandscapePileFoundationOffsetXDpState
+    override fun devLandscapePileFoundationOffsetYDp(): Float = devLandscapePileFoundationOffsetYDpState
+    override fun devLandscapePileDrawWasteOffsetXDp(): Float = devLandscapePileDrawWasteOffsetXDpState
+    override fun devLandscapePileDrawWasteOffsetYDp(): Float = devLandscapePileDrawWasteOffsetYDpState
+    override fun devLandscapePileTableauOffsetXDp(): Float = devLandscapePileTableauOffsetXDpState
+    override fun devLandscapePileTableauOffsetYDp(): Float = devLandscapePileTableauOffsetYDpState
+    override fun devPortraitPileOverallOffsetXDp(): Float = devPortraitPileOverallOffsetXDpState
+    override fun devPortraitPileOverallOffsetYDp(): Float = devPortraitPileOverallOffsetYDpState
+    override fun devPortraitPileFoundationOffsetXDp(): Float = devPortraitPileFoundationOffsetXDpState
+    override fun devPortraitPileFoundationOffsetYDp(): Float = devPortraitPileFoundationOffsetYDpState
+    override fun devPortraitPileDrawWasteOffsetXDp(): Float = devPortraitPileDrawWasteOffsetXDpState
+    override fun devPortraitPileDrawWasteOffsetYDp(): Float = devPortraitPileDrawWasteOffsetYDpState
+    override fun devPortraitPileTableauOffsetXDp(): Float = devPortraitPileTableauOffsetXDpState
+    override fun devPortraitPileTableauOffsetYDp(): Float = devPortraitPileTableauOffsetYDpState
+    override fun devLandscapeBannerSmallWidthDp(): Float = devLandscapeBannerSmallWidthDpState
+    override fun devLandscapeBannerSmallHeightDp(): Float = devLandscapeBannerSmallHeightDpState
+    override fun devLandscapeBannerMediumWidthDp(): Float = devLandscapeBannerMediumWidthDpState
+    override fun devLandscapeBannerMediumHeightDp(): Float = devLandscapeBannerMediumHeightDpState
+    override fun devLandscapeBannerLargeWidthDp(): Float = devLandscapeBannerLargeWidthDpState
+    override fun devLandscapeBannerLargeHeightDp(): Float = devLandscapeBannerLargeHeightDpState
     override fun devShuffleSecondClipDelayMs(): Float = devShuffleSecondClipDelayMsState
     override fun devShuffleTailDelayMs(): Float = devShuffleTailDelayMsState
     override fun devDealCardIntervalMs(): Float = devDealCardIntervalMsState
@@ -2005,6 +2085,94 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetLockedPileAdScaleYLandscape(value: Float) {
         devLockedPileAdScaleYLandscapeState = value.coerceAtLeast(0.1f)
         applyLockedPileAdIconDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileOverallOffsetX(value: Float) {
+        devLandscapePileOverallOffsetXDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileOverallOffsetY(value: Float) {
+        devLandscapePileOverallOffsetYDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileFoundationOffsetX(value: Float) {
+        devLandscapePileFoundationOffsetXDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileFoundationOffsetY(value: Float) {
+        devLandscapePileFoundationOffsetYDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileDrawWasteOffsetX(value: Float) {
+        devLandscapePileDrawWasteOffsetXDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileDrawWasteOffsetY(value: Float) {
+        devLandscapePileDrawWasteOffsetYDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileTableauOffsetX(value: Float) {
+        devLandscapePileTableauOffsetXDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapePileTableauOffsetY(value: Float) {
+        devLandscapePileTableauOffsetYDpState = value
+        applyLandscapePileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileOverallOffsetX(value: Float) {
+        devPortraitPileOverallOffsetXDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileOverallOffsetY(value: Float) {
+        devPortraitPileOverallOffsetYDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileFoundationOffsetX(value: Float) {
+        devPortraitPileFoundationOffsetXDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileFoundationOffsetY(value: Float) {
+        devPortraitPileFoundationOffsetYDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileDrawWasteOffsetX(value: Float) {
+        devPortraitPileDrawWasteOffsetXDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileDrawWasteOffsetY(value: Float) {
+        devPortraitPileDrawWasteOffsetYDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileTableauOffsetX(value: Float) {
+        devPortraitPileTableauOffsetXDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetPortraitPileTableauOffsetY(value: Float) {
+        devPortraitPileTableauOffsetYDpState = value
+        applyPortraitPileLayoutDevConfigToBoard()
+    }
+    override fun onDevSetLandscapeBannerSmallWidthDp(value: Float) {
+        devLandscapeBannerSmallWidthDpState = value.coerceAtLeast(1f)
+        reloadBannerForCurrentConfiguration()
+    }
+    override fun onDevSetLandscapeBannerSmallHeightDp(value: Float) {
+        devLandscapeBannerSmallHeightDpState = value.coerceAtLeast(1f)
+        reloadBannerForCurrentConfiguration()
+    }
+    override fun onDevSetLandscapeBannerMediumWidthDp(value: Float) {
+        devLandscapeBannerMediumWidthDpState = value.coerceAtLeast(1f)
+        reloadBannerForCurrentConfiguration()
+    }
+    override fun onDevSetLandscapeBannerMediumHeightDp(value: Float) {
+        devLandscapeBannerMediumHeightDpState = value.coerceAtLeast(1f)
+        reloadBannerForCurrentConfiguration()
+    }
+    override fun onDevSetLandscapeBannerLargeWidthDp(value: Float) {
+        devLandscapeBannerLargeWidthDpState = value.coerceAtLeast(1f)
+        reloadBannerForCurrentConfiguration()
+    }
+    override fun onDevSetLandscapeBannerLargeHeightDp(value: Float) {
+        devLandscapeBannerLargeHeightDpState = value.coerceAtLeast(1f)
+        reloadBannerForCurrentConfiguration()
     }
     override fun onDevSetShuffleSecondClipDelayMs(value: Float) { devShuffleSecondClipDelayMsState = value.coerceAtLeast(0f) }
     override fun onDevSetShuffleTailDelayMs(value: Float) { devShuffleTailDelayMsState = value.coerceAtLeast(0f) }
@@ -2749,6 +2917,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDestroy() {
         moveSoundPool?.release()
         moveSoundPool = null
+        if (::adManager.isInitialized) adManager.cancelBannerRetry()
         super.onDestroy()
     }
 
@@ -2762,6 +2931,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             refreshActiveStarburstDebugAndMotion()
         }
         applyLockedPileAdIconDevConfigToBoard()
+        applyLandscapePileLayoutDevConfigToBoard()
+        applyPortraitPileLayoutDevConfigToBoard()
+        reloadBannerForCurrentConfiguration()
     }
 
     private fun onLockedTableauUnlockRequested() {
@@ -2796,6 +2968,89 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             landscapeScaleX = devLockedPileAdScaleXLandscapeState,
             landscapeScaleY = devLockedPileAdScaleYLandscapeState
         )
+    }
+
+    private fun applyLandscapePileLayoutDevConfigToBoard() {
+        binding.gameBoardView.setLandscapePileLayoutTuning(
+            overallOffsetX = dpToPxFloatSigned(devLandscapePileOverallOffsetXDpState),
+            overallOffsetY = dpToPxFloatSigned(devLandscapePileOverallOffsetYDpState),
+            foundationOffsetX = dpToPxFloatSigned(devLandscapePileFoundationOffsetXDpState),
+            foundationOffsetY = dpToPxFloatSigned(devLandscapePileFoundationOffsetYDpState),
+            drawWasteOffsetX = dpToPxFloatSigned(devLandscapePileDrawWasteOffsetXDpState),
+            drawWasteOffsetY = dpToPxFloatSigned(devLandscapePileDrawWasteOffsetYDpState),
+            tableauOffsetX = dpToPxFloatSigned(devLandscapePileTableauOffsetXDpState),
+            tableauOffsetY = dpToPxFloatSigned(devLandscapePileTableauOffsetYDpState)
+        )
+    }
+
+    private fun applyPortraitPileLayoutDevConfigToBoard() {
+        binding.gameBoardView.setPortraitPileLayoutTuning(
+            overallOffsetX = dpToPxFloatSigned(devPortraitPileOverallOffsetXDpState),
+            overallOffsetY = dpToPxFloatSigned(devPortraitPileOverallOffsetYDpState),
+            foundationOffsetX = dpToPxFloatSigned(devPortraitPileFoundationOffsetXDpState),
+            foundationOffsetY = dpToPxFloatSigned(devPortraitPileFoundationOffsetYDpState),
+            drawWasteOffsetX = dpToPxFloatSigned(devPortraitPileDrawWasteOffsetXDpState),
+            drawWasteOffsetY = dpToPxFloatSigned(devPortraitPileDrawWasteOffsetYDpState),
+            tableauOffsetX = dpToPxFloatSigned(devPortraitPileTableauOffsetXDpState),
+            tableauOffsetY = dpToPxFloatSigned(devPortraitPileTableauOffsetYDpState)
+        )
+    }
+
+    private fun resolveLandscapeBannerTier(): LandscapeBannerTier {
+        val swDp = resources.configuration.smallestScreenWidthDp
+        return when {
+            swDp < 600 -> LandscapeBannerTier.SMALL
+            swDp > 1200 -> LandscapeBannerTier.LARGE
+            else -> LandscapeBannerTier.MEDIUM
+        }
+    }
+
+    private fun configureLandscapeBannerBoxAndResolveAdSizes(): List<AdSize> {
+        val container = findViewById<FrameLayout?>(R.id.banner_overlay_container)
+        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        if (!isLandscapeNow || container == null) {
+            return emptyList()
+        }
+
+        val tier = resolveLandscapeBannerTier()
+        val (boxWidthDp, boxHeightDp) = when (tier) {
+            LandscapeBannerTier.SMALL -> devLandscapeBannerSmallWidthDpState to devLandscapeBannerSmallHeightDpState
+            LandscapeBannerTier.MEDIUM -> devLandscapeBannerMediumWidthDpState to devLandscapeBannerMediumHeightDpState
+            LandscapeBannerTier.LARGE -> devLandscapeBannerLargeWidthDpState to devLandscapeBannerLargeHeightDpState
+        }
+
+        val lp = container.layoutParams ?: return emptyList()
+        val targetWidthPx = dpToPx(boxWidthDp)
+        val targetHeightPx = dpToPx(boxHeightDp)
+        if (lp.width != targetWidthPx || lp.height != targetHeightPx) {
+            lp.width = targetWidthPx
+            lp.height = targetHeightPx
+            container.layoutParams = lp
+            container.requestLayout()
+        }
+
+        Log.d(
+            "GameActivity",
+            "Landscape banner tier=$tier boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
+        )
+
+        // Size is declared via XML app:adSize="MEDIUM_RECTANGLE" for the first attempt.
+        // Fallback sizes are tried programmatically if no fill is available.
+        return listOf(AdSize.MEDIUM_RECTANGLE, AdSize.LARGE_BANNER, AdSize.BANNER)    }
+
+    private fun reloadBannerForCurrentConfiguration() {
+        if (!::adManager.isInitialized) return
+        val requestedAdSizes = configureLandscapeBannerBoxAndResolveAdSizes()
+        val container = findViewById<FrameLayout?>(R.id.banner_overlay_container)
+        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (isLandscapeNow && container != null) {
+            container.post {
+                adManager.loadBannerAd(binding.adView, requestedAdSizes)
+            }
+            return
+        }
+        adManager.loadBannerAd(binding.adView, requestedAdSizes)
     }
 
     private fun applyImmersiveFullscreen() {
@@ -3062,9 +3317,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val isLandscapeNow = config.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         val factors = UiScaleUtil.calculateBaselineScaleFactors(widthDp, heightDp)
-        val widthScale = factors.horizontal.coerceIn(0.56f, 1.70f)
-        val heightScale = factors.vertical.coerceIn(0.56f, 1.70f)
-        val textScale = factors.text.coerceIn(0.64f, 1.35f)
+        val widthScale = factors.horizontal
+        val heightScale = factors.vertical
+        val textScale = factors.text
 
         // Portrait button widths already have a 1.75× boost to compensate for the narrow
         // phone screen.  Applying the extreme-aspect compression on top (which the full
@@ -3086,19 +3341,51 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         heightScale: Float,
         textScale: Float
     ) {
-        val panel = findViewById<LinearLayout>(R.id.game_info_panel) ?: return
+        val boardScale = ((widthScale + heightScale) * 0.5f)
+        val scoreboardWidthDp = 120f * widthScale
+        val scoreboardPaddingDp = 3f * boardScale
+        val scoreboardMarginTopDp = 3f * heightScale
+        val scoreboardMarginEndDp = 4f * widthScale
+        val rowHeightDp = (if (isLandscape) 60f else 20f) * heightScale
+        val rowGapDp = 2f * heightScale
+        val rowHorizontalPaddingDp = 6f * widthScale
+        val labelTextSp = 11f * textScale
+        val valueTextSp = 13f * textScale
 
-        panel.setPaddingRelative(
-            dpToPx(16f * widthScale),
-            dpToPx(8f * heightScale),
-            dpToPx(16f * widthScale),
-            dpToPx(8f * heightScale)
+        resizeFrame(
+            binding.boardScoreboardContainer,
+            dpToPx(scoreboardWidthDp),
+            ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        binding.boardScoreboardContainer.setPadding(
+            dpToPx(scoreboardPaddingDp),
+            dpToPx(scoreboardPaddingDp),
+            dpToPx(scoreboardPaddingDp),
+            dpToPx(scoreboardPaddingDp)
+        )
+        (binding.boardScoreboardContainer.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
+            lp.topMargin = dpToPx(scoreboardMarginTopDp)
+            lp.marginEnd = dpToPx(scoreboardMarginEndDp)
+            binding.boardScoreboardContainer.layoutParams = lp
+        }
 
-        val statTextSp = (if (isLandscape) 14f else 16f) * textScale
-        binding.tvScore.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
-        binding.tvMoves.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
-        binding.tvTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, statTextSp)
+        val rows = listOf(binding.rowTimer, binding.rowMoves, binding.rowScore)
+        rows.forEachIndexed { index, row ->
+            val lp = row.layoutParams
+            lp.height = dpToPx(rowHeightDp)
+            if (lp is ViewGroup.MarginLayoutParams) {
+                lp.bottomMargin = if (index == rows.lastIndex) 0 else dpToPx(rowGapDp)
+            }
+            row.layoutParams = lp
+            row.setPadding(dpToPx(rowHorizontalPaddingDp), 0, dpToPx(rowHorizontalPaddingDp), 0)
+        }
+
+        listOf(binding.tvTimerLabel, binding.tvMovesLabel, binding.tvScoreLabel).forEach {
+            it.setTextSize(TypedValue.COMPLEX_UNIT_SP, labelTextSp)
+        }
+        listOf(binding.tvTimerValue, binding.tvMovesValue, binding.tvScoreValue).forEach {
+            it.setTextSize(TypedValue.COMPLEX_UNIT_SP, valueTextSp)
+        }
 
         val baseGemBagDp = if (isLandscape) 22f else 24f
         // gem bag reduced to ~0.75 of old size (user tuned: 80dp → 60dp in portrait XML)

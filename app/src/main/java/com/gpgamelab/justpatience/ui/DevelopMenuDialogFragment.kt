@@ -139,6 +139,52 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetLockedPileAdScaleXLandscape(value: Float)
         fun onDevSetLockedPileAdScaleYLandscape(value: Float)
 
+        fun devLandscapePileOverallOffsetXDp(): Float
+        fun devLandscapePileOverallOffsetYDp(): Float
+        fun devLandscapePileFoundationOffsetXDp(): Float
+        fun devLandscapePileFoundationOffsetYDp(): Float
+        fun devLandscapePileDrawWasteOffsetXDp(): Float
+        fun devLandscapePileDrawWasteOffsetYDp(): Float
+        fun devLandscapePileTableauOffsetXDp(): Float
+        fun devLandscapePileTableauOffsetYDp(): Float
+        fun onDevSetLandscapePileOverallOffsetX(value: Float)
+        fun onDevSetLandscapePileOverallOffsetY(value: Float)
+        fun onDevSetLandscapePileFoundationOffsetX(value: Float)
+        fun onDevSetLandscapePileFoundationOffsetY(value: Float)
+        fun onDevSetLandscapePileDrawWasteOffsetX(value: Float)
+        fun onDevSetLandscapePileDrawWasteOffsetY(value: Float)
+        fun onDevSetLandscapePileTableauOffsetX(value: Float)
+        fun onDevSetLandscapePileTableauOffsetY(value: Float)
+
+        fun devPortraitPileOverallOffsetXDp(): Float
+        fun devPortraitPileOverallOffsetYDp(): Float
+        fun devPortraitPileFoundationOffsetXDp(): Float
+        fun devPortraitPileFoundationOffsetYDp(): Float
+        fun devPortraitPileDrawWasteOffsetXDp(): Float
+        fun devPortraitPileDrawWasteOffsetYDp(): Float
+        fun devPortraitPileTableauOffsetXDp(): Float
+        fun devPortraitPileTableauOffsetYDp(): Float
+        fun onDevSetPortraitPileOverallOffsetX(value: Float)
+        fun onDevSetPortraitPileOverallOffsetY(value: Float)
+        fun onDevSetPortraitPileFoundationOffsetX(value: Float)
+        fun onDevSetPortraitPileFoundationOffsetY(value: Float)
+        fun onDevSetPortraitPileDrawWasteOffsetX(value: Float)
+        fun onDevSetPortraitPileDrawWasteOffsetY(value: Float)
+        fun onDevSetPortraitPileTableauOffsetX(value: Float)
+        fun onDevSetPortraitPileTableauOffsetY(value: Float)
+        fun devLandscapeBannerSmallWidthDp(): Float
+        fun devLandscapeBannerSmallHeightDp(): Float
+        fun devLandscapeBannerMediumWidthDp(): Float
+        fun devLandscapeBannerMediumHeightDp(): Float
+        fun devLandscapeBannerLargeWidthDp(): Float
+        fun devLandscapeBannerLargeHeightDp(): Float
+        fun onDevSetLandscapeBannerSmallWidthDp(value: Float)
+        fun onDevSetLandscapeBannerSmallHeightDp(value: Float)
+        fun onDevSetLandscapeBannerMediumWidthDp(value: Float)
+        fun onDevSetLandscapeBannerMediumHeightDp(value: Float)
+        fun onDevSetLandscapeBannerLargeWidthDp(value: Float)
+        fun onDevSetLandscapeBannerLargeHeightDp(value: Float)
+
         // Shuffle/deal timing
         fun devShuffleSecondClipDelayMs(): Float
         fun devShuffleTailDelayMs(): Float
@@ -389,6 +435,28 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_locked_pile_ad_offset_y_landscape, R.string.develop_menu_locked_pile_ad_offset_y_landscape, host::devLockedPileAdOffsetYLandscapePx, host::onDevSetLockedPileAdOffsetYLandscapePx)
         bindDecimal(R.id.btn_dev_locked_pile_ad_scale_x_landscape, R.string.develop_menu_locked_pile_ad_scale_x_landscape, host::devLockedPileAdScaleXLandscape, host::onDevSetLockedPileAdScaleXLandscape)
         bindDecimal(R.id.btn_dev_locked_pile_ad_scale_y_landscape, R.string.develop_menu_locked_pile_ad_scale_y_landscape, host::devLockedPileAdScaleYLandscape, host::onDevSetLockedPileAdScaleYLandscape)
+        bindDecimal(R.id.btn_dev_landscape_pile_overall_offset_x, R.string.develop_menu_landscape_pile_overall_offset_x, host::devLandscapePileOverallOffsetXDp, host::onDevSetLandscapePileOverallOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_pile_overall_offset_y, R.string.develop_menu_landscape_pile_overall_offset_y, host::devLandscapePileOverallOffsetYDp, host::onDevSetLandscapePileOverallOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_pile_foundation_offset_x, R.string.develop_menu_landscape_pile_foundation_offset_x, host::devLandscapePileFoundationOffsetXDp, host::onDevSetLandscapePileFoundationOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_pile_foundation_offset_y, R.string.develop_menu_landscape_pile_foundation_offset_y, host::devLandscapePileFoundationOffsetYDp, host::onDevSetLandscapePileFoundationOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_pile_drawwaste_offset_x, R.string.develop_menu_landscape_pile_drawwaste_offset_x, host::devLandscapePileDrawWasteOffsetXDp, host::onDevSetLandscapePileDrawWasteOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_pile_drawwaste_offset_y, R.string.develop_menu_landscape_pile_drawwaste_offset_y, host::devLandscapePileDrawWasteOffsetYDp, host::onDevSetLandscapePileDrawWasteOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_pile_tableau_offset_x, R.string.develop_menu_landscape_pile_tableau_offset_x, host::devLandscapePileTableauOffsetXDp, host::onDevSetLandscapePileTableauOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_pile_tableau_offset_y, R.string.develop_menu_landscape_pile_tableau_offset_y, host::devLandscapePileTableauOffsetYDp, host::onDevSetLandscapePileTableauOffsetY)
+        bindDecimal(R.id.btn_dev_portrait_pile_overall_offset_x, R.string.develop_menu_portrait_pile_overall_offset_x, host::devPortraitPileOverallOffsetXDp, host::onDevSetPortraitPileOverallOffsetX)
+        bindDecimal(R.id.btn_dev_portrait_pile_overall_offset_y, R.string.develop_menu_portrait_pile_overall_offset_y, host::devPortraitPileOverallOffsetYDp, host::onDevSetPortraitPileOverallOffsetY)
+        bindDecimal(R.id.btn_dev_portrait_pile_foundation_offset_x, R.string.develop_menu_portrait_pile_foundation_offset_x, host::devPortraitPileFoundationOffsetXDp, host::onDevSetPortraitPileFoundationOffsetX)
+        bindDecimal(R.id.btn_dev_portrait_pile_foundation_offset_y, R.string.develop_menu_portrait_pile_foundation_offset_y, host::devPortraitPileFoundationOffsetYDp, host::onDevSetPortraitPileFoundationOffsetY)
+        bindDecimal(R.id.btn_dev_portrait_pile_drawwaste_offset_x, R.string.develop_menu_portrait_pile_drawwaste_offset_x, host::devPortraitPileDrawWasteOffsetXDp, host::onDevSetPortraitPileDrawWasteOffsetX)
+        bindDecimal(R.id.btn_dev_portrait_pile_drawwaste_offset_y, R.string.develop_menu_portrait_pile_drawwaste_offset_y, host::devPortraitPileDrawWasteOffsetYDp, host::onDevSetPortraitPileDrawWasteOffsetY)
+        bindDecimal(R.id.btn_dev_portrait_pile_tableau_offset_x, R.string.develop_menu_portrait_pile_tableau_offset_x, host::devPortraitPileTableauOffsetXDp, host::onDevSetPortraitPileTableauOffsetX)
+        bindDecimal(R.id.btn_dev_portrait_pile_tableau_offset_y, R.string.develop_menu_portrait_pile_tableau_offset_y, host::devPortraitPileTableauOffsetYDp, host::onDevSetPortraitPileTableauOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_banner_small_width, R.string.develop_menu_landscape_banner_small_width, host::devLandscapeBannerSmallWidthDp, host::onDevSetLandscapeBannerSmallWidthDp)
+        bindDecimal(R.id.btn_dev_landscape_banner_small_height, R.string.develop_menu_landscape_banner_small_height, host::devLandscapeBannerSmallHeightDp, host::onDevSetLandscapeBannerSmallHeightDp)
+        bindDecimal(R.id.btn_dev_landscape_banner_medium_width, R.string.develop_menu_landscape_banner_medium_width, host::devLandscapeBannerMediumWidthDp, host::onDevSetLandscapeBannerMediumWidthDp)
+        bindDecimal(R.id.btn_dev_landscape_banner_medium_height, R.string.develop_menu_landscape_banner_medium_height, host::devLandscapeBannerMediumHeightDp, host::onDevSetLandscapeBannerMediumHeightDp)
+        bindDecimal(R.id.btn_dev_landscape_banner_large_width, R.string.develop_menu_landscape_banner_large_width, host::devLandscapeBannerLargeWidthDp, host::onDevSetLandscapeBannerLargeWidthDp)
+        bindDecimal(R.id.btn_dev_landscape_banner_large_height, R.string.develop_menu_landscape_banner_large_height, host::devLandscapeBannerLargeHeightDp, host::onDevSetLandscapeBannerLargeHeightDp)
     }
 
     private fun refreshAllDisplays(root: View, host: Host) {
@@ -453,6 +521,28 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_offset_y_landscape).text = fmt(host.devLockedPileAdOffsetYLandscapePx())
         root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_scale_x_landscape).text = fmt(host.devLockedPileAdScaleXLandscape())
         root.findViewById<MaterialButton>(R.id.btn_dev_locked_pile_ad_scale_y_landscape).text = fmt(host.devLockedPileAdScaleYLandscape())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_overall_offset_x).text = fmt(host.devLandscapePileOverallOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_overall_offset_y).text = fmt(host.devLandscapePileOverallOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_foundation_offset_x).text = fmt(host.devLandscapePileFoundationOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_foundation_offset_y).text = fmt(host.devLandscapePileFoundationOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_drawwaste_offset_x).text = fmt(host.devLandscapePileDrawWasteOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_drawwaste_offset_y).text = fmt(host.devLandscapePileDrawWasteOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_tableau_offset_x).text = fmt(host.devLandscapePileTableauOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_tableau_offset_y).text = fmt(host.devLandscapePileTableauOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_overall_offset_x).text = fmt(host.devPortraitPileOverallOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_overall_offset_y).text = fmt(host.devPortraitPileOverallOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_foundation_offset_x).text = fmt(host.devPortraitPileFoundationOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_foundation_offset_y).text = fmt(host.devPortraitPileFoundationOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_drawwaste_offset_x).text = fmt(host.devPortraitPileDrawWasteOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_drawwaste_offset_y).text = fmt(host.devPortraitPileDrawWasteOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_tableau_offset_x).text = fmt(host.devPortraitPileTableauOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_tableau_offset_y).text = fmt(host.devPortraitPileTableauOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_small_width).text = fmt(host.devLandscapeBannerSmallWidthDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_small_height).text = fmt(host.devLandscapeBannerSmallHeightDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_medium_width).text = fmt(host.devLandscapeBannerMediumWidthDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_medium_height).text = fmt(host.devLandscapeBannerMediumHeightDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_width).text = fmt(host.devLandscapeBannerLargeWidthDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_height).text = fmt(host.devLandscapeBannerLargeHeightDp())
     }
 
     private fun fmt(value: Float): String = String.format(Locale.US, "%.2f", value)

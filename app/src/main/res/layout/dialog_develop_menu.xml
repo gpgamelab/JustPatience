@@ -1015,6 +1015,123 @@
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_locked_pile_ad_scale_y_landscape" android:textColor="#FFFFFF" android:textSize="13sp"/>
                 <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_locked_pile_ad_scale_y_landscape" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
             </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/develop_menu_landscape_pile_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_small_width" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_small_width" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="330.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_small_height" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_small_height" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="110.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_medium_width" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_medium_width" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="330.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_medium_height" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_medium_height" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="160.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_large_width" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_large_width" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="310.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_large_height" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_large_height" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="260.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_overall_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_overall_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_overall_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_overall_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="-100.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_foundation_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_foundation_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_foundation_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_foundation_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_drawwaste_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_drawwaste_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_drawwaste_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_drawwaste_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_tableau_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_tableau_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="16dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_pile_tableau_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_pile_tableau_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/develop_menu_portrait_pile_section"
+                android:textSize="11sp"
+                android:textAllCaps="true"
+                android:textColor="#AAAAAA"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_overall_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_overall_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_overall_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_overall_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_foundation_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_foundation_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_foundation_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_foundation_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_drawwaste_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_drawwaste_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_drawwaste_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_drawwaste_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_tableau_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_tableau_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="16dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_portrait_pile_tableau_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_portrait_pile_tableau_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton

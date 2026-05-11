@@ -13,6 +13,7 @@ import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.util.UiScaleUtil
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.LoadAdError
@@ -35,6 +36,11 @@ class AdManager(private val context: Context) {
     private var mRewardedInterstitialAd: RewardedInterstitialAd? = null
     private var showOnLoad = false
     private var adDismissedCallback: (() -> Unit)? = null
+
+    // Banner fallback / retry state
+    private val bannerRetryHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var bannerRetryRunnable: Runnable? = null
+    private val bannerRetryDelayMs = 5 * 60 * 1000L // 5 minutes
     private val useProductionAds = context.resources.getBoolean(R.bool.use_production_ad_ids)
     private val useFakeTestAds = context.resources.getBoolean(R.bool.use_fake_test_ads)
     private val useFakeAds = !useProductionAds && useFakeTestAds
@@ -98,46 +104,90 @@ class AdManager(private val context: Context) {
     }
 
     /**
-     * Load a banner ad into the provided AdView.
-     * @param adView The XML AdView to load
+     * Load a banner ad, with optional ordered fallback sizes for landscape.
+     *
+     * Portrait: pass emptyList() — XML app:adSize is used, no programmatic override.
+     * Landscape: pass e.g. [MEDIUM_RECTANGLE, LARGE_BANNER, BANNER].
+     *   - First attempt uses XML-declared size (no setAdSize conflict).
+     *   - On failure, each subsequent size is set programmatically before retrying.
+     *   - When a fallback size succeeds, a 5-minute retry at the primary size is scheduled.
      */
-    fun loadBannerAd(adView: AdView) {
+    fun loadBannerAd(adView: AdView, requestedAdSizes: List<AdSize> = emptyList()) {
+        cancelBannerRetry()
         if (useFakeAds) {
             showFakeBanner(adView)
             return
         }
-
         hideFakeBanner(adView)
+        performBannerLoad(adView, requestedAdSizes, attemptIndex = 0)
+    }
+
+    /** Cancel any scheduled banner size retry. Call from onDestroy. */
+    fun cancelBannerRetry() {
+        bannerRetryRunnable?.let { bannerRetryHandler.removeCallbacks(it) }
+        bannerRetryRunnable = null
+    }
+
+    private fun performBannerLoad(adView: AdView, sizes: List<AdSize>, attemptIndex: Int) {
         try {
+            // For attemptIndex == 0: rely on XML app:adSize — no setAdSize() call (avoids conflict).
+            // For retries: the previous load failed, so it is safe to call setAdSize() now.
+            if (attemptIndex > 0 && sizes.isNotEmpty()) {
+                val size = sizes[attemptIndex]
+                adView.setAdSize(size)
+                logDebug("Banner fallback: setAdSize ${size.width}x${size.height} (attempt ${attemptIndex + 1}/${sizes.size})")
+            }
+
             adView.adListener = object : AdListener() {
                 override fun onAdLoaded() {
-                    logDebug("Banner ad loaded successfully")
+                    val loaded = adView.adSize
+                    logDebug("Banner ad loaded: ${loaded?.width}x${loaded?.height}")
+                    // If we settled on a fallback, schedule a retry at the primary size.
+                    if (attemptIndex > 0 && sizes.isNotEmpty()) {
+                        scheduleRetryAtPrimarySize(adView, sizes)
+                    }
                 }
 
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.e(TAG, "Banner ad failed to load: ${adError.message}")
+                    val sizeName = if (sizes.isNotEmpty()) sizes.getOrNull(attemptIndex)
+                        ?.let { "${it.width}x${it.height}" } ?: "xml" else "xml"
+                    Log.w(TAG, "Banner failed at size $sizeName: code=${adError.code}")
+                    if (sizes.isNotEmpty() && attemptIndex < sizes.lastIndex) {
+                        performBannerLoad(adView, sizes, attemptIndex + 1)
+                    } else {
+                        Log.e(TAG, "All banner sizes exhausted. No ad displayed.")
+                    }
                 }
 
-                override fun onAdOpened() {
-                    logDebug("Banner ad opened")
-                }
-
-                override fun onAdClicked() {
-                    logDebug("Banner ad clicked")
-                }
-
-                override fun onAdClosed() {
-                    logDebug("Banner ad closed")
-                }
+                override fun onAdOpened()  { logDebug("Banner ad opened") }
+                override fun onAdClicked() { logDebug("Banner ad clicked") }
+                override fun onAdClosed()  { logDebug("Banner ad closed") }
             }
 
-            val adRequest = AdRequest.Builder().build()
-            adView.loadAd(adRequest)
+            if (adView.adUnitId.isEmpty()) {
+                Log.w(TAG, "AdView ad unit ID is empty.")
+            }
 
-            logDebug("Banner ad loading started with XML unit ID: ${adView.adUnitId}")
+            adView.loadAd(AdRequest.Builder().build())
+            val sizeLabel = if (attemptIndex == 0 && sizes.isEmpty()) "xml-declared"
+                else sizes.getOrNull(attemptIndex)?.let { "${it.width}x${it.height}" } ?: "xml-declared"
+            logDebug("Banner loadAd started: unitId=${adView.adUnitId}, size=$sizeLabel")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to load banner ad", e)
+            Log.e(TAG, "Error in performBannerLoad", e)
         }
+    }
+
+    private fun scheduleRetryAtPrimarySize(adView: AdView, sizes: List<AdSize>) {
+        cancelBannerRetry()
+        val primarySize = sizes[0]
+        logDebug("Scheduling banner retry at primary size ${primarySize.width}x${primarySize.height} in ${bannerRetryDelayMs / 1000}s")
+        val runnable = Runnable {
+            logDebug("Retrying banner at primary size ${primarySize.width}x${primarySize.height}")
+            adView.setAdSize(primarySize)
+            performBannerLoad(adView, sizes, attemptIndex = 0)
+        }
+        bannerRetryRunnable = runnable
+        bannerRetryHandler.postDelayed(runnable, bannerRetryDelayMs)
     }
 
     /**

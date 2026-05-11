@@ -7,69 +7,120 @@
     android:background="@color/background_color"
     tools:context=".ui.GameActivity">
 
-    <!-- 1. Game Info Panel (Score, Moves, Time) -->
-    <LinearLayout
-        android:id="@+id/game_info_panel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/dark_surface_color"
-        android:elevation="2dp"
-        android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <!-- Score -->
-        <TextView
-            android:id="@+id/tv_score"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAlignment="viewStart"
-            android:textColor="@color/secondary_text_color"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="Score: 120" />
-
-        <!-- Moves -->
-        <TextView
-            android:id="@+id/tv_moves"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAlignment="center"
-            android:textColor="@color/secondary_text_color"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="Moves: 15" />
-
-        <!-- Time -->
-        <TextView
-            android:id="@+id/tv_time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAlignment="center"
-            android:textColor="@color/secondary_text_color"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="Time: 0:35" />
-
-    </LinearLayout>
-
-    <!-- 2. Main Content Area: Game Board on Left, Controls on Right -->
+    <!-- 1. Main Content Area: Game Board on Left, Controls on Right -->
     <com.gpgamelab.justpatience.ui.GameBoardView
         android:id="@+id/game_board_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/adView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/control_buttons_layout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/game_info_panel" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/board_scoreboard_container"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_scoreboard_panel"
+        android:orientation="vertical"
+        android:padding="4dp"
+        app:layout_constraintEnd_toEndOf="@id/game_board_view"
+        app:layout_constraintTop_toTopOf="@id/game_board_view"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="6dp">
+
+        <LinearLayout
+            android:id="@+id/row_timer"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/bg_scoreboard_row"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp">
+
+            <TextView
+                android:id="@+id/tv_timer_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/scoreboard_label_time"
+                android:textColor="@android:color/white"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_timer_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="@color/scoreboard_value_red"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="05:17" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/row_moves"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/bg_scoreboard_row"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp">
+
+            <TextView
+                android:id="@+id/tv_moves_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/scoreboard_label_moves"
+                android:textColor="@android:color/white"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_moves_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="000"
+                android:textColor="@color/scoreboard_value_red"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="032" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/row_score"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_scoreboard_row"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp">
+
+            <TextView
+                android:id="@+id/tv_score_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/scoreboard_label_score"
+                android:textColor="@android:color/white"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_score_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0000"
+                android:textColor="@color/scoreboard_value_red"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="0125" />
+        </LinearLayout>
+    </LinearLayout>
 
 
     <!-- Wand + tickets + gems HUD in the lower right corner of the game board -->
@@ -207,9 +258,9 @@
         android:gravity="center"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        app:layout_constraintBottom_toTopOf="@id/adView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/game_info_panel">
+        app:layout_constraintTop_toTopOf="parent">
 
         <Button
             android:id="@+id/btn_new_game"
@@ -336,7 +387,7 @@
 
     </LinearLayout>
 
-    <!-- Testers-only button: lower-left corner of the game board area. -->
+    <!-- Testers/developer buttons: right of banner overlay, aligned to board bottom. -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_testers"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -352,15 +403,15 @@
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
         app:strokeColor="#555555"
-        app:layout_constraintBottom_toTopOf="@id/adView"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@id/game_board_view"
+        app:layout_constraintStart_toEndOf="@id/banner_overlay_container" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_develop"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
+        android:layout_marginBottom="4dp"
         android:alpha="0.65"
         android:text="@string/board_button_develop"
         android:textSize="9sp"
@@ -370,35 +421,39 @@
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
         app:strokeColor="#4F83CC"
-        app:layout_constraintBottom_toBottomOf="@id/btn_testers"
-        app:layout_constraintStart_toEndOf="@id/btn_testers"
-        app:layout_constraintTop_toTopOf="@id/btn_testers" />
+        app:layout_constraintBottom_toTopOf="@id/btn_testers"
+        app:layout_constraintStart_toStartOf="@id/btn_testers" />
 
-    <!-- 4. Banner Ad (at the very bottom, below game board and controls) -->
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_id"
+    <!-- 2. Landscape-only banner overlay rectangle; size is set dynamically in GameActivity. -->
+    <FrameLayout
+        android:id="@+id/banner_overlay_container"
+        android:layout_width="330dp"
+        android:layout_height="260dp"
+        android:background="@android:color/black"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
 
-    <TextView
-        android:id="@+id/fakeBannerView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/dark_surface_color"
-        android:gravity="center"
-        android:padding="12dp"
-        android:text="@string/fake_ad_message"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:minHeight="50dp"
+            app:adSize="MEDIUM_RECTANGLE"
+            app:adUnitId="@string/banner_ad_unit_id" />
+
+        <TextView
+            android:id="@+id/fakeBannerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/dark_surface_color"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="@string/fake_ad_message"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </FrameLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
