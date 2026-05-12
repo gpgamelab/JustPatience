@@ -6,223 +6,125 @@
     android:layout_height="match_parent"
     android:background="@color/background_color"
     tools:context=".ui.GameActivity">
-
-    <!-- 1. Custom Game Board View -->
-    <!-- This is where the GameActivity.GameBoardView class will handle all card drawing and touch logic. -->
+    <!-- Game Board fills from top down to the control button row -->
     <com.gpgamelab.justpatience.ui.GameBoardView
         android:id="@+id/game_board_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/control_buttons_layout"
+        app:layout_constraintBottom_toTopOf="@id/portrait_banner_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
+    <!-- Info side panel: Scoreboard stacked above Gems above Tickets.
+         Classic = upper-right (marginEnd); code updates constraints for left_hand layout. -->
     <LinearLayout
-        android:id="@+id/board_scoreboard_container"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_scoreboard_panel"
-        android:orientation="vertical"
-        android:padding="4dp"
-        app:layout_constraintEnd_toEndOf="@id/game_board_view"
-        app:layout_constraintTop_toTopOf="@id/game_board_view"
-        android:layout_marginTop="6dp"
-        android:layout_marginEnd="6dp">
-
-        <LinearLayout
-            android:id="@+id/row_timer"
-            android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:layout_marginBottom="2dp"
-            android:background="@drawable/bg_scoreboard_row"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp">
-
-            <TextView
-                android:id="@+id/tv_timer_label"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/scoreboard_label_time"
-                android:textColor="@android:color/white"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tv_timer_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00"
-                android:textColor="@color/scoreboard_value_red"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                tools:text="05:17" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/row_moves"
-            android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:layout_marginBottom="2dp"
-            android:background="@drawable/bg_scoreboard_row"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp">
-
-            <TextView
-                android:id="@+id/tv_moves_label"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/scoreboard_label_moves"
-                android:textColor="@android:color/white"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tv_moves_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="000"
-                android:textColor="@color/scoreboard_value_red"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                tools:text="032" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/row_score"
-            android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:background="@drawable/bg_scoreboard_row"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp">
-
-            <TextView
-                android:id="@+id/tv_score_label"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/scoreboard_label_score"
-                android:textColor="@android:color/white"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tv_score_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0000"
-                android:textColor="@color/scoreboard_value_red"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                tools:text="0125" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Wand + tickets + gems HUD in the lower right corner of the game board -->
-    <LinearLayout
-        android:id="@+id/board_currency_hud_container"
+        android:id="@+id/info_side_panel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="@id/game_board_view"
-        app:layout_constraintEnd_toEndOf="@id/game_board_view">
-
-        <FrameLayout
-            android:id="@+id/magic_wand_container"
-            android:layout_width="90dp"
-            android:layout_height="90dp"
-            android:layout_marginEnd="0dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:translationY="10dp">
-
-            <ImageView
-                android:id="@+id/iv_magic_wand"
-                android:layout_width="58dp"
-                android:layout_height="50dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/magic_wand_content_description"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_magic_wand_yellow" />
-
-            <TextView
-                android:id="@+id/tv_magic_wand_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end|top"
-                android:background="@drawable/bg_gem_count_oval"
-                android:minWidth="22dp"
-                android:paddingStart="6dp"
-                android:paddingTop="1dp"
-                android:paddingEnd="6dp"
-                android:paddingBottom="1dp"
-                android:gravity="center"
-                android:text="0"
-                android:textColor="@android:color/white"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                tools:text="0" />
-
-            <ImageView
-                android:id="@+id/iv_magic_wand_ad_badge"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:layout_gravity="end|top"
-                android:contentDescription="@string/magic_wand_watch_ad_content_description"
-                android:padding="1dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_play_ad_lt_blue"
-                android:visibility="gone" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/tickets_container"
-            android:layout_width="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="6dp"
+        app:layout_constraintEnd_toEndOf="@id/game_board_view"
+        app:layout_constraintTop_toTopOf="@id/game_board_view">
+        <!-- Scoreboard rows -->
+        <LinearLayout
+            android:id="@+id/board_scoreboard_container"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:translationY="0dp">
-
-            <ImageView
-                android:id="@+id/iv_ticket_icon"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:contentDescription="@string/tickets_total_label"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_ticket_green_yellow_helper"
-                android:translationY="20dp" />
-
-            <TextView
-                android:id="@+id/tv_ticket_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end|top"
-                android:background="@drawable/bg_gem_count_oval"
-                android:minWidth="28dp"
+            android:background="@drawable/bg_scoreboard_panel"
+            android:orientation="vertical"
+            android:padding="4dp">
+            <LinearLayout
+                android:id="@+id/row_timer"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/bg_scoreboard_row"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:paddingStart="6dp"
-                android:paddingTop="1dp"
-                android:paddingEnd="6dp"
-                android:paddingBottom="1dp"
-                android:gravity="center"
-                android:textColor="@android:color/white"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                tools:text="0" />
-        </FrameLayout>
-
+                android:paddingEnd="6dp">
+                <TextView
+                    android:id="@+id/tv_timer_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/scoreboard_label_time"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp" />
+                <TextView
+                    android:id="@+id/tv_timer_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00"
+                    android:textColor="@color/scoreboard_value_red"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="05:17" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/row_moves"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/bg_scoreboard_row"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp">
+                <TextView
+                    android:id="@+id/tv_moves_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/scoreboard_label_moves"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp" />
+                <TextView
+                    android:id="@+id/tv_moves_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="000"
+                    android:textColor="@color/scoreboard_value_red"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="032" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/row_score"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_scoreboard_row"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp">
+                <TextView
+                    android:id="@+id/tv_score_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/scoreboard_label_score"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp" />
+                <TextView
+                    android:id="@+id/tv_score_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0000"
+                    android:textColor="@color/scoreboard_value_red"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="0125" />
+            </LinearLayout>
+        </LinearLayout>
+        <!-- Gems (above tickets) -->
         <FrameLayout
             android:id="@+id/gems_container"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_gravity="end">
             <ImageView
                 android:id="@+id/iv_gem_bag"
                 android:layout_width="60dp"
@@ -230,7 +132,6 @@
                 android:contentDescription="@string/gems_total_label"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_treasure_3_gem_green" />
-
             <TextView
                 android:id="@+id/tv_gem_count"
                 android:layout_width="wrap_content"
@@ -248,182 +149,235 @@
                 android:textStyle="bold"
                 tools:text="0" />
         </FrameLayout>
-
+        <!-- Tickets (below gems) -->
+        <FrameLayout
+            android:id="@+id/tickets_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_gravity="end">
+            <ImageView
+                android:id="@+id/iv_ticket_icon"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:contentDescription="@string/tickets_total_label"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_ticket_green_yellow_helper" />
+            <TextView
+                android:id="@+id/tv_ticket_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|top"
+                android:background="@drawable/bg_gem_count_oval"
+                android:minWidth="28dp"
+                android:paddingStart="6dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="1dp"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                tools:text="0" />
+        </FrameLayout>
     </LinearLayout>
-
-
+    <!-- Hidden currency HUD container kept for ViewBinding compatibility -->
     <LinearLayout
-        android:id="@+id/control_buttons_layout"
+        android:id="@+id/board_currency_hud_container"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintBottom_toTopOf="@id/adView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <Button
-            android:id="@+id/btn_new_game"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginEnd="2dp"
-            android:text="@string/new_game_button_text"
-            android:textColor="@color/colorPrimary"
-            app:strokeColor="@color/colorPrimary" />
-
-        <FrameLayout
-            android:id="@+id/btnUndo"
-            android:layout_width="30dp"
-            android:layout_height="0dp"
-            android:background="?android:attr/selectableItemBackground">
-
-            <ImageView
-                android:id="@+id/undo_main"
-                android:layout_width="30dp"
-                android:layout_height="66dp"
-                android:layout_gravity="center"
-                android:adjustViewBounds="true"
-                android:contentDescription="@string/action_undo"
-                android:scaleType="fitCenter"
-                android:src="@drawable/undo_gray" />
-
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/btnRedo"
-            android:layout_width="30dp"
-            android:layout_height="0dp"
-            android:background="?android:attr/selectableItemBackground">
-
-            <ImageView
-                android:id="@+id/redo_main"
-                android:layout_width="30dp"
-                android:layout_height="66dp"
-                android:layout_gravity="center"
-                android:adjustViewBounds="true"
-                android:contentDescription="@string/action_redo"
-                android:scaleType="fitCenter"
-                android:src="@drawable/redo_gray" />
-
-        </FrameLayout>
-
-        <Button
-            android:id="@+id/btn_hint"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="1dp"
-            android:text="@string/action_hint"
-            android:textColor="@color/secondary_button_color"
-            app:strokeColor="@color/secondary_button_color" />
-
-        <Button
-            android:id="@+id/btn_restart"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="62dp"
-            android:layout_height="wrap_content"
-            android:text="@string/restart_game_text"
-            android:textColor="@color/secondary_button_color"
-            app:strokeColor="@color/secondary_button_color" />
-
-        <Button
-            android:id="@+id/btn_auto_move"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="52dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="0dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/auto_move_button_text"
-            android:textColor="@color/secondary_button_color"
-            app:strokeColor="@color/secondary_button_color" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_stats"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="56dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="2dp"
-            android:contentDescription="Menu"
-            android:text="MENU"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            app:icon="@drawable/ic_menu_green_512x512"
-            app:iconGravity="textTop"
-            app:iconPadding="-4px"
-            app:iconSize="48dp"
-            app:iconTint="@null"
-            app:strokeColor="@color/secondary_button_color" />
-
-    </LinearLayout>
-
-    <!-- Testers-only button: lower-left corner of the game board area.
-         This button will eventually be removed from production builds,
-         but the backing logic in GameActivity remains permanently. -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_testers"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="6dp"
-        android:alpha="0.65"
-        android:text="@string/board_button_testers"
-        android:textSize="9sp"
-        android:textColor="#AAAAAA"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        app:strokeColor="#555555"
-        app:layout_constraintBottom_toTopOf="@id/control_buttons_layout"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_develop"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:alpha="0.65"
-        android:text="@string/board_button_develop"
-        android:textSize="9sp"
-        android:textColor="#90CAF9"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        app:strokeColor="#4F83CC"
-        app:layout_constraintBottom_toBottomOf="@id/btn_testers"
-        app:layout_constraintStart_toEndOf="@id/btn_testers"
-        app:layout_constraintTop_toTopOf="@id/btn_testers" />
-
-    <!-- 2. Banner Ad (at the very bottom, below buttons, full width) -->
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="50dp"
-        app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_id"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/fakeBannerView"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/game_board_view"
+        app:layout_constraintEnd_toEndOf="@id/game_board_view" />
+    <!-- Bottom action controls as direct board-overlay children (no wrapper container). -->
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/control_buttons_flow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/dark_surface_color"
-        android:gravity="center"
-        android:padding="12dp"
-        android:text="@string/fake_ad_message"
-        android:textColor="@android:color/white"
-        android:textSize="13sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_stats"
+        app:flow_horizontalGap="2dp"
+        app:flow_horizontalStyle="packed"
+        app:flow_verticalAlign="center"
+        app:flow_wrapMode="none"
+        app:layout_constraintBottom_toTopOf="@id/portrait_banner_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/control_buttons_top_barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_stats" />
 
+    <!-- Undo -->
+    <FrameLayout
+        android:id="@+id/btnUndo"
+        android:layout_width="30dp"
+        android:layout_height="72dp"
+        android:background="?android:attr/selectableItemBackground">
+        <ImageView
+            android:id="@+id/undo_main"
+            android:layout_width="30dp"
+            android:layout_height="66dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/action_undo"
+            android:scaleType="fitCenter"
+            android:src="@drawable/undo_gray" />
+    </FrameLayout>
+
+    <!-- Redo -->
+    <FrameLayout
+        android:id="@+id/btnRedo"
+        android:layout_width="30dp"
+        android:layout_height="72dp"
+        android:background="?android:attr/selectableItemBackground">
+        <ImageView
+            android:id="@+id/redo_main"
+            android:layout_width="30dp"
+            android:layout_height="66dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/action_redo"
+            android:scaleType="fitCenter"
+            android:src="@drawable/redo_gray" />
+    </FrameLayout>
+
+    <!-- Hint -->
+    <Button
+        android:id="@+id/btn_hint"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:text="@string/action_hint"
+        android:textColor="@color/secondary_button_color"
+        app:strokeColor="@color/secondary_button_color" />
+
+    <!-- Magic Wand -->
+    <FrameLayout
+        android:id="@+id/magic_wand_container"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:translationY="10dp">
+        <ImageView
+            android:id="@+id/iv_magic_wand"
+            android:layout_width="58dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/magic_wand_content_description"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_magic_wand_yellow" />
+        <TextView
+            android:id="@+id/tv_magic_wand_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|top"
+            android:background="@drawable/bg_gem_count_oval"
+            android:minWidth="22dp"
+            android:paddingStart="6dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="1dp"
+            android:gravity="center"
+            android:text="0"
+            android:textColor="@android:color/white"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            tools:text="0" />
+        <ImageView
+            android:id="@+id/iv_magic_wand_ad_badge"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="end|top"
+            android:contentDescription="@string/magic_wand_watch_ad_content_description"
+            android:padding="1dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_play_ad_lt_blue"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Hidden views kept for ViewBinding compatibility -->
+    <Button
+        android:id="@+id/btn_new_game"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+    <Button
+        android:id="@+id/btn_restart"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+    <Button
+        android:id="@+id/btn_auto_move"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="0dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="@string/auto_complete_button_text"
+        android:textAllCaps="false"
+        android:textColor="@color/secondary_button_color"
+        app:strokeColor="@color/secondary_button_color"
+        app:layout_constraintBottom_toTopOf="@id/control_buttons_flow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <FrameLayout
+        android:id="@+id/move_controls_group"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+    <!-- Play button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_stats"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:text="@string/play_button_label"
+        android:textColor="@color/colorPrimary"
+        android:textSize="11sp"
+        app:strokeColor="@color/colorPrimary"
+        app:layout_constraintBottom_toTopOf="@id/portrait_banner_container"
+        app:layout_constraintStart_toStartOf="parent" />
+    <!-- Portrait banner box spans full width; ad aligns start/end within this box in code. -->
+    <FrameLayout
+        android:id="@+id/portrait_banner_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@android:color/black"
+        android:minHeight="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:minHeight="50dp"
+            app:adSize="LARGE_BANNER"
+            app:adUnitId="@string/banner_ad_unit_id" />
+
+        <TextView
+            android:id="@+id/fakeBannerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@color/dark_surface_color"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="@string/fake_ad_message"
+            android:textColor="@android:color/white"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

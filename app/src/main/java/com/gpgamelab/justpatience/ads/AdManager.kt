@@ -104,13 +104,10 @@ class AdManager(private val context: Context) {
     }
 
     /**
-     * Load a banner ad, with optional ordered fallback sizes for landscape.
+     * Load a banner ad.
      *
-     * Portrait: pass emptyList() — XML app:adSize is used, no programmatic override.
-     * Landscape: pass e.g. [MEDIUM_RECTANGLE, LARGE_BANNER, BANNER].
-     *   - First attempt uses XML-declared size (no setAdSize conflict).
-     *   - On failure, each subsequent size is set programmatically before retrying.
-     *   - When a fallback size succeeds, a 5-minute retry at the primary size is scheduled.
+     * Ad size is defined in XML via app:adSize and must not be set again in code on the
+     * same AdView instance (SDK enforces single assignment).
      */
     fun loadBannerAd(adView: AdView, requestedAdSizes: List<AdSize> = emptyList()) {
         cancelBannerRetry()
@@ -119,6 +116,9 @@ class AdManager(private val context: Context) {
             return
         }
         hideFakeBanner(adView)
+        if (requestedAdSizes.isNotEmpty()) {
+            logDebug("Banner requested sizes=${requestedAdSizes.joinToString { "${it.width}x${it.height}" }} (XML adSize in effect)")
+        }
         performBannerLoad(adView, requestedAdSizes, attemptIndex = 0)
     }
 
@@ -130,12 +130,10 @@ class AdManager(private val context: Context) {
 
     private fun performBannerLoad(adView: AdView, sizes: List<AdSize>, attemptIndex: Int) {
         try {
-            // For attemptIndex == 0: rely on XML app:adSize — no setAdSize() call (avoids conflict).
-            // For retries: the previous load failed, so it is safe to call setAdSize() now.
-            if (attemptIndex > 0 && sizes.isNotEmpty()) {
-                val size = sizes[attemptIndex]
-                adView.setAdSize(size)
-                logDebug("Banner fallback: setAdSize ${size.width}x${size.height} (attempt ${attemptIndex + 1}/${sizes.size})")
+            // setAdSize() can only be called once per AdView (SDK enforced). We keep banner
+            // sizes fixed in XML and only retry load attempts on the same view.
+            if (attemptIndex > 0) {
+                logDebug("Banner retry attempt ${attemptIndex + 1}/${sizes.size} (same size)")
             }
 
             adView.adListener = object : AdListener() {
@@ -183,7 +181,7 @@ class AdManager(private val context: Context) {
         logDebug("Scheduling banner retry at primary size ${primarySize.width}x${primarySize.height} in ${bannerRetryDelayMs / 1000}s")
         val runnable = Runnable {
             logDebug("Retrying banner at primary size ${primarySize.width}x${primarySize.height}")
-            adView.setAdSize(primarySize)
+            // Note: cannot call setAdSize() here (SDK allows only once). Just reload.
             performBannerLoad(adView, sizes, attemptIndex = 0)
         }
         bannerRetryRunnable = runnable

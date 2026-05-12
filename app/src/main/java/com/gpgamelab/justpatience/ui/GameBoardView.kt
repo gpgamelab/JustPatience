@@ -195,6 +195,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var landscapeFoundationOffsetYPx = 0f
     private var landscapeDrawWasteOffsetXPx = 0f
     private var landscapeDrawWasteOffsetYPx = 0f
+    private var landscapeStockOffsetXPx = 0f
+    private var landscapeStockOffsetYPx = 0f
+    private var landscapeWasteOffsetXPx = 0f
+    private var landscapeWasteOffsetYPx = 0f
     private var landscapeTableauOffsetXPx = 0f
     private var landscapeTableauOffsetYPx = 0f
 
@@ -205,6 +209,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var portraitFoundationOffsetYPx = 0f
     private var portraitDrawWasteOffsetXPx = 0f
     private var portraitDrawWasteOffsetYPx = 0f
+    private var portraitStockOffsetXPx = 0f
+    private var portraitStockOffsetYPx = 0f
+    private var portraitWasteOffsetXPx = 0f
+    private var portraitWasteOffsetYPx = 0f
     private var portraitTableauOffsetXPx = 0f
     private var portraitTableauOffsetYPx = 0f
 
@@ -370,6 +378,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         foundationOffsetY: Float,
         drawWasteOffsetX: Float,
         drawWasteOffsetY: Float,
+        stockOffsetX: Float,
+        stockOffsetY: Float,
+        wasteOffsetX: Float,
+        wasteOffsetY: Float,
         tableauOffsetX: Float,
         tableauOffsetY: Float
     ) {
@@ -379,6 +391,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         landscapeFoundationOffsetYPx = foundationOffsetY
         landscapeDrawWasteOffsetXPx = drawWasteOffsetX
         landscapeDrawWasteOffsetYPx = drawWasteOffsetY
+        landscapeStockOffsetXPx = stockOffsetX
+        landscapeStockOffsetYPx = stockOffsetY
+        landscapeWasteOffsetXPx = wasteOffsetX
+        landscapeWasteOffsetYPx = wasteOffsetY
         landscapeTableauOffsetXPx = tableauOffsetX
         landscapeTableauOffsetYPx = tableauOffsetY
 
@@ -395,6 +411,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         foundationOffsetY: Float,
         drawWasteOffsetX: Float,
         drawWasteOffsetY: Float,
+        stockOffsetX: Float,
+        stockOffsetY: Float,
+        wasteOffsetX: Float,
+        wasteOffsetY: Float,
         tableauOffsetX: Float,
         tableauOffsetY: Float
     ) {
@@ -404,6 +424,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         portraitFoundationOffsetYPx = foundationOffsetY
         portraitDrawWasteOffsetXPx = drawWasteOffsetX
         portraitDrawWasteOffsetYPx = drawWasteOffsetY
+        portraitStockOffsetXPx = stockOffsetX
+        portraitStockOffsetYPx = stockOffsetY
+        portraitWasteOffsetXPx = wasteOffsetX
+        portraitWasteOffsetYPx = wasteOffsetY
         portraitTableauOffsetXPx = tableauOffsetX
         portraitTableauOffsetYPx = tableauOffsetY
 
@@ -771,15 +795,15 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 1.coerceAtMost(columnX.lastIndex.coerceAtLeast(0))
             }
             val x = columnX.getOrElse(stockColumnIndex) { 0f } - portraitStockWasteShiftPx() +
-                portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx
-            val yWithOffset = y + portraitOverallOffsetYPx + portraitDrawWasteOffsetYPx
+                portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx + portraitStockOffsetXPx
+            val yWithOffset = y + portraitOverallOffsetYPx + portraitDrawWasteOffsetYPx + portraitStockOffsetYPx
             return RectF(x, yWithOffset, x + cardW, yWithOffset + cardH)
         }
 
         // Landscape: stock is outside the tableau columns (swapped — now below waste, aligned to foundation[1]).
         val foundationTop = getLandscapeFoundationTop(1)
         val y = foundationTop + topPileVerticalShiftPx() + (cardH * LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO) + 50f +
-            landscapeOverallOffsetYPx + landscapeDrawWasteOffsetYPx
+            landscapeOverallOffsetYPx + landscapeDrawWasteOffsetYPx + landscapeStockOffsetYPx
         val landscapeOuterGap = landscapeOuterGap()
         val baseX = if (isMirrored) {
             // Mirrored: stock to the RIGHT of tableau
@@ -788,7 +812,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             // Classic: stock to the LEFT of tableau
             (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
         }
-        val x = baseX + landscapeOverallOffsetXPx + landscapeDrawWasteOffsetXPx
+        val x = baseX + landscapeOverallOffsetXPx + landscapeDrawWasteOffsetXPx + landscapeStockOffsetXPx
         return RectF(x, y, x + cardW, y + cardH)
     }
 
@@ -802,14 +826,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 2.coerceAtMost(columnX.lastIndex.coerceAtLeast(0))
             }
             val x = columnX.getOrElse(wasteColumnIndex) { 0f } - portraitStockWasteShiftPx() +
-                portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx
-            val yWithOffset = y + portraitOverallOffsetYPx + portraitDrawWasteOffsetYPx
+                portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx + portraitWasteOffsetXPx
+            val yWithOffset = y + portraitOverallOffsetYPx + portraitDrawWasteOffsetYPx + portraitWasteOffsetYPx
             return RectF(x, yWithOffset, x + cardW, yWithOffset + cardH)
         }
 
         // Landscape: waste is outside the tableau columns (swapped — now above stock, aligned to foundation[0]).
         val foundationTop = getLandscapeFoundationTop(0)
-        val y = foundationTop + topPileVerticalShiftPx() + landscapeOverallOffsetYPx + landscapeDrawWasteOffsetYPx
+        val y = foundationTop + topPileVerticalShiftPx() + landscapeOverallOffsetYPx + landscapeDrawWasteOffsetYPx + landscapeWasteOffsetYPx
         val landscapeOuterGap = landscapeOuterGap()
         val baseX = if (isMirrored) {
             // Mirrored: waste to the RIGHT of tableau (same X column as mirrored stock)
@@ -818,7 +842,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             // Classic: waste to the LEFT of tableau (same X column as classic stock)
             (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
         }
-        val x = baseX + landscapeOverallOffsetXPx + landscapeDrawWasteOffsetXPx
+        val x = baseX + landscapeOverallOffsetXPx + landscapeDrawWasteOffsetXPx + landscapeWasteOffsetXPx
         return RectF(x, y, x + cardW, y + cardH)
     }
 

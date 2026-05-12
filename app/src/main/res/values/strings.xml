@@ -133,7 +133,8 @@
     <string name="help_unlock_ad_only_description_default">You are out of Help Coupons.\nYou can unlock this help function\nfor X hours\nby watching an Ad.</string>
 
     <string name="develop_menu_shuffle_section">Shuffle / Deal Timing</string>
-    <string name="develop_menu_tableau_section">Tableau Adjustments</string>
+    <string name="develop_menu_card_piles_section">Card Piles</string>
+    <string name="develop_menu_ads_rewards_section">Ads &amp; Rewards</string>
     <string name="develop_menu_shuffle_second_clip_delay_ms">Shuffle clip 2 delay (ms)</string>
     <string name="develop_menu_shuffle_tail_delay_ms">Shuffle tail delay (ms)</string>
     <string name="develop_menu_deal_card_interval_ms">Deal card interval (ms)</string>
@@ -152,6 +153,10 @@
     <string name="develop_menu_landscape_pile_foundation_offset_y">Foundation Y (landscape)</string>
     <string name="develop_menu_landscape_pile_drawwaste_offset_x">Draw/Waste X (landscape)</string>
     <string name="develop_menu_landscape_pile_drawwaste_offset_y">Draw/Waste Y (landscape)</string>
+    <string name="develop_menu_landscape_pile_stock_offset_x">Stock X (landscape)</string>
+    <string name="develop_menu_landscape_pile_stock_offset_y">Stock Y (landscape)</string>
+    <string name="develop_menu_landscape_pile_waste_offset_x">Waste X (landscape)</string>
+    <string name="develop_menu_landscape_pile_waste_offset_y">Waste Y (landscape)</string>
     <string name="develop_menu_landscape_pile_tableau_offset_x">Tableau X (landscape)</string>
     <string name="develop_menu_landscape_pile_tableau_offset_y">Tableau Y (landscape)</string>
     <string name="develop_menu_landscape_banner_small_width">Ad box small width (landscape dp)</string>
@@ -160,6 +165,14 @@
     <string name="develop_menu_landscape_banner_medium_height">Ad box medium height (landscape dp)</string>
     <string name="develop_menu_landscape_banner_large_width">Ad box large width (landscape dp)</string>
     <string name="develop_menu_landscape_banner_large_height">Ad box large height (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_offset_x">Ad box X (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_offset_y">Ad box Y (landscape dp)</string>
+    <string name="develop_menu_scoreboard_offset_x">Scoreboard X (dp)</string>
+    <string name="develop_menu_scoreboard_offset_y">Scoreboard Y (dp)</string>
+    <string name="develop_menu_gem_reward_offset_x">Gem reward X (dp)</string>
+    <string name="develop_menu_gem_reward_offset_y">Gem reward Y (dp)</string>
+    <string name="develop_menu_ticket_reward_offset_x">Ticket reward X (dp)</string>
+    <string name="develop_menu_ticket_reward_offset_y">Ticket reward Y (dp)</string>
     <string name="develop_menu_portrait_pile_section">Portrait Pile Offsets (dp)</string>
     <string name="develop_menu_portrait_pile_overall_offset_x">All piles X (portrait)</string>
     <string name="develop_menu_portrait_pile_overall_offset_y">All piles Y (portrait)</string>
@@ -167,6 +180,10 @@
     <string name="develop_menu_portrait_pile_foundation_offset_y">Foundation Y (portrait)</string>
     <string name="develop_menu_portrait_pile_drawwaste_offset_x">Draw/Waste X (portrait)</string>
     <string name="develop_menu_portrait_pile_drawwaste_offset_y">Draw/Waste Y (portrait)</string>
+    <string name="develop_menu_portrait_pile_stock_offset_x">Stock X (portrait)</string>
+    <string name="develop_menu_portrait_pile_stock_offset_y">Stock Y (portrait)</string>
+    <string name="develop_menu_portrait_pile_waste_offset_x">Waste X (portrait)</string>
+    <string name="develop_menu_portrait_pile_waste_offset_y">Waste Y (portrait)</string>
     <string name="develop_menu_portrait_pile_tableau_offset_x">Tableau X (portrait)</string>
     <string name="develop_menu_portrait_pile_tableau_offset_y">Tableau Y (portrait)</string>
 
@@ -305,6 +322,14 @@ Locale: %7$s</string>
     <string name="game_menu_exit_app">Exit App</string>
 
     <string name="auto_move_button_text">Auto</string>
+    <!-- Play button popup items -->
+    <string name="play_button_label">Play</string>
+    <string name="play_menu_new_game">New Game</string>
+    <string name="play_menu_restart">Restart Game</string>
+    <string name="play_menu_menu">Menu</string>
+    <string name="play_menu_tester_menu">Tester Menu</string>
+    <string name="play_menu_developer_menu">Developer Menu</string>
+    <string name="auto_complete_button_text">Auto Complete</string>
     <string name="no_moves_available">No moves available</string>
     <string name="no_hints_available">No hints available</string>
 

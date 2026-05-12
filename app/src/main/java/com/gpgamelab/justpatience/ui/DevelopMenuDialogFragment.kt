@@ -26,7 +26,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
     data class ExpandState(
         val starburstExpanded: Boolean = false,
         val popupExpanded: Boolean = false,
-        val tableauExpanded: Boolean = false,
+        val cardPilesExpanded: Boolean = false,
+        val adsRewardsExpanded: Boolean = false,
         val shuffleExpanded: Boolean = false
     )
 
@@ -145,6 +146,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devLandscapePileFoundationOffsetYDp(): Float
         fun devLandscapePileDrawWasteOffsetXDp(): Float
         fun devLandscapePileDrawWasteOffsetYDp(): Float
+        fun devLandscapePileStockOffsetXDp(): Float
+        fun devLandscapePileStockOffsetYDp(): Float
+        fun devLandscapePileWasteOffsetXDp(): Float
+        fun devLandscapePileWasteOffsetYDp(): Float
         fun devLandscapePileTableauOffsetXDp(): Float
         fun devLandscapePileTableauOffsetYDp(): Float
         fun onDevSetLandscapePileOverallOffsetX(value: Float)
@@ -153,6 +158,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetLandscapePileFoundationOffsetY(value: Float)
         fun onDevSetLandscapePileDrawWasteOffsetX(value: Float)
         fun onDevSetLandscapePileDrawWasteOffsetY(value: Float)
+        fun onDevSetLandscapePileStockOffsetX(value: Float)
+        fun onDevSetLandscapePileStockOffsetY(value: Float)
+        fun onDevSetLandscapePileWasteOffsetX(value: Float)
+        fun onDevSetLandscapePileWasteOffsetY(value: Float)
         fun onDevSetLandscapePileTableauOffsetX(value: Float)
         fun onDevSetLandscapePileTableauOffsetY(value: Float)
 
@@ -162,6 +171,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devPortraitPileFoundationOffsetYDp(): Float
         fun devPortraitPileDrawWasteOffsetXDp(): Float
         fun devPortraitPileDrawWasteOffsetYDp(): Float
+        fun devPortraitPileStockOffsetXDp(): Float
+        fun devPortraitPileStockOffsetYDp(): Float
+        fun devPortraitPileWasteOffsetXDp(): Float
+        fun devPortraitPileWasteOffsetYDp(): Float
         fun devPortraitPileTableauOffsetXDp(): Float
         fun devPortraitPileTableauOffsetYDp(): Float
         fun onDevSetPortraitPileOverallOffsetX(value: Float)
@@ -170,6 +183,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetPortraitPileFoundationOffsetY(value: Float)
         fun onDevSetPortraitPileDrawWasteOffsetX(value: Float)
         fun onDevSetPortraitPileDrawWasteOffsetY(value: Float)
+        fun onDevSetPortraitPileStockOffsetX(value: Float)
+        fun onDevSetPortraitPileStockOffsetY(value: Float)
+        fun onDevSetPortraitPileWasteOffsetX(value: Float)
+        fun onDevSetPortraitPileWasteOffsetY(value: Float)
         fun onDevSetPortraitPileTableauOffsetX(value: Float)
         fun onDevSetPortraitPileTableauOffsetY(value: Float)
         fun devLandscapeBannerSmallWidthDp(): Float
@@ -178,12 +195,28 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devLandscapeBannerMediumHeightDp(): Float
         fun devLandscapeBannerLargeWidthDp(): Float
         fun devLandscapeBannerLargeHeightDp(): Float
+        fun devLandscapeBannerOffsetXDp(): Float
+        fun devLandscapeBannerOffsetYDp(): Float
+        fun devScoreboardOffsetXDp(): Float
+        fun devScoreboardOffsetYDp(): Float
+        fun devGemRewardOffsetXDp(): Float
+        fun devGemRewardOffsetYDp(): Float
+        fun devTicketRewardOffsetXDp(): Float
+        fun devTicketRewardOffsetYDp(): Float
         fun onDevSetLandscapeBannerSmallWidthDp(value: Float)
         fun onDevSetLandscapeBannerSmallHeightDp(value: Float)
         fun onDevSetLandscapeBannerMediumWidthDp(value: Float)
         fun onDevSetLandscapeBannerMediumHeightDp(value: Float)
         fun onDevSetLandscapeBannerLargeWidthDp(value: Float)
         fun onDevSetLandscapeBannerLargeHeightDp(value: Float)
+        fun onDevSetLandscapeBannerOffsetX(value: Float)
+        fun onDevSetLandscapeBannerOffsetY(value: Float)
+        fun onDevSetScoreboardOffsetX(value: Float)
+        fun onDevSetScoreboardOffsetY(value: Float)
+        fun onDevSetGemRewardOffsetX(value: Float)
+        fun onDevSetGemRewardOffsetY(value: Float)
+        fun onDevSetTicketRewardOffsetX(value: Float)
+        fun onDevSetTicketRewardOffsetY(value: Float)
 
         // Shuffle/deal timing
         fun devShuffleSecondClipDelayMs(): Float
@@ -264,15 +297,27 @@ class DevelopMenuDialogFragment : DialogFragment() {
             host.onDevExpandStateChanged(expandState)
         }
 
-        val tableauHeader = view.findViewById<View>(R.id.layout_develop_tableau_header)
-        val tableauArrow = view.findViewById<TextView>(R.id.tv_develop_tableau_arrow)
-        val tableauContent = view.findViewById<LinearLayout>(R.id.layout_develop_tableau_content)
-        var tableauExpanded = expandState.tableauExpanded
-        setSectionExpanded(tableauContent, tableauArrow, tableauExpanded)
-        tableauHeader.setOnClickListener {
-            tableauExpanded = !tableauExpanded
-            setSectionExpanded(tableauContent, tableauArrow, tableauExpanded)
-            expandState = expandState.copy(tableauExpanded = tableauExpanded)
+        val cardPilesHeader = view.findViewById<View>(R.id.layout_develop_card_piles_header)
+        val cardPilesArrow = view.findViewById<TextView>(R.id.tv_develop_card_piles_arrow)
+        val cardPilesContent = view.findViewById<LinearLayout>(R.id.layout_develop_card_piles_content)
+        var cardPilesExpanded = expandState.cardPilesExpanded
+        setSectionExpanded(cardPilesContent, cardPilesArrow, cardPilesExpanded)
+        cardPilesHeader.setOnClickListener {
+            cardPilesExpanded = !cardPilesExpanded
+            setSectionExpanded(cardPilesContent, cardPilesArrow, cardPilesExpanded)
+            expandState = expandState.copy(cardPilesExpanded = cardPilesExpanded)
+            host.onDevExpandStateChanged(expandState)
+        }
+
+        val adsRewardsHeader = view.findViewById<View>(R.id.layout_develop_ads_rewards_header)
+        val adsRewardsArrow = view.findViewById<TextView>(R.id.tv_develop_ads_rewards_arrow)
+        val adsRewardsContent = view.findViewById<LinearLayout>(R.id.layout_develop_ads_rewards_content)
+        var adsRewardsExpanded = expandState.adsRewardsExpanded
+        setSectionExpanded(adsRewardsContent, adsRewardsArrow, adsRewardsExpanded)
+        adsRewardsHeader.setOnClickListener {
+            adsRewardsExpanded = !adsRewardsExpanded
+            setSectionExpanded(adsRewardsContent, adsRewardsArrow, adsRewardsExpanded)
+            expandState = expandState.copy(adsRewardsExpanded = adsRewardsExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -441,6 +486,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_landscape_pile_foundation_offset_y, R.string.develop_menu_landscape_pile_foundation_offset_y, host::devLandscapePileFoundationOffsetYDp, host::onDevSetLandscapePileFoundationOffsetY)
         bindDecimal(R.id.btn_dev_landscape_pile_drawwaste_offset_x, R.string.develop_menu_landscape_pile_drawwaste_offset_x, host::devLandscapePileDrawWasteOffsetXDp, host::onDevSetLandscapePileDrawWasteOffsetX)
         bindDecimal(R.id.btn_dev_landscape_pile_drawwaste_offset_y, R.string.develop_menu_landscape_pile_drawwaste_offset_y, host::devLandscapePileDrawWasteOffsetYDp, host::onDevSetLandscapePileDrawWasteOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_pile_stock_offset_x, R.string.develop_menu_landscape_pile_stock_offset_x, host::devLandscapePileStockOffsetXDp, host::onDevSetLandscapePileStockOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_pile_stock_offset_y, R.string.develop_menu_landscape_pile_stock_offset_y, host::devLandscapePileStockOffsetYDp, host::onDevSetLandscapePileStockOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_pile_waste_offset_x, R.string.develop_menu_landscape_pile_waste_offset_x, host::devLandscapePileWasteOffsetXDp, host::onDevSetLandscapePileWasteOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_pile_waste_offset_y, R.string.develop_menu_landscape_pile_waste_offset_y, host::devLandscapePileWasteOffsetYDp, host::onDevSetLandscapePileWasteOffsetY)
         bindDecimal(R.id.btn_dev_landscape_pile_tableau_offset_x, R.string.develop_menu_landscape_pile_tableau_offset_x, host::devLandscapePileTableauOffsetXDp, host::onDevSetLandscapePileTableauOffsetX)
         bindDecimal(R.id.btn_dev_landscape_pile_tableau_offset_y, R.string.develop_menu_landscape_pile_tableau_offset_y, host::devLandscapePileTableauOffsetYDp, host::onDevSetLandscapePileTableauOffsetY)
         bindDecimal(R.id.btn_dev_portrait_pile_overall_offset_x, R.string.develop_menu_portrait_pile_overall_offset_x, host::devPortraitPileOverallOffsetXDp, host::onDevSetPortraitPileOverallOffsetX)
@@ -449,6 +498,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_portrait_pile_foundation_offset_y, R.string.develop_menu_portrait_pile_foundation_offset_y, host::devPortraitPileFoundationOffsetYDp, host::onDevSetPortraitPileFoundationOffsetY)
         bindDecimal(R.id.btn_dev_portrait_pile_drawwaste_offset_x, R.string.develop_menu_portrait_pile_drawwaste_offset_x, host::devPortraitPileDrawWasteOffsetXDp, host::onDevSetPortraitPileDrawWasteOffsetX)
         bindDecimal(R.id.btn_dev_portrait_pile_drawwaste_offset_y, R.string.develop_menu_portrait_pile_drawwaste_offset_y, host::devPortraitPileDrawWasteOffsetYDp, host::onDevSetPortraitPileDrawWasteOffsetY)
+        bindDecimal(R.id.btn_dev_portrait_pile_stock_offset_x, R.string.develop_menu_portrait_pile_stock_offset_x, host::devPortraitPileStockOffsetXDp, host::onDevSetPortraitPileStockOffsetX)
+        bindDecimal(R.id.btn_dev_portrait_pile_stock_offset_y, R.string.develop_menu_portrait_pile_stock_offset_y, host::devPortraitPileStockOffsetYDp, host::onDevSetPortraitPileStockOffsetY)
+        bindDecimal(R.id.btn_dev_portrait_pile_waste_offset_x, R.string.develop_menu_portrait_pile_waste_offset_x, host::devPortraitPileWasteOffsetXDp, host::onDevSetPortraitPileWasteOffsetX)
+        bindDecimal(R.id.btn_dev_portrait_pile_waste_offset_y, R.string.develop_menu_portrait_pile_waste_offset_y, host::devPortraitPileWasteOffsetYDp, host::onDevSetPortraitPileWasteOffsetY)
         bindDecimal(R.id.btn_dev_portrait_pile_tableau_offset_x, R.string.develop_menu_portrait_pile_tableau_offset_x, host::devPortraitPileTableauOffsetXDp, host::onDevSetPortraitPileTableauOffsetX)
         bindDecimal(R.id.btn_dev_portrait_pile_tableau_offset_y, R.string.develop_menu_portrait_pile_tableau_offset_y, host::devPortraitPileTableauOffsetYDp, host::onDevSetPortraitPileTableauOffsetY)
         bindDecimal(R.id.btn_dev_landscape_banner_small_width, R.string.develop_menu_landscape_banner_small_width, host::devLandscapeBannerSmallWidthDp, host::onDevSetLandscapeBannerSmallWidthDp)
@@ -457,6 +510,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_landscape_banner_medium_height, R.string.develop_menu_landscape_banner_medium_height, host::devLandscapeBannerMediumHeightDp, host::onDevSetLandscapeBannerMediumHeightDp)
         bindDecimal(R.id.btn_dev_landscape_banner_large_width, R.string.develop_menu_landscape_banner_large_width, host::devLandscapeBannerLargeWidthDp, host::onDevSetLandscapeBannerLargeWidthDp)
         bindDecimal(R.id.btn_dev_landscape_banner_large_height, R.string.develop_menu_landscape_banner_large_height, host::devLandscapeBannerLargeHeightDp, host::onDevSetLandscapeBannerLargeHeightDp)
+        bindDecimal(R.id.btn_dev_landscape_banner_offset_x, R.string.develop_menu_landscape_banner_offset_x, host::devLandscapeBannerOffsetXDp, host::onDevSetLandscapeBannerOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_banner_offset_y, R.string.develop_menu_landscape_banner_offset_y, host::devLandscapeBannerOffsetYDp, host::onDevSetLandscapeBannerOffsetY)
+        bindDecimal(R.id.btn_dev_scoreboard_offset_x, R.string.develop_menu_scoreboard_offset_x, host::devScoreboardOffsetXDp, host::onDevSetScoreboardOffsetX)
+        bindDecimal(R.id.btn_dev_scoreboard_offset_y, R.string.develop_menu_scoreboard_offset_y, host::devScoreboardOffsetYDp, host::onDevSetScoreboardOffsetY)
+        bindDecimal(R.id.btn_dev_gem_reward_offset_x, R.string.develop_menu_gem_reward_offset_x, host::devGemRewardOffsetXDp, host::onDevSetGemRewardOffsetX)
+        bindDecimal(R.id.btn_dev_gem_reward_offset_y, R.string.develop_menu_gem_reward_offset_y, host::devGemRewardOffsetYDp, host::onDevSetGemRewardOffsetY)
+        bindDecimal(R.id.btn_dev_ticket_reward_offset_x, R.string.develop_menu_ticket_reward_offset_x, host::devTicketRewardOffsetXDp, host::onDevSetTicketRewardOffsetX)
+        bindDecimal(R.id.btn_dev_ticket_reward_offset_y, R.string.develop_menu_ticket_reward_offset_y, host::devTicketRewardOffsetYDp, host::onDevSetTicketRewardOffsetY)
     }
 
     private fun refreshAllDisplays(root: View, host: Host) {
@@ -527,6 +588,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_foundation_offset_y).text = fmt(host.devLandscapePileFoundationOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_drawwaste_offset_x).text = fmt(host.devLandscapePileDrawWasteOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_drawwaste_offset_y).text = fmt(host.devLandscapePileDrawWasteOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_stock_offset_x).text = fmt(host.devLandscapePileStockOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_stock_offset_y).text = fmt(host.devLandscapePileStockOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_waste_offset_x).text = fmt(host.devLandscapePileWasteOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_waste_offset_y).text = fmt(host.devLandscapePileWasteOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_tableau_offset_x).text = fmt(host.devLandscapePileTableauOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_pile_tableau_offset_y).text = fmt(host.devLandscapePileTableauOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_overall_offset_x).text = fmt(host.devPortraitPileOverallOffsetXDp())
@@ -535,6 +600,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_foundation_offset_y).text = fmt(host.devPortraitPileFoundationOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_drawwaste_offset_x).text = fmt(host.devPortraitPileDrawWasteOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_drawwaste_offset_y).text = fmt(host.devPortraitPileDrawWasteOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_stock_offset_x).text = fmt(host.devPortraitPileStockOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_stock_offset_y).text = fmt(host.devPortraitPileStockOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_waste_offset_x).text = fmt(host.devPortraitPileWasteOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_waste_offset_y).text = fmt(host.devPortraitPileWasteOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_tableau_offset_x).text = fmt(host.devPortraitPileTableauOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_portrait_pile_tableau_offset_y).text = fmt(host.devPortraitPileTableauOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_small_width).text = fmt(host.devLandscapeBannerSmallWidthDp())
@@ -543,6 +612,14 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_medium_height).text = fmt(host.devLandscapeBannerMediumHeightDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_width).text = fmt(host.devLandscapeBannerLargeWidthDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_height).text = fmt(host.devLandscapeBannerLargeHeightDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_offset_x).text = fmt(host.devLandscapeBannerOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_offset_y).text = fmt(host.devLandscapeBannerOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_scoreboard_offset_x).text = fmt(host.devScoreboardOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_scoreboard_offset_y).text = fmt(host.devScoreboardOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_offset_x).text = fmt(host.devGemRewardOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_offset_y).text = fmt(host.devGemRewardOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_offset_x).text = fmt(host.devTicketRewardOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_offset_y).text = fmt(host.devTicketRewardOffsetYDp())
     }
 
     private fun fmt(value: Float): String = String.format(Locale.US, "%.2f", value)
@@ -557,7 +634,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
         return ExpandState(
             starburstExpanded = b.getBoolean(ARG_STARBURST_EXPANDED, false),
             popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
-            tableauExpanded = b.getBoolean(ARG_TABLEAU_EXPANDED, false),
+            cardPilesExpanded = b.getBoolean(ARG_CARD_PILES_EXPANDED, false),
+            adsRewardsExpanded = b.getBoolean(ARG_ADS_REWARDS_EXPANDED, false),
             shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
         )
     }
@@ -636,7 +714,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
         const val TAG = "develop_menu_dialog"
         private const val ARG_STARBURST_EXPANDED = "arg_starburst_expanded"
         private const val ARG_POPUP_EXPANDED = "arg_popup_expanded"
-        private const val ARG_TABLEAU_EXPANDED = "arg_tableau_expanded"
+        private const val ARG_CARD_PILES_EXPANDED = "arg_card_piles_expanded"
+        private const val ARG_ADS_REWARDS_EXPANDED = "arg_ads_rewards_expanded"
         private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
@@ -644,7 +723,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
                 arguments = Bundle().apply {
                     putBoolean(ARG_STARBURST_EXPANDED, state.starburstExpanded)
                     putBoolean(ARG_POPUP_EXPANDED, state.popupExpanded)
-                    putBoolean(ARG_TABLEAU_EXPANDED, state.tableauExpanded)
+                    putBoolean(ARG_CARD_PILES_EXPANDED, state.cardPilesExpanded)
+                    putBoolean(ARG_ADS_REWARDS_EXPANDED, state.adsRewardsExpanded)
                     putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
                 }
             }
