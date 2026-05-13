@@ -165,8 +165,12 @@
     <string name="develop_menu_landscape_banner_medium_height">Ad box medium height (landscape dp)</string>
     <string name="develop_menu_landscape_banner_large_width">Ad box large width (landscape dp)</string>
     <string name="develop_menu_landscape_banner_large_height">Ad box large height (landscape dp)</string>
-    <string name="develop_menu_landscape_banner_offset_x">Ad box X (landscape dp)</string>
-    <string name="develop_menu_landscape_banner_offset_y">Ad box Y (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_small_offset_x">Ad box small X (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_small_offset_y">Ad box small Y (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_medium_offset_x">Ad box medium X (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_medium_offset_y">Ad box medium Y (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_large_offset_x">Ad box large X (landscape dp)</string>
+    <string name="develop_menu_landscape_banner_large_offset_y">Ad box large Y (landscape dp)</string>
     <string name="develop_menu_scoreboard_offset_x">Scoreboard X (dp)</string>
     <string name="develop_menu_scoreboard_offset_y">Scoreboard Y (dp)</string>
     <string name="develop_menu_gem_reward_offset_x">Gem reward X (dp)</string>

@@ -195,8 +195,12 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devLandscapeBannerMediumHeightDp(): Float
         fun devLandscapeBannerLargeWidthDp(): Float
         fun devLandscapeBannerLargeHeightDp(): Float
-        fun devLandscapeBannerOffsetXDp(): Float
-        fun devLandscapeBannerOffsetYDp(): Float
+        fun devSmallDeviceLandscapeBannerOffsetXDp(): Float
+        fun devSmallDeviceLandscapeBannerOffsetYDp(): Float
+        fun devMediumDeviceLandscapeBannerOffsetXDp(): Float
+        fun devMediumDeviceLandscapeBannerOffsetYDp(): Float
+        fun devLargeDeviceLandscapeBannerOffsetXDp(): Float
+        fun devLargeDeviceLandscapeBannerOffsetYDp(): Float
         fun devScoreboardOffsetXDp(): Float
         fun devScoreboardOffsetYDp(): Float
         fun devGemRewardOffsetXDp(): Float
@@ -209,8 +213,12 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetLandscapeBannerMediumHeightDp(value: Float)
         fun onDevSetLandscapeBannerLargeWidthDp(value: Float)
         fun onDevSetLandscapeBannerLargeHeightDp(value: Float)
-        fun onDevSetLandscapeBannerOffsetX(value: Float)
-        fun onDevSetLandscapeBannerOffsetY(value: Float)
+        fun onDevSetSmallDeviceLandscapeBannerOffsetX(value: Float)
+        fun onDevSetSmallDeviceLandscapeBannerOffsetY(value: Float)
+        fun onDevSetMediumDeviceLandscapeBannerOffsetX(value: Float)
+        fun onDevSetMediumDeviceLandscapeBannerOffsetY(value: Float)
+        fun onDevSetLargeDeviceLandscapeBannerOffsetX(value: Float)
+        fun onDevSetLargeDeviceLandscapeBannerOffsetY(value: Float)
         fun onDevSetScoreboardOffsetX(value: Float)
         fun onDevSetScoreboardOffsetY(value: Float)
         fun onDevSetGemRewardOffsetX(value: Float)
@@ -510,8 +518,12 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_landscape_banner_medium_height, R.string.develop_menu_landscape_banner_medium_height, host::devLandscapeBannerMediumHeightDp, host::onDevSetLandscapeBannerMediumHeightDp)
         bindDecimal(R.id.btn_dev_landscape_banner_large_width, R.string.develop_menu_landscape_banner_large_width, host::devLandscapeBannerLargeWidthDp, host::onDevSetLandscapeBannerLargeWidthDp)
         bindDecimal(R.id.btn_dev_landscape_banner_large_height, R.string.develop_menu_landscape_banner_large_height, host::devLandscapeBannerLargeHeightDp, host::onDevSetLandscapeBannerLargeHeightDp)
-        bindDecimal(R.id.btn_dev_landscape_banner_offset_x, R.string.develop_menu_landscape_banner_offset_x, host::devLandscapeBannerOffsetXDp, host::onDevSetLandscapeBannerOffsetX)
-        bindDecimal(R.id.btn_dev_landscape_banner_offset_y, R.string.develop_menu_landscape_banner_offset_y, host::devLandscapeBannerOffsetYDp, host::onDevSetLandscapeBannerOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_banner_small_offset_x, R.string.develop_menu_landscape_banner_small_offset_x, host::devSmallDeviceLandscapeBannerOffsetXDp, host::onDevSetSmallDeviceLandscapeBannerOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_banner_small_offset_y, R.string.develop_menu_landscape_banner_small_offset_y, host::devSmallDeviceLandscapeBannerOffsetYDp, host::onDevSetSmallDeviceLandscapeBannerOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_banner_medium_offset_x, R.string.develop_menu_landscape_banner_medium_offset_x, host::devMediumDeviceLandscapeBannerOffsetXDp, host::onDevSetMediumDeviceLandscapeBannerOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_banner_medium_offset_y, R.string.develop_menu_landscape_banner_medium_offset_y, host::devMediumDeviceLandscapeBannerOffsetYDp, host::onDevSetMediumDeviceLandscapeBannerOffsetY)
+        bindDecimal(R.id.btn_dev_landscape_banner_large_offset_x, R.string.develop_menu_landscape_banner_large_offset_x, host::devLargeDeviceLandscapeBannerOffsetXDp, host::onDevSetLargeDeviceLandscapeBannerOffsetX)
+        bindDecimal(R.id.btn_dev_landscape_banner_large_offset_y, R.string.develop_menu_landscape_banner_large_offset_y, host::devLargeDeviceLandscapeBannerOffsetYDp, host::onDevSetLargeDeviceLandscapeBannerOffsetY)
         bindDecimal(R.id.btn_dev_scoreboard_offset_x, R.string.develop_menu_scoreboard_offset_x, host::devScoreboardOffsetXDp, host::onDevSetScoreboardOffsetX)
         bindDecimal(R.id.btn_dev_scoreboard_offset_y, R.string.develop_menu_scoreboard_offset_y, host::devScoreboardOffsetYDp, host::onDevSetScoreboardOffsetY)
         bindDecimal(R.id.btn_dev_gem_reward_offset_x, R.string.develop_menu_gem_reward_offset_x, host::devGemRewardOffsetXDp, host::onDevSetGemRewardOffsetX)
@@ -612,8 +624,12 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_medium_height).text = fmt(host.devLandscapeBannerMediumHeightDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_width).text = fmt(host.devLandscapeBannerLargeWidthDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_height).text = fmt(host.devLandscapeBannerLargeHeightDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_offset_x).text = fmt(host.devLandscapeBannerOffsetXDp())
-        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_offset_y).text = fmt(host.devLandscapeBannerOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_small_offset_x).text = fmt(host.devSmallDeviceLandscapeBannerOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_small_offset_y).text = fmt(host.devSmallDeviceLandscapeBannerOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_medium_offset_x).text = fmt(host.devMediumDeviceLandscapeBannerOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_medium_offset_y).text = fmt(host.devMediumDeviceLandscapeBannerOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_offset_x).text = fmt(host.devLargeDeviceLandscapeBannerOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_large_offset_y).text = fmt(host.devLargeDeviceLandscapeBannerOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_scoreboard_offset_x).text = fmt(host.devScoreboardOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_scoreboard_offset_y).text = fmt(host.devScoreboardOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_offset_x).text = fmt(host.devGemRewardOffsetXDp())

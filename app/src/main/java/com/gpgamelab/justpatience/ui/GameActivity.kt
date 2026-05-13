@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.content.res.Configuration
+import android.content.res.Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.RectF
@@ -92,8 +93,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val portraitPileWasteOffsetY: Float,
         val portraitPileTableauOffsetX: Float,
         val portraitPileTableauOffsetY: Float,
-        val landscapeBannerOffsetX: Float,
-        val landscapeBannerOffsetY: Float,
+        val landscapeBannerSmallOffsetX: Float,
+        val landscapeBannerSmallOffsetY: Float,
+        val landscapeBannerMediumOffsetX: Float,
+        val landscapeBannerMediumOffsetY: Float,
+        val landscapeBannerLargeOffsetX: Float,
+        val landscapeBannerLargeOffsetY: Float,
         val scoreboardOffsetX: Float,
         val scoreboardOffsetY: Float,
         val gemRewardOffsetX: Float,
@@ -106,7 +111,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     // Edit these two blocks when you want fixed classic vs mirrored values in code.
     private val defaultClassicLayoutDevAdjusters = LayoutScopedDevAdjusters(
         landscapePileOverallOffsetX = -5f,
-        landscapePileOverallOffsetY = -170f,
+        landscapePileOverallOffsetY = -120f,
         landscapePileFoundationOffsetX = 0f,
         landscapePileFoundationOffsetY = 0f,
         landscapePileDrawWasteOffsetX = 0f,
@@ -129,19 +134,24 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitPileWasteOffsetY = 0f,
         portraitPileTableauOffsetX = 0f,
         portraitPileTableauOffsetY = 0f,
-        landscapeBannerOffsetX = -100f,
-        landscapeBannerOffsetY = 0f,
+        landscapeBannerSmallOffsetX = 0f,
+        landscapeBannerSmallOffsetY = 0f,
+        landscapeBannerMediumOffsetX = -100f,
+        landscapeBannerMediumOffsetY = 0f,
+        landscapeBannerLargeOffsetX = -300f,
+        landscapeBannerLargeOffsetY = 0f,
         scoreboardOffsetX = 0f,
         scoreboardOffsetY = 0f,
-        gemRewardOffsetX = 0f,
-        gemRewardOffsetY = 0f,
-        ticketRewardOffsetX = 0f,
-        ticketRewardOffsetY = 0f
+        gemRewardOffsetX = -10f,
+        gemRewardOffsetY = 25f,
+        ticketRewardOffsetX = -10f,
+        ticketRewardOffsetY = 35f
     )
 
     private val defaultMirroredLayoutDevAdjusters = defaultClassicLayoutDevAdjusters.copy(
         landscapePileOverallOffsetX = 45f,
-        landscapeBannerOffsetX = 100f
+        landscapeBannerMediumOffsetX = 100f,
+        landscapeBannerLargeOffsetX = 300f
     )
 
     private enum class LandscapeBannerTier {
@@ -191,8 +201,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devLandscapeBannerMediumHeightDpState: Float = 110f  // LARGE_BANNER (100dp) + buffer
     private var devLandscapeBannerLargeWidthDpState: Float = 320f
     private var devLandscapeBannerLargeHeightDpState: Float = 260f  // MEDIUM_RECTANGLE (250dp) + buffer
-    private var devLandscapeBannerOffsetXDpState: Float = 0f
-    private var devLandscapeBannerOffsetYDpState: Float = 0f
+    private var devSmallDeviceLandscapeBannerOffsetXDpState: Float = 0f
+    private var devSmallDeviceLandscapeBannerOffsetYDpState: Float = 0f
+    private var devMediumDeviceLandscapeBannerOffsetXDpState: Float = 0f
+    private var devMediumDeviceLandscapeBannerOffsetYDpState: Float = 0f
+    private var devLargeDeviceLandscapeBannerOffsetXDpState: Float = 0f
+    private var devLargeDeviceLandscapeBannerOffsetYDpState: Float = 0f
     private var devScoreboardOffsetXDpState: Float = 0f
     private var devScoreboardOffsetYDpState: Float = 0f
     private var devGemRewardOffsetXDpState: Float = 0f
@@ -254,8 +268,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             portraitPileWasteOffsetY = devPortraitPileWasteOffsetYDpState,
             portraitPileTableauOffsetX = devPortraitPileTableauOffsetXDpState,
             portraitPileTableauOffsetY = devPortraitPileTableauOffsetYDpState,
-            landscapeBannerOffsetX = devLandscapeBannerOffsetXDpState,
-            landscapeBannerOffsetY = devLandscapeBannerOffsetYDpState,
+            landscapeBannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
+            landscapeBannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
+            landscapeBannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
+            landscapeBannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
+            landscapeBannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
+            landscapeBannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState,
             scoreboardOffsetX = devScoreboardOffsetXDpState,
             scoreboardOffsetY = devScoreboardOffsetYDpState,
             gemRewardOffsetX = devGemRewardOffsetXDpState,
@@ -290,8 +308,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitPileWasteOffsetYDpState = profile.portraitPileWasteOffsetY
         devPortraitPileTableauOffsetXDpState = profile.portraitPileTableauOffsetX
         devPortraitPileTableauOffsetYDpState = profile.portraitPileTableauOffsetY
-        devLandscapeBannerOffsetXDpState = profile.landscapeBannerOffsetX
-        devLandscapeBannerOffsetYDpState = profile.landscapeBannerOffsetY
+        devSmallDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerSmallOffsetX
+        devSmallDeviceLandscapeBannerOffsetYDpState = profile.landscapeBannerSmallOffsetY
+        devMediumDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerMediumOffsetX
+        devMediumDeviceLandscapeBannerOffsetYDpState = profile.landscapeBannerMediumOffsetY
+        devLargeDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerLargeOffsetX
+        devLargeDeviceLandscapeBannerOffsetYDpState = profile.landscapeBannerLargeOffsetY
         devScoreboardOffsetXDpState = profile.scoreboardOffsetX
         devScoreboardOffsetYDpState = profile.scoreboardOffsetY
         devGemRewardOffsetXDpState = profile.gemRewardOffsetX
@@ -2390,8 +2412,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devLandscapeBannerMediumHeightDp(): Float = devLandscapeBannerMediumHeightDpState
     override fun devLandscapeBannerLargeWidthDp(): Float = devLandscapeBannerLargeWidthDpState
     override fun devLandscapeBannerLargeHeightDp(): Float = devLandscapeBannerLargeHeightDpState
-    override fun devLandscapeBannerOffsetXDp(): Float = devLandscapeBannerOffsetXDpState
-    override fun devLandscapeBannerOffsetYDp(): Float = devLandscapeBannerOffsetYDpState
+    override fun devSmallDeviceLandscapeBannerOffsetXDp(): Float = devSmallDeviceLandscapeBannerOffsetXDpState
+    override fun devSmallDeviceLandscapeBannerOffsetYDp(): Float = devSmallDeviceLandscapeBannerOffsetYDpState
+    override fun devMediumDeviceLandscapeBannerOffsetXDp(): Float = devMediumDeviceLandscapeBannerOffsetXDpState
+    override fun devMediumDeviceLandscapeBannerOffsetYDp(): Float = devMediumDeviceLandscapeBannerOffsetYDpState
+    override fun devLargeDeviceLandscapeBannerOffsetXDp(): Float = devLargeDeviceLandscapeBannerOffsetXDpState
+    override fun devLargeDeviceLandscapeBannerOffsetYDp(): Float = devLargeDeviceLandscapeBannerOffsetYDpState
     override fun devScoreboardOffsetXDp(): Float = devScoreboardOffsetXDpState
     override fun devScoreboardOffsetYDp(): Float = devScoreboardOffsetYDpState
     override fun devGemRewardOffsetXDp(): Float = devGemRewardOffsetXDpState
@@ -2554,12 +2580,28 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devLandscapeBannerLargeHeightDpState = value.coerceAtLeast(1f)
         reloadBannerForCurrentConfiguration()
     }
-    override fun onDevSetLandscapeBannerOffsetX(value: Float) {
-        devLandscapeBannerOffsetXDpState = value
+    override fun onDevSetSmallDeviceLandscapeBannerOffsetX(value: Float) {
+        devSmallDeviceLandscapeBannerOffsetXDpState = value
         applyLandscapeBannerOverlayDevOffsets()
     }
-    override fun onDevSetLandscapeBannerOffsetY(value: Float) {
-        devLandscapeBannerOffsetYDpState = value
+    override fun onDevSetSmallDeviceLandscapeBannerOffsetY(value: Float) {
+        devSmallDeviceLandscapeBannerOffsetYDpState = value
+        applyLandscapeBannerOverlayDevOffsets()
+    }
+    override fun onDevSetMediumDeviceLandscapeBannerOffsetX(value: Float) {
+        devMediumDeviceLandscapeBannerOffsetXDpState = value
+        applyLandscapeBannerOverlayDevOffsets()
+    }
+    override fun onDevSetMediumDeviceLandscapeBannerOffsetY(value: Float) {
+        devMediumDeviceLandscapeBannerOffsetYDpState = value
+        applyLandscapeBannerOverlayDevOffsets()
+    }
+    override fun onDevSetLargeDeviceLandscapeBannerOffsetX(value: Float) {
+        devLargeDeviceLandscapeBannerOffsetXDpState = value
+        applyLandscapeBannerOverlayDevOffsets()
+    }
+    override fun onDevSetLargeDeviceLandscapeBannerOffsetY(value: Float) {
+        devLargeDeviceLandscapeBannerOffsetYDpState = value
         applyLandscapeBannerOverlayDevOffsets()
     }
     override fun onDevSetScoreboardOffsetX(value: Float) {
@@ -3434,8 +3476,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerOverlay.translationY = 0f
             return
         }
-        bannerOverlay.translationX = scaleDevDpOffsetX(devLandscapeBannerOffsetXDpState, ratioProfile)
-        bannerOverlay.translationY = scaleDevDpOffsetY(devLandscapeBannerOffsetYDpState, ratioProfile)
+        val (offsetXDp, offsetYDp) = when (resolveLandscapeBannerTier()) {
+            LandscapeBannerTier.SMALL -> devSmallDeviceLandscapeBannerOffsetXDpState to devSmallDeviceLandscapeBannerOffsetYDpState
+            LandscapeBannerTier.MEDIUM -> devMediumDeviceLandscapeBannerOffsetXDpState to devMediumDeviceLandscapeBannerOffsetYDpState
+            LandscapeBannerTier.LARGE -> devLargeDeviceLandscapeBannerOffsetXDpState to devLargeDeviceLandscapeBannerOffsetYDpState
+        }
+        bannerOverlay.translationX = scaleDevDpOffsetX(offsetXDp, ratioProfile)
+        bannerOverlay.translationY = scaleDevDpOffsetY(offsetYDp, ratioProfile)
     }
 
     private fun applyTopHudDevOffsets() {
@@ -3452,8 +3499,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun resolveLandscapeBannerTier(): LandscapeBannerTier {
         val swDp = resources.configuration.smallestScreenWidthDp
         return when {
-            swDp < 600 -> LandscapeBannerTier.SMALL
-            swDp > 1200 -> LandscapeBannerTier.LARGE
+            swDp == SMALLEST_SCREEN_WIDTH_DP_UNDEFINED -> LandscapeBannerTier.SMALL
+            swDp < 400 -> LandscapeBannerTier.SMALL
+            swDp >= 800 -> LandscapeBannerTier.LARGE
             else -> LandscapeBannerTier.MEDIUM
         }
     }
@@ -3463,6 +3511,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         if (!isLandscapeNow || container == null) {
+            Log.d(
+                "GameActivityAds",
+                "Landscape banner - isLandscapeNow=${isLandscapeNow} container=${container}"
+            )
             return listOf(AdSize.LARGE_BANNER)
         }
 
@@ -3484,7 +3536,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         Log.d(
-            "GameActivity",
+            "GameActivityAds",
             "Landscape banner tier=$tier boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
         )
 

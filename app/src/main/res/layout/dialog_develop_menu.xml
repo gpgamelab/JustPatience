@@ -1204,12 +1204,28 @@
                 <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_large_height" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="260.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
             </LinearLayout>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
-                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_small_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_small_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_small_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_small_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_medium_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_medium_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_medium_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_medium_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_large_offset_x" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_large_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
             </LinearLayout>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
-                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/develop_menu_landscape_banner_large_offset_y" android:textColor="#FFFFFF" android:textSize="13sp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_landscape_banner_large_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="6dp">
