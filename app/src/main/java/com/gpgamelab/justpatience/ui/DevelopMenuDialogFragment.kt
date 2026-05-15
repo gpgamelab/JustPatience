@@ -28,7 +28,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
         val popupExpanded: Boolean = false,
         val cardPilesExpanded: Boolean = false,
         val adsRewardsExpanded: Boolean = false,
-        val shuffleExpanded: Boolean = false
+        val shuffleExpanded: Boolean = false,
+        val aspectRatioExpanded: Boolean = false
     )
 
     interface Host {
@@ -165,6 +166,10 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetLandscapePileTableauOffsetX(value: Float)
         fun onDevSetLandscapePileTableauOffsetY(value: Float)
 
+        fun devAspectPortraitSlimXDp(): Float
+        fun devAspectPortraitClassicXDp(): Float
+        fun devAspectPortraitBroadXDp(): Float
+        fun devAspectPortraitSquareXDp(): Float
         fun devPortraitPileOverallOffsetXDp(): Float
         fun devPortraitPileOverallOffsetYDp(): Float
         fun devPortraitPileFoundationOffsetXDp(): Float
@@ -189,6 +194,11 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetPortraitPileWasteOffsetY(value: Float)
         fun onDevSetPortraitPileTableauOffsetX(value: Float)
         fun onDevSetPortraitPileTableauOffsetY(value: Float)
+
+        fun devAspectLandscapeSlimXDp(): Float
+        fun devAspectLandscapeClassicXDp(): Float
+        fun devAspectLandscapeBroadXDp(): Float
+        fun devAspectLandscapeSquareXDp(): Float
         fun devLandscapeBannerSmallWidthDp(): Float
         fun devLandscapeBannerSmallHeightDp(): Float
         fun devLandscapeBannerMediumWidthDp(): Float
@@ -233,6 +243,33 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetShuffleSecondClipDelayMs(value: Float)
         fun onDevSetShuffleTailDelayMs(value: Float)
         fun onDevSetDealCardIntervalMs(value: Float)
+
+        // Aspect-ratio category pile trims
+        fun devAspectPortraitSlimYDp(): Float
+        fun devAspectPortraitClassicYDp(): Float
+        fun devAspectPortraitBroadYDp(): Float
+        fun devAspectPortraitSquareYDp(): Float
+        fun devAspectLandscapeSlimYDp(): Float
+        fun devAspectLandscapeClassicYDp(): Float
+        fun devAspectLandscapeBroadYDp(): Float
+        fun devAspectLandscapeSquareYDp(): Float
+        fun onDevSetAspectPortraitSlimX(value: Float)
+        fun onDevSetAspectPortraitClassicX(value: Float)
+        fun onDevSetAspectPortraitBroadX(value: Float)
+        fun onDevSetAspectPortraitSquareX(value: Float)
+        fun onDevSetAspectPortraitSlimY(value: Float)
+        fun onDevSetAspectPortraitClassicY(value: Float)
+        fun onDevSetAspectPortraitBroadY(value: Float)
+        fun onDevSetAspectPortraitSquareY(value: Float)
+        fun onDevSetAspectLandscapeSlimX(value: Float)
+        fun onDevSetAspectLandscapeClassicX(value: Float)
+        fun onDevSetAspectLandscapeBroadX(value: Float)
+        fun onDevSetAspectLandscapeSquareX(value: Float)
+        fun onDevSetAspectLandscapeSlimY(value: Float)
+        fun onDevSetAspectLandscapeClassicY(value: Float)
+        fun onDevSetAspectLandscapeBroadY(value: Float)
+        fun onDevSetAspectLandscapeSquareY(value: Float)
+        fun devCurrentAspectCategoryLabel(): String
 
         fun onDevExpandStateChanged(state: ExpandState)
     }
@@ -329,8 +366,21 @@ class DevelopMenuDialogFragment : DialogFragment() {
             host.onDevExpandStateChanged(expandState)
         }
 
+        val aspectRatioHeader = view.findViewById<View>(R.id.layout_develop_aspect_ratio_header)
+        val aspectRatioArrow = view.findViewById<TextView>(R.id.tv_develop_aspect_ratio_arrow)
+        val aspectRatioContent = view.findViewById<LinearLayout>(R.id.layout_develop_aspect_ratio_content)
+        var aspectRatioExpanded = expandState.aspectRatioExpanded
+        setSectionExpanded(aspectRatioContent, aspectRatioArrow, aspectRatioExpanded)
+        aspectRatioHeader.setOnClickListener {
+            aspectRatioExpanded = !aspectRatioExpanded
+            setSectionExpanded(aspectRatioContent, aspectRatioArrow, aspectRatioExpanded)
+            expandState = expandState.copy(aspectRatioExpanded = aspectRatioExpanded)
+            host.onDevExpandStateChanged(expandState)
+        }
+
         bindStarburstControls(view, host)
         bindPopupControls(view, host)
+        bindAspectRatioControls(view, host)
         refreshAllDisplays(view, host)
 
         view.findViewById<MaterialButton>(R.id.btn_develop_close).setOnClickListener { dismiss() }
@@ -532,9 +582,58 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_ticket_reward_offset_y, R.string.develop_menu_ticket_reward_offset_y, host::devTicketRewardOffsetYDp, host::onDevSetTicketRewardOffsetY)
     }
 
+    private fun bindAspectRatioControls(view: View, host: Host) {
+        fun bindDec(btnId: Int, labelRes: Int, getter: () -> Float, setter: (Float) -> Unit) {
+            view.findViewById<MaterialButton>(btnId).setOnClickListener {
+                showSetDecimalValueDialog(getString(labelRes), getter()) {
+                    setter(it)
+                    refreshAspectRatioDisplays(view, host)
+                }
+            }
+        }
+        bindDec(R.id.btn_dev_aspect_portrait_slim_x,    R.string.develop_menu_aspect_portrait_slim_x,    host::devAspectPortraitSlimXDp,    host::onDevSetAspectPortraitSlimX)
+        bindDec(R.id.btn_dev_aspect_portrait_classic_x,  R.string.develop_menu_aspect_portrait_classic_x,  host::devAspectPortraitClassicXDp,  host::onDevSetAspectPortraitClassicX)
+        bindDec(R.id.btn_dev_aspect_portrait_broad_x,    R.string.develop_menu_aspect_portrait_broad_x,    host::devAspectPortraitBroadXDp,    host::onDevSetAspectPortraitBroadX)
+        bindDec(R.id.btn_dev_aspect_portrait_square_x,   R.string.develop_menu_aspect_portrait_square_x,   host::devAspectPortraitSquareXDp,   host::onDevSetAspectPortraitSquareX)
+        bindDec(R.id.btn_dev_aspect_portrait_slim_y,    R.string.develop_menu_aspect_portrait_slim_y,    host::devAspectPortraitSlimYDp,    host::onDevSetAspectPortraitSlimY)
+        bindDec(R.id.btn_dev_aspect_portrait_classic_y,  R.string.develop_menu_aspect_portrait_classic_y,  host::devAspectPortraitClassicYDp,  host::onDevSetAspectPortraitClassicY)
+        bindDec(R.id.btn_dev_aspect_portrait_broad_y,    R.string.develop_menu_aspect_portrait_broad_y,    host::devAspectPortraitBroadYDp,    host::onDevSetAspectPortraitBroadY)
+        bindDec(R.id.btn_dev_aspect_portrait_square_y,   R.string.develop_menu_aspect_portrait_square_y,   host::devAspectPortraitSquareYDp,   host::onDevSetAspectPortraitSquareY)
+        bindDec(R.id.btn_dev_aspect_landscape_slim_x,    R.string.develop_menu_aspect_landscape_slim_x,    host::devAspectLandscapeSlimXDp,    host::onDevSetAspectLandscapeSlimX)
+        bindDec(R.id.btn_dev_aspect_landscape_classic_x, R.string.develop_menu_aspect_landscape_classic_x, host::devAspectLandscapeClassicXDp, host::onDevSetAspectLandscapeClassicX)
+        bindDec(R.id.btn_dev_aspect_landscape_broad_x,   R.string.develop_menu_aspect_landscape_broad_x,   host::devAspectLandscapeBroadXDp,   host::onDevSetAspectLandscapeBroadX)
+        bindDec(R.id.btn_dev_aspect_landscape_square_x,  R.string.develop_menu_aspect_landscape_square_x,  host::devAspectLandscapeSquareXDp,  host::onDevSetAspectLandscapeSquareX)
+        bindDec(R.id.btn_dev_aspect_landscape_slim_y,    R.string.develop_menu_aspect_landscape_slim_y,    host::devAspectLandscapeSlimYDp,    host::onDevSetAspectLandscapeSlimY)
+        bindDec(R.id.btn_dev_aspect_landscape_classic_y, R.string.develop_menu_aspect_landscape_classic_y, host::devAspectLandscapeClassicYDp, host::onDevSetAspectLandscapeClassicY)
+        bindDec(R.id.btn_dev_aspect_landscape_broad_y,   R.string.develop_menu_aspect_landscape_broad_y,   host::devAspectLandscapeBroadYDp,   host::onDevSetAspectLandscapeBroadY)
+        bindDec(R.id.btn_dev_aspect_landscape_square_y,  R.string.develop_menu_aspect_landscape_square_y,  host::devAspectLandscapeSquareYDp,  host::onDevSetAspectLandscapeSquareY)
+    }
+
+    private fun refreshAspectRatioDisplays(root: View, host: Host) {
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_slim_x).text    = fmt(host.devAspectPortraitSlimXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_classic_x).text = fmt(host.devAspectPortraitClassicXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_broad_x).text   = fmt(host.devAspectPortraitBroadXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_square_x).text  = fmt(host.devAspectPortraitSquareXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_slim_y).text    = fmt(host.devAspectPortraitSlimYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_classic_y).text = fmt(host.devAspectPortraitClassicYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_broad_y).text   = fmt(host.devAspectPortraitBroadYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_portrait_square_y).text  = fmt(host.devAspectPortraitSquareYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_slim_x).text   = fmt(host.devAspectLandscapeSlimXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_classic_x).text= fmt(host.devAspectLandscapeClassicXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_broad_x).text  = fmt(host.devAspectLandscapeBroadXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_square_x).text = fmt(host.devAspectLandscapeSquareXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_slim_y).text   = fmt(host.devAspectLandscapeSlimYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_classic_y).text= fmt(host.devAspectLandscapeClassicYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_broad_y).text  = fmt(host.devAspectLandscapeBroadYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_aspect_landscape_square_y).text = fmt(host.devAspectLandscapeSquareYDp())
+        root.findViewById<TextView>(R.id.tv_dev_aspect_current_category).text =
+            getString(R.string.develop_menu_aspect_current_device_format, host.devCurrentAspectCategoryLabel())
+    }
+
     private fun refreshAllDisplays(root: View, host: Host) {
         refreshStarburstDisplays(host)
         refreshPopupDisplays(root, host)
+        refreshAspectRatioDisplays(root, host)
     }
 
     private fun refreshStarburstDisplays(host: Host) {
@@ -652,7 +751,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
             popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
             cardPilesExpanded = b.getBoolean(ARG_CARD_PILES_EXPANDED, false),
             adsRewardsExpanded = b.getBoolean(ARG_ADS_REWARDS_EXPANDED, false),
-            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
+            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false),
+            aspectRatioExpanded = b.getBoolean(ARG_ASPECT_RATIO_EXPANDED, false)
         )
     }
 
@@ -733,6 +833,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         private const val ARG_CARD_PILES_EXPANDED = "arg_card_piles_expanded"
         private const val ARG_ADS_REWARDS_EXPANDED = "arg_ads_rewards_expanded"
         private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
+        private const val ARG_ASPECT_RATIO_EXPANDED = "arg_aspect_ratio_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
             return DevelopMenuDialogFragment().apply {
@@ -742,6 +843,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
                     putBoolean(ARG_CARD_PILES_EXPANDED, state.cardPilesExpanded)
                     putBoolean(ARG_ADS_REWARDS_EXPANDED, state.adsRewardsExpanded)
                     putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
+                    putBoolean(ARG_ASPECT_RATIO_EXPANDED, state.aspectRatioExpanded)
                 }
             }
         }
