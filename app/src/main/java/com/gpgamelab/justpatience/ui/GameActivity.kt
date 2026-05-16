@@ -70,27 +70,37 @@ import kotlin.math.roundToInt
 class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, TesterMenuDialogFragment.Host, DevelopMenuDialogFragment.Host {
 
     private data class PortraitAspectPileOffsets(
+        val pileOverallOffsetX: Float = 0f,
+        val pileOverallOffsetY: Float = 0f,
         val foundationOffsetX: Float = 0f,
         val foundationOffsetY: Float = 0f,
         val drawWasteOffsetX: Float = 0f,
-        val drawWasteOffsetY: Float = 0f
+        val drawWasteOffsetY: Float = 0f,
+        val tableauOffsetX: Float = 0f,
+        val tableauOffsetY: Float = 0f
+    )
+
+    private data class LandscapeAspectPileOffsets(
+        val pileOverallOffsetX: Float = 0f,
+        val pileOverallOffsetY: Float = 0f,
+        val foundationOffsetX: Float = 0f,
+        val foundationOffsetY: Float = 0f,
+        val drawWasteOffsetX: Float = 0f,
+        val drawWasteOffsetY: Float = 0f,
+        val tableauOffsetX: Float = 0f,
+        val tableauOffsetY: Float = 0f
     )
 
     private data class LayoutScopedDevAdjusters(
-        val landscapePileOverallOffsetX: Float,
-        val landscapePileOverallOffsetY: Float,
-        val landscapePileFoundationOffsetX: Float,
-        val landscapePileFoundationOffsetY: Float,
-        val landscapePileDrawWasteOffsetX: Float,
-        val landscapePileDrawWasteOffsetY: Float,
+        val landscapeAspectOffsetsSlimCompact: LandscapeAspectPileOffsets,
+        val landscapeAspectOffsetsSlim: LandscapeAspectPileOffsets,
+        val landscapeAspectOffsetsClassic: LandscapeAspectPileOffsets,
+        val landscapeAspectOffsetsBroad: LandscapeAspectPileOffsets,
+        val landscapeAspectOffsetsSquare: LandscapeAspectPileOffsets,
         val landscapePileStockOffsetX: Float,
         val landscapePileStockOffsetY: Float,
         val landscapePileWasteOffsetX: Float,
         val landscapePileWasteOffsetY: Float,
-        val landscapePileTableauOffsetX: Float,
-        val landscapePileTableauOffsetY: Float,
-        val portraitPileOverallOffsetX: Float,
-        val portraitPileOverallOffsetY: Float,
         val portraitAspectOffsetsSlimCompact: PortraitAspectPileOffsets,
         val portraitAspectOffsetsSlim: PortraitAspectPileOffsets,
         val portraitAspectOffsetsClassic: PortraitAspectPileOffsets,
@@ -100,8 +110,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val portraitPileStockOffsetY: Float,
         val portraitPileWasteOffsetX: Float,
         val portraitPileWasteOffsetY: Float,
-        val portraitPileTableauOffsetX: Float,
-        val portraitPileTableauOffsetY: Float,
         val landscapeBannerSmallOffsetX: Float,
         val landscapeBannerSmallOffsetY: Float,
         val landscapeBannerMediumOffsetX: Float,
@@ -116,36 +124,35 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val ticketRewardOffsetY: Float
     )
 
-    // Single source of hardcoded defaults for each hand-layout profile.
-    // Edit these two blocks when you want fixed classic vs mirrored values in code.
-    private val defaultClassicLayoutDevAdjusters = LayoutScopedDevAdjusters(
-        landscapePileOverallOffsetX = -5f,
-        landscapePileOverallOffsetY = -100f,
-        landscapePileFoundationOffsetX = 0f,
-        landscapePileFoundationOffsetY = 0f,
-        landscapePileDrawWasteOffsetX = 0f,
-        landscapePileDrawWasteOffsetY = 0f,
+    private data class LayoutProfileKey(
+        val mirrored: Boolean,
+        val deckCount: Int
+    )
+
+    // Single source of hardcoded defaults for each hand/deck layout profile.
+    // Edit these blocks when you want fixed per-profile values in code.
+    private val defaultClassic1DeckLayoutDevAdjusters = LayoutScopedDevAdjusters(
+        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
         landscapePileWasteOffsetX = 0f,
         landscapePileWasteOffsetY = 0f,
-        landscapePileTableauOffsetX = 0f,
-        landscapePileTableauOffsetY = 0f,
-        portraitPileOverallOffsetX = 0f,
-        portraitPileOverallOffsetY = 0f,
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
-            foundationOffsetX = -25f
+            foundationOffsetX = -25f,
+            tableauOffsetY = 100f
         ),
-        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(),
-        portraitAspectOffsetsClassic = PortraitAspectPileOffsets(),
-        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(),
-        portraitAspectOffsetsSquare = PortraitAspectPileOffsets(),
+        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
+        portraitAspectOffsetsClassic = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
+        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
+        portraitAspectOffsetsSquare = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
         portraitPileStockOffsetX = 0f,
         portraitPileStockOffsetY = 0f,
         portraitPileWasteOffsetX = 0f,
         portraitPileWasteOffsetY = 0f,
-        portraitPileTableauOffsetX = 0f,
-        portraitPileTableauOffsetY = 0f,
         landscapeBannerSmallOffsetX = 0f,
         landscapeBannerSmallOffsetY = 0f,
         landscapeBannerMediumOffsetX = 0f,
@@ -160,18 +167,45 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ticketRewardOffsetY = 35f
     )
 
-    private val defaultMirroredLayoutDevAdjusters = defaultClassicLayoutDevAdjusters.copy(
-        landscapePileOverallOffsetX = 90f,
+    private val defaultClassic2DeckLayoutDevAdjusters = defaultClassic1DeckLayoutDevAdjusters.copy(
+        portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
+            tableauOffsetY = 0f
+        )
+    )
+
+    private val defaultMirrored1DeckLayoutDevAdjusters = defaultClassic1DeckLayoutDevAdjusters.copy(
+        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 200f,
+            pileOverallOffsetY = -100f
+        ),
+        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
         landscapeBannerLargeOffsetX = 300f,
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
             foundationOffsetX = 25f,
-            drawWasteOffsetX = 75f
+            drawWasteOffsetX = 75f,
+            tableauOffsetY = 100f
+        ),
+        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -70f,
+            foundationOffsetX = 35f,
+            drawWasteOffsetX = 55f
         ),
         portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -70f,
             drawWasteOffsetX = 45f
         ),
         portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -70f,
             drawWasteOffsetX = 45f
+        )
+    )
+
+    private val defaultMirrored2DeckLayoutDevAdjusters = defaultMirrored1DeckLayoutDevAdjusters.copy(
+        portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
+            tableauOffsetY = 0f
         )
     )
 
@@ -183,6 +217,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     // Lets narrow SLIM phones (e.g. 720px portrait board) use a separate tuning set.
     private val portraitSlimCompactMaxBoardWidthPx = 800
+    private val landscapeSlimCompactMaxBoardHeightPx = 800
 
     private var devShuffleSecondClipDelayMsState: Float = 140f
     private var devShuffleTailDelayMsState: Float = 120f
@@ -195,20 +230,60 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devLockedPileAdOffsetYLandscapePxState: Float = 0f
     private var devLockedPileAdScaleXLandscapeState: Float = 1f
     private var devLockedPileAdScaleYLandscapeState: Float = 1f
-    private var devLandscapePileOverallOffsetXDpState: Float = 0f
-    private var devLandscapePileOverallOffsetYDpState: Float = -100f
-    private var devLandscapePileFoundationOffsetXDpState: Float = 0f
-    private var devLandscapePileFoundationOffsetYDpState: Float = 0f
-    private var devLandscapePileDrawWasteOffsetXDpState: Float = 0f
-    private var devLandscapePileDrawWasteOffsetYDpState: Float = 0f
+    private var devLandscapeOverallOffsetXSlimCompactDpState: Float = -5f
+    private var devLandscapeOverallOffsetYSlimCompactDpState: Float = -100f
+    private var devLandscapeOverallOffsetXSlimDpState: Float = -5f
+    private var devLandscapeOverallOffsetYSlimDpState: Float = -100f
+    private var devLandscapeOverallOffsetXClassicDpState: Float = -5f
+    private var devLandscapeOverallOffsetYClassicDpState: Float = -100f
+    private var devLandscapeOverallOffsetXBroadDpState: Float = -5f
+    private var devLandscapeOverallOffsetYBroadDpState: Float = -100f
+    private var devLandscapeOverallOffsetXSquareDpState: Float = -5f
+    private var devLandscapeOverallOffsetYSquareDpState: Float = -100f
+    private var devLandscapeFoundationOffsetXSlimCompactDpState: Float = 0f
+    private var devLandscapeFoundationOffsetYSlimCompactDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetXSlimCompactDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetYSlimCompactDpState: Float = 0f
+    private var devLandscapeFoundationOffsetXSlimDpState: Float = 0f
+    private var devLandscapeFoundationOffsetYSlimDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetXSlimDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetYSlimDpState: Float = 0f
+    private var devLandscapeFoundationOffsetXClassicDpState: Float = 0f
+    private var devLandscapeFoundationOffsetYClassicDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetXClassicDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetYClassicDpState: Float = 0f
+    private var devLandscapeFoundationOffsetXBroadDpState: Float = 0f
+    private var devLandscapeFoundationOffsetYBroadDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetXBroadDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetYBroadDpState: Float = 0f
+    private var devLandscapeFoundationOffsetXSquareDpState: Float = 0f
+    private var devLandscapeFoundationOffsetYSquareDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetXSquareDpState: Float = 0f
+    private var devLandscapeDrawWasteOffsetYSquareDpState: Float = 0f
     private var devLandscapePileStockOffsetXDpState: Float = 0f
     private var devLandscapePileStockOffsetYDpState: Float = 0f
     private var devLandscapePileWasteOffsetXDpState: Float = 0f
     private var devLandscapePileWasteOffsetYDpState: Float = 0f
-    private var devLandscapePileTableauOffsetXDpState: Float = 0f
-    private var devLandscapePileTableauOffsetYDpState: Float = 0f
-    private var devPortraitPileOverallOffsetXDpState: Float = 0f
-    private var devPortraitPileOverallOffsetYDpState: Float = -70f
+    private var devLandscapeTableauOffsetXSlimCompactDpState: Float = 0f
+    private var devLandscapeTableauOffsetYSlimCompactDpState: Float = 0f
+    private var devLandscapeTableauOffsetXSlimDpState: Float = 0f
+    private var devLandscapeTableauOffsetYSlimDpState: Float = 0f
+    private var devLandscapeTableauOffsetXClassicDpState: Float = 0f
+    private var devLandscapeTableauOffsetYClassicDpState: Float = 0f
+    private var devLandscapeTableauOffsetXBroadDpState: Float = 0f
+    private var devLandscapeTableauOffsetYBroadDpState: Float = 0f
+    private var devLandscapeTableauOffsetXSquareDpState: Float = 0f
+    private var devLandscapeTableauOffsetYSquareDpState: Float = 0f
+    private var devPortraitOverallOffsetXSlimCompactDpState: Float = 0f
+    private var devPortraitOverallOffsetYSlimCompactDpState: Float = -70f
+    private var devPortraitOverallOffsetXSlimDpState: Float = 0f
+    private var devPortraitOverallOffsetYSlimDpState: Float = -70f
+    private var devPortraitOverallOffsetXClassicDpState: Float = 0f
+    private var devPortraitOverallOffsetYClassicDpState: Float = -70f
+    private var devPortraitOverallOffsetXBroadDpState: Float = 0f
+    private var devPortraitOverallOffsetYBroadDpState: Float = -70f
+    private var devPortraitOverallOffsetXSquareDpState: Float = 0f
+    private var devPortraitOverallOffsetYSquareDpState: Float = -70f
     private var devPortraitFoundationOffsetXSlimCompactDpState: Float = 0f
     private var devPortraitFoundationOffsetYSlimCompactDpState: Float = 0f
     private var devPortraitDrawWasteOffsetXSlimCompactDpState:  Float = 0f
@@ -233,8 +308,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devPortraitPileStockOffsetYDpState: Float = 0f
     private var devPortraitPileWasteOffsetXDpState: Float = 0f
     private var devPortraitPileWasteOffsetYDpState: Float = 0f
-    private var devPortraitPileTableauOffsetXDpState: Float = 0f
-    private var devPortraitPileTableauOffsetYDpState: Float = 0f
+    private var devPortraitTableauOffsetXSlimCompactDpState: Float = 0f
+    private var devPortraitTableauOffsetYSlimCompactDpState: Float = 0f
+    private var devPortraitTableauOffsetXSlimDpState: Float = 0f
+    private var devPortraitTableauOffsetYSlimDpState: Float = 0f
+    private var devPortraitTableauOffsetXClassicDpState: Float = 0f
+    private var devPortraitTableauOffsetYClassicDpState: Float = 0f
+    private var devPortraitTableauOffsetXBroadDpState: Float = 0f
+    private var devPortraitTableauOffsetYBroadDpState: Float = 0f
+    private var devPortraitTableauOffsetXSquareDpState: Float = 0f
+    private var devPortraitTableauOffsetYSquareDpState: Float = 0f
     private var devLandscapeBannerSmallWidthDpState: Float = 320f
     private var devLandscapeBannerSmallHeightDpState: Float = 60f   // BANNER (50dp) + buffer
     private var devLandscapeBannerMediumWidthDpState: Float = 320f
@@ -275,8 +358,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devAspectLandscapeClassicXDpState: Float = 0f
     private var devAspectLandscapeBroadXDpState:   Float = 0f
     private var devAspectLandscapeSquareXDpState:  Float = 0f
-    private var classicLayoutDevAdjustersState = defaultClassicLayoutDevAdjusters
-    private var mirroredLayoutDevAdjustersState = defaultMirroredLayoutDevAdjusters
+    private var classic1DeckLayoutDevAdjustersState = defaultClassic1DeckLayoutDevAdjusters
+    private var classic2DeckLayoutDevAdjustersState = defaultClassic2DeckLayoutDevAdjusters
+    private var mirrored1DeckLayoutDevAdjustersState = defaultMirrored1DeckLayoutDevAdjusters
+    private var mirrored2DeckLayoutDevAdjustersState = defaultMirrored2DeckLayoutDevAdjusters
 
     private enum class HelpControlAction(
         val storageKey: String,
@@ -306,56 +391,114 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun snapshotLayoutScopedDevAdjusters(): LayoutScopedDevAdjusters {
         return LayoutScopedDevAdjusters(
-            landscapePileOverallOffsetX = devLandscapePileOverallOffsetXDpState,
-            landscapePileOverallOffsetY = devLandscapePileOverallOffsetYDpState,
-            landscapePileFoundationOffsetX = devLandscapePileFoundationOffsetXDpState,
-            landscapePileFoundationOffsetY = devLandscapePileFoundationOffsetYDpState,
-            landscapePileDrawWasteOffsetX = devLandscapePileDrawWasteOffsetXDpState,
-            landscapePileDrawWasteOffsetY = devLandscapePileDrawWasteOffsetYDpState,
+            landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXSlimCompactDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYSlimCompactDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXSlimCompactDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYSlimCompactDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXSlimCompactDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimCompactDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXSlimCompactDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYSlimCompactDpState
+            ),
+            landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXSlimDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYSlimDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXSlimDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYSlimDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXSlimDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXSlimDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYSlimDpState
+            ),
+            landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXClassicDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYClassicDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXClassicDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYClassicDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXClassicDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYClassicDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXClassicDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYClassicDpState
+            ),
+            landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXBroadDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYBroadDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXBroadDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYBroadDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXBroadDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYBroadDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXBroadDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYBroadDpState
+            ),
+            landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXSquareDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYSquareDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXSquareDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYSquareDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXSquareDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYSquareDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXSquareDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYSquareDpState
+            ),
             landscapePileStockOffsetX = devLandscapePileStockOffsetXDpState,
             landscapePileStockOffsetY = devLandscapePileStockOffsetYDpState,
             landscapePileWasteOffsetX = devLandscapePileWasteOffsetXDpState,
             landscapePileWasteOffsetY = devLandscapePileWasteOffsetYDpState,
-            landscapePileTableauOffsetX = devLandscapePileTableauOffsetXDpState,
-            landscapePileTableauOffsetY = devLandscapePileTableauOffsetYDpState,
-            portraitPileOverallOffsetX = devPortraitPileOverallOffsetXDpState,
-            portraitPileOverallOffsetY = devPortraitPileOverallOffsetYDpState,
             portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXSlimCompactDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYSlimCompactDpState,
                 foundationOffsetX = devPortraitFoundationOffsetXSlimCompactDpState,
                 foundationOffsetY = devPortraitFoundationOffsetYSlimCompactDpState,
                 drawWasteOffsetX  = devPortraitDrawWasteOffsetXSlimCompactDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSlimCompactDpState
+                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSlimCompactDpState,
+                tableauOffsetX = devPortraitTableauOffsetXSlimCompactDpState,
+                tableauOffsetY = devPortraitTableauOffsetYSlimCompactDpState
             ),
             portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXSlimDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYSlimDpState,
                 foundationOffsetX = devPortraitFoundationOffsetXSlimDpState,
                 foundationOffsetY = devPortraitFoundationOffsetYSlimDpState,
                 drawWasteOffsetX  = devPortraitDrawWasteOffsetXSlimDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSlimDpState
+                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSlimDpState,
+                tableauOffsetX = devPortraitTableauOffsetXSlimDpState,
+                tableauOffsetY = devPortraitTableauOffsetYSlimDpState
             ),
             portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXClassicDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYClassicDpState,
                 foundationOffsetX = devPortraitFoundationOffsetXClassicDpState,
                 foundationOffsetY = devPortraitFoundationOffsetYClassicDpState,
                 drawWasteOffsetX  = devPortraitDrawWasteOffsetXClassicDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYClassicDpState
+                drawWasteOffsetY  = devPortraitDrawWasteOffsetYClassicDpState,
+                tableauOffsetX = devPortraitTableauOffsetXClassicDpState,
+                tableauOffsetY = devPortraitTableauOffsetYClassicDpState
             ),
             portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXBroadDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYBroadDpState,
                 foundationOffsetX = devPortraitFoundationOffsetXBroadDpState,
                 foundationOffsetY = devPortraitFoundationOffsetYBroadDpState,
                 drawWasteOffsetX  = devPortraitDrawWasteOffsetXBroadDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYBroadDpState
+                drawWasteOffsetY  = devPortraitDrawWasteOffsetYBroadDpState,
+                tableauOffsetX = devPortraitTableauOffsetXBroadDpState,
+                tableauOffsetY = devPortraitTableauOffsetYBroadDpState
             ),
             portraitAspectOffsetsSquare = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXSquareDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYSquareDpState,
                 foundationOffsetX = devPortraitFoundationOffsetXSquareDpState,
                 foundationOffsetY = devPortraitFoundationOffsetYSquareDpState,
                 drawWasteOffsetX  = devPortraitDrawWasteOffsetXSquareDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSquareDpState
+                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSquareDpState,
+                tableauOffsetX = devPortraitTableauOffsetXSquareDpState,
+                tableauOffsetY = devPortraitTableauOffsetYSquareDpState
             ),
             portraitPileStockOffsetX = devPortraitPileStockOffsetXDpState,
             portraitPileStockOffsetY = devPortraitPileStockOffsetYDpState,
             portraitPileWasteOffsetX = devPortraitPileWasteOffsetXDpState,
             portraitPileWasteOffsetY = devPortraitPileWasteOffsetYDpState,
-            portraitPileTableauOffsetX = devPortraitPileTableauOffsetXDpState,
-            portraitPileTableauOffsetY = devPortraitPileTableauOffsetYDpState,
             landscapeBannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
             landscapeBannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
             landscapeBannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
@@ -372,46 +515,94 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun applyLayoutScopedDevAdjusters(profile: LayoutScopedDevAdjusters) {
-        devLandscapePileOverallOffsetXDpState = profile.landscapePileOverallOffsetX
-        devLandscapePileOverallOffsetYDpState = profile.landscapePileOverallOffsetY
-        devLandscapePileFoundationOffsetXDpState = profile.landscapePileFoundationOffsetX
-        devLandscapePileFoundationOffsetYDpState = profile.landscapePileFoundationOffsetY
-        devLandscapePileDrawWasteOffsetXDpState = profile.landscapePileDrawWasteOffsetX
-        devLandscapePileDrawWasteOffsetYDpState = profile.landscapePileDrawWasteOffsetY
+        devLandscapeOverallOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.pileOverallOffsetX
+        devLandscapeOverallOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.pileOverallOffsetY
+        devLandscapeFoundationOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.foundationOffsetX
+        devLandscapeFoundationOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.foundationOffsetY
+        devLandscapeDrawWasteOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.drawWasteOffsetY
+        devLandscapeTableauOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.tableauOffsetX
+        devLandscapeTableauOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.tableauOffsetY
+        devLandscapeOverallOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.pileOverallOffsetX
+        devLandscapeOverallOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.pileOverallOffsetY
+        devLandscapeFoundationOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.foundationOffsetX
+        devLandscapeFoundationOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.foundationOffsetY
+        devLandscapeDrawWasteOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.drawWasteOffsetY
+        devLandscapeTableauOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.tableauOffsetX
+        devLandscapeTableauOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.tableauOffsetY
+        devLandscapeOverallOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.pileOverallOffsetX
+        devLandscapeOverallOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.pileOverallOffsetY
+        devLandscapeFoundationOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.foundationOffsetX
+        devLandscapeFoundationOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.foundationOffsetY
+        devLandscapeDrawWasteOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.drawWasteOffsetY
+        devLandscapeTableauOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.tableauOffsetX
+        devLandscapeTableauOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.tableauOffsetY
+        devLandscapeOverallOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.pileOverallOffsetX
+        devLandscapeOverallOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.pileOverallOffsetY
+        devLandscapeFoundationOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.foundationOffsetX
+        devLandscapeFoundationOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.foundationOffsetY
+        devLandscapeDrawWasteOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.drawWasteOffsetY
+        devLandscapeTableauOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.tableauOffsetX
+        devLandscapeTableauOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.tableauOffsetY
+        devLandscapeOverallOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.pileOverallOffsetX
+        devLandscapeOverallOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.pileOverallOffsetY
+        devLandscapeFoundationOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.foundationOffsetX
+        devLandscapeFoundationOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.foundationOffsetY
+        devLandscapeDrawWasteOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.drawWasteOffsetY
+        devLandscapeTableauOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.tableauOffsetX
+        devLandscapeTableauOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.tableauOffsetY
         devLandscapePileStockOffsetXDpState = profile.landscapePileStockOffsetX
         devLandscapePileStockOffsetYDpState = profile.landscapePileStockOffsetY
         devLandscapePileWasteOffsetXDpState = profile.landscapePileWasteOffsetX
         devLandscapePileWasteOffsetYDpState = profile.landscapePileWasteOffsetY
-        devLandscapePileTableauOffsetXDpState = profile.landscapePileTableauOffsetX
-        devLandscapePileTableauOffsetYDpState = profile.landscapePileTableauOffsetY
-        devPortraitPileOverallOffsetXDpState = profile.portraitPileOverallOffsetX
-        devPortraitPileOverallOffsetYDpState = profile.portraitPileOverallOffsetY
+        devPortraitOverallOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.pileOverallOffsetX
+        devPortraitOverallOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.pileOverallOffsetY
         devPortraitFoundationOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.foundationOffsetX
         devPortraitFoundationOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.foundationOffsetY
         devPortraitDrawWasteOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.drawWasteOffsetX
         devPortraitDrawWasteOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.drawWasteOffsetY
+        devPortraitTableauOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.tableauOffsetX
+        devPortraitTableauOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.tableauOffsetY
+        devPortraitOverallOffsetXSlimDpState = profile.portraitAspectOffsetsSlim.pileOverallOffsetX
+        devPortraitOverallOffsetYSlimDpState = profile.portraitAspectOffsetsSlim.pileOverallOffsetY
         devPortraitFoundationOffsetXSlimDpState    = profile.portraitAspectOffsetsSlim.foundationOffsetX
         devPortraitFoundationOffsetYSlimDpState    = profile.portraitAspectOffsetsSlim.foundationOffsetY
         devPortraitDrawWasteOffsetXSlimDpState     = profile.portraitAspectOffsetsSlim.drawWasteOffsetX
         devPortraitDrawWasteOffsetYSlimDpState     = profile.portraitAspectOffsetsSlim.drawWasteOffsetY
+        devPortraitTableauOffsetXSlimDpState = profile.portraitAspectOffsetsSlim.tableauOffsetX
+        devPortraitTableauOffsetYSlimDpState = profile.portraitAspectOffsetsSlim.tableauOffsetY
+        devPortraitOverallOffsetXClassicDpState = profile.portraitAspectOffsetsClassic.pileOverallOffsetX
+        devPortraitOverallOffsetYClassicDpState = profile.portraitAspectOffsetsClassic.pileOverallOffsetY
         devPortraitFoundationOffsetXClassicDpState = profile.portraitAspectOffsetsClassic.foundationOffsetX
         devPortraitFoundationOffsetYClassicDpState = profile.portraitAspectOffsetsClassic.foundationOffsetY
         devPortraitDrawWasteOffsetXClassicDpState  = profile.portraitAspectOffsetsClassic.drawWasteOffsetX
         devPortraitDrawWasteOffsetYClassicDpState  = profile.portraitAspectOffsetsClassic.drawWasteOffsetY
+        devPortraitTableauOffsetXClassicDpState = profile.portraitAspectOffsetsClassic.tableauOffsetX
+        devPortraitTableauOffsetYClassicDpState = profile.portraitAspectOffsetsClassic.tableauOffsetY
+        devPortraitOverallOffsetXBroadDpState = profile.portraitAspectOffsetsBroad.pileOverallOffsetX
+        devPortraitOverallOffsetYBroadDpState = profile.portraitAspectOffsetsBroad.pileOverallOffsetY
         devPortraitFoundationOffsetXBroadDpState   = profile.portraitAspectOffsetsBroad.foundationOffsetX
         devPortraitFoundationOffsetYBroadDpState   = profile.portraitAspectOffsetsBroad.foundationOffsetY
         devPortraitDrawWasteOffsetXBroadDpState    = profile.portraitAspectOffsetsBroad.drawWasteOffsetX
         devPortraitDrawWasteOffsetYBroadDpState    = profile.portraitAspectOffsetsBroad.drawWasteOffsetY
+        devPortraitTableauOffsetXBroadDpState = profile.portraitAspectOffsetsBroad.tableauOffsetX
+        devPortraitTableauOffsetYBroadDpState = profile.portraitAspectOffsetsBroad.tableauOffsetY
+        devPortraitOverallOffsetXSquareDpState = profile.portraitAspectOffsetsSquare.pileOverallOffsetX
+        devPortraitOverallOffsetYSquareDpState = profile.portraitAspectOffsetsSquare.pileOverallOffsetY
         devPortraitFoundationOffsetXSquareDpState  = profile.portraitAspectOffsetsSquare.foundationOffsetX
         devPortraitFoundationOffsetYSquareDpState  = profile.portraitAspectOffsetsSquare.foundationOffsetY
         devPortraitDrawWasteOffsetXSquareDpState   = profile.portraitAspectOffsetsSquare.drawWasteOffsetX
         devPortraitDrawWasteOffsetYSquareDpState   = profile.portraitAspectOffsetsSquare.drawWasteOffsetY
+        devPortraitTableauOffsetXSquareDpState = profile.portraitAspectOffsetsSquare.tableauOffsetX
+        devPortraitTableauOffsetYSquareDpState = profile.portraitAspectOffsetsSquare.tableauOffsetY
         devPortraitPileStockOffsetXDpState = profile.portraitPileStockOffsetX
         devPortraitPileStockOffsetYDpState = profile.portraitPileStockOffsetY
         devPortraitPileWasteOffsetXDpState = profile.portraitPileWasteOffsetX
         devPortraitPileWasteOffsetYDpState = profile.portraitPileWasteOffsetY
-        devPortraitPileTableauOffsetXDpState = profile.portraitPileTableauOffsetX
-        devPortraitPileTableauOffsetYDpState = profile.portraitPileTableauOffsetY
         devSmallDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerSmallOffsetX
         devSmallDeviceLandscapeBannerOffsetYDpState = profile.landscapeBannerSmallOffsetY
         devMediumDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerMediumOffsetX
@@ -426,13 +617,38 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devTicketRewardOffsetYDpState = profile.ticketRewardOffsetY
     }
 
-    private fun persistActiveLayoutScopedDevAdjusters(mirrored: Boolean) {
-        if (!hasAppliedLayoutScopedDevProfile) return
-        if (mirrored) {
-            mirroredLayoutDevAdjustersState = snapshotLayoutScopedDevAdjusters()
-        } else {
-            classicLayoutDevAdjustersState = snapshotLayoutScopedDevAdjusters()
+    private fun normalizeDeckCountForLayoutProfile(rawDeckCount: Int): Int {
+        return if (rawDeckCount == 2) 2 else 1
+    }
+
+    private fun resolveActiveLayoutProfileKey(): LayoutProfileKey {
+        return LayoutProfileKey(
+            mirrored = viewModel.isMirroredLayout.value,
+            deckCount = normalizeDeckCountForLayoutProfile(viewModel.game.value.deckCount)
+        )
+    }
+
+    private fun profileStateFor(key: LayoutProfileKey): LayoutScopedDevAdjusters {
+        return when {
+            key.mirrored && key.deckCount == 2 -> mirrored2DeckLayoutDevAdjustersState
+            key.mirrored -> mirrored1DeckLayoutDevAdjustersState
+            key.deckCount == 2 -> classic2DeckLayoutDevAdjustersState
+            else -> classic1DeckLayoutDevAdjustersState
         }
+    }
+
+    private fun setProfileStateFor(key: LayoutProfileKey, profile: LayoutScopedDevAdjusters) {
+        when {
+            key.mirrored && key.deckCount == 2 -> mirrored2DeckLayoutDevAdjustersState = profile
+            key.mirrored -> mirrored1DeckLayoutDevAdjustersState = profile
+            key.deckCount == 2 -> classic2DeckLayoutDevAdjustersState = profile
+            else -> classic1DeckLayoutDevAdjustersState = profile
+        }
+    }
+
+    private fun persistActiveLayoutScopedDevAdjusters(profileKey: LayoutProfileKey) {
+        if (!hasAppliedLayoutScopedDevProfile) return
+        setProfileStateFor(profileKey, snapshotLayoutScopedDevAdjusters())
     }
 
     private fun currentPortraitAspectPileOffsets(): PortraitAspectPileOffsets {
@@ -440,23 +656,58 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             DeviceAspectCategory.SLIM -> {
                 if (isCompactSlimPortraitBoard()) {
                     PortraitAspectPileOffsets(
-                        devPortraitFoundationOffsetXSlimCompactDpState,
-                        devPortraitFoundationOffsetYSlimCompactDpState,
-                        devPortraitDrawWasteOffsetXSlimCompactDpState,
-                        devPortraitDrawWasteOffsetYSlimCompactDpState
+                        pileOverallOffsetX = devPortraitOverallOffsetXSlimCompactDpState,
+                        pileOverallOffsetY = devPortraitOverallOffsetYSlimCompactDpState,
+                        foundationOffsetX = devPortraitFoundationOffsetXSlimCompactDpState,
+                        foundationOffsetY = devPortraitFoundationOffsetYSlimCompactDpState,
+                        drawWasteOffsetX = devPortraitDrawWasteOffsetXSlimCompactDpState,
+                        drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimCompactDpState,
+                        tableauOffsetX = devPortraitTableauOffsetXSlimCompactDpState,
+                        tableauOffsetY = devPortraitTableauOffsetYSlimCompactDpState
                     )
                 } else {
                     PortraitAspectPileOffsets(
-                        devPortraitFoundationOffsetXSlimDpState,
-                        devPortraitFoundationOffsetYSlimDpState,
-                        devPortraitDrawWasteOffsetXSlimDpState,
-                        devPortraitDrawWasteOffsetYSlimDpState
+                        pileOverallOffsetX = devPortraitOverallOffsetXSlimDpState,
+                        pileOverallOffsetY = devPortraitOverallOffsetYSlimDpState,
+                        foundationOffsetX = devPortraitFoundationOffsetXSlimDpState,
+                        foundationOffsetY = devPortraitFoundationOffsetYSlimDpState,
+                        drawWasteOffsetX = devPortraitDrawWasteOffsetXSlimDpState,
+                        drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimDpState,
+                        tableauOffsetX = devPortraitTableauOffsetXSlimDpState,
+                        tableauOffsetY = devPortraitTableauOffsetYSlimDpState
                     )
                 }
             }
-            DeviceAspectCategory.CLASSIC -> PortraitAspectPileOffsets(devPortraitFoundationOffsetXClassicDpState, devPortraitFoundationOffsetYClassicDpState, devPortraitDrawWasteOffsetXClassicDpState, devPortraitDrawWasteOffsetYClassicDpState)
-            DeviceAspectCategory.BROAD   -> PortraitAspectPileOffsets(devPortraitFoundationOffsetXBroadDpState,   devPortraitFoundationOffsetYBroadDpState,   devPortraitDrawWasteOffsetXBroadDpState,   devPortraitDrawWasteOffsetYBroadDpState)
-            DeviceAspectCategory.SQUARE  -> PortraitAspectPileOffsets(devPortraitFoundationOffsetXSquareDpState,  devPortraitFoundationOffsetYSquareDpState,  devPortraitDrawWasteOffsetXSquareDpState,  devPortraitDrawWasteOffsetYSquareDpState)
+            DeviceAspectCategory.CLASSIC -> PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXClassicDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYClassicDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXClassicDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYClassicDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXClassicDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYClassicDpState,
+                tableauOffsetX = devPortraitTableauOffsetXClassicDpState,
+                tableauOffsetY = devPortraitTableauOffsetYClassicDpState
+            )
+            DeviceAspectCategory.BROAD   -> PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXBroadDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYBroadDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXBroadDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYBroadDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXBroadDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYBroadDpState,
+                tableauOffsetX = devPortraitTableauOffsetXBroadDpState,
+                tableauOffsetY = devPortraitTableauOffsetYBroadDpState
+            )
+            DeviceAspectCategory.SQUARE  -> PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXSquareDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYSquareDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXSquareDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYSquareDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXSquareDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYSquareDpState,
+                tableauOffsetX = devPortraitTableauOffsetXSquareDpState,
+                tableauOffsetY = devPortraitTableauOffsetYSquareDpState
+            )
         }
     }
 
@@ -464,34 +715,54 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         when (binding.gameBoardView.getCurrentAspectCategory()) {
             DeviceAspectCategory.SLIM -> {
                 if (isCompactSlimPortraitBoard()) {
+                    devPortraitOverallOffsetXSlimCompactDpState = offsets.pileOverallOffsetX
+                    devPortraitOverallOffsetYSlimCompactDpState = offsets.pileOverallOffsetY
                     devPortraitFoundationOffsetXSlimCompactDpState = offsets.foundationOffsetX
                     devPortraitFoundationOffsetYSlimCompactDpState = offsets.foundationOffsetY
                     devPortraitDrawWasteOffsetXSlimCompactDpState = offsets.drawWasteOffsetX
                     devPortraitDrawWasteOffsetYSlimCompactDpState = offsets.drawWasteOffsetY
+                    devPortraitTableauOffsetXSlimCompactDpState = offsets.tableauOffsetX
+                    devPortraitTableauOffsetYSlimCompactDpState = offsets.tableauOffsetY
                 } else {
+                    devPortraitOverallOffsetXSlimDpState = offsets.pileOverallOffsetX
+                    devPortraitOverallOffsetYSlimDpState = offsets.pileOverallOffsetY
                     devPortraitFoundationOffsetXSlimDpState = offsets.foundationOffsetX
                     devPortraitFoundationOffsetYSlimDpState = offsets.foundationOffsetY
                     devPortraitDrawWasteOffsetXSlimDpState = offsets.drawWasteOffsetX
                     devPortraitDrawWasteOffsetYSlimDpState = offsets.drawWasteOffsetY
+                    devPortraitTableauOffsetXSlimDpState = offsets.tableauOffsetX
+                    devPortraitTableauOffsetYSlimDpState = offsets.tableauOffsetY
                 }
             }
             DeviceAspectCategory.CLASSIC -> {
+                devPortraitOverallOffsetXClassicDpState = offsets.pileOverallOffsetX
+                devPortraitOverallOffsetYClassicDpState = offsets.pileOverallOffsetY
                 devPortraitFoundationOffsetXClassicDpState = offsets.foundationOffsetX
                 devPortraitFoundationOffsetYClassicDpState = offsets.foundationOffsetY
                 devPortraitDrawWasteOffsetXClassicDpState  = offsets.drawWasteOffsetX
                 devPortraitDrawWasteOffsetYClassicDpState  = offsets.drawWasteOffsetY
+                devPortraitTableauOffsetXClassicDpState = offsets.tableauOffsetX
+                devPortraitTableauOffsetYClassicDpState = offsets.tableauOffsetY
             }
             DeviceAspectCategory.BROAD -> {
+                devPortraitOverallOffsetXBroadDpState = offsets.pileOverallOffsetX
+                devPortraitOverallOffsetYBroadDpState = offsets.pileOverallOffsetY
                 devPortraitFoundationOffsetXBroadDpState = offsets.foundationOffsetX
                 devPortraitFoundationOffsetYBroadDpState = offsets.foundationOffsetY
                 devPortraitDrawWasteOffsetXBroadDpState  = offsets.drawWasteOffsetX
                 devPortraitDrawWasteOffsetYBroadDpState  = offsets.drawWasteOffsetY
+                devPortraitTableauOffsetXBroadDpState = offsets.tableauOffsetX
+                devPortraitTableauOffsetYBroadDpState = offsets.tableauOffsetY
             }
             DeviceAspectCategory.SQUARE -> {
+                devPortraitOverallOffsetXSquareDpState = offsets.pileOverallOffsetX
+                devPortraitOverallOffsetYSquareDpState = offsets.pileOverallOffsetY
                 devPortraitFoundationOffsetXSquareDpState = offsets.foundationOffsetX
                 devPortraitFoundationOffsetYSquareDpState = offsets.foundationOffsetY
                 devPortraitDrawWasteOffsetXSquareDpState  = offsets.drawWasteOffsetX
                 devPortraitDrawWasteOffsetYSquareDpState  = offsets.drawWasteOffsetY
+                devPortraitTableauOffsetXSquareDpState = offsets.tableauOffsetX
+                devPortraitTableauOffsetYSquareDpState = offsets.tableauOffsetY
             }
         }
     }
@@ -502,14 +773,139 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         return isPortrait && boardWidthPx <= portraitSlimCompactMaxBoardWidthPx
     }
 
-    private fun switchLayoutScopedDevAdjustersIfNeeded(mirrored: Boolean) {        val previous = appliedMirroredLayout
-        if (previous == mirrored) return
+    private fun currentLandscapeAspectPileOffsets(): LandscapeAspectPileOffsets {
+        return when (binding.gameBoardView.getCurrentAspectCategory()) {
+            DeviceAspectCategory.SLIM -> {
+                if (isCompactSlimLandscapeBoard()) {
+                    LandscapeAspectPileOffsets(
+                        pileOverallOffsetX = devLandscapeOverallOffsetXSlimCompactDpState,
+                        pileOverallOffsetY = devLandscapeOverallOffsetYSlimCompactDpState,
+                        foundationOffsetX = devLandscapeFoundationOffsetXSlimCompactDpState,
+                        foundationOffsetY = devLandscapeFoundationOffsetYSlimCompactDpState,
+                        drawWasteOffsetX = devLandscapeDrawWasteOffsetXSlimCompactDpState,
+                        drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimCompactDpState,
+                        tableauOffsetX = devLandscapeTableauOffsetXSlimCompactDpState,
+                        tableauOffsetY = devLandscapeTableauOffsetYSlimCompactDpState
+                    )
+                } else {
+                    LandscapeAspectPileOffsets(
+                        pileOverallOffsetX = devLandscapeOverallOffsetXSlimDpState,
+                        pileOverallOffsetY = devLandscapeOverallOffsetYSlimDpState,
+                        foundationOffsetX = devLandscapeFoundationOffsetXSlimDpState,
+                        foundationOffsetY = devLandscapeFoundationOffsetYSlimDpState,
+                        drawWasteOffsetX = devLandscapeDrawWasteOffsetXSlimDpState,
+                        drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimDpState,
+                        tableauOffsetX = devLandscapeTableauOffsetXSlimDpState,
+                        tableauOffsetY = devLandscapeTableauOffsetYSlimDpState
+                    )
+                }
+            }
+            DeviceAspectCategory.CLASSIC -> LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXClassicDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYClassicDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXClassicDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYClassicDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXClassicDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYClassicDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXClassicDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYClassicDpState
+            )
+            DeviceAspectCategory.BROAD -> LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXBroadDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYBroadDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXBroadDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYBroadDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXBroadDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYBroadDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXBroadDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYBroadDpState
+            )
+            DeviceAspectCategory.SQUARE -> LandscapeAspectPileOffsets(
+                pileOverallOffsetX = devLandscapeOverallOffsetXSquareDpState,
+                pileOverallOffsetY = devLandscapeOverallOffsetYSquareDpState,
+                foundationOffsetX = devLandscapeFoundationOffsetXSquareDpState,
+                foundationOffsetY = devLandscapeFoundationOffsetYSquareDpState,
+                drawWasteOffsetX = devLandscapeDrawWasteOffsetXSquareDpState,
+                drawWasteOffsetY = devLandscapeDrawWasteOffsetYSquareDpState,
+                tableauOffsetX = devLandscapeTableauOffsetXSquareDpState,
+                tableauOffsetY = devLandscapeTableauOffsetYSquareDpState
+            )
+        }
+    }
+
+    private fun setCurrentLandscapeAspectPileOffsets(offsets: LandscapeAspectPileOffsets) {
+        when (binding.gameBoardView.getCurrentAspectCategory()) {
+            DeviceAspectCategory.SLIM -> {
+                if (isCompactSlimLandscapeBoard()) {
+                    devLandscapeOverallOffsetXSlimCompactDpState = offsets.pileOverallOffsetX
+                    devLandscapeOverallOffsetYSlimCompactDpState = offsets.pileOverallOffsetY
+                    devLandscapeFoundationOffsetXSlimCompactDpState = offsets.foundationOffsetX
+                    devLandscapeFoundationOffsetYSlimCompactDpState = offsets.foundationOffsetY
+                    devLandscapeDrawWasteOffsetXSlimCompactDpState = offsets.drawWasteOffsetX
+                    devLandscapeDrawWasteOffsetYSlimCompactDpState = offsets.drawWasteOffsetY
+                    devLandscapeTableauOffsetXSlimCompactDpState = offsets.tableauOffsetX
+                    devLandscapeTableauOffsetYSlimCompactDpState = offsets.tableauOffsetY
+                } else {
+                    devLandscapeOverallOffsetXSlimDpState = offsets.pileOverallOffsetX
+                    devLandscapeOverallOffsetYSlimDpState = offsets.pileOverallOffsetY
+                    devLandscapeFoundationOffsetXSlimDpState = offsets.foundationOffsetX
+                    devLandscapeFoundationOffsetYSlimDpState = offsets.foundationOffsetY
+                    devLandscapeDrawWasteOffsetXSlimDpState = offsets.drawWasteOffsetX
+                    devLandscapeDrawWasteOffsetYSlimDpState = offsets.drawWasteOffsetY
+                    devLandscapeTableauOffsetXSlimDpState = offsets.tableauOffsetX
+                    devLandscapeTableauOffsetYSlimDpState = offsets.tableauOffsetY
+                }
+            }
+            DeviceAspectCategory.CLASSIC -> {
+                devLandscapeOverallOffsetXClassicDpState = offsets.pileOverallOffsetX
+                devLandscapeOverallOffsetYClassicDpState = offsets.pileOverallOffsetY
+                devLandscapeFoundationOffsetXClassicDpState = offsets.foundationOffsetX
+                devLandscapeFoundationOffsetYClassicDpState = offsets.foundationOffsetY
+                devLandscapeDrawWasteOffsetXClassicDpState = offsets.drawWasteOffsetX
+                devLandscapeDrawWasteOffsetYClassicDpState = offsets.drawWasteOffsetY
+                devLandscapeTableauOffsetXClassicDpState = offsets.tableauOffsetX
+                devLandscapeTableauOffsetYClassicDpState = offsets.tableauOffsetY
+            }
+            DeviceAspectCategory.BROAD -> {
+                devLandscapeOverallOffsetXBroadDpState = offsets.pileOverallOffsetX
+                devLandscapeOverallOffsetYBroadDpState = offsets.pileOverallOffsetY
+                devLandscapeFoundationOffsetXBroadDpState = offsets.foundationOffsetX
+                devLandscapeFoundationOffsetYBroadDpState = offsets.foundationOffsetY
+                devLandscapeDrawWasteOffsetXBroadDpState = offsets.drawWasteOffsetX
+                devLandscapeDrawWasteOffsetYBroadDpState = offsets.drawWasteOffsetY
+                devLandscapeTableauOffsetXBroadDpState = offsets.tableauOffsetX
+                devLandscapeTableauOffsetYBroadDpState = offsets.tableauOffsetY
+            }
+            DeviceAspectCategory.SQUARE -> {
+                devLandscapeOverallOffsetXSquareDpState = offsets.pileOverallOffsetX
+                devLandscapeOverallOffsetYSquareDpState = offsets.pileOverallOffsetY
+                devLandscapeFoundationOffsetXSquareDpState = offsets.foundationOffsetX
+                devLandscapeFoundationOffsetYSquareDpState = offsets.foundationOffsetY
+                devLandscapeDrawWasteOffsetXSquareDpState = offsets.drawWasteOffsetX
+                devLandscapeDrawWasteOffsetYSquareDpState = offsets.drawWasteOffsetY
+                devLandscapeTableauOffsetXSquareDpState = offsets.tableauOffsetX
+                devLandscapeTableauOffsetYSquareDpState = offsets.tableauOffsetY
+            }
+        }
+    }
+
+    private fun isCompactSlimLandscapeBoard(): Boolean {
+        val boardHeightPx = binding.gameBoardView.height.takeIf { it > 0 } ?: resources.displayMetrics.heightPixels
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        return isLandscape && boardHeightPx <= landscapeSlimCompactMaxBoardHeightPx
+    }
+
+    private fun switchLayoutScopedDevAdjustersIfNeeded(profileKey: LayoutProfileKey): Boolean {
+        val previous = appliedLayoutProfileKey
+        if (previous == profileKey) return false
         if (previous != null) {
             persistActiveLayoutScopedDevAdjusters(previous)
         }
-        val nextProfile = if (mirrored) mirroredLayoutDevAdjustersState else classicLayoutDevAdjustersState
+        val nextProfile = profileStateFor(profileKey)
         applyLayoutScopedDevAdjusters(nextProfile)
+        appliedLayoutProfileKey = profileKey
         hasAppliedLayoutScopedDevProfile = true
+        return true
     }
 
     private data class WinPopupUiConfig(
@@ -864,7 +1260,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var dailyBonusPromptShownThisLaunch: Boolean = false
     /** Tracks which mirrored state has been applied to the control panel, to avoid double-reversals. */
     private var appliedMirroredLayout: Boolean? = null
-    /** True after classic/mirrored profile defaults have been applied into active dev state at least once. */
+    /** Tracks which dev profile (layout + deck count) is loaded into active dev state. */
+    private var appliedLayoutProfileKey: LayoutProfileKey? = null
+    /** True after deck-aware profile defaults have been applied into active dev state at least once. */
     private var hasAppliedLayoutScopedDevProfile: Boolean = false
     private var testerStarburstPositionXPx: Int = winPopupUiConfig.starburstOffsetXPx.toInt()
     private var testerStarburstPositionYPx: Int = winPopupUiConfig.starburstOffsetYPx.toInt()
@@ -1184,6 +1582,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
                 launch {
                     viewModel.game.collect { g ->
+                        val profileChanged = switchLayoutScopedDevAdjustersIfNeeded(resolveActiveLayoutProfileKey())
+                        if (profileChanged) {
+                            applyLandscapePileLayoutDevConfigToBoard()
+                            applyPortraitPileLayoutDevConfigToBoard()
+                            applyLandscapeBannerOverlayDevOffsets()
+                            applyTopHudDevOffsets()
+                        }
                         updateScoreLabel(g)
                         binding.tvMovesValue.text = formatMovesValue(g.moves)
                         updateAutoCompleteButtonVisibility(g)
@@ -2193,7 +2598,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun applyMirroredLayoutUi(mirrored: Boolean) {
-        switchLayoutScopedDevAdjustersIfNeeded(mirrored)
+        switchLayoutScopedDevAdjustersIfNeeded(resolveActiveLayoutProfileKey())
         applyLandscapePileLayoutDevConfigToBoard()
         applyPortraitPileLayoutDevConfigToBoard()
         applyAspectCategoryPileTrimsToBoard()
@@ -2554,20 +2959,20 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devLockedPileAdOffsetYLandscapePx(): Float = devLockedPileAdOffsetYLandscapePxState
     override fun devLockedPileAdScaleXLandscape(): Float = devLockedPileAdScaleXLandscapeState
     override fun devLockedPileAdScaleYLandscape(): Float = devLockedPileAdScaleYLandscapeState
-    override fun devLandscapePileOverallOffsetXDp(): Float = devLandscapePileOverallOffsetXDpState
-    override fun devLandscapePileOverallOffsetYDp(): Float = devLandscapePileOverallOffsetYDpState
-    override fun devLandscapePileFoundationOffsetXDp(): Float = devLandscapePileFoundationOffsetXDpState
-    override fun devLandscapePileFoundationOffsetYDp(): Float = devLandscapePileFoundationOffsetYDpState
-    override fun devLandscapePileDrawWasteOffsetXDp(): Float = devLandscapePileDrawWasteOffsetXDpState
-    override fun devLandscapePileDrawWasteOffsetYDp(): Float = devLandscapePileDrawWasteOffsetYDpState
+    override fun devLandscapePileOverallOffsetXDp(): Float = currentLandscapeAspectPileOffsets().pileOverallOffsetX
+    override fun devLandscapePileOverallOffsetYDp(): Float = currentLandscapeAspectPileOffsets().pileOverallOffsetY
+    override fun devLandscapePileFoundationOffsetXDp(): Float = currentLandscapeAspectPileOffsets().foundationOffsetX
+    override fun devLandscapePileFoundationOffsetYDp(): Float = currentLandscapeAspectPileOffsets().foundationOffsetY
+    override fun devLandscapePileDrawWasteOffsetXDp(): Float = currentLandscapeAspectPileOffsets().drawWasteOffsetX
+    override fun devLandscapePileDrawWasteOffsetYDp(): Float = currentLandscapeAspectPileOffsets().drawWasteOffsetY
     override fun devLandscapePileStockOffsetXDp(): Float = devLandscapePileStockOffsetXDpState
     override fun devLandscapePileStockOffsetYDp(): Float = devLandscapePileStockOffsetYDpState
     override fun devLandscapePileWasteOffsetXDp(): Float = devLandscapePileWasteOffsetXDpState
     override fun devLandscapePileWasteOffsetYDp(): Float = devLandscapePileWasteOffsetYDpState
-    override fun devLandscapePileTableauOffsetXDp(): Float = devLandscapePileTableauOffsetXDpState
-    override fun devLandscapePileTableauOffsetYDp(): Float = devLandscapePileTableauOffsetYDpState
-    override fun devPortraitPileOverallOffsetXDp(): Float = devPortraitPileOverallOffsetXDpState
-    override fun devPortraitPileOverallOffsetYDp(): Float = devPortraitPileOverallOffsetYDpState
+    override fun devLandscapePileTableauOffsetXDp(): Float = currentLandscapeAspectPileOffsets().tableauOffsetX
+    override fun devLandscapePileTableauOffsetYDp(): Float = currentLandscapeAspectPileOffsets().tableauOffsetY
+    override fun devPortraitPileOverallOffsetXDp(): Float = currentPortraitAspectPileOffsets().pileOverallOffsetX
+    override fun devPortraitPileOverallOffsetYDp(): Float = currentPortraitAspectPileOffsets().pileOverallOffsetY
     override fun devPortraitPileFoundationOffsetXDp(): Float = currentPortraitAspectPileOffsets().foundationOffsetX
     override fun devPortraitPileFoundationOffsetYDp(): Float = currentPortraitAspectPileOffsets().foundationOffsetY
     override fun devPortraitPileDrawWasteOffsetXDp(): Float = currentPortraitAspectPileOffsets().drawWasteOffsetX
@@ -2576,8 +2981,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devPortraitPileStockOffsetYDp(): Float = devPortraitPileStockOffsetYDpState
     override fun devPortraitPileWasteOffsetXDp(): Float = devPortraitPileWasteOffsetXDpState
     override fun devPortraitPileWasteOffsetYDp(): Float = devPortraitPileWasteOffsetYDpState
-    override fun devPortraitPileTableauOffsetXDp(): Float = devPortraitPileTableauOffsetXDpState
-    override fun devPortraitPileTableauOffsetYDp(): Float = devPortraitPileTableauOffsetYDpState
+    override fun devPortraitPileTableauOffsetXDp(): Float = currentPortraitAspectPileOffsets().tableauOffsetX
+    override fun devPortraitPileTableauOffsetYDp(): Float = currentPortraitAspectPileOffsets().tableauOffsetY
     override fun devLandscapeBannerSmallWidthDp(): Float = devLandscapeBannerSmallWidthDpState
     override fun devLandscapeBannerSmallHeightDp(): Float = devLandscapeBannerSmallHeightDpState
     override fun devLandscapeBannerMediumWidthDp(): Float = devLandscapeBannerMediumWidthDpState
@@ -2617,8 +3022,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devAspectLandscapeClassicYDp(): Float = devAspectLandscapeClassicYDpState
     override fun devAspectLandscapeBroadYDp(): Float   = devAspectLandscapeBroadYDpState
     override fun devAspectLandscapeSquareYDp(): Float  = devAspectLandscapeSquareYDpState
-    override fun devCurrentAspectCategoryLabel(): String =
-        binding.gameBoardView.getCurrentAspectCategory().name
+    override fun devCurrentAspectCategoryLabel(): String {
+        val category = binding.gameBoardView.getCurrentAspectCategory()
+        val isCompactSlim = when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> category == DeviceAspectCategory.SLIM && isCompactSlimLandscapeBoard()
+            else -> category == DeviceAspectCategory.SLIM && isCompactSlimPortraitBoard()
+        }
+        return if (isCompactSlim) "${category.name}_COMPACT" else category.name
+    }
 
     override fun onDevSetLockedPileAdOffsetXPortraitPx(value: Float) {
         devLockedPileAdOffsetXPortraitPxState = value
@@ -2653,27 +3064,27 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyLockedPileAdIconDevConfigToBoard()
     }
     override fun onDevSetLandscapePileOverallOffsetX(value: Float) {
-        devLandscapePileOverallOffsetXDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(pileOverallOffsetX = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileOverallOffsetY(value: Float) {
-        devLandscapePileOverallOffsetYDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(pileOverallOffsetY = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileFoundationOffsetX(value: Float) {
-        devLandscapePileFoundationOffsetXDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(foundationOffsetX = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileFoundationOffsetY(value: Float) {
-        devLandscapePileFoundationOffsetYDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(foundationOffsetY = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileDrawWasteOffsetX(value: Float) {
-        devLandscapePileDrawWasteOffsetXDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(drawWasteOffsetX = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileDrawWasteOffsetY(value: Float) {
-        devLandscapePileDrawWasteOffsetYDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(drawWasteOffsetY = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileStockOffsetX(value: Float) {
@@ -2693,19 +3104,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileTableauOffsetX(value: Float) {
-        devLandscapePileTableauOffsetXDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(tableauOffsetX = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapePileTableauOffsetY(value: Float) {
-        devLandscapePileTableauOffsetYDpState = value
+        setCurrentLandscapeAspectPileOffsets(currentLandscapeAspectPileOffsets().copy(tableauOffsetY = value))
         applyLandscapePileLayoutDevConfigToBoard()
     }
     override fun onDevSetPortraitPileOverallOffsetX(value: Float) {
-        devPortraitPileOverallOffsetXDpState = value
+        setCurrentPortraitAspectPileOffsets(currentPortraitAspectPileOffsets().copy(pileOverallOffsetX = value))
         applyPortraitPileLayoutDevConfigToBoard()
     }
     override fun onDevSetPortraitPileOverallOffsetY(value: Float) {
-        devPortraitPileOverallOffsetYDpState = value
+        setCurrentPortraitAspectPileOffsets(currentPortraitAspectPileOffsets().copy(pileOverallOffsetY = value))
         applyPortraitPileLayoutDevConfigToBoard()
     }
     override fun onDevSetPortraitPileFoundationOffsetX(value: Float) {
@@ -2741,11 +3152,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyPortraitPileLayoutDevConfigToBoard()
     }
     override fun onDevSetPortraitPileTableauOffsetX(value: Float) {
-        devPortraitPileTableauOffsetXDpState = value
+        setCurrentPortraitAspectPileOffsets(currentPortraitAspectPileOffsets().copy(tableauOffsetX = value))
         applyPortraitPileLayoutDevConfigToBoard()
     }
     override fun onDevSetPortraitPileTableauOffsetY(value: Float) {
-        devPortraitPileTableauOffsetYDpState = value
+        setCurrentPortraitAspectPileOffsets(currentPortraitAspectPileOffsets().copy(tableauOffsetY = value))
         applyPortraitPileLayoutDevConfigToBoard()
     }
     override fun onDevSetLandscapeBannerSmallWidthDp(value: Float) {
@@ -3708,32 +4119,33 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun applyLandscapePileLayoutDevConfigToBoard() {
-        persistActiveLayoutScopedDevAdjusters(viewModel.isMirroredLayout.value)
+        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
         val ratioProfile = calculateDevOffsetRatioProfile()
+        val aspectOffsets = currentLandscapeAspectPileOffsets()
         binding.gameBoardView.setLandscapePileLayoutTuning(
-            overallOffsetX = scaleDevDpOffsetX(devLandscapePileOverallOffsetXDpState, ratioProfile),
-            overallOffsetY = scaleDevDpOffsetY(devLandscapePileOverallOffsetYDpState, ratioProfile),
-            foundationOffsetX = scaleDevDpOffsetX(devLandscapePileFoundationOffsetXDpState, ratioProfile),
-            foundationOffsetY = scaleDevDpOffsetY(devLandscapePileFoundationOffsetYDpState, ratioProfile),
-            drawWasteOffsetX = scaleDevDpOffsetX(devLandscapePileDrawWasteOffsetXDpState, ratioProfile),
-            drawWasteOffsetY = scaleDevDpOffsetY(devLandscapePileDrawWasteOffsetYDpState, ratioProfile),
+            overallOffsetX = scaleDevDpOffsetX(aspectOffsets.pileOverallOffsetX, ratioProfile),
+            overallOffsetY = scaleDevDpOffsetY(aspectOffsets.pileOverallOffsetY, ratioProfile),
+            foundationOffsetX = scaleDevDpOffsetX(aspectOffsets.foundationOffsetX, ratioProfile),
+            foundationOffsetY = scaleDevDpOffsetY(aspectOffsets.foundationOffsetY, ratioProfile),
+            drawWasteOffsetX = scaleDevDpOffsetX(aspectOffsets.drawWasteOffsetX, ratioProfile),
+            drawWasteOffsetY = scaleDevDpOffsetY(aspectOffsets.drawWasteOffsetY, ratioProfile),
             stockOffsetX = scaleDevDpOffsetX(devLandscapePileStockOffsetXDpState, ratioProfile),
             stockOffsetY = scaleDevDpOffsetY(devLandscapePileStockOffsetYDpState, ratioProfile),
             wasteOffsetX = scaleDevDpOffsetX(devLandscapePileWasteOffsetXDpState, ratioProfile),
             wasteOffsetY = scaleDevDpOffsetY(devLandscapePileWasteOffsetYDpState, ratioProfile),
-            tableauOffsetX = scaleDevDpOffsetX(devLandscapePileTableauOffsetXDpState, ratioProfile),
-            tableauOffsetY = scaleDevDpOffsetY(devLandscapePileTableauOffsetYDpState, ratioProfile)
+            tableauOffsetX = scaleDevDpOffsetX(aspectOffsets.tableauOffsetX, ratioProfile),
+            tableauOffsetY = scaleDevDpOffsetY(aspectOffsets.tableauOffsetY, ratioProfile)
         )
         binding.gameBoardView.dumpPileLayoutDebug("applyLandscapePileLayoutDevConfigToBoard")
     }
 
     private fun applyPortraitPileLayoutDevConfigToBoard() {
-        persistActiveLayoutScopedDevAdjusters(viewModel.isMirroredLayout.value)
+        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
         val ratioProfile = calculateDevOffsetRatioProfile()
         val aspectOffsets = currentPortraitAspectPileOffsets()
         binding.gameBoardView.setPortraitPileLayoutTuning(
-            overallOffsetX = scaleDevDpOffsetX(devPortraitPileOverallOffsetXDpState, ratioProfile),
-            overallOffsetY = scaleDevDpOffsetY(devPortraitPileOverallOffsetYDpState, ratioProfile),
+            overallOffsetX = scaleDevDpOffsetX(aspectOffsets.pileOverallOffsetX, ratioProfile),
+            overallOffsetY = scaleDevDpOffsetY(aspectOffsets.pileOverallOffsetY, ratioProfile),
             foundationOffsetX = scaleDevDpOffsetX(aspectOffsets.foundationOffsetX, ratioProfile),
             foundationOffsetY = scaleDevDpOffsetY(aspectOffsets.foundationOffsetY, ratioProfile),
             drawWasteOffsetX = scaleDevDpOffsetX(aspectOffsets.drawWasteOffsetX, ratioProfile),
@@ -3742,14 +4154,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             stockOffsetY = scaleDevDpOffsetY(devPortraitPileStockOffsetYDpState, ratioProfile),
             wasteOffsetX = scaleDevDpOffsetX(devPortraitPileWasteOffsetXDpState, ratioProfile),
             wasteOffsetY = scaleDevDpOffsetY(devPortraitPileWasteOffsetYDpState, ratioProfile),
-            tableauOffsetX = scaleDevDpOffsetX(devPortraitPileTableauOffsetXDpState, ratioProfile),
-            tableauOffsetY = scaleDevDpOffsetY(devPortraitPileTableauOffsetYDpState, ratioProfile)
+            tableauOffsetX = scaleDevDpOffsetX(aspectOffsets.tableauOffsetX, ratioProfile),
+            tableauOffsetY = scaleDevDpOffsetY(aspectOffsets.tableauOffsetY, ratioProfile)
         )
         binding.gameBoardView.dumpPileLayoutDebug("applyPortraitPileLayoutDevConfigToBoard")
     }
 
     private fun applyLandscapeBannerOverlayDevOffsets() {
-        persistActiveLayoutScopedDevAdjusters(viewModel.isMirroredLayout.value)
+        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
         val ratioProfile = calculateDevOffsetRatioProfile()
         val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val bannerOverlay = findViewById<android.widget.FrameLayout?>(R.id.banner_overlay_container) ?: return
@@ -3768,7 +4180,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun applyTopHudDevOffsets() {
-        persistActiveLayoutScopedDevAdjusters(viewModel.isMirroredLayout.value)
+        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
         val ratioProfile = calculateDevOffsetRatioProfile()
         binding.boardScoreboardContainer.translationX = scaleDevDpOffsetX(devScoreboardOffsetXDpState, ratioProfile)
         binding.boardScoreboardContainer.translationY = scaleDevDpOffsetY(devScoreboardOffsetYDpState, ratioProfile)
