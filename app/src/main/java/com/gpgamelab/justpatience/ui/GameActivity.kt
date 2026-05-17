@@ -132,11 +132,26 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     // Single source of hardcoded defaults for each hand/deck layout profile.
     // Edit these blocks when you want fixed per-profile values in code.
     private val defaultClassic1DeckLayoutDevAdjusters = LayoutScopedDevAdjusters(
-        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
-        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
-        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
-        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
-        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(pileOverallOffsetX = -5f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -280f,
+            pileOverallOffsetY = 0f
+        ),
+        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f
+        ),
+        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f
+        ),
+        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f
+        ),
+        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f
+        ),
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
         landscapePileWasteOffsetX = 0f,
@@ -168,6 +183,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     )
 
     private val defaultClassic2DeckLayoutDevAdjusters = defaultClassic1DeckLayoutDevAdjusters.copy(
+        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -180f,
+            pileOverallOffsetY = -150f
+        ),
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
             tableauOffsetY = 0f
         )
@@ -175,13 +194,25 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private val defaultMirrored1DeckLayoutDevAdjusters = defaultClassic1DeckLayoutDevAdjusters.copy(
         landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 200f,
+            pileOverallOffsetX = 380f,
+            pileOverallOffsetY = 0f
+        ),
+        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 90f,
             pileOverallOffsetY = -100f
         ),
-        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
-        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
-        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
-        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(pileOverallOffsetX = 90f, pileOverallOffsetY = -100f),
+        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 90f,
+            pileOverallOffsetY = -100f
+        ),
+        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 90f,
+            pileOverallOffsetY = -100f
+        ),
+        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 90f,
+            pileOverallOffsetY = -100f
+        ),
         landscapeBannerLargeOffsetX = 300f,
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
             foundationOffsetX = 25f,
@@ -204,6 +235,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     )
 
     private val defaultMirrored2DeckLayoutDevAdjusters = defaultMirrored1DeckLayoutDevAdjusters.copy(
+        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 280f,
+            pileOverallOffsetY = -150f
+        ),
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
             tableauOffsetY = 0f
         )
@@ -343,7 +378,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devAspectPortraitClassicYDpState: Float = 0f
     private var devAspectPortraitBroadYDpState:   Float = 0f
     private var devAspectPortraitSquareYDpState:  Float = 0f
-    private var devAspectLandscapeSlimYDpState:    Float = 30f
+    private var devAspectLandscapeSlimYDpState:    Float = 0f
     private var devAspectLandscapeClassicYDpState: Float = 0f
     private var devAspectLandscapeBroadYDpState:   Float = 0f
     private var devAspectLandscapeSquareYDpState:  Float = 0f
@@ -354,7 +389,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devAspectPortraitClassicXDpState: Float = 0f
     private var devAspectPortraitBroadXDpState:   Float = 0f
     private var devAspectPortraitSquareXDpState:  Float = 0f
-    private var devAspectLandscapeSlimXDpState:    Float = 105f
+    private var devAspectLandscapeSlimXDpState:    Float = 0f
     private var devAspectLandscapeClassicXDpState: Float = 0f
     private var devAspectLandscapeBroadXDpState:   Float = 0f
     private var devAspectLandscapeSquareXDpState:  Float = 0f
