@@ -137,8 +137,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetY = 0f
         ),
         landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = -5f,
-            pileOverallOffsetY = -100f
+            pileOverallOffsetX = -130f,
+            pileOverallOffsetY = 0f
         ),
         landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -115f,
@@ -160,7 +160,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = -25f,
             tableauOffsetY = 100f
         ),
-        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
+        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
+            pileOverallOffsetY = 0f,
+            foundationOffsetX = -25f,
+            drawWasteOffsetX = -10f,
+            tableauOffsetY = 80f
+        ),
         portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
             pileOverallOffsetY = 90f,
             foundationOffsetX = -40f,
@@ -191,11 +196,24 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetX = -180f,
             pileOverallOffsetY = -150f
         ),
+        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -110f,
+            pileOverallOffsetY = -80f,
+            foundationOffsetX = -30f,
+            drawWasteOffsetX = 0f,
+            tableauOffsetY = -10f
+        ),
         landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -5f,
             pileOverallOffsetY = -100f
         ),
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
+            tableauOffsetY = 0f
+        ),
+        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
+            pileOverallOffsetY = 0f,
+            foundationOffsetX = 0f,
+            drawWasteOffsetX = 0f,
             tableauOffsetY = 0f
         ),
         portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
@@ -209,8 +227,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetY = 0f
         ),
         landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 90f,
-            pileOverallOffsetY = -100f
+            pileOverallOffsetX = 260f,
+            pileOverallOffsetY = 0f
         ),
         landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 275f,
@@ -232,9 +250,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             tableauOffsetY = 100f
         ),
         portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
-            pileOverallOffsetY = -70f,
+            pileOverallOffsetY = -0f,
             foundationOffsetX = 35f,
-            drawWasteOffsetX = 55f
+            drawWasteOffsetX = 55f,
+            tableauOffsetY = 80f
         ),
         portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
             pileOverallOffsetY = 100f,
@@ -253,12 +272,23 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetX = 280f,
             pileOverallOffsetY = -150f
         ),
+        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 195f,
+            pileOverallOffsetY = -80f,
+            foundationOffsetX = 30f,
+            tableauOffsetY = 10f
+        ),
         landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 165f,
             pileOverallOffsetY = -100f
         ),
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
             tableauOffsetY = 0f
+        ),
+        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
+            pileOverallOffsetY = 0f,
+            foundationOffsetX = 35f,
+            drawWasteOffsetX = 45f
         ),
         portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
             pileOverallOffsetY = 0f,
