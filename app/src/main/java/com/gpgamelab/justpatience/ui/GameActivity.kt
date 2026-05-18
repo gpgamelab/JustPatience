@@ -171,7 +171,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = -40f,
             drawWasteOffsetX = -20f
         ),
-        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
+        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -10f,
+            tableauOffsetY = 25f
+        ),
         portraitAspectOffsetsSquare = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
         portraitPileStockOffsetX = 0f,
         portraitPileStockOffsetY = 0f,
@@ -181,7 +184,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeBannerSmallOffsetY = 0f,
         landscapeBannerMediumOffsetX = 0f,
         landscapeBannerMediumOffsetY = 0f,
-        landscapeBannerLargeOffsetX = -300f,
+        landscapeBannerLargeOffsetX = 0f,
         landscapeBannerLargeOffsetY = 0f,
         scoreboardOffsetX = 0f,
         scoreboardOffsetY = 0f,
@@ -236,14 +239,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = -15f
         ),
         landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 90f,
-            pileOverallOffsetY = -100f
+            pileOverallOffsetX = 200f,
+            pileOverallOffsetY = 0f
         ),
         landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 90f,
             pileOverallOffsetY = -100f
         ),
-        landscapeBannerLargeOffsetX = 300f,
+        landscapeBannerLargeOffsetX = 0f,
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
             foundationOffsetX = 25f,
             drawWasteOffsetX = 75f,
@@ -263,7 +266,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ),
         portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
             pileOverallOffsetY = -70f,
-            drawWasteOffsetX = 45f
+            drawWasteOffsetX = 45f,
+            tableauOffsetY = 25f
         )
     )
 
@@ -282,6 +286,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetX = 165f,
             pileOverallOffsetY = -100f
         ),
+        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 90f,
+            pileOverallOffsetY = -80f
+        ),
+
+
+
+
         portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
             tableauOffsetY = 0f
         ),
@@ -294,6 +306,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetY = 0f,
             foundationOffsetX = 35f,
             drawWasteOffsetX = 65f
+        ),
+        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -10f,
+            drawWasteOffsetX = 45f
         )
     )
 
