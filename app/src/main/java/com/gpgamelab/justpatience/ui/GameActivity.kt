@@ -239,7 +239,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = -15f
         ),
         landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 200f,
+            pileOverallOffsetX = 190f,
             pileOverallOffsetY = 0f
         ),
         landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
