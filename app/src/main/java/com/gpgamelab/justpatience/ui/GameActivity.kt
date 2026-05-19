@@ -78,12 +78,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val drawWasteOffsetY: Float = 0f,
         val tableauOffsetX: Float = 0f,
         val tableauOffsetY: Float = 0f,
-        val scoreboardOffsetX: Float = 0f,
-        val scoreboardOffsetY: Float = 0f,
-        val gemRewardOffsetX: Float = 0f,
-        val gemRewardOffsetY: Float = 0f,
-        val ticketRewardOffsetX: Float = 0f,
-        val ticketRewardOffsetY: Float = 0f,
         val portraitBannerSmallOffsetX: Float = 0f,
         val portraitBannerSmallOffsetY: Float = 0f,
         val portraitBannerMediumOffsetX: Float = 0f,
@@ -101,12 +95,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val drawWasteOffsetY: Float = 0f,
         val tableauOffsetX: Float = 0f,
         val tableauOffsetY: Float = 0f,
-        val scoreboardOffsetX: Float = 0f,
-        val scoreboardOffsetY: Float = 0f,
-        val gemRewardOffsetX: Float = 0f,
-        val gemRewardOffsetY: Float = 0f,
-        val ticketRewardOffsetX: Float = 0f,
-        val ticketRewardOffsetY: Float = 0f,
         val landscapeBannerSmallOffsetX: Float = 0f,
         val landscapeBannerSmallOffsetY: Float = 0f,
         val landscapeBannerMediumOffsetX: Float = 0f,
@@ -126,6 +114,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val portraitPileStockOffsetY: Float = 0f,
         val portraitPileWasteOffsetX: Float = 0f,
         val portraitPileWasteOffsetY: Float = 0f,
+        val portraitScoreboardOffsetX: Float = 0f,
+        val portraitScoreboardOffsetY: Float = 0f,
+        val portraitGemRewardOffsetX: Float = 0f,
+        val portraitGemRewardOffsetY: Float = 0f,
+        val portraitTicketRewardOffsetX: Float = 0f,
+        val portraitTicketRewardOffsetY: Float = 0f,
         val landscapeSlimCompact: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
         val landscapeSlim: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
         val landscapeClassic: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
@@ -134,7 +128,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val landscapePileStockOffsetX: Float = 0f,
         val landscapePileStockOffsetY: Float = 0f,
         val landscapePileWasteOffsetX: Float = 0f,
-        val landscapePileWasteOffsetY: Float = 0f
+        val landscapePileWasteOffsetY: Float = 0f,
+        val landscapeScoreboardOffsetX: Float = 0f,
+        val landscapeScoreboardOffsetY: Float = 0f,
+        val landscapeGemRewardOffsetX: Float = 0f,
+        val landscapeGemRewardOffsetY: Float = 0f,
+        val landscapeTicketRewardOffsetX: Float = 0f,
+        val landscapeTicketRewardOffsetY: Float = 0f
     )
 
     private data class LayoutProfileKey(
@@ -148,12 +148,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitSlimCompact = PortraitAspectPileOffsets(
             foundationOffsetX = -25f,
             tableauOffsetY = 100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -166,12 +160,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = -25f,
             drawWasteOffsetX = -10f,
             tableauOffsetY = 80f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -183,12 +171,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetY = 90f,
             foundationOffsetX = -40f,
             drawWasteOffsetX = -20f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -199,12 +181,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitBroad = PortraitAspectPileOffsets(
             pileOverallOffsetY = -10f,
             tableauOffsetY = 25f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -214,12 +190,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ),
         portraitSquare = PortraitAspectPileOffsets(
             pileOverallOffsetY = -70f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -231,15 +201,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitPileStockOffsetY = 0f,
         portraitPileWasteOffsetX = 0f,
         portraitPileWasteOffsetY = 0f,
+        portraitScoreboardOffsetX = 0f,
+        portraitScoreboardOffsetY = 0f,
+        portraitGemRewardOffsetX = -10f,
+        portraitGemRewardOffsetY = 25f,
+        portraitTicketRewardOffsetX = -10f,
+        portraitTicketRewardOffsetY = 35f,
         landscapeSlimCompact = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -280f,
             pileOverallOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -250,12 +220,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSlim = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -130f,
             pileOverallOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -266,12 +230,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -115f,
             pileOverallOffsetY = -25f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -282,12 +240,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeBroad = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -5f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -298,12 +250,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSquare = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -5f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -314,18 +260,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
         landscapePileWasteOffsetX = 0f,
-        landscapePileWasteOffsetY = 0f
+        landscapePileWasteOffsetY = 0f,
+        landscapeScoreboardOffsetX = 0f,
+        landscapeScoreboardOffsetY = 0f,
+        landscapeGemRewardOffsetX = -10f,
+        landscapeGemRewardOffsetY = 25f,
+        landscapeTicketRewardOffsetX = -10f,
+        landscapeTicketRewardOffsetY = 35f
     )
 
     private val defaultClassic2DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
         portraitSlimCompact = PortraitAspectPileOffsets(
             tableauOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -338,12 +284,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = 0f,
             drawWasteOffsetX = 0f,
             tableauOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -353,12 +293,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ),
         portraitClassic = PortraitAspectPileOffsets(
             pileOverallOffsetX = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -369,12 +303,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitBroad = PortraitAspectPileOffsets(
             pileOverallOffsetY = -10f,
             tableauOffsetY = 25f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -384,12 +312,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ),
         portraitSquare = PortraitAspectPileOffsets(
             pileOverallOffsetY = -70f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -401,15 +323,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitPileStockOffsetY = 0f,
         portraitPileWasteOffsetX = 0f,
         portraitPileWasteOffsetY = 0f,
+        portraitScoreboardOffsetX = 0f,
+        portraitScoreboardOffsetY = 0f,
+        portraitGemRewardOffsetX = -10f,
+        portraitGemRewardOffsetY = 25f,
+        portraitTicketRewardOffsetX = -10f,
+        portraitTicketRewardOffsetY = 35f,
         landscapeSlimCompact = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -180f,
             pileOverallOffsetY = -150f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -423,12 +345,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = -30f,
             drawWasteOffsetX = 0f,
             tableauOffsetY = -10f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -439,12 +355,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -5f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -455,12 +365,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeBroad = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -5f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -471,12 +375,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSquare = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -5f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -487,7 +385,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
         landscapePileWasteOffsetX = 0f,
-        landscapePileWasteOffsetY = 0f
+        landscapePileWasteOffsetY = 0f,
+        landscapeScoreboardOffsetX = 0f,
+        landscapeScoreboardOffsetY = 0f,
+        landscapeGemRewardOffsetX = -10f,
+        landscapeGemRewardOffsetY = 25f,
+        landscapeTicketRewardOffsetX = -10f,
+        landscapeTicketRewardOffsetY = 35f
     )
 
     private val defaultMirrored1DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
@@ -495,12 +399,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = 25f,
             drawWasteOffsetX = 75f,
             tableauOffsetY = 100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -513,12 +411,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = 35f,
             drawWasteOffsetX = 55f,
             tableauOffsetY = 80f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -531,12 +423,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             foundationOffsetX = 40f,
             drawWasteOffsetX = 75f,
             tableauOffsetY = 10f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -545,15 +431,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             portraitBannerLargeOffsetY = 0f
         ),
         portraitBroad = PortraitAspectPileOffsets(
-            pileOverallOffsetY = -70f,
+            pileOverallOffsetY = -10f,
             drawWasteOffsetX = 45f,
             tableauOffsetY = 25f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -563,12 +449,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ),
         portraitSquare = PortraitAspectPileOffsets(
             pileOverallOffsetY = -70f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -583,12 +469,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSlimCompact = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 380f,
             pileOverallOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -599,12 +485,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSlim = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 260f,
             pileOverallOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -616,12 +502,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetX = 275f,
             pileOverallOffsetY = -25f,
             foundationOffsetX = -15f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -632,12 +518,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeBroad = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 190f,
             pileOverallOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -648,12 +534,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSquare = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 90f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -670,12 +556,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private val defaultMirrored2DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
         portraitSlimCompact = PortraitAspectPileOffsets(
             tableauOffsetY = 0f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -687,12 +573,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetY = 0f,
             foundationOffsetX = 35f,
             drawWasteOffsetX = 45f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -704,12 +590,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetY = 0f,
             foundationOffsetX = 35f,
             drawWasteOffsetX = 65f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
+            
+            
+            
+            
+            
+            
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -720,12 +606,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitBroad = PortraitAspectPileOffsets(
             pileOverallOffsetY = -10f,
             drawWasteOffsetX = 45f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -735,12 +615,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ),
         portraitSquare = PortraitAspectPileOffsets(
             pileOverallOffsetY = -70f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             portraitBannerSmallOffsetX = 0f,
             portraitBannerSmallOffsetY = 0f,
             portraitBannerMediumOffsetX = 0f,
@@ -755,12 +629,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSlimCompact = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 280f,
             pileOverallOffsetY = -150f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -773,12 +641,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             pileOverallOffsetY = -80f,
             foundationOffsetX = 30f,
             tableauOffsetY = 10f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -789,12 +651,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 165f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -805,12 +661,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeBroad = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 90f,
             pileOverallOffsetY = -80f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -821,12 +671,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSquare = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 90f,
             pileOverallOffsetY = -100f,
-            scoreboardOffsetX = 0f,
-            scoreboardOffsetY = 0f,
-            gemRewardOffsetX = -10f,
-            gemRewardOffsetY = 25f,
-            ticketRewardOffsetX = -10f,
-            ticketRewardOffsetY = 35f,
             landscapeBannerSmallOffsetX = 0f,
             landscapeBannerSmallOffsetY = 0f,
             landscapeBannerMediumOffsetX = 0f,
@@ -912,7 +756,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devPortraitOverallOffsetXClassicDpState: Float = 0f
     private var devPortraitOverallOffsetYClassicDpState: Float = -70f
     private var devPortraitOverallOffsetXBroadDpState: Float = 0f
-    private var devPortraitOverallOffsetYBroadDpState: Float = -70f
+    private var devPortraitOverallOffsetYBroadDpState: Float = 0f
     private var devPortraitOverallOffsetXSquareDpState: Float = 0f
     private var devPortraitOverallOffsetYSquareDpState: Float = -70f
     private var devPortraitFoundationOffsetXSlimCompactDpState: Float = 0f
@@ -1021,6 +865,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun snapshotLayoutScopedDevAdjusters(): LayoutProfileDevAdjusters {
+        val isPortrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
         return LayoutProfileDevAdjusters(
             portraitSlimCompact = PortraitAspectPileOffsets(
                 pileOverallOffsetX = devPortraitOverallOffsetXSlimCompactDpState,
@@ -1031,12 +876,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimCompactDpState,
                 tableauOffsetX = devPortraitTableauOffsetXSlimCompactDpState,
                 tableauOffsetY = devPortraitTableauOffsetYSlimCompactDpState,
-                scoreboardOffsetX = devScoreboardOffsetXDpState,
-                scoreboardOffsetY = devScoreboardOffsetYDpState,
-                gemRewardOffsetX = devGemRewardOffsetXDpState,
-                gemRewardOffsetY = devGemRewardOffsetYDpState,
-                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
-                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
                 portraitBannerSmallOffsetX = 0f,
                 portraitBannerSmallOffsetY = 0f,
                 portraitBannerMediumOffsetX = 0f,
@@ -1053,12 +892,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimDpState,
                 tableauOffsetX = devPortraitTableauOffsetXSlimDpState,
                 tableauOffsetY = devPortraitTableauOffsetYSlimDpState,
-                scoreboardOffsetX = devScoreboardOffsetXDpState,
-                scoreboardOffsetY = devScoreboardOffsetYDpState,
-                gemRewardOffsetX = devGemRewardOffsetXDpState,
-                gemRewardOffsetY = devGemRewardOffsetYDpState,
-                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
-                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
                 portraitBannerSmallOffsetX = 0f,
                 portraitBannerSmallOffsetY = 0f,
                 portraitBannerMediumOffsetX = 0f,
@@ -1075,12 +908,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYClassicDpState,
                 tableauOffsetX = devPortraitTableauOffsetXClassicDpState,
                 tableauOffsetY = devPortraitTableauOffsetYClassicDpState,
-                scoreboardOffsetX = devScoreboardOffsetXDpState,
-                scoreboardOffsetY = devScoreboardOffsetYDpState,
-                gemRewardOffsetX = devGemRewardOffsetXDpState,
-                gemRewardOffsetY = devGemRewardOffsetYDpState,
-                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
-                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
                 portraitBannerSmallOffsetX = 0f,
                 portraitBannerSmallOffsetY = 0f,
                 portraitBannerMediumOffsetX = 0f,
@@ -1097,12 +924,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYBroadDpState,
                 tableauOffsetX = devPortraitTableauOffsetXBroadDpState,
                 tableauOffsetY = devPortraitTableauOffsetYBroadDpState,
-                scoreboardOffsetX = devScoreboardOffsetXDpState,
-                scoreboardOffsetY = devScoreboardOffsetYDpState,
-                gemRewardOffsetX = devGemRewardOffsetXDpState,
-                gemRewardOffsetY = devGemRewardOffsetYDpState,
-                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
-                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
                 portraitBannerSmallOffsetX = 0f,
                 portraitBannerSmallOffsetY = 0f,
                 portraitBannerMediumOffsetX = 0f,
@@ -1119,12 +940,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYSquareDpState,
                 tableauOffsetX = devPortraitTableauOffsetXSquareDpState,
                 tableauOffsetY = devPortraitTableauOffsetYSquareDpState,
-                scoreboardOffsetX = devScoreboardOffsetXDpState,
-                scoreboardOffsetY = devScoreboardOffsetYDpState,
-                gemRewardOffsetX = devGemRewardOffsetXDpState,
-                gemRewardOffsetY = devGemRewardOffsetYDpState,
-                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
-                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
                 portraitBannerSmallOffsetX = 0f,
                 portraitBannerSmallOffsetY = 0f,
                 portraitBannerMediumOffsetX = 0f,
@@ -1136,6 +951,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             portraitPileStockOffsetY = devPortraitPileStockOffsetYDpState,
             portraitPileWasteOffsetX = devPortraitPileWasteOffsetXDpState,
             portraitPileWasteOffsetY = devPortraitPileWasteOffsetYDpState,
+            portraitScoreboardOffsetX = devScoreboardOffsetXDpState,
+            portraitScoreboardOffsetY = devScoreboardOffsetYDpState,
+            portraitGemRewardOffsetX = devGemRewardOffsetXDpState,
+            portraitGemRewardOffsetY = devGemRewardOffsetYDpState,
+            portraitTicketRewardOffsetX = devTicketRewardOffsetXDpState,
+            portraitTicketRewardOffsetY = devTicketRewardOffsetYDpState,
             landscapeSlimCompact = LandscapeAspectPileOffsets(
                 pileOverallOffsetX = devLandscapeOverallOffsetXSlimCompactDpState,
                 pileOverallOffsetY = devLandscapeOverallOffsetYSlimCompactDpState,
@@ -1145,12 +966,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimCompactDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSlimCompactDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYSlimCompactDpState,
-                scoreboardOffsetX = 0f,
-                scoreboardOffsetY = 0f,
-                gemRewardOffsetX = 0f,
-                gemRewardOffsetY = 0f,
-                ticketRewardOffsetX = 0f,
-                ticketRewardOffsetY = 0f,
                 landscapeBannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
                 landscapeBannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
                 landscapeBannerMediumOffsetX = 0f,
@@ -1167,12 +982,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSlimDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYSlimDpState,
-                scoreboardOffsetX = 0f,
-                scoreboardOffsetY = 0f,
-                gemRewardOffsetX = 0f,
-                gemRewardOffsetY = 0f,
-                ticketRewardOffsetX = 0f,
-                ticketRewardOffsetY = 0f,
                 landscapeBannerSmallOffsetX = 0f,
                 landscapeBannerSmallOffsetY = 0f,
                 landscapeBannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
@@ -1189,12 +998,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYClassicDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXClassicDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYClassicDpState,
-                scoreboardOffsetX = 0f,
-                scoreboardOffsetY = 0f,
-                gemRewardOffsetX = 0f,
-                gemRewardOffsetY = 0f,
-                ticketRewardOffsetX = 0f,
-                ticketRewardOffsetY = 0f,
                 landscapeBannerSmallOffsetX = 0f,
                 landscapeBannerSmallOffsetY = 0f,
                 landscapeBannerMediumOffsetX = 0f,
@@ -1211,12 +1014,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYBroadDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXBroadDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYBroadDpState,
-                scoreboardOffsetX = 0f,
-                scoreboardOffsetY = 0f,
-                gemRewardOffsetX = 0f,
-                gemRewardOffsetY = 0f,
-                ticketRewardOffsetX = 0f,
-                ticketRewardOffsetY = 0f,
                 landscapeBannerSmallOffsetX = 0f,
                 landscapeBannerSmallOffsetY = 0f,
                 landscapeBannerMediumOffsetX = 0f,
@@ -1233,12 +1030,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSquareDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSquareDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYSquareDpState,
-                scoreboardOffsetX = 0f,
-                scoreboardOffsetY = 0f,
-                gemRewardOffsetX = 0f,
-                gemRewardOffsetY = 0f,
-                ticketRewardOffsetX = 0f,
-                ticketRewardOffsetY = 0f,
                 landscapeBannerSmallOffsetX = 0f,
                 landscapeBannerSmallOffsetY = 0f,
                 landscapeBannerMediumOffsetX = 0f,
@@ -1249,11 +1040,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             landscapePileStockOffsetX = devLandscapePileStockOffsetXDpState,
             landscapePileStockOffsetY = devLandscapePileStockOffsetYDpState,
             landscapePileWasteOffsetX = devLandscapePileWasteOffsetXDpState,
-            landscapePileWasteOffsetY = devLandscapePileWasteOffsetYDpState
+            landscapePileWasteOffsetY = devLandscapePileWasteOffsetYDpState,
+            landscapeScoreboardOffsetX = devScoreboardOffsetXDpState,
+            landscapeScoreboardOffsetY = devScoreboardOffsetYDpState,
+            landscapeGemRewardOffsetX = devGemRewardOffsetXDpState,
+            landscapeGemRewardOffsetY = devGemRewardOffsetYDpState,
+            landscapeTicketRewardOffsetX = devTicketRewardOffsetXDpState,
+            landscapeTicketRewardOffsetY = devTicketRewardOffsetYDpState
         )
     }
 
     private fun applyLayoutScopedDevAdjusters(profile: LayoutProfileDevAdjusters) {
+        val isPortrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
         // ...existing code...
         devLandscapeOverallOffsetXSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetX
         devLandscapeOverallOffsetYSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetY
@@ -1315,12 +1113,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitTableauOffsetYSlimCompactDpState = profile.portraitSlimCompact.tableauOffsetY
         devSmallDeviceLandscapeBannerOffsetXDpState = profile.landscapeSlimCompact.landscapeBannerSmallOffsetX
         devSmallDeviceLandscapeBannerOffsetYDpState = profile.landscapeSlimCompact.landscapeBannerSmallOffsetY
-        devScoreboardOffsetXDpState = profile.portraitSlimCompact.scoreboardOffsetX
-        devScoreboardOffsetYDpState = profile.portraitSlimCompact.scoreboardOffsetY
-        devGemRewardOffsetXDpState = profile.portraitSlimCompact.gemRewardOffsetX
-        devGemRewardOffsetYDpState = profile.portraitSlimCompact.gemRewardOffsetY
-        devTicketRewardOffsetXDpState = profile.portraitSlimCompact.ticketRewardOffsetX
-        devTicketRewardOffsetYDpState = profile.portraitSlimCompact.ticketRewardOffsetY
+        // Apply HUD offsets from orientation-specific fields
+        devScoreboardOffsetXDpState = if (isPortrait) profile.portraitScoreboardOffsetX else profile.landscapeScoreboardOffsetX
+        devScoreboardOffsetYDpState = if (isPortrait) profile.portraitScoreboardOffsetY else profile.landscapeScoreboardOffsetY
+        devGemRewardOffsetXDpState = if (isPortrait) profile.portraitGemRewardOffsetX else profile.landscapeGemRewardOffsetX
+        devGemRewardOffsetYDpState = if (isPortrait) profile.portraitGemRewardOffsetY else profile.landscapeGemRewardOffsetY
+        devTicketRewardOffsetXDpState = if (isPortrait) profile.portraitTicketRewardOffsetX else profile.landscapeTicketRewardOffsetX
+        devTicketRewardOffsetYDpState = if (isPortrait) profile.portraitTicketRewardOffsetY else profile.landscapeTicketRewardOffsetY
         // ...existing code...
         devPortraitOverallOffsetXSlimDpState = profile.portraitSlim.pileOverallOffsetX
         devPortraitOverallOffsetYSlimDpState = profile.portraitSlim.pileOverallOffsetY
@@ -2226,6 +2025,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         super.onCreate(savedInstanceState)
         binding = ActivityGameBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        configureHudClipBehavior()
         applyImmersiveFullscreen()
 
         // Initialise starburst tester values from the auto-scaling profile so
@@ -4933,12 +4733,69 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun applyTopHudDevOffsets() {
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
         val ratioProfile = calculateDevOffsetRatioProfile()
-        binding.boardScoreboardContainer.translationX = scaleDevDpOffsetX(devScoreboardOffsetXDpState, ratioProfile)
-        binding.boardScoreboardContainer.translationY = scaleDevDpOffsetY(devScoreboardOffsetYDpState, ratioProfile)
-        binding.gemsContainer.translationX = scaleDevDpOffsetX(devGemRewardOffsetXDpState, ratioProfile)
-        binding.gemsContainer.translationY = scaleDevDpOffsetY(devGemRewardOffsetYDpState, ratioProfile)
-        binding.ticketsContainer.translationX = scaleDevDpOffsetX(devTicketRewardOffsetXDpState, ratioProfile)
-        binding.ticketsContainer.translationY = scaleDevDpOffsetY(devTicketRewardOffsetYDpState, ratioProfile)
+        val scoreboardX = scaleDevDpOffsetX(devScoreboardOffsetXDpState, ratioProfile)
+        val scoreboardY = scaleDevDpOffsetY(devScoreboardOffsetYDpState, ratioProfile)
+        val (clampedScoreboardX, clampedScoreboardY) = clampHudTranslationToRoot(
+            binding.boardScoreboardContainer,
+            scoreboardX,
+            scoreboardY
+        )
+        binding.boardScoreboardContainer.translationX = clampedScoreboardX
+        binding.boardScoreboardContainer.translationY = clampedScoreboardY
+
+        val gemsX = scaleDevDpOffsetX(devGemRewardOffsetXDpState, ratioProfile)
+        val gemsY = scaleDevDpOffsetY(devGemRewardOffsetYDpState, ratioProfile)
+        val (clampedGemsX, clampedGemsY) = clampHudTranslationToRoot(binding.gemsContainer, gemsX, gemsY)
+        binding.gemsContainer.translationX = clampedGemsX
+        binding.gemsContainer.translationY = clampedGemsY
+
+        val ticketsX = scaleDevDpOffsetX(devTicketRewardOffsetXDpState, ratioProfile)
+        val ticketsY = scaleDevDpOffsetY(devTicketRewardOffsetYDpState, ratioProfile)
+        val (clampedTicketsX, clampedTicketsY) = clampHudTranslationToRoot(binding.ticketsContainer, ticketsX, ticketsY)
+        binding.ticketsContainer.translationX = clampedTicketsX
+        binding.ticketsContainer.translationY = clampedTicketsY
+    }
+
+    private fun configureHudClipBehavior() {
+        binding.root.clipChildren = false
+        binding.root.clipToPadding = false
+        binding.infoSidePanel.clipChildren = false
+        binding.infoSidePanel.clipToPadding = false
+        binding.gemsContainer.clipChildren = false
+        binding.gemsContainer.clipToPadding = false
+        binding.ticketsContainer.clipChildren = false
+        binding.ticketsContainer.clipToPadding = false
+        (binding.infoSidePanel.parent as? ViewGroup)?.let { parent ->
+            parent.clipChildren = false
+            parent.clipToPadding = false
+        }
+    }
+
+    private fun clampHudTranslationToRoot(target: View, desiredX: Float, desiredY: Float): Pair<Float, Float> {
+        if (binding.root.width <= 0 || binding.root.height <= 0 || target.width <= 0 || target.height <= 0) {
+            return desiredX to desiredY
+        }
+
+        val rootLocation = IntArray(2)
+        val targetLocation = IntArray(2)
+        binding.root.getLocationInWindow(rootLocation)
+        target.getLocationInWindow(targetLocation)
+
+        // getLocationInWindow includes any currently-applied translation, so subtract it to get
+        // the view's natural (pre-translation) position. This ensures clamping bounds are stable
+        // regardless of what translations are already applied, preventing X from resetting when Y
+        // is changed (and vice-versa).
+        val currentLeft = (targetLocation[0] - rootLocation[0]).toFloat()
+        val currentTop = (targetLocation[1] - rootLocation[1]).toFloat()
+        val naturalLeft = currentLeft - target.translationX
+        val naturalTop = currentTop - target.translationY
+        val minTranslationX = -naturalLeft
+        val maxTranslationX = binding.root.width.toFloat() - (naturalLeft + target.width)
+        val minTranslationY = -naturalTop
+        val maxTranslationY = binding.root.height.toFloat() - (naturalTop + target.height)
+
+        return desiredX.coerceIn(minTranslationX, maxTranslationX) to
+            desiredY.coerceIn(minTranslationY, maxTranslationY)
     }
 
     private fun resolveLandscapeBannerTier(): LandscapeBannerTier {

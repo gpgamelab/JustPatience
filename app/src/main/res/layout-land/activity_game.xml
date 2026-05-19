@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:background="@color/background_color"
     tools:context=".ui.GameActivity">
 
@@ -23,6 +25,8 @@
         android:id="@+id/info_side_panel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="6dp"
@@ -136,6 +140,8 @@
             android:id="@+id/gems_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:layout_marginTop="4dp"
             android:layout_gravity="end">
 
@@ -170,6 +176,8 @@
             android:id="@+id/tickets_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:layout_marginTop="2dp"
             android:layout_gravity="end">
 
