@@ -77,7 +77,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val drawWasteOffsetX: Float = 0f,
         val drawWasteOffsetY: Float = 0f,
         val tableauOffsetX: Float = 0f,
-        val tableauOffsetY: Float = 0f
+        val tableauOffsetY: Float = 0f,
+        val scoreboardOffsetX: Float = 0f,
+        val scoreboardOffsetY: Float = 0f,
+        val gemRewardOffsetX: Float = 0f,
+        val gemRewardOffsetY: Float = 0f,
+        val ticketRewardOffsetX: Float = 0f,
+        val ticketRewardOffsetY: Float = 0f,
+        val portraitBannerSmallOffsetX: Float = 0f,
+        val portraitBannerSmallOffsetY: Float = 0f,
+        val portraitBannerMediumOffsetX: Float = 0f,
+        val portraitBannerMediumOffsetY: Float = 0f,
+        val portraitBannerLargeOffsetX: Float = 0f,
+        val portraitBannerLargeOffsetY: Float = 0f
     )
 
     private data class LandscapeAspectPileOffsets(
@@ -88,40 +100,41 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val drawWasteOffsetX: Float = 0f,
         val drawWasteOffsetY: Float = 0f,
         val tableauOffsetX: Float = 0f,
-        val tableauOffsetY: Float = 0f
+        val tableauOffsetY: Float = 0f,
+        val scoreboardOffsetX: Float = 0f,
+        val scoreboardOffsetY: Float = 0f,
+        val gemRewardOffsetX: Float = 0f,
+        val gemRewardOffsetY: Float = 0f,
+        val ticketRewardOffsetX: Float = 0f,
+        val ticketRewardOffsetY: Float = 0f,
+        val landscapeBannerSmallOffsetX: Float = 0f,
+        val landscapeBannerSmallOffsetY: Float = 0f,
+        val landscapeBannerMediumOffsetX: Float = 0f,
+        val landscapeBannerMediumOffsetY: Float = 0f,
+        val landscapeBannerLargeOffsetX: Float = 0f,
+        val landscapeBannerLargeOffsetY: Float = 0f
     )
 
-    private data class LayoutScopedDevAdjusters(
-        val landscapeAspectOffsetsSlimCompact: LandscapeAspectPileOffsets,
-        val landscapeAspectOffsetsSlim: LandscapeAspectPileOffsets,
-        val landscapeAspectOffsetsClassic: LandscapeAspectPileOffsets,
-        val landscapeAspectOffsetsBroad: LandscapeAspectPileOffsets,
-        val landscapeAspectOffsetsSquare: LandscapeAspectPileOffsets,
-        val landscapePileStockOffsetX: Float,
-        val landscapePileStockOffsetY: Float,
-        val landscapePileWasteOffsetX: Float,
-        val landscapePileWasteOffsetY: Float,
-        val portraitAspectOffsetsSlimCompact: PortraitAspectPileOffsets,
-        val portraitAspectOffsetsSlim: PortraitAspectPileOffsets,
-        val portraitAspectOffsetsClassic: PortraitAspectPileOffsets,
-        val portraitAspectOffsetsBroad: PortraitAspectPileOffsets,
-        val portraitAspectOffsetsSquare: PortraitAspectPileOffsets,
-        val portraitPileStockOffsetX: Float,
-        val portraitPileStockOffsetY: Float,
-        val portraitPileWasteOffsetX: Float,
-        val portraitPileWasteOffsetY: Float,
-        val landscapeBannerSmallOffsetX: Float,
-        val landscapeBannerSmallOffsetY: Float,
-        val landscapeBannerMediumOffsetX: Float,
-        val landscapeBannerMediumOffsetY: Float,
-        val landscapeBannerLargeOffsetX: Float,
-        val landscapeBannerLargeOffsetY: Float,
-        val scoreboardOffsetX: Float,
-        val scoreboardOffsetY: Float,
-        val gemRewardOffsetX: Float,
-        val gemRewardOffsetY: Float,
-        val ticketRewardOffsetX: Float,
-        val ticketRewardOffsetY: Float
+    // Consolidated device adjusters for a layout profile (one instance per deck layout type)
+    private data class LayoutProfileDevAdjusters(
+        val portraitSlimCompact: PortraitAspectPileOffsets = PortraitAspectPileOffsets(),
+        val portraitSlim: PortraitAspectPileOffsets = PortraitAspectPileOffsets(),
+        val portraitClassic: PortraitAspectPileOffsets = PortraitAspectPileOffsets(),
+        val portraitBroad: PortraitAspectPileOffsets = PortraitAspectPileOffsets(),
+        val portraitSquare: PortraitAspectPileOffsets = PortraitAspectPileOffsets(),
+        val portraitPileStockOffsetX: Float = 0f,
+        val portraitPileStockOffsetY: Float = 0f,
+        val portraitPileWasteOffsetX: Float = 0f,
+        val portraitPileWasteOffsetY: Float = 0f,
+        val landscapeSlimCompact: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
+        val landscapeSlim: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
+        val landscapeClassic: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
+        val landscapeBroad: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
+        val landscapeSquare: LandscapeAspectPileOffsets = LandscapeAspectPileOffsets(),
+        val landscapePileStockOffsetX: Float = 0f,
+        val landscapePileStockOffsetY: Float = 0f,
+        val landscapePileWasteOffsetX: Float = 0f,
+        val landscapePileWasteOffsetY: Float = 0f
     )
 
     private data class LayoutProfileKey(
@@ -131,186 +144,700 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     // Single source of hardcoded defaults for each hand/deck layout profile.
     // Edit these blocks when you want fixed per-profile values in code.
-    private val defaultClassic1DeckLayoutDevAdjusters = LayoutScopedDevAdjusters(
-        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = -280f,
-            pileOverallOffsetY = 0f
-        ),
-        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = -130f,
-            pileOverallOffsetY = 0f
-        ),
-        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = -115f,
-            pileOverallOffsetY = -25f
-        ),
-        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = -5f,
-            pileOverallOffsetY = -100f
-        ),
-        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = -5f,
-            pileOverallOffsetY = -100f
-        ),
-        landscapePileStockOffsetX = 0f,
-        landscapePileStockOffsetY = 0f,
-        landscapePileWasteOffsetX = 0f,
-        landscapePileWasteOffsetY = 0f,
-        portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
+    private val defaultClassic1DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
+        portraitSlimCompact = PortraitAspectPileOffsets(
             foundationOffsetX = -25f,
-            tableauOffsetY = 100f
+            tableauOffsetY = 100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
+        portraitSlim = PortraitAspectPileOffsets(
             pileOverallOffsetY = 0f,
             foundationOffsetX = -25f,
             drawWasteOffsetX = -10f,
-            tableauOffsetY = 80f
+            tableauOffsetY = 80f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
+        portraitClassic = PortraitAspectPileOffsets(
             pileOverallOffsetY = 90f,
             foundationOffsetX = -40f,
-            drawWasteOffsetX = -20f
+            drawWasteOffsetX = -20f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
+        portraitBroad = PortraitAspectPileOffsets(
             pileOverallOffsetY = -10f,
-            tableauOffsetY = 25f
+            tableauOffsetY = 25f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsSquare = PortraitAspectPileOffsets(pileOverallOffsetY = -70f),
+        portraitSquare = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -70f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
         portraitPileStockOffsetX = 0f,
         portraitPileStockOffsetY = 0f,
         portraitPileWasteOffsetX = 0f,
         portraitPileWasteOffsetY = 0f,
-        landscapeBannerSmallOffsetX = 0f,
-        landscapeBannerSmallOffsetY = 0f,
-        landscapeBannerMediumOffsetX = 0f,
-        landscapeBannerMediumOffsetY = 0f,
-        landscapeBannerLargeOffsetX = 0f,
-        landscapeBannerLargeOffsetY = 0f,
-        scoreboardOffsetX = 0f,
-        scoreboardOffsetY = 0f,
-        gemRewardOffsetX = -10f,
-        gemRewardOffsetY = 25f,
-        ticketRewardOffsetX = -10f,
-        ticketRewardOffsetY = 35f
+        landscapeSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -280f,
+            pileOverallOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeSlim = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -130f,
+            pileOverallOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeClassic = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -115f,
+            pileOverallOffsetY = -25f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeBroad = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeSquare = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapePileStockOffsetX = 0f,
+        landscapePileStockOffsetY = 0f,
+        landscapePileWasteOffsetX = 0f,
+        landscapePileWasteOffsetY = 0f
     )
 
-    private val defaultClassic2DeckLayoutDevAdjusters = defaultClassic1DeckLayoutDevAdjusters.copy(
-        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = -180f,
-            pileOverallOffsetY = -150f
+    private val defaultClassic2DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
+        portraitSlimCompact = PortraitAspectPileOffsets(
+            tableauOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+        portraitSlim = PortraitAspectPileOffsets(
+            pileOverallOffsetY = 0f,
+            foundationOffsetX = 0f,
+            drawWasteOffsetX = 0f,
+            tableauOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitClassic = PortraitAspectPileOffsets(
+            pileOverallOffsetX = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitBroad = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -10f,
+            tableauOffsetY = 25f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitSquare = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -70f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitPileStockOffsetX = 0f,
+        portraitPileStockOffsetY = 0f,
+        portraitPileWasteOffsetX = 0f,
+        portraitPileWasteOffsetY = 0f,
+        landscapeSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -180f,
+            pileOverallOffsetY = -150f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeSlim = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -110f,
             pileOverallOffsetY = -80f,
             foundationOffsetX = -30f,
             drawWasteOffsetX = 0f,
-            tableauOffsetY = -10f
+            tableauOffsetY = -10f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
+        landscapeClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = -5f,
-            pileOverallOffsetY = -100f
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
-            tableauOffsetY = 0f
+        landscapeBroad = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
-            pileOverallOffsetY = 0f,
-            foundationOffsetX = 0f,
-            drawWasteOffsetX = 0f,
-            tableauOffsetY = 0f
+        landscapeSquare = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = -5f,
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
-            pileOverallOffsetX = 0f
-        )
+        landscapePileStockOffsetX = 0f,
+        landscapePileStockOffsetY = 0f,
+        landscapePileWasteOffsetX = 0f,
+        landscapePileWasteOffsetY = 0f
     )
 
-    private val defaultMirrored1DeckLayoutDevAdjusters = defaultClassic1DeckLayoutDevAdjusters.copy(
-        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 380f,
-            pileOverallOffsetY = 0f
-        ),
-        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 260f,
-            pileOverallOffsetY = 0f
-        ),
-        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 275f,
-            pileOverallOffsetY = -25f,
-            foundationOffsetX = -15f
-        ),
-        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 190f,
-            pileOverallOffsetY = 0f
-        ),
-        landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 90f,
-            pileOverallOffsetY = -100f
-        ),
-        landscapeBannerLargeOffsetX = 0f,
-        portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
+    private val defaultMirrored1DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
+        portraitSlimCompact = PortraitAspectPileOffsets(
             foundationOffsetX = 25f,
             drawWasteOffsetX = 75f,
-            tableauOffsetY = 100f
+            tableauOffsetY = 100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
+        portraitSlim = PortraitAspectPileOffsets(
             pileOverallOffsetY = -0f,
             foundationOffsetX = 35f,
             drawWasteOffsetX = 55f,
-            tableauOffsetY = 80f
+            tableauOffsetY = 80f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
+        portraitClassic = PortraitAspectPileOffsets(
             pileOverallOffsetY = 100f,
             foundationOffsetX = 40f,
             drawWasteOffsetX = 75f,
-            tableauOffsetY = 10f
+            tableauOffsetY = 10f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
+        portraitBroad = PortraitAspectPileOffsets(
             pileOverallOffsetY = -70f,
             drawWasteOffsetX = 45f,
-            tableauOffsetY = 25f
-        )
+            tableauOffsetY = 25f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitSquare = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -70f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitPileStockOffsetX = 0f,
+        portraitPileStockOffsetY = 0f,
+        portraitPileWasteOffsetX = 0f,
+        portraitPileWasteOffsetY = 0f,
+        landscapeSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 380f,
+            pileOverallOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeSlim = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 260f,
+            pileOverallOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeClassic = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 275f,
+            pileOverallOffsetY = -25f,
+            foundationOffsetX = -15f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeBroad = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 190f,
+            pileOverallOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeSquare = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 90f,
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapePileStockOffsetX = 0f,
+        landscapePileStockOffsetY = 0f,
+        landscapePileWasteOffsetX = 0f,
+        landscapePileWasteOffsetY = 0f
     )
 
-    private val defaultMirrored2DeckLayoutDevAdjusters = defaultMirrored1DeckLayoutDevAdjusters.copy(
-        landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
-            pileOverallOffsetX = 280f,
-            pileOverallOffsetY = -150f
+    private val defaultMirrored2DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
+        portraitSlimCompact = PortraitAspectPileOffsets(
+            tableauOffsetY = 0f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
         ),
-        landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+        portraitSlim = PortraitAspectPileOffsets(
+            pileOverallOffsetY = 0f,
+            foundationOffsetX = 35f,
+            drawWasteOffsetX = 45f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitClassic = PortraitAspectPileOffsets(
+            pileOverallOffsetY = 0f,
+            foundationOffsetX = 35f,
+            drawWasteOffsetX = 65f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitBroad = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -10f,
+            drawWasteOffsetX = 45f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitSquare = PortraitAspectPileOffsets(
+            pileOverallOffsetY = -70f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            portraitBannerSmallOffsetX = 0f,
+            portraitBannerSmallOffsetY = 0f,
+            portraitBannerMediumOffsetX = 0f,
+            portraitBannerMediumOffsetY = 0f,
+            portraitBannerLargeOffsetX = 0f,
+            portraitBannerLargeOffsetY = 0f
+        ),
+        portraitPileStockOffsetX = 0f,
+        portraitPileStockOffsetY = 0f,
+        portraitPileWasteOffsetX = 0f,
+        portraitPileWasteOffsetY = 0f,
+        landscapeSlimCompact = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 280f,
+            pileOverallOffsetY = -150f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
+        ),
+        landscapeSlim = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 195f,
             pileOverallOffsetY = -80f,
             foundationOffsetX = 30f,
-            tableauOffsetY = 10f
+            tableauOffsetY = 10f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-        landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
+        landscapeClassic = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 165f,
-            pileOverallOffsetY = -100f
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-        landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
+        landscapeBroad = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 90f,
-            pileOverallOffsetY = -80f
+            pileOverallOffsetY = -80f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-
-
-
-
-        portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
-            tableauOffsetY = 0f
+        landscapeSquare = LandscapeAspectPileOffsets(
+            pileOverallOffsetX = 90f,
+            pileOverallOffsetY = -100f,
+            scoreboardOffsetX = 0f,
+            scoreboardOffsetY = 0f,
+            gemRewardOffsetX = -10f,
+            gemRewardOffsetY = 25f,
+            ticketRewardOffsetX = -10f,
+            ticketRewardOffsetY = 35f,
+            landscapeBannerSmallOffsetX = 0f,
+            landscapeBannerSmallOffsetY = 0f,
+            landscapeBannerMediumOffsetX = 0f,
+            landscapeBannerMediumOffsetY = 0f,
+            landscapeBannerLargeOffsetX = 0f,
+            landscapeBannerLargeOffsetY = 0f
         ),
-        portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
-            pileOverallOffsetY = 0f,
-            foundationOffsetX = 35f,
-            drawWasteOffsetX = 45f
-        ),
-        portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
-            pileOverallOffsetY = 0f,
-            foundationOffsetX = 35f,
-            drawWasteOffsetX = 65f
-        ),
-        portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
-            pileOverallOffsetY = -10f,
-            drawWasteOffsetX = 45f
-        )
+        landscapePileStockOffsetX = 0f,
+        landscapePileStockOffsetY = 0f,
+        landscapePileWasteOffsetX = 0f,
+        landscapePileWasteOffsetY = 0f
     )
 
     private enum class LandscapeBannerTier {
@@ -493,9 +1020,123 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private fun snapshotLayoutScopedDevAdjusters(): LayoutScopedDevAdjusters {
-        return LayoutScopedDevAdjusters(
-            landscapeAspectOffsetsSlimCompact = LandscapeAspectPileOffsets(
+    private fun snapshotLayoutScopedDevAdjusters(): LayoutProfileDevAdjusters {
+        return LayoutProfileDevAdjusters(
+            portraitSlimCompact = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXSlimCompactDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYSlimCompactDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXSlimCompactDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYSlimCompactDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXSlimCompactDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimCompactDpState,
+                tableauOffsetX = devPortraitTableauOffsetXSlimCompactDpState,
+                tableauOffsetY = devPortraitTableauOffsetYSlimCompactDpState,
+                scoreboardOffsetX = devScoreboardOffsetXDpState,
+                scoreboardOffsetY = devScoreboardOffsetYDpState,
+                gemRewardOffsetX = devGemRewardOffsetXDpState,
+                gemRewardOffsetY = devGemRewardOffsetYDpState,
+                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
+                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
+                portraitBannerSmallOffsetX = 0f,
+                portraitBannerSmallOffsetY = 0f,
+                portraitBannerMediumOffsetX = 0f,
+                portraitBannerMediumOffsetY = 0f,
+                portraitBannerLargeOffsetX = 0f,
+                portraitBannerLargeOffsetY = 0f
+            ),
+            portraitSlim = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXSlimDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYSlimDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXSlimDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYSlimDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXSlimDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimDpState,
+                tableauOffsetX = devPortraitTableauOffsetXSlimDpState,
+                tableauOffsetY = devPortraitTableauOffsetYSlimDpState,
+                scoreboardOffsetX = devScoreboardOffsetXDpState,
+                scoreboardOffsetY = devScoreboardOffsetYDpState,
+                gemRewardOffsetX = devGemRewardOffsetXDpState,
+                gemRewardOffsetY = devGemRewardOffsetYDpState,
+                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
+                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
+                portraitBannerSmallOffsetX = 0f,
+                portraitBannerSmallOffsetY = 0f,
+                portraitBannerMediumOffsetX = 0f,
+                portraitBannerMediumOffsetY = 0f,
+                portraitBannerLargeOffsetX = 0f,
+                portraitBannerLargeOffsetY = 0f
+            ),
+            portraitClassic = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXClassicDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYClassicDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXClassicDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYClassicDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXClassicDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYClassicDpState,
+                tableauOffsetX = devPortraitTableauOffsetXClassicDpState,
+                tableauOffsetY = devPortraitTableauOffsetYClassicDpState,
+                scoreboardOffsetX = devScoreboardOffsetXDpState,
+                scoreboardOffsetY = devScoreboardOffsetYDpState,
+                gemRewardOffsetX = devGemRewardOffsetXDpState,
+                gemRewardOffsetY = devGemRewardOffsetYDpState,
+                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
+                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
+                portraitBannerSmallOffsetX = 0f,
+                portraitBannerSmallOffsetY = 0f,
+                portraitBannerMediumOffsetX = 0f,
+                portraitBannerMediumOffsetY = 0f,
+                portraitBannerLargeOffsetX = 0f,
+                portraitBannerLargeOffsetY = 0f
+            ),
+            portraitBroad = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXBroadDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYBroadDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXBroadDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYBroadDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXBroadDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYBroadDpState,
+                tableauOffsetX = devPortraitTableauOffsetXBroadDpState,
+                tableauOffsetY = devPortraitTableauOffsetYBroadDpState,
+                scoreboardOffsetX = devScoreboardOffsetXDpState,
+                scoreboardOffsetY = devScoreboardOffsetYDpState,
+                gemRewardOffsetX = devGemRewardOffsetXDpState,
+                gemRewardOffsetY = devGemRewardOffsetYDpState,
+                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
+                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
+                portraitBannerSmallOffsetX = 0f,
+                portraitBannerSmallOffsetY = 0f,
+                portraitBannerMediumOffsetX = 0f,
+                portraitBannerMediumOffsetY = 0f,
+                portraitBannerLargeOffsetX = 0f,
+                portraitBannerLargeOffsetY = 0f
+            ),
+            portraitSquare = PortraitAspectPileOffsets(
+                pileOverallOffsetX = devPortraitOverallOffsetXSquareDpState,
+                pileOverallOffsetY = devPortraitOverallOffsetYSquareDpState,
+                foundationOffsetX = devPortraitFoundationOffsetXSquareDpState,
+                foundationOffsetY = devPortraitFoundationOffsetYSquareDpState,
+                drawWasteOffsetX = devPortraitDrawWasteOffsetXSquareDpState,
+                drawWasteOffsetY = devPortraitDrawWasteOffsetYSquareDpState,
+                tableauOffsetX = devPortraitTableauOffsetXSquareDpState,
+                tableauOffsetY = devPortraitTableauOffsetYSquareDpState,
+                scoreboardOffsetX = devScoreboardOffsetXDpState,
+                scoreboardOffsetY = devScoreboardOffsetYDpState,
+                gemRewardOffsetX = devGemRewardOffsetXDpState,
+                gemRewardOffsetY = devGemRewardOffsetYDpState,
+                ticketRewardOffsetX = devTicketRewardOffsetXDpState,
+                ticketRewardOffsetY = devTicketRewardOffsetYDpState,
+                portraitBannerSmallOffsetX = 0f,
+                portraitBannerSmallOffsetY = 0f,
+                portraitBannerMediumOffsetX = 0f,
+                portraitBannerMediumOffsetY = 0f,
+                portraitBannerLargeOffsetX = 0f,
+                portraitBannerLargeOffsetY = 0f
+            ),
+            portraitPileStockOffsetX = devPortraitPileStockOffsetXDpState,
+            portraitPileStockOffsetY = devPortraitPileStockOffsetYDpState,
+            portraitPileWasteOffsetX = devPortraitPileWasteOffsetXDpState,
+            portraitPileWasteOffsetY = devPortraitPileWasteOffsetYDpState,
+            landscapeSlimCompact = LandscapeAspectPileOffsets(
                 pileOverallOffsetX = devLandscapeOverallOffsetXSlimCompactDpState,
                 pileOverallOffsetY = devLandscapeOverallOffsetYSlimCompactDpState,
                 foundationOffsetX = devLandscapeFoundationOffsetXSlimCompactDpState,
@@ -503,9 +1144,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetX = devLandscapeDrawWasteOffsetXSlimCompactDpState,
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimCompactDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSlimCompactDpState,
-                tableauOffsetY = devLandscapeTableauOffsetYSlimCompactDpState
+                tableauOffsetY = devLandscapeTableauOffsetYSlimCompactDpState,
+                scoreboardOffsetX = 0f,
+                scoreboardOffsetY = 0f,
+                gemRewardOffsetX = 0f,
+                gemRewardOffsetY = 0f,
+                ticketRewardOffsetX = 0f,
+                ticketRewardOffsetY = 0f,
+                landscapeBannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
+                landscapeBannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
+                landscapeBannerMediumOffsetX = 0f,
+                landscapeBannerMediumOffsetY = 0f,
+                landscapeBannerLargeOffsetX = 0f,
+                landscapeBannerLargeOffsetY = 0f
             ),
-            landscapeAspectOffsetsSlim = LandscapeAspectPileOffsets(
+            landscapeSlim = LandscapeAspectPileOffsets(
                 pileOverallOffsetX = devLandscapeOverallOffsetXSlimDpState,
                 pileOverallOffsetY = devLandscapeOverallOffsetYSlimDpState,
                 foundationOffsetX = devLandscapeFoundationOffsetXSlimDpState,
@@ -513,9 +1166,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetX = devLandscapeDrawWasteOffsetXSlimDpState,
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSlimDpState,
-                tableauOffsetY = devLandscapeTableauOffsetYSlimDpState
+                tableauOffsetY = devLandscapeTableauOffsetYSlimDpState,
+                scoreboardOffsetX = 0f,
+                scoreboardOffsetY = 0f,
+                gemRewardOffsetX = 0f,
+                gemRewardOffsetY = 0f,
+                ticketRewardOffsetX = 0f,
+                ticketRewardOffsetY = 0f,
+                landscapeBannerSmallOffsetX = 0f,
+                landscapeBannerSmallOffsetY = 0f,
+                landscapeBannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
+                landscapeBannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
+                landscapeBannerLargeOffsetX = 0f,
+                landscapeBannerLargeOffsetY = 0f
             ),
-            landscapeAspectOffsetsClassic = LandscapeAspectPileOffsets(
+            landscapeClassic = LandscapeAspectPileOffsets(
                 pileOverallOffsetX = devLandscapeOverallOffsetXClassicDpState,
                 pileOverallOffsetY = devLandscapeOverallOffsetYClassicDpState,
                 foundationOffsetX = devLandscapeFoundationOffsetXClassicDpState,
@@ -523,9 +1188,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetX = devLandscapeDrawWasteOffsetXClassicDpState,
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYClassicDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXClassicDpState,
-                tableauOffsetY = devLandscapeTableauOffsetYClassicDpState
+                tableauOffsetY = devLandscapeTableauOffsetYClassicDpState,
+                scoreboardOffsetX = 0f,
+                scoreboardOffsetY = 0f,
+                gemRewardOffsetX = 0f,
+                gemRewardOffsetY = 0f,
+                ticketRewardOffsetX = 0f,
+                ticketRewardOffsetY = 0f,
+                landscapeBannerSmallOffsetX = 0f,
+                landscapeBannerSmallOffsetY = 0f,
+                landscapeBannerMediumOffsetX = 0f,
+                landscapeBannerMediumOffsetY = 0f,
+                landscapeBannerLargeOffsetX = 0f,
+                landscapeBannerLargeOffsetY = 0f
             ),
-            landscapeAspectOffsetsBroad = LandscapeAspectPileOffsets(
+            landscapeBroad = LandscapeAspectPileOffsets(
                 pileOverallOffsetX = devLandscapeOverallOffsetXBroadDpState,
                 pileOverallOffsetY = devLandscapeOverallOffsetYBroadDpState,
                 foundationOffsetX = devLandscapeFoundationOffsetXBroadDpState,
@@ -533,9 +1210,21 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetX = devLandscapeDrawWasteOffsetXBroadDpState,
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYBroadDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXBroadDpState,
-                tableauOffsetY = devLandscapeTableauOffsetYBroadDpState
+                tableauOffsetY = devLandscapeTableauOffsetYBroadDpState,
+                scoreboardOffsetX = 0f,
+                scoreboardOffsetY = 0f,
+                gemRewardOffsetX = 0f,
+                gemRewardOffsetY = 0f,
+                ticketRewardOffsetX = 0f,
+                ticketRewardOffsetY = 0f,
+                landscapeBannerSmallOffsetX = 0f,
+                landscapeBannerSmallOffsetY = 0f,
+                landscapeBannerMediumOffsetX = 0f,
+                landscapeBannerMediumOffsetY = 0f,
+                landscapeBannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
+                landscapeBannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState
             ),
-            landscapeAspectOffsetsSquare = LandscapeAspectPileOffsets(
+            landscapeSquare = LandscapeAspectPileOffsets(
                 pileOverallOffsetX = devLandscapeOverallOffsetXSquareDpState,
                 pileOverallOffsetY = devLandscapeOverallOffsetYSquareDpState,
                 foundationOffsetX = devLandscapeFoundationOffsetXSquareDpState,
@@ -543,182 +1232,140 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetX = devLandscapeDrawWasteOffsetXSquareDpState,
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSquareDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSquareDpState,
-                tableauOffsetY = devLandscapeTableauOffsetYSquareDpState
+                tableauOffsetY = devLandscapeTableauOffsetYSquareDpState,
+                scoreboardOffsetX = 0f,
+                scoreboardOffsetY = 0f,
+                gemRewardOffsetX = 0f,
+                gemRewardOffsetY = 0f,
+                ticketRewardOffsetX = 0f,
+                ticketRewardOffsetY = 0f,
+                landscapeBannerSmallOffsetX = 0f,
+                landscapeBannerSmallOffsetY = 0f,
+                landscapeBannerMediumOffsetX = 0f,
+                landscapeBannerMediumOffsetY = 0f,
+                landscapeBannerLargeOffsetX = 0f,
+                landscapeBannerLargeOffsetY = 0f
             ),
             landscapePileStockOffsetX = devLandscapePileStockOffsetXDpState,
             landscapePileStockOffsetY = devLandscapePileStockOffsetYDpState,
             landscapePileWasteOffsetX = devLandscapePileWasteOffsetXDpState,
-            landscapePileWasteOffsetY = devLandscapePileWasteOffsetYDpState,
-            portraitAspectOffsetsSlimCompact = PortraitAspectPileOffsets(
-                pileOverallOffsetX = devPortraitOverallOffsetXSlimCompactDpState,
-                pileOverallOffsetY = devPortraitOverallOffsetYSlimCompactDpState,
-                foundationOffsetX = devPortraitFoundationOffsetXSlimCompactDpState,
-                foundationOffsetY = devPortraitFoundationOffsetYSlimCompactDpState,
-                drawWasteOffsetX  = devPortraitDrawWasteOffsetXSlimCompactDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSlimCompactDpState,
-                tableauOffsetX = devPortraitTableauOffsetXSlimCompactDpState,
-                tableauOffsetY = devPortraitTableauOffsetYSlimCompactDpState
-            ),
-            portraitAspectOffsetsSlim = PortraitAspectPileOffsets(
-                pileOverallOffsetX = devPortraitOverallOffsetXSlimDpState,
-                pileOverallOffsetY = devPortraitOverallOffsetYSlimDpState,
-                foundationOffsetX = devPortraitFoundationOffsetXSlimDpState,
-                foundationOffsetY = devPortraitFoundationOffsetYSlimDpState,
-                drawWasteOffsetX  = devPortraitDrawWasteOffsetXSlimDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSlimDpState,
-                tableauOffsetX = devPortraitTableauOffsetXSlimDpState,
-                tableauOffsetY = devPortraitTableauOffsetYSlimDpState
-            ),
-            portraitAspectOffsetsClassic = PortraitAspectPileOffsets(
-                pileOverallOffsetX = devPortraitOverallOffsetXClassicDpState,
-                pileOverallOffsetY = devPortraitOverallOffsetYClassicDpState,
-                foundationOffsetX = devPortraitFoundationOffsetXClassicDpState,
-                foundationOffsetY = devPortraitFoundationOffsetYClassicDpState,
-                drawWasteOffsetX  = devPortraitDrawWasteOffsetXClassicDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYClassicDpState,
-                tableauOffsetX = devPortraitTableauOffsetXClassicDpState,
-                tableauOffsetY = devPortraitTableauOffsetYClassicDpState
-            ),
-            portraitAspectOffsetsBroad = PortraitAspectPileOffsets(
-                pileOverallOffsetX = devPortraitOverallOffsetXBroadDpState,
-                pileOverallOffsetY = devPortraitOverallOffsetYBroadDpState,
-                foundationOffsetX = devPortraitFoundationOffsetXBroadDpState,
-                foundationOffsetY = devPortraitFoundationOffsetYBroadDpState,
-                drawWasteOffsetX  = devPortraitDrawWasteOffsetXBroadDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYBroadDpState,
-                tableauOffsetX = devPortraitTableauOffsetXBroadDpState,
-                tableauOffsetY = devPortraitTableauOffsetYBroadDpState
-            ),
-            portraitAspectOffsetsSquare = PortraitAspectPileOffsets(
-                pileOverallOffsetX = devPortraitOverallOffsetXSquareDpState,
-                pileOverallOffsetY = devPortraitOverallOffsetYSquareDpState,
-                foundationOffsetX = devPortraitFoundationOffsetXSquareDpState,
-                foundationOffsetY = devPortraitFoundationOffsetYSquareDpState,
-                drawWasteOffsetX  = devPortraitDrawWasteOffsetXSquareDpState,
-                drawWasteOffsetY  = devPortraitDrawWasteOffsetYSquareDpState,
-                tableauOffsetX = devPortraitTableauOffsetXSquareDpState,
-                tableauOffsetY = devPortraitTableauOffsetYSquareDpState
-            ),
-            portraitPileStockOffsetX = devPortraitPileStockOffsetXDpState,
-            portraitPileStockOffsetY = devPortraitPileStockOffsetYDpState,
-            portraitPileWasteOffsetX = devPortraitPileWasteOffsetXDpState,
-            portraitPileWasteOffsetY = devPortraitPileWasteOffsetYDpState,
-            landscapeBannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
-            landscapeBannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
-            landscapeBannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
-            landscapeBannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
-            landscapeBannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
-            landscapeBannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState,
-            scoreboardOffsetX = devScoreboardOffsetXDpState,
-            scoreboardOffsetY = devScoreboardOffsetYDpState,
-            gemRewardOffsetX = devGemRewardOffsetXDpState,
-            gemRewardOffsetY = devGemRewardOffsetYDpState,
-            ticketRewardOffsetX = devTicketRewardOffsetXDpState,
-            ticketRewardOffsetY = devTicketRewardOffsetYDpState
+            landscapePileWasteOffsetY = devLandscapePileWasteOffsetYDpState
         )
     }
 
-    private fun applyLayoutScopedDevAdjusters(profile: LayoutScopedDevAdjusters) {
-        devLandscapeOverallOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.pileOverallOffsetX
-        devLandscapeOverallOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.pileOverallOffsetY
-        devLandscapeFoundationOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.foundationOffsetX
-        devLandscapeFoundationOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.foundationOffsetY
-        devLandscapeDrawWasteOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.drawWasteOffsetX
-        devLandscapeDrawWasteOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.drawWasteOffsetY
-        devLandscapeTableauOffsetXSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.tableauOffsetX
-        devLandscapeTableauOffsetYSlimCompactDpState = profile.landscapeAspectOffsetsSlimCompact.tableauOffsetY
-        devLandscapeOverallOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.pileOverallOffsetX
-        devLandscapeOverallOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.pileOverallOffsetY
-        devLandscapeFoundationOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.foundationOffsetX
-        devLandscapeFoundationOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.foundationOffsetY
-        devLandscapeDrawWasteOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.drawWasteOffsetX
-        devLandscapeDrawWasteOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.drawWasteOffsetY
-        devLandscapeTableauOffsetXSlimDpState = profile.landscapeAspectOffsetsSlim.tableauOffsetX
-        devLandscapeTableauOffsetYSlimDpState = profile.landscapeAspectOffsetsSlim.tableauOffsetY
-        devLandscapeOverallOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.pileOverallOffsetX
-        devLandscapeOverallOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.pileOverallOffsetY
-        devLandscapeFoundationOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.foundationOffsetX
-        devLandscapeFoundationOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.foundationOffsetY
-        devLandscapeDrawWasteOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.drawWasteOffsetX
-        devLandscapeDrawWasteOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.drawWasteOffsetY
-        devLandscapeTableauOffsetXClassicDpState = profile.landscapeAspectOffsetsClassic.tableauOffsetX
-        devLandscapeTableauOffsetYClassicDpState = profile.landscapeAspectOffsetsClassic.tableauOffsetY
-        devLandscapeOverallOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.pileOverallOffsetX
-        devLandscapeOverallOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.pileOverallOffsetY
-        devLandscapeFoundationOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.foundationOffsetX
-        devLandscapeFoundationOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.foundationOffsetY
-        devLandscapeDrawWasteOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.drawWasteOffsetX
-        devLandscapeDrawWasteOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.drawWasteOffsetY
-        devLandscapeTableauOffsetXBroadDpState = profile.landscapeAspectOffsetsBroad.tableauOffsetX
-        devLandscapeTableauOffsetYBroadDpState = profile.landscapeAspectOffsetsBroad.tableauOffsetY
-        devLandscapeOverallOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.pileOverallOffsetX
-        devLandscapeOverallOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.pileOverallOffsetY
-        devLandscapeFoundationOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.foundationOffsetX
-        devLandscapeFoundationOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.foundationOffsetY
-        devLandscapeDrawWasteOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.drawWasteOffsetX
-        devLandscapeDrawWasteOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.drawWasteOffsetY
-        devLandscapeTableauOffsetXSquareDpState = profile.landscapeAspectOffsetsSquare.tableauOffsetX
-        devLandscapeTableauOffsetYSquareDpState = profile.landscapeAspectOffsetsSquare.tableauOffsetY
+    private fun applyLayoutScopedDevAdjusters(profile: LayoutProfileDevAdjusters) {
+        // ...existing code...
+        devLandscapeOverallOffsetXSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetX
+        devLandscapeOverallOffsetYSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetY
+        devLandscapeFoundationOffsetXSlimCompactDpState = profile.landscapeSlimCompact.foundationOffsetX
+        devLandscapeFoundationOffsetYSlimCompactDpState = profile.landscapeSlimCompact.foundationOffsetY
+        devLandscapeDrawWasteOffsetXSlimCompactDpState = profile.landscapeSlimCompact.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYSlimCompactDpState = profile.landscapeSlimCompact.drawWasteOffsetY
+        devLandscapeTableauOffsetXSlimCompactDpState = profile.landscapeSlimCompact.tableauOffsetX
+        devLandscapeTableauOffsetYSlimCompactDpState = profile.landscapeSlimCompact.tableauOffsetY
+        // ...existing code...
+        devLandscapeOverallOffsetXSlimDpState = profile.landscapeSlim.pileOverallOffsetX
+        devLandscapeOverallOffsetYSlimDpState = profile.landscapeSlim.pileOverallOffsetY
+        devLandscapeFoundationOffsetXSlimDpState = profile.landscapeSlim.foundationOffsetX
+        devLandscapeFoundationOffsetYSlimDpState = profile.landscapeSlim.foundationOffsetY
+        devLandscapeDrawWasteOffsetXSlimDpState = profile.landscapeSlim.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYSlimDpState = profile.landscapeSlim.drawWasteOffsetY
+        devLandscapeTableauOffsetXSlimDpState = profile.landscapeSlim.tableauOffsetX
+        devLandscapeTableauOffsetYSlimDpState = profile.landscapeSlim.tableauOffsetY
+        // ...existing code...
+        devLandscapeOverallOffsetXClassicDpState = profile.landscapeClassic.pileOverallOffsetX
+        devLandscapeOverallOffsetYClassicDpState = profile.landscapeClassic.pileOverallOffsetY
+        devLandscapeFoundationOffsetXClassicDpState = profile.landscapeClassic.foundationOffsetX
+        devLandscapeFoundationOffsetYClassicDpState = profile.landscapeClassic.foundationOffsetY
+        devLandscapeDrawWasteOffsetXClassicDpState = profile.landscapeClassic.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYClassicDpState = profile.landscapeClassic.drawWasteOffsetY
+        devLandscapeTableauOffsetXClassicDpState = profile.landscapeClassic.tableauOffsetX
+        devLandscapeTableauOffsetYClassicDpState = profile.landscapeClassic.tableauOffsetY
+        // ...existing code...
+        devLandscapeOverallOffsetXBroadDpState = profile.landscapeBroad.pileOverallOffsetX
+        devLandscapeOverallOffsetYBroadDpState = profile.landscapeBroad.pileOverallOffsetY
+        devLandscapeFoundationOffsetXBroadDpState = profile.landscapeBroad.foundationOffsetX
+        devLandscapeFoundationOffsetYBroadDpState = profile.landscapeBroad.foundationOffsetY
+        devLandscapeDrawWasteOffsetXBroadDpState = profile.landscapeBroad.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYBroadDpState = profile.landscapeBroad.drawWasteOffsetY
+        devLandscapeTableauOffsetXBroadDpState = profile.landscapeBroad.tableauOffsetX
+        devLandscapeTableauOffsetYBroadDpState = profile.landscapeBroad.tableauOffsetY
+        // ...existing code...
+        devLandscapeOverallOffsetXSquareDpState = profile.landscapeSquare.pileOverallOffsetX
+        devLandscapeOverallOffsetYSquareDpState = profile.landscapeSquare.pileOverallOffsetY
+        devLandscapeFoundationOffsetXSquareDpState = profile.landscapeSquare.foundationOffsetX
+        devLandscapeFoundationOffsetYSquareDpState = profile.landscapeSquare.foundationOffsetY
+        devLandscapeDrawWasteOffsetXSquareDpState = profile.landscapeSquare.drawWasteOffsetX
+        devLandscapeDrawWasteOffsetYSquareDpState = profile.landscapeSquare.drawWasteOffsetY
+        devLandscapeTableauOffsetXSquareDpState = profile.landscapeSquare.tableauOffsetX
+        devLandscapeTableauOffsetYSquareDpState = profile.landscapeSquare.tableauOffsetY
+        // ...existing code...
         devLandscapePileStockOffsetXDpState = profile.landscapePileStockOffsetX
         devLandscapePileStockOffsetYDpState = profile.landscapePileStockOffsetY
         devLandscapePileWasteOffsetXDpState = profile.landscapePileWasteOffsetX
         devLandscapePileWasteOffsetYDpState = profile.landscapePileWasteOffsetY
-        devPortraitOverallOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.pileOverallOffsetX
-        devPortraitOverallOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.pileOverallOffsetY
-        devPortraitFoundationOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.foundationOffsetX
-        devPortraitFoundationOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.foundationOffsetY
-        devPortraitDrawWasteOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.drawWasteOffsetX
-        devPortraitDrawWasteOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.drawWasteOffsetY
-        devPortraitTableauOffsetXSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.tableauOffsetX
-        devPortraitTableauOffsetYSlimCompactDpState = profile.portraitAspectOffsetsSlimCompact.tableauOffsetY
-        devPortraitOverallOffsetXSlimDpState = profile.portraitAspectOffsetsSlim.pileOverallOffsetX
-        devPortraitOverallOffsetYSlimDpState = profile.portraitAspectOffsetsSlim.pileOverallOffsetY
-        devPortraitFoundationOffsetXSlimDpState    = profile.portraitAspectOffsetsSlim.foundationOffsetX
-        devPortraitFoundationOffsetYSlimDpState    = profile.portraitAspectOffsetsSlim.foundationOffsetY
-        devPortraitDrawWasteOffsetXSlimDpState     = profile.portraitAspectOffsetsSlim.drawWasteOffsetX
-        devPortraitDrawWasteOffsetYSlimDpState     = profile.portraitAspectOffsetsSlim.drawWasteOffsetY
-        devPortraitTableauOffsetXSlimDpState = profile.portraitAspectOffsetsSlim.tableauOffsetX
-        devPortraitTableauOffsetYSlimDpState = profile.portraitAspectOffsetsSlim.tableauOffsetY
-        devPortraitOverallOffsetXClassicDpState = profile.portraitAspectOffsetsClassic.pileOverallOffsetX
-        devPortraitOverallOffsetYClassicDpState = profile.portraitAspectOffsetsClassic.pileOverallOffsetY
-        devPortraitFoundationOffsetXClassicDpState = profile.portraitAspectOffsetsClassic.foundationOffsetX
-        devPortraitFoundationOffsetYClassicDpState = profile.portraitAspectOffsetsClassic.foundationOffsetY
-        devPortraitDrawWasteOffsetXClassicDpState  = profile.portraitAspectOffsetsClassic.drawWasteOffsetX
-        devPortraitDrawWasteOffsetYClassicDpState  = profile.portraitAspectOffsetsClassic.drawWasteOffsetY
-        devPortraitTableauOffsetXClassicDpState = profile.portraitAspectOffsetsClassic.tableauOffsetX
-        devPortraitTableauOffsetYClassicDpState = profile.portraitAspectOffsetsClassic.tableauOffsetY
-        devPortraitOverallOffsetXBroadDpState = profile.portraitAspectOffsetsBroad.pileOverallOffsetX
-        devPortraitOverallOffsetYBroadDpState = profile.portraitAspectOffsetsBroad.pileOverallOffsetY
-        devPortraitFoundationOffsetXBroadDpState   = profile.portraitAspectOffsetsBroad.foundationOffsetX
-        devPortraitFoundationOffsetYBroadDpState   = profile.portraitAspectOffsetsBroad.foundationOffsetY
-        devPortraitDrawWasteOffsetXBroadDpState    = profile.portraitAspectOffsetsBroad.drawWasteOffsetX
-        devPortraitDrawWasteOffsetYBroadDpState    = profile.portraitAspectOffsetsBroad.drawWasteOffsetY
-        devPortraitTableauOffsetXBroadDpState = profile.portraitAspectOffsetsBroad.tableauOffsetX
-        devPortraitTableauOffsetYBroadDpState = profile.portraitAspectOffsetsBroad.tableauOffsetY
-        devPortraitOverallOffsetXSquareDpState = profile.portraitAspectOffsetsSquare.pileOverallOffsetX
-        devPortraitOverallOffsetYSquareDpState = profile.portraitAspectOffsetsSquare.pileOverallOffsetY
-        devPortraitFoundationOffsetXSquareDpState  = profile.portraitAspectOffsetsSquare.foundationOffsetX
-        devPortraitFoundationOffsetYSquareDpState  = profile.portraitAspectOffsetsSquare.foundationOffsetY
-        devPortraitDrawWasteOffsetXSquareDpState   = profile.portraitAspectOffsetsSquare.drawWasteOffsetX
-        devPortraitDrawWasteOffsetYSquareDpState   = profile.portraitAspectOffsetsSquare.drawWasteOffsetY
-        devPortraitTableauOffsetXSquareDpState = profile.portraitAspectOffsetsSquare.tableauOffsetX
-        devPortraitTableauOffsetYSquareDpState = profile.portraitAspectOffsetsSquare.tableauOffsetY
+        // ...existing code...
+        devPortraitOverallOffsetXSlimCompactDpState = profile.portraitSlimCompact.pileOverallOffsetX
+        devPortraitOverallOffsetYSlimCompactDpState = profile.portraitSlimCompact.pileOverallOffsetY
+        devPortraitFoundationOffsetXSlimCompactDpState = profile.portraitSlimCompact.foundationOffsetX
+        devPortraitFoundationOffsetYSlimCompactDpState = profile.portraitSlimCompact.foundationOffsetY
+        devPortraitDrawWasteOffsetXSlimCompactDpState = profile.portraitSlimCompact.drawWasteOffsetX
+        devPortraitDrawWasteOffsetYSlimCompactDpState = profile.portraitSlimCompact.drawWasteOffsetY
+        devPortraitTableauOffsetXSlimCompactDpState = profile.portraitSlimCompact.tableauOffsetX
+        devPortraitTableauOffsetYSlimCompactDpState = profile.portraitSlimCompact.tableauOffsetY
+        devSmallDeviceLandscapeBannerOffsetXDpState = profile.landscapeSlimCompact.landscapeBannerSmallOffsetX
+        devSmallDeviceLandscapeBannerOffsetYDpState = profile.landscapeSlimCompact.landscapeBannerSmallOffsetY
+        devScoreboardOffsetXDpState = profile.portraitSlimCompact.scoreboardOffsetX
+        devScoreboardOffsetYDpState = profile.portraitSlimCompact.scoreboardOffsetY
+        devGemRewardOffsetXDpState = profile.portraitSlimCompact.gemRewardOffsetX
+        devGemRewardOffsetYDpState = profile.portraitSlimCompact.gemRewardOffsetY
+        devTicketRewardOffsetXDpState = profile.portraitSlimCompact.ticketRewardOffsetX
+        devTicketRewardOffsetYDpState = profile.portraitSlimCompact.ticketRewardOffsetY
+        // ...existing code...
+        devPortraitOverallOffsetXSlimDpState = profile.portraitSlim.pileOverallOffsetX
+        devPortraitOverallOffsetYSlimDpState = profile.portraitSlim.pileOverallOffsetY
+        devPortraitFoundationOffsetXSlimDpState    = profile.portraitSlim.foundationOffsetX
+        devPortraitFoundationOffsetYSlimDpState    = profile.portraitSlim.foundationOffsetY
+        devPortraitDrawWasteOffsetXSlimDpState     = profile.portraitSlim.drawWasteOffsetX
+        devPortraitDrawWasteOffsetYSlimDpState     = profile.portraitSlim.drawWasteOffsetY
+        devPortraitTableauOffsetXSlimDpState = profile.portraitSlim.tableauOffsetX
+        devPortraitTableauOffsetYSlimDpState = profile.portraitSlim.tableauOffsetY
+        devMediumDeviceLandscapeBannerOffsetXDpState = profile.landscapeSlim.landscapeBannerMediumOffsetX
+        devMediumDeviceLandscapeBannerOffsetYDpState = profile.landscapeSlim.landscapeBannerMediumOffsetY
+        // ...existing code...
+        devPortraitOverallOffsetXClassicDpState = profile.portraitClassic.pileOverallOffsetX
+        devPortraitOverallOffsetYClassicDpState = profile.portraitClassic.pileOverallOffsetY
+        devPortraitFoundationOffsetXClassicDpState = profile.portraitClassic.foundationOffsetX
+        devPortraitFoundationOffsetYClassicDpState = profile.portraitClassic.foundationOffsetY
+        devPortraitDrawWasteOffsetXClassicDpState  = profile.portraitClassic.drawWasteOffsetX
+        devPortraitDrawWasteOffsetYClassicDpState  = profile.portraitClassic.drawWasteOffsetY
+        devPortraitTableauOffsetXClassicDpState = profile.portraitClassic.tableauOffsetX
+        devPortraitTableauOffsetYClassicDpState = profile.portraitClassic.tableauOffsetY
+        // ...existing code...
+        devPortraitOverallOffsetXBroadDpState = profile.portraitBroad.pileOverallOffsetX
+        devPortraitOverallOffsetYBroadDpState = profile.portraitBroad.pileOverallOffsetY
+        devPortraitFoundationOffsetXBroadDpState   = profile.portraitBroad.foundationOffsetX
+        devPortraitFoundationOffsetYBroadDpState   = profile.portraitBroad.foundationOffsetY
+        devPortraitDrawWasteOffsetXBroadDpState    = profile.portraitBroad.drawWasteOffsetX
+        devPortraitDrawWasteOffsetYBroadDpState    = profile.portraitBroad.drawWasteOffsetY
+        devPortraitTableauOffsetXBroadDpState = profile.portraitBroad.tableauOffsetX
+        devPortraitTableauOffsetYBroadDpState = profile.portraitBroad.tableauOffsetY
+        devLargeDeviceLandscapeBannerOffsetXDpState = profile.landscapeBroad.landscapeBannerLargeOffsetX
+        devLargeDeviceLandscapeBannerOffsetYDpState = profile.landscapeBroad.landscapeBannerLargeOffsetY
+        // ...existing code...
+        devPortraitOverallOffsetXSquareDpState = profile.portraitSquare.pileOverallOffsetX
+        devPortraitOverallOffsetYSquareDpState = profile.portraitSquare.pileOverallOffsetY
+        devPortraitFoundationOffsetXSquareDpState  = profile.portraitSquare.foundationOffsetX
+        devPortraitFoundationOffsetYSquareDpState  = profile.portraitSquare.foundationOffsetY
+        devPortraitDrawWasteOffsetXSquareDpState   = profile.portraitSquare.drawWasteOffsetX
+        devPortraitDrawWasteOffsetYSquareDpState   = profile.portraitSquare.drawWasteOffsetY
+        devPortraitTableauOffsetXSquareDpState = profile.portraitSquare.tableauOffsetX
+        devPortraitTableauOffsetYSquareDpState = profile.portraitSquare.tableauOffsetY
+        // ...existing code...
         devPortraitPileStockOffsetXDpState = profile.portraitPileStockOffsetX
         devPortraitPileStockOffsetYDpState = profile.portraitPileStockOffsetY
         devPortraitPileWasteOffsetXDpState = profile.portraitPileWasteOffsetX
         devPortraitPileWasteOffsetYDpState = profile.portraitPileWasteOffsetY
-        devSmallDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerSmallOffsetX
-        devSmallDeviceLandscapeBannerOffsetYDpState = profile.landscapeBannerSmallOffsetY
-        devMediumDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerMediumOffsetX
-        devMediumDeviceLandscapeBannerOffsetYDpState = profile.landscapeBannerMediumOffsetY
-        devLargeDeviceLandscapeBannerOffsetXDpState = profile.landscapeBannerLargeOffsetX
-        devLargeDeviceLandscapeBannerOffsetYDpState = profile.landscapeBannerLargeOffsetY
-        devScoreboardOffsetXDpState = profile.scoreboardOffsetX
-        devScoreboardOffsetYDpState = profile.scoreboardOffsetY
-        devGemRewardOffsetXDpState = profile.gemRewardOffsetX
-        devGemRewardOffsetYDpState = profile.gemRewardOffsetY
-        devTicketRewardOffsetXDpState = profile.ticketRewardOffsetX
-        devTicketRewardOffsetYDpState = profile.ticketRewardOffsetY
     }
 
     private fun normalizeDeckCountForLayoutProfile(rawDeckCount: Int): Int {
@@ -732,7 +1379,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         )
     }
 
-    private fun profileStateFor(key: LayoutProfileKey): LayoutScopedDevAdjusters {
+    private fun profileStateFor(key: LayoutProfileKey): LayoutProfileDevAdjusters {
         return when {
             key.mirrored && key.deckCount == 2 -> mirrored2DeckLayoutDevAdjustersState
             key.mirrored -> mirrored1DeckLayoutDevAdjustersState
@@ -741,7 +1388,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private fun setProfileStateFor(key: LayoutProfileKey, profile: LayoutScopedDevAdjusters) {
+    private fun setProfileStateFor(key: LayoutProfileKey, profile: LayoutProfileDevAdjusters) {
         when {
             key.mirrored && key.deckCount == 2 -> mirrored2DeckLayoutDevAdjustersState = profile
             key.mirrored -> mirrored1DeckLayoutDevAdjustersState = profile
