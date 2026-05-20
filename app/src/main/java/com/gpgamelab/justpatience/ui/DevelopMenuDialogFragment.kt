@@ -217,6 +217,30 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devGemRewardOffsetYDp(): Float
         fun devTicketRewardOffsetXDp(): Float
         fun devTicketRewardOffsetYDp(): Float
+        fun devUndoControlScale(): Float
+        fun devUndoControlOffsetXDp(): Float
+        fun devUndoControlOffsetYDp(): Float
+        fun devRedoControlScale(): Float
+        fun devRedoControlOffsetXDp(): Float
+        fun devRedoControlOffsetYDp(): Float
+        fun devHintControlScale(): Float
+        fun devHintControlOffsetXDp(): Float
+        fun devHintControlOffsetYDp(): Float
+        fun devMagicWandControlScale(): Float
+        fun devMagicWandControlOffsetXDp(): Float
+        fun devMagicWandControlOffsetYDp(): Float
+        fun devPlayControlScale(): Float
+        fun devPlayControlOffsetXDp(): Float
+        fun devPlayControlOffsetYDp(): Float
+        fun devGemRewardScale(): Float
+        fun devGemRewardCounterOffsetXDp(): Float
+        fun devGemRewardCounterOffsetYDp(): Float
+        fun devGemRewardCounterScale(): Float
+        fun devTicketRewardScale(): Float
+        fun devTicketRewardCounterOffsetXDp(): Float
+        fun devTicketRewardCounterOffsetYDp(): Float
+        fun devTicketRewardCounterScale(): Float
+        fun devLandscapeBannerAdBoxChoiceLabel(): String
         fun onDevSetLandscapeBannerSmallWidthDp(value: Float)
         fun onDevSetLandscapeBannerSmallHeightDp(value: Float)
         fun onDevSetLandscapeBannerMediumWidthDp(value: Float)
@@ -235,6 +259,30 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetGemRewardOffsetY(value: Float)
         fun onDevSetTicketRewardOffsetX(value: Float)
         fun onDevSetTicketRewardOffsetY(value: Float)
+        fun onDevSetUndoControlScale(value: Float)
+        fun onDevSetUndoControlOffsetX(value: Float)
+        fun onDevSetUndoControlOffsetY(value: Float)
+        fun onDevSetRedoControlScale(value: Float)
+        fun onDevSetRedoControlOffsetX(value: Float)
+        fun onDevSetRedoControlOffsetY(value: Float)
+        fun onDevSetHintControlScale(value: Float)
+        fun onDevSetHintControlOffsetX(value: Float)
+        fun onDevSetHintControlOffsetY(value: Float)
+        fun onDevSetMagicWandControlScale(value: Float)
+        fun onDevSetMagicWandControlOffsetX(value: Float)
+        fun onDevSetMagicWandControlOffsetY(value: Float)
+        fun onDevSetPlayControlScale(value: Float)
+        fun onDevSetPlayControlOffsetX(value: Float)
+        fun onDevSetPlayControlOffsetY(value: Float)
+        fun onDevSetGemRewardScale(value: Float)
+        fun onDevSetGemRewardCounterOffsetX(value: Float)
+        fun onDevSetGemRewardCounterOffsetY(value: Float)
+        fun onDevSetGemRewardCounterScale(value: Float)
+        fun onDevSetTicketRewardScale(value: Float)
+        fun onDevSetTicketRewardCounterOffsetX(value: Float)
+        fun onDevSetTicketRewardCounterOffsetY(value: Float)
+        fun onDevSetTicketRewardCounterScale(value: Float)
+        fun onDevCycleLandscapeBannerBoxChoice()
 
         // Shuffle/deal timing
         fun devShuffleSecondClipDelayMs(): Float
@@ -380,6 +428,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
 
         bindStarburstControls(view, host)
         bindPopupControls(view, host)
+        bindBottomControlAdjustments(view, host)
+        bindRewardHudAdjustments(view, host)
+        bindLandscapeBannerBoxChoice(view, host)
         bindAspectRatioControls(view, host)
         refreshAllDisplays(view, host)
 
@@ -582,6 +633,58 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bindDecimal(R.id.btn_dev_ticket_reward_offset_y, R.string.develop_menu_ticket_reward_offset_y, host::devTicketRewardOffsetYDp, host::onDevSetTicketRewardOffsetY)
     }
 
+    private fun bindBottomControlAdjustments(view: View, host: Host) {
+        fun bind(btnId: Int, labelRes: Int, getter: () -> Float, setter: (Float) -> Unit) {
+            view.findViewById<MaterialButton>(btnId).setOnClickListener {
+                showSetDecimalValueDialog(getString(labelRes), getter()) {
+                    setter(it)
+                    refreshBottomControlDisplays(view, host)
+                }
+            }
+        }
+        bind(R.id.btn_dev_undo_control_scale, R.string.develop_menu_bottom_control_undo_scale, host::devUndoControlScale, host::onDevSetUndoControlScale)
+        bind(R.id.btn_dev_undo_control_offset_x, R.string.develop_menu_bottom_control_undo_offset_x, host::devUndoControlOffsetXDp, host::onDevSetUndoControlOffsetX)
+        bind(R.id.btn_dev_undo_control_offset_y, R.string.develop_menu_bottom_control_undo_offset_y, host::devUndoControlOffsetYDp, host::onDevSetUndoControlOffsetY)
+        bind(R.id.btn_dev_redo_control_scale, R.string.develop_menu_bottom_control_redo_scale, host::devRedoControlScale, host::onDevSetRedoControlScale)
+        bind(R.id.btn_dev_redo_control_offset_x, R.string.develop_menu_bottom_control_redo_offset_x, host::devRedoControlOffsetXDp, host::onDevSetRedoControlOffsetX)
+        bind(R.id.btn_dev_redo_control_offset_y, R.string.develop_menu_bottom_control_redo_offset_y, host::devRedoControlOffsetYDp, host::onDevSetRedoControlOffsetY)
+        bind(R.id.btn_dev_hint_control_scale, R.string.develop_menu_bottom_control_hint_scale, host::devHintControlScale, host::onDevSetHintControlScale)
+        bind(R.id.btn_dev_hint_control_offset_x, R.string.develop_menu_bottom_control_hint_offset_x, host::devHintControlOffsetXDp, host::onDevSetHintControlOffsetX)
+        bind(R.id.btn_dev_hint_control_offset_y, R.string.develop_menu_bottom_control_hint_offset_y, host::devHintControlOffsetYDp, host::onDevSetHintControlOffsetY)
+        bind(R.id.btn_dev_magic_wand_control_scale, R.string.develop_menu_bottom_control_magic_wand_scale, host::devMagicWandControlScale, host::onDevSetMagicWandControlScale)
+        bind(R.id.btn_dev_magic_wand_control_offset_x, R.string.develop_menu_bottom_control_magic_wand_offset_x, host::devMagicWandControlOffsetXDp, host::onDevSetMagicWandControlOffsetX)
+        bind(R.id.btn_dev_magic_wand_control_offset_y, R.string.develop_menu_bottom_control_magic_wand_offset_y, host::devMagicWandControlOffsetYDp, host::onDevSetMagicWandControlOffsetY)
+        bind(R.id.btn_dev_play_control_scale, R.string.develop_menu_bottom_control_play_scale, host::devPlayControlScale, host::onDevSetPlayControlScale)
+        bind(R.id.btn_dev_play_control_offset_x, R.string.develop_menu_bottom_control_play_offset_x, host::devPlayControlOffsetXDp, host::onDevSetPlayControlOffsetX)
+        bind(R.id.btn_dev_play_control_offset_y, R.string.develop_menu_bottom_control_play_offset_y, host::devPlayControlOffsetYDp, host::onDevSetPlayControlOffsetY)
+    }
+
+    private fun bindRewardHudAdjustments(view: View, host: Host) {
+        fun bind(btnId: Int, labelRes: Int, getter: () -> Float, setter: (Float) -> Unit) {
+            view.findViewById<MaterialButton>(btnId).setOnClickListener {
+                showSetDecimalValueDialog(getString(labelRes), getter()) {
+                    setter(it)
+                    refreshRewardHudDisplays(view, host)
+                }
+            }
+        }
+        bind(R.id.btn_dev_gem_reward_scale, R.string.develop_menu_gem_reward_scale, host::devGemRewardScale, host::onDevSetGemRewardScale)
+        bind(R.id.btn_dev_gem_reward_counter_offset_x, R.string.develop_menu_gem_reward_counter_offset_x, host::devGemRewardCounterOffsetXDp, host::onDevSetGemRewardCounterOffsetX)
+        bind(R.id.btn_dev_gem_reward_counter_offset_y, R.string.develop_menu_gem_reward_counter_offset_y, host::devGemRewardCounterOffsetYDp, host::onDevSetGemRewardCounterOffsetY)
+        bind(R.id.btn_dev_gem_reward_counter_scale, R.string.develop_menu_gem_reward_counter_scale, host::devGemRewardCounterScale, host::onDevSetGemRewardCounterScale)
+        bind(R.id.btn_dev_ticket_reward_scale, R.string.develop_menu_ticket_reward_scale, host::devTicketRewardScale, host::onDevSetTicketRewardScale)
+        bind(R.id.btn_dev_ticket_reward_counter_offset_x, R.string.develop_menu_ticket_reward_counter_offset_x, host::devTicketRewardCounterOffsetXDp, host::onDevSetTicketRewardCounterOffsetX)
+        bind(R.id.btn_dev_ticket_reward_counter_offset_y, R.string.develop_menu_ticket_reward_counter_offset_y, host::devTicketRewardCounterOffsetYDp, host::onDevSetTicketRewardCounterOffsetY)
+        bind(R.id.btn_dev_ticket_reward_counter_scale, R.string.develop_menu_ticket_reward_counter_scale, host::devTicketRewardCounterScale, host::onDevSetTicketRewardCounterScale)
+    }
+
+    private fun bindLandscapeBannerBoxChoice(view: View, host: Host) {
+        view.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_box_choice).setOnClickListener {
+            host.onDevCycleLandscapeBannerBoxChoice()
+            refreshLandscapeBannerBoxChoice(view, host)
+        }
+    }
+
     private fun bindAspectRatioControls(view: View, host: Host) {
         fun bindDec(btnId: Int, labelRes: Int, getter: () -> Float, setter: (Float) -> Unit) {
             view.findViewById<MaterialButton>(btnId).setOnClickListener {
@@ -633,6 +736,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
     private fun refreshAllDisplays(root: View, host: Host) {
         refreshStarburstDisplays(host)
         refreshPopupDisplays(root, host)
+        refreshBottomControlDisplays(root, host)
+        refreshRewardHudDisplays(root, host)
+        refreshLandscapeBannerBoxChoice(root, host)
         refreshAspectRatioDisplays(root, host)
     }
 
@@ -735,6 +841,39 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_offset_y).text = fmt(host.devGemRewardOffsetYDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_offset_x).text = fmt(host.devTicketRewardOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_offset_y).text = fmt(host.devTicketRewardOffsetYDp())
+    }
+
+    private fun refreshBottomControlDisplays(root: View, host: Host) {
+        root.findViewById<MaterialButton>(R.id.btn_dev_undo_control_scale).text = fmt(host.devUndoControlScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_undo_control_offset_x).text = fmt(host.devUndoControlOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_undo_control_offset_y).text = fmt(host.devUndoControlOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_redo_control_scale).text = fmt(host.devRedoControlScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_redo_control_offset_x).text = fmt(host.devRedoControlOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_redo_control_offset_y).text = fmt(host.devRedoControlOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_hint_control_scale).text = fmt(host.devHintControlScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_hint_control_offset_x).text = fmt(host.devHintControlOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_hint_control_offset_y).text = fmt(host.devHintControlOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_magic_wand_control_scale).text = fmt(host.devMagicWandControlScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_magic_wand_control_offset_x).text = fmt(host.devMagicWandControlOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_magic_wand_control_offset_y).text = fmt(host.devMagicWandControlOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_play_control_scale).text = fmt(host.devPlayControlScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_play_control_offset_x).text = fmt(host.devPlayControlOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_play_control_offset_y).text = fmt(host.devPlayControlOffsetYDp())
+    }
+
+    private fun refreshRewardHudDisplays(root: View, host: Host) {
+        root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_scale).text = fmt(host.devGemRewardScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_counter_offset_x).text = fmt(host.devGemRewardCounterOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_counter_offset_y).text = fmt(host.devGemRewardCounterOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_gem_reward_counter_scale).text = fmt(host.devGemRewardCounterScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_scale).text = fmt(host.devTicketRewardScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_counter_offset_x).text = fmt(host.devTicketRewardCounterOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_counter_offset_y).text = fmt(host.devTicketRewardCounterOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_ticket_reward_counter_scale).text = fmt(host.devTicketRewardCounterScale())
+    }
+
+    private fun refreshLandscapeBannerBoxChoice(root: View, host: Host) {
+        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_box_choice).text = host.devLandscapeBannerAdBoxChoiceLabel()
     }
 
     private fun fmt(value: Float): String = String.format(Locale.US, "%.2f", value)

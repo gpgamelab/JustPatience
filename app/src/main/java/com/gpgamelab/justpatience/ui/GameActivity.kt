@@ -103,6 +103,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val landscapeBannerLargeOffsetY: Float = 0f
     )
 
+    private data class BottomControlButtonAdjustments(
+        val scale: Float = 1f,
+        val offsetX: Float = 0f,
+        val offsetY: Float = 0f
+    )
+
+    private data class RewardHudAdjustments(
+        val iconScale: Float = 1f,
+        val counterOffsetX: Float = 0f,
+        val counterOffsetY: Float = 0f,
+        val counterScale: Float = 1f
+    )
+
     // Consolidated device adjusters for a layout profile (one instance per deck layout type)
     private data class LayoutProfileDevAdjusters(
         val portraitSlimCompact: PortraitAspectPileOffsets = PortraitAspectPileOffsets(),
@@ -134,7 +147,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val landscapeGemRewardOffsetX: Float = 0f,
         val landscapeGemRewardOffsetY: Float = 0f,
         val landscapeTicketRewardOffsetX: Float = 0f,
-        val landscapeTicketRewardOffsetY: Float = 0f
+        val landscapeTicketRewardOffsetY: Float = 0f,
+        val undoControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
+        val redoControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
+        val hintControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
+        val magicWandControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
+        val playControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
+        val gemRewardAdjustments: RewardHudAdjustments = RewardHudAdjustments(),
+        val ticketRewardAdjustments: RewardHudAdjustments = RewardHudAdjustments(),
+        val landscapeAdBoxChoice: LandscapeBannerBoxChoice = LandscapeBannerBoxChoice.AUTO
     )
 
     private data class LayoutProfileKey(
@@ -714,6 +735,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         LARGE
     }
 
+    private enum class LandscapeBannerBoxChoice {
+        AUTO,
+        SMALL,
+        MEDIUM,
+        LARGE
+    }
+
     // Lets narrow SLIM phones (e.g. 720px portrait board) use a separate tuning set.
     private val portraitSlimCompactMaxBoardWidthPx = 800
     private val landscapeSlimCompactMaxBoardHeightPx = 800
@@ -835,6 +863,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devGemRewardOffsetYDpState: Float = 0f
     private var devTicketRewardOffsetXDpState: Float = 0f
     private var devTicketRewardOffsetYDpState: Float = 0f
+    private var devUndoControlScaleState: Float = 1f
+    private var devUndoControlOffsetXDpState: Float = 0f
+    private var devUndoControlOffsetYDpState: Float = 0f
+    private var devRedoControlScaleState: Float = 1f
+    private var devRedoControlOffsetXDpState: Float = 0f
+    private var devRedoControlOffsetYDpState: Float = 0f
+    private var devHintControlScaleState: Float = 1f
+    private var devHintControlOffsetXDpState: Float = 0f
+    private var devHintControlOffsetYDpState: Float = 0f
+    private var devMagicWandControlScaleState: Float = 1f
+    private var devMagicWandControlOffsetXDpState: Float = 0f
+    private var devMagicWandControlOffsetYDpState: Float = 0f
+    private var devPlayControlScaleState: Float = 1f
+    private var devPlayControlOffsetXDpState: Float = 0f
+    private var devPlayControlOffsetYDpState: Float = 0f
+    private var devGemRewardScaleState: Float = 1f
+    private var devGemRewardCounterOffsetXDpState: Float = 0f
+    private var devGemRewardCounterOffsetYDpState: Float = 0f
+    private var devGemRewardCounterScaleState: Float = 1f
+    private var devTicketRewardScaleState: Float = 1f
+    private var devTicketRewardCounterOffsetXDpState: Float = 0f
+    private var devTicketRewardCounterOffsetYDpState: Float = 0f
+    private var devTicketRewardCounterScaleState: Float = 1f
+    private var devLandscapeAdBoxChoiceState: LandscapeBannerBoxChoice = LandscapeBannerBoxChoice.AUTO
 
     // Aspect-ratio category Y trims (dp).  Applied as the final boardStartY adjustment.
     // Positive = move piles DOWN, negative = move piles UP.
@@ -981,6 +1033,44 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             portraitGemRewardOffsetY = devGemRewardOffsetYDpState,
             portraitTicketRewardOffsetX = devTicketRewardOffsetXDpState,
             portraitTicketRewardOffsetY = devTicketRewardOffsetYDpState,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = devUndoControlScaleState,
+                offsetX = devUndoControlOffsetXDpState,
+                offsetY = devUndoControlOffsetYDpState
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = devRedoControlScaleState,
+                offsetX = devRedoControlOffsetXDpState,
+                offsetY = devRedoControlOffsetYDpState
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = devHintControlScaleState,
+                offsetX = devHintControlOffsetXDpState,
+                offsetY = devHintControlOffsetYDpState
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = devMagicWandControlScaleState,
+                offsetX = devMagicWandControlOffsetXDpState,
+                offsetY = devMagicWandControlOffsetYDpState
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = devPlayControlScaleState,
+                offsetX = devPlayControlOffsetXDpState,
+                offsetY = devPlayControlOffsetYDpState
+            ),
+            gemRewardAdjustments = RewardHudAdjustments(
+                iconScale = devGemRewardScaleState,
+                counterOffsetX = devGemRewardCounterOffsetXDpState,
+                counterOffsetY = devGemRewardCounterOffsetYDpState,
+                counterScale = devGemRewardCounterScaleState
+            ),
+            ticketRewardAdjustments = RewardHudAdjustments(
+                iconScale = devTicketRewardScaleState,
+                counterOffsetX = devTicketRewardCounterOffsetXDpState,
+                counterOffsetY = devTicketRewardCounterOffsetYDpState,
+                counterScale = devTicketRewardCounterScaleState
+            ),
+            landscapeAdBoxChoice = devLandscapeAdBoxChoiceState,
             landscapeSlimCompact = LandscapeAspectPileOffsets(
                 pileOverallOffsetX = devLandscapeOverallOffsetXSlimCompactDpState,
                 pileOverallOffsetY = devLandscapeOverallOffsetYSlimCompactDpState,
@@ -1144,6 +1234,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devGemRewardOffsetYDpState = if (isPortrait) profile.portraitGemRewardOffsetY else profile.landscapeGemRewardOffsetY
         devTicketRewardOffsetXDpState = if (isPortrait) profile.portraitTicketRewardOffsetX else profile.landscapeTicketRewardOffsetX
         devTicketRewardOffsetYDpState = if (isPortrait) profile.portraitTicketRewardOffsetY else profile.landscapeTicketRewardOffsetY
+        devUndoControlScaleState = profile.undoControlAdjustments.scale
+        devUndoControlOffsetXDpState = profile.undoControlAdjustments.offsetX
+        devUndoControlOffsetYDpState = profile.undoControlAdjustments.offsetY
+        devRedoControlScaleState = profile.redoControlAdjustments.scale
+        devRedoControlOffsetXDpState = profile.redoControlAdjustments.offsetX
+        devRedoControlOffsetYDpState = profile.redoControlAdjustments.offsetY
+        devHintControlScaleState = profile.hintControlAdjustments.scale
+        devHintControlOffsetXDpState = profile.hintControlAdjustments.offsetX
+        devHintControlOffsetYDpState = profile.hintControlAdjustments.offsetY
+        devMagicWandControlScaleState = profile.magicWandControlAdjustments.scale
+        devMagicWandControlOffsetXDpState = profile.magicWandControlAdjustments.offsetX
+        devMagicWandControlOffsetYDpState = profile.magicWandControlAdjustments.offsetY
+        devPlayControlScaleState = profile.playControlAdjustments.scale
+        devPlayControlOffsetXDpState = profile.playControlAdjustments.offsetX
+        devPlayControlOffsetYDpState = profile.playControlAdjustments.offsetY
+        devGemRewardScaleState = profile.gemRewardAdjustments.iconScale
+        devGemRewardCounterOffsetXDpState = profile.gemRewardAdjustments.counterOffsetX
+        devGemRewardCounterOffsetYDpState = profile.gemRewardAdjustments.counterOffsetY
+        devGemRewardCounterScaleState = profile.gemRewardAdjustments.counterScale
+        devTicketRewardScaleState = profile.ticketRewardAdjustments.iconScale
+        devTicketRewardCounterOffsetXDpState = profile.ticketRewardAdjustments.counterOffsetX
+        devTicketRewardCounterOffsetYDpState = profile.ticketRewardAdjustments.counterOffsetY
+        devTicketRewardCounterScaleState = profile.ticketRewardAdjustments.counterScale
+        devLandscapeAdBoxChoiceState = profile.landscapeAdBoxChoice
         // ...existing code...
         devPortraitOverallOffsetXSlimDpState = profile.portraitSlim.pileOverallOffsetX
         devPortraitOverallOffsetYSlimDpState = profile.portraitSlim.pileOverallOffsetY
@@ -3579,6 +3693,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devGemRewardOffsetYDp(): Float = devGemRewardOffsetYDpState
     override fun devTicketRewardOffsetXDp(): Float = devTicketRewardOffsetXDpState
     override fun devTicketRewardOffsetYDp(): Float = devTicketRewardOffsetYDpState
+    override fun devUndoControlScale(): Float = devUndoControlScaleState
+    override fun devUndoControlOffsetXDp(): Float = devUndoControlOffsetXDpState
+    override fun devUndoControlOffsetYDp(): Float = devUndoControlOffsetYDpState
+    override fun devRedoControlScale(): Float = devRedoControlScaleState
+    override fun devRedoControlOffsetXDp(): Float = devRedoControlOffsetXDpState
+    override fun devRedoControlOffsetYDp(): Float = devRedoControlOffsetYDpState
+    override fun devHintControlScale(): Float = devHintControlScaleState
+    override fun devHintControlOffsetXDp(): Float = devHintControlOffsetXDpState
+    override fun devHintControlOffsetYDp(): Float = devHintControlOffsetYDpState
+    override fun devMagicWandControlScale(): Float = devMagicWandControlScaleState
+    override fun devMagicWandControlOffsetXDp(): Float = devMagicWandControlOffsetXDpState
+    override fun devMagicWandControlOffsetYDp(): Float = devMagicWandControlOffsetYDpState
+    override fun devPlayControlScale(): Float = devPlayControlScaleState
+    override fun devPlayControlOffsetXDp(): Float = devPlayControlOffsetXDpState
+    override fun devPlayControlOffsetYDp(): Float = devPlayControlOffsetYDpState
+    override fun devGemRewardScale(): Float = devGemRewardScaleState
+    override fun devGemRewardCounterOffsetXDp(): Float = devGemRewardCounterOffsetXDpState
+    override fun devGemRewardCounterOffsetYDp(): Float = devGemRewardCounterOffsetYDpState
+    override fun devGemRewardCounterScale(): Float = devGemRewardCounterScaleState
+    override fun devTicketRewardScale(): Float = devTicketRewardScaleState
+    override fun devTicketRewardCounterOffsetXDp(): Float = devTicketRewardCounterOffsetXDpState
+    override fun devTicketRewardCounterOffsetYDp(): Float = devTicketRewardCounterOffsetYDpState
+    override fun devTicketRewardCounterScale(): Float = devTicketRewardCounterScaleState
+    override fun devLandscapeBannerAdBoxChoiceLabel(): String = devLandscapeAdBoxChoiceState.name
     override fun devShuffleSecondClipDelayMs(): Float = devShuffleSecondClipDelayMsState
     override fun devShuffleTailDelayMs(): Float = devShuffleTailDelayMsState
     override fun devDealCardIntervalMs(): Float = devDealCardIntervalMsState
@@ -3808,6 +3946,107 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onDevSetTicketRewardOffsetY(value: Float) {
         devTicketRewardOffsetYDpState = value
         applyTopHudDevOffsets()
+    }
+    override fun onDevSetUndoControlScale(value: Float) {
+        devUndoControlScaleState = value.coerceAtLeast(0.1f)
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetUndoControlOffsetX(value: Float) {
+        devUndoControlOffsetXDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetUndoControlOffsetY(value: Float) {
+        devUndoControlOffsetYDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetRedoControlScale(value: Float) {
+        devRedoControlScaleState = value.coerceAtLeast(0.1f)
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetRedoControlOffsetX(value: Float) {
+        devRedoControlOffsetXDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetRedoControlOffsetY(value: Float) {
+        devRedoControlOffsetYDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetHintControlScale(value: Float) {
+        devHintControlScaleState = value.coerceAtLeast(0.1f)
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetHintControlOffsetX(value: Float) {
+        devHintControlOffsetXDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetHintControlOffsetY(value: Float) {
+        devHintControlOffsetYDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetMagicWandControlScale(value: Float) {
+        devMagicWandControlScaleState = value.coerceAtLeast(0.1f)
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetMagicWandControlOffsetX(value: Float) {
+        devMagicWandControlOffsetXDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetMagicWandControlOffsetY(value: Float) {
+        devMagicWandControlOffsetYDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetPlayControlScale(value: Float) {
+        devPlayControlScaleState = value.coerceAtLeast(0.1f)
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetPlayControlOffsetX(value: Float) {
+        devPlayControlOffsetXDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetPlayControlOffsetY(value: Float) {
+        devPlayControlOffsetYDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetGemRewardScale(value: Float) {
+        devGemRewardScaleState = value.coerceAtLeast(0.1f)
+        applyTopHudDevOffsets()
+    }
+    override fun onDevSetGemRewardCounterOffsetX(value: Float) {
+        devGemRewardCounterOffsetXDpState = value
+        applyTopHudDevOffsets()
+    }
+    override fun onDevSetGemRewardCounterOffsetY(value: Float) {
+        devGemRewardCounterOffsetYDpState = value
+        applyTopHudDevOffsets()
+    }
+    override fun onDevSetGemRewardCounterScale(value: Float) {
+        devGemRewardCounterScaleState = value.coerceAtLeast(0.1f)
+        applyTopHudDevOffsets()
+    }
+    override fun onDevSetTicketRewardScale(value: Float) {
+        devTicketRewardScaleState = value.coerceAtLeast(0.1f)
+        applyTopHudDevOffsets()
+    }
+    override fun onDevSetTicketRewardCounterOffsetX(value: Float) {
+        devTicketRewardCounterOffsetXDpState = value
+        applyTopHudDevOffsets()
+    }
+    override fun onDevSetTicketRewardCounterOffsetY(value: Float) {
+        devTicketRewardCounterOffsetYDpState = value
+        applyTopHudDevOffsets()
+    }
+    override fun onDevSetTicketRewardCounterScale(value: Float) {
+        devTicketRewardCounterScaleState = value.coerceAtLeast(0.1f)
+        applyTopHudDevOffsets()
+    }
+    override fun onDevCycleLandscapeBannerBoxChoice() {
+        devLandscapeAdBoxChoiceState = when (devLandscapeAdBoxChoiceState) {
+            LandscapeBannerBoxChoice.AUTO -> LandscapeBannerBoxChoice.SMALL
+            LandscapeBannerBoxChoice.SMALL -> LandscapeBannerBoxChoice.MEDIUM
+            LandscapeBannerBoxChoice.MEDIUM -> LandscapeBannerBoxChoice.LARGE
+            LandscapeBannerBoxChoice.LARGE -> LandscapeBannerBoxChoice.AUTO
+        }
+        reloadBannerForCurrentConfiguration()
     }
     override fun onDevSetAspectPortraitSlimY(value: Float) {
         devAspectPortraitSlimYDpState = value
@@ -4775,12 +5014,24 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val (clampedGemsX, clampedGemsY) = clampHudTranslationToRoot(binding.gemsContainer, gemsX, gemsY)
         binding.gemsContainer.translationX = clampedGemsX
         binding.gemsContainer.translationY = clampedGemsY
+        binding.ivGemBag.scaleX = devGemRewardScaleState
+        binding.ivGemBag.scaleY = devGemRewardScaleState
+        binding.tvGemCount.translationX = scaleDevDpOffsetX(devGemRewardCounterOffsetXDpState, ratioProfile)
+        binding.tvGemCount.translationY = scaleDevDpOffsetY(devGemRewardCounterOffsetYDpState, ratioProfile)
+        binding.tvGemCount.scaleX = devGemRewardCounterScaleState
+        binding.tvGemCount.scaleY = devGemRewardCounterScaleState
 
         val ticketsX = scaleDevDpOffsetX(devTicketRewardOffsetXDpState, ratioProfile)
         val ticketsY = scaleDevDpOffsetY(devTicketRewardOffsetYDpState, ratioProfile)
         val (clampedTicketsX, clampedTicketsY) = clampHudTranslationToRoot(binding.ticketsContainer, ticketsX, ticketsY)
         binding.ticketsContainer.translationX = clampedTicketsX
         binding.ticketsContainer.translationY = clampedTicketsY
+        binding.ivTicketIcon.scaleX = devTicketRewardScaleState
+        binding.ivTicketIcon.scaleY = devTicketRewardScaleState
+        binding.tvTicketCount.translationX = scaleDevDpOffsetX(devTicketRewardCounterOffsetXDpState, ratioProfile)
+        binding.tvTicketCount.translationY = scaleDevDpOffsetY(devTicketRewardCounterOffsetYDpState, ratioProfile)
+        binding.tvTicketCount.scaleX = devTicketRewardCounterScaleState
+        binding.tvTicketCount.scaleY = devTicketRewardCounterScaleState
     }
 
     private fun configureHudClipBehavior() {
@@ -4847,8 +5098,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             return listOf(AdSize.LARGE_BANNER)
         }
 
-        val tier = resolveLandscapeBannerTier()
-        val (boxWidthDp, boxHeightDp) = when (tier) {
+        val choice = devLandscapeAdBoxChoiceState
+        val resolvedTier = when (choice) {
+            LandscapeBannerBoxChoice.AUTO -> resolveLandscapeBannerTier()
+            LandscapeBannerBoxChoice.SMALL -> LandscapeBannerTier.SMALL
+            LandscapeBannerBoxChoice.MEDIUM -> LandscapeBannerTier.MEDIUM
+            LandscapeBannerBoxChoice.LARGE -> LandscapeBannerTier.LARGE
+        }
+        val (boxWidthDp, boxHeightDp) = when (resolvedTier) {
             LandscapeBannerTier.SMALL -> devLandscapeBannerSmallWidthDpState to devLandscapeBannerSmallHeightDpState
             LandscapeBannerTier.MEDIUM -> devLandscapeBannerMediumWidthDpState to devLandscapeBannerMediumHeightDpState
             LandscapeBannerTier.LARGE -> devLandscapeBannerLargeWidthDpState to devLandscapeBannerLargeHeightDpState
@@ -4866,11 +5123,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         Log.d(
             "GameActivityAds",
-            "Landscape banner tier=$tier boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
+            "Landscape banner tier=$resolvedTier choice=$choice boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
         )
 
         // Return one fixed size; AdView size is XML-fixed and cannot be changed at runtime.
-        return when (tier) {
+        return when (resolvedTier) {
             LandscapeBannerTier.SMALL  -> listOf(AdSize.BANNER)
             LandscapeBannerTier.MEDIUM -> listOf(AdSize.LARGE_BANNER)
             LandscapeBannerTier.LARGE  -> listOf(AdSize.MEDIUM_RECTANGLE)
@@ -5489,6 +5746,26 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         binding.btnStats.iconSize = dpToPx(48f * textScale * ratioProfile.averageRatio)
         binding.btnStats.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
+
+        applyControlAdjustments(binding.btnUndo, devUndoControlScaleState, devUndoControlOffsetXDpState, devUndoControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(binding.btnRedo, devRedoControlScaleState, devRedoControlOffsetXDpState, devRedoControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(btnHint, devHintControlScaleState, devHintControlOffsetXDpState, devHintControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState, devMagicWandControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(binding.btnStats, devPlayControlScaleState, devPlayControlOffsetXDpState, devPlayControlOffsetYDpState, ratioProfile)
+    }
+
+    private fun applyControlAdjustments(
+        view: View?,
+        scale: Float,
+        offsetXDp: Float,
+        offsetYDp: Float,
+        ratioProfile: BaselineResolutionScaleUtil.ResolutionRatioProfile
+    ) {
+        view ?: return
+        view.scaleX = scale
+        view.scaleY = scale
+        view.translationX = scaleDevDpOffsetX(offsetXDp, ratioProfile)
+        view.translationY = scaleDevDpOffsetY(offsetYDp, ratioProfile)
     }
 
     private fun applyButtonScale(button: Button, textSp: Float, scale: Float) {
