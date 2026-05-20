@@ -1594,7 +1594,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         fun normalizeCard(card: Card): Card {
             val targetFacePath = expectedFaceImagePath(card)
-            val targetBackPath = "drawable:b_0001"
+            val targetBackPath = "drawable:card_back_crosshatch_001"
 
             val migrated = card.copy(
                 recto = card.recto.copy(imagePath = targetFacePath),

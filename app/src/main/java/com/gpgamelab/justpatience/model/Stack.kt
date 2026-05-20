@@ -112,7 +112,7 @@ private fun faceImagePath(rank: CardRank, suit: CardSuit?): String {
 }
 
 private fun defaultBackImagePath(): String =
-    "drawable:b_0001"
+    "drawable:card_back_crosshatch_001"
 
 /**
  * Base class for all board piles.

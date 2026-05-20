@@ -43,7 +43,7 @@ class AndroidAssetResolver(
             // Keep gameplay alive for legacy/unknown saved image paths.
             // Use type-aware fallback so missing face cards do not look face-down.
             val fallbackPath = if (looksLikeBackPath(path)) {
-                "drawable:b_0001"
+                "drawable:card_back_crosshatch_001"
             } else {
                 "drawable:ic_spades_ace"
             }

@@ -40,7 +40,7 @@ import com.gpgamelab.justpatience.util.BaselineResolutionScaleUtil
 import com.gpgamelab.justpatience.util.DeviceAspectCategory
 import java.util.Locale
 
-private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:b_0001"
+private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:card_back_crosshatch_001"
 private const val NEW_GAME_DEAL_CARD_INTERVAL_MS = 70L
 private const val MAX_VISIBLE_WASTE_CARDS = 3
 private const val WASTE_COUNT_BADGE_MIN_VISIBLE_COUNT = 3
