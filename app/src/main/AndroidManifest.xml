@@ -52,7 +52,8 @@
         <activity
             android:name=".ui.GameActivity"
             android:exported="true"
-            android:label="@string/game_title">
+            android:label="@string/game_title"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
