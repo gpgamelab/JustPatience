@@ -2379,7 +2379,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             startNewGameWithShuffleAndDealAnimation()
         }
         // btn_restart stub kept for ViewBinding; handled via Play popup
-        findViewById<Button>(R.id.btn_hint)?.setOnClickListener { buttonView ->
+        findViewById<View>(R.id.btn_hint)?.setOnClickListener { buttonView ->
             performUiActionHaptic(buttonView)
             onHelpControlClicked(HelpControlAction.HINT, buttonView) {
                 if (!viewModel.showManualHints()) {
@@ -5658,7 +5658,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitButtonWidthScale: Float = widthScale
     ) {
         val moveGroup = findViewById<FrameLayout>(R.id.move_controls_group)
-        val btnHint = findViewById<Button?>(R.id.btn_hint)
+        val btnHint = findViewById<View?>(R.id.btn_hint)
         val btnRestart = findViewById<Button?>(R.id.btn_restart)
         val btnAuto = findViewById<Button?>(R.id.btn_auto_move)
         val undoMain = findViewById<ImageView?>(R.id.undo_main)
@@ -5682,8 +5682,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             // compression so the existing portraitWidthBoost is not double-penalised.
             setButtonSizeDp(binding.btnNewGame, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
             setButtonSizeDp(binding.btnStats, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
-            setButtonSizeDp(btnHint, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+            setButtonSizeDp(btnHint, 32f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 72f * controlHeightScale)
             setButtonSizeDp(btnRestart, 67f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+        } else {
+            setButtonSizeDp(btnHint, 56f * widthScale, 56f * controlHeightScale)
         }
 
         btnAuto?.let { autoButton ->
@@ -5711,13 +5713,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.btnStats.minimumWidth = 0
         binding.btnStats.minimumHeight = 0
         binding.btnStats.setPaddingRelative(0, 0, 0, 0)
-        btnHint?.let {
-            it.minWidth = 0
-            it.minimumWidth = 0
-            it.minimumHeight = 0
-            it.setPaddingRelative(0, 0, 0, 0)
-            it.setTextSize(TypedValue.COMPLEX_UNIT_SP, 0f)
-        }
         btnRestart?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
         btnAuto?.let {
             applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio)
@@ -5776,12 +5771,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         button.setPaddingRelative(horizontal, vertical, horizontal, vertical)
     }
 
-    private fun setButtonSizeDp(button: Button?, widthDp: Float, heightDp: Float) {
-        button ?: return
-        val lp = button.layoutParams ?: return
+    private fun setButtonSizeDp(view: View?, widthDp: Float, heightDp: Float) {
+        view ?: return
+        val lp = view.layoutParams ?: return
         lp.width = dpToPx(widthDp)
         lp.height = dpToPx(heightDp)
-        button.layoutParams = lp
+        view.layoutParams = lp
     }
 
     private fun resizeFrame(view: View, widthPx: Int, heightPx: Int) {

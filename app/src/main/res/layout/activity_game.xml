@@ -254,13 +254,25 @@
     </FrameLayout>
 
     <!-- Hint -->
-    <Button
+    <FrameLayout
         android:id="@+id/btn_hint"
         android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:background="@drawable/button_crystal_ball_hint"
+        android:layout_height="72dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:clickable="true"
         android:contentDescription="@string/action_hint"
-        android:text="" />
+        android:focusable="true">
+        <ImageView
+            android:id="@+id/hint_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:contentDescription="@null"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/button_crystal_ball_hint" />
+    </FrameLayout>
 
     <!-- Magic Wand -->
     <FrameLayout
