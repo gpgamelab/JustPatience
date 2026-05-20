@@ -466,6 +466,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitPileStockOffsetY = 0f,
         portraitPileWasteOffsetX = 0f,
         portraitPileWasteOffsetY = 0f,
+        portraitScoreboardOffsetX = 0f,
+        portraitScoreboardOffsetY = 0f,
+        portraitGemRewardOffsetX = -10f,
+        portraitGemRewardOffsetY = 25f,
+        portraitTicketRewardOffsetX = -10f,
+        portraitTicketRewardOffsetY = 35f,
         landscapeSlimCompact = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 380f,
             pileOverallOffsetY = 0f,
@@ -550,7 +556,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
         landscapePileWasteOffsetX = 0f,
-        landscapePileWasteOffsetY = 0f
+        landscapePileWasteOffsetY = 0f,
+        landscapeScoreboardOffsetX = 0f,
+        landscapeScoreboardOffsetY = 0f,
+        landscapeGemRewardOffsetX = -10f,
+        landscapeGemRewardOffsetY = 25f,
+        landscapeTicketRewardOffsetX = -10f,
+        landscapeTicketRewardOffsetY = 35f
     )
 
     private val defaultMirrored2DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
@@ -626,6 +638,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitPileStockOffsetY = 0f,
         portraitPileWasteOffsetX = 0f,
         portraitPileWasteOffsetY = 0f,
+        portraitScoreboardOffsetX = 0f,
+        portraitScoreboardOffsetY = 0f,
+        portraitGemRewardOffsetX = -10f,
+        portraitGemRewardOffsetY = 25f,
+        portraitTicketRewardOffsetX = -10f,
+        portraitTicketRewardOffsetY = 35f,
         landscapeSlimCompact = LandscapeAspectPileOffsets(
             pileOverallOffsetX = 280f,
             pileOverallOffsetY = -150f,
@@ -681,7 +699,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
         landscapePileWasteOffsetX = 0f,
-        landscapePileWasteOffsetY = 0f
+        landscapePileWasteOffsetY = 0f,
+        landscapeScoreboardOffsetX = 0f,
+        landscapeScoreboardOffsetY = 0f,
+        landscapeGemRewardOffsetX = -10f,
+        landscapeGemRewardOffsetY = 25f,
+        landscapeTicketRewardOffsetX = -10f,
+        landscapeTicketRewardOffsetY = 35f
     )
 
     private enum class LandscapeBannerTier {
@@ -2205,7 +2229,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 launch {
                     viewModel.canUndo.collect { canUndo ->
                         findViewById<ImageView>(R.id.undo_main)?.setImageResource(
-                            if (canUndo) R.drawable.undo_red else R.drawable.undo_gray
+                            if (canUndo) R.drawable.button_undo_red else R.drawable.button_undo_grey
                         )
                     }
                 }
@@ -2213,7 +2237,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 launch {
                     viewModel.canRedo.collect { canRedo ->
                         findViewById<ImageView>(R.id.redo_main)?.setImageResource(
-                            if (canRedo) R.drawable.redo_blue else R.drawable.redo_gray
+                            if (canRedo) R.drawable.button_redo_blue else R.drawable.button_redo_grey
                         )
                     }
                 }
@@ -3154,7 +3178,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyPortraitPileLayoutDevConfigToBoard()
         applyAspectCategoryPileTrimsToBoard()
         applyLandscapeBannerOverlayDevOffsets()
-        applyTopHudDevOffsets()
 
         // Flip the info_side_panel to the opposite side
         val infoPanel = findViewById<android.view.View>(R.id.info_side_panel) ?: return
@@ -3223,6 +3246,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 applyLandscapeBannerOverlayDevOffsets()
             }
         }
+
+        // Keep HUD/control sizing tied to device + deck state, not mirrored hand preference.
+        applyResponsiveControlSizing()
+        infoPanel.post { applyTopHudDevOffsets() }
     }
 
     private fun showGameMenu() {
@@ -5423,8 +5450,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         applyButtonScale(binding.btnNewGame, controlTextSp, textScale * ratioProfile.averageRatio)
-        applyButtonScale(binding.btnStats, controlTextSp, textScale * ratioProfile.averageRatio)
-        btnHint?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
+        binding.btnStats.minWidth = 0
+        binding.btnStats.minimumWidth = 0
+        binding.btnStats.minimumHeight = 0
+        binding.btnStats.setPaddingRelative(0, 0, 0, 0)
+        btnHint?.let {
+            it.minWidth = 0
+            it.minimumWidth = 0
+            it.minimumHeight = 0
+            it.setPaddingRelative(0, 0, 0, 0)
+            it.setTextSize(TypedValue.COMPLEX_UNIT_SP, 0f)
+        }
         btnRestart?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
         btnAuto?.let {
             applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio)

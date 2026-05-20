@@ -253,7 +253,7 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/action_undo"
             android:scaleType="fitCenter"
-            android:src="@drawable/undo_gray" />
+            android:src="@drawable/button_undo_grey" />
     </FrameLayout>
 
     <!-- Redo -->
@@ -270,18 +270,17 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/action_redo"
             android:scaleType="fitCenter"
-            android:src="@drawable/redo_gray" />
+            android:src="@drawable/button_redo_grey" />
     </FrameLayout>
 
     <!-- Hint -->
     <Button
         android:id="@+id/btn_hint"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:text="@string/action_hint"
-        android:textColor="@color/secondary_button_color"
-        app:strokeColor="@color/secondary_button_color" />
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/button_crystal_ball_hint"
+        android:contentDescription="@string/action_hint"
+        android:text="" />
 
     <!-- Magic Wand -->
     <FrameLayout
@@ -300,7 +299,7 @@
             android:layout_gravity="center"
             android:contentDescription="@string/magic_wand_content_description"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_magic_wand_yellow" />
+            android:src="@drawable/icon_magic_wand_01" />
 
         <TextView
             android:id="@+id/tv_magic_wand_count"
@@ -335,13 +334,20 @@
     <!-- Play button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_stats"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:text="@string/play_button_label"
-        android:textColor="@color/colorPrimary"
-        android:textSize="11sp"
-        app:strokeColor="@color/colorPrimary" />
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:contentDescription="@string/play_button_label"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:insetLeft="0dp"
+        android:insetRight="0dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text=""
+        app:icon="@drawable/button_play"
+        app:iconPadding="0dp"
+        app:iconTint="@null" />
 
     <!-- Hidden views kept for ViewBinding compatibility -->
     <Button
