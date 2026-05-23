@@ -282,7 +282,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetTicketRewardCounterOffsetX(value: Float)
         fun onDevSetTicketRewardCounterOffsetY(value: Float)
         fun onDevSetTicketRewardCounterScale(value: Float)
-        fun onDevCycleLandscapeBannerBoxChoice()
+        fun onDevCycleBannerBoxChoice()
 
         // Shuffle/deal timing
         fun devShuffleSecondClipDelayMs(): Float
@@ -679,8 +679,8 @@ class DevelopMenuDialogFragment : DialogFragment() {
     }
 
     private fun bindLandscapeBannerBoxChoice(view: View, host: Host) {
-        view.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_box_choice).setOnClickListener {
-            host.onDevCycleLandscapeBannerBoxChoice()
+        view.findViewById<MaterialButton>(R.id.btn_dev_banner_box_choice).setOnClickListener {
+            host.onDevCycleBannerBoxChoice()
             refreshLandscapeBannerBoxChoice(view, host)
         }
     }
@@ -873,7 +873,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
     }
 
     private fun refreshLandscapeBannerBoxChoice(root: View, host: Host) {
-        root.findViewById<MaterialButton>(R.id.btn_dev_landscape_banner_box_choice).text = host.devLandscapeBannerAdBoxChoiceLabel()
+        root.findViewById<MaterialButton>(R.id.btn_dev_banner_box_choice).text = host.devLandscapeBannerAdBoxChoiceLabel()
     }
 
     private fun fmt(value: Float): String = String.format(Locale.US, "%.2f", value)

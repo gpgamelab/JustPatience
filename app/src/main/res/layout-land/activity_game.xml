@@ -402,7 +402,7 @@
         android:id="@+id/banner_overlay_container"
         android:layout_width="330dp"
         android:layout_height="260dp"
-        android:background="@android:color/black"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 

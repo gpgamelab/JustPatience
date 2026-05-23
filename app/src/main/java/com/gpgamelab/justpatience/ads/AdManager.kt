@@ -43,8 +43,10 @@ class AdManager(private val context: Context) {
     private val bannerRetryDelayMs = 5 * 60 * 1000L // 5 minutes
     private val useProductionAds = context.resources.getBoolean(R.bool.use_production_ad_ids)
     private val useFakeTestAds = context.resources.getBoolean(R.bool.use_fake_test_ads)
-    private val useFakeAds = !useProductionAds && useFakeTestAds
-    private val useTestAds = !useProductionAds && !useFakeTestAds
+    private val baseUseFakeAds = !useProductionAds && useFakeTestAds
+    private val baseUseTestAds = !useProductionAds && !useFakeTestAds
+    private var developerForceTestAds = false
+    private var sdkInitialized = false
     private val isDebugBuild: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
@@ -76,11 +78,20 @@ class AdManager(private val context: Context) {
         private var isTestMode = false
     }
 
+    private fun shouldUseFakeAds(): Boolean {
+        return baseUseFakeAds && !developerForceTestAds
+    }
+
+    private fun shouldUseTestAds(): Boolean {
+        // Developer force mode supersedes fake/production routing while debugging.
+        return developerForceTestAds || isTestMode
+    }
+
     init {
-        isTestMode = useTestAds
+        isTestMode = baseUseTestAds
         val mode = when {
             useProductionAds -> "PRODUCTION"
-            useFakeAds -> "FAKE_TEST"
+            baseUseFakeAds -> "FAKE_TEST"
             else -> "ADMOB_TEST"
         }
         logDebug("Ad mode initialized: $mode")
@@ -91,12 +102,17 @@ class AdManager(private val context: Context) {
      * Call this once when the app starts (in your Application class or MainActivity).
      */
     fun initializeAds() {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             logDebug("Skipping Mobile Ads SDK initialization in fake ad mode")
+            return
+        }
+        if (sdkInitialized) {
+            logDebug("Google Mobile Ads SDK already initialized; skipping")
             return
         }
         try {
             MobileAds.initialize(context)
+            sdkInitialized = true
             logDebug("Google Mobile Ads SDK initialized successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Google Mobile Ads SDK", e)
@@ -111,7 +127,7 @@ class AdManager(private val context: Context) {
      */
     fun loadBannerAd(adView: AdView, requestedAdSizes: List<AdSize> = emptyList()) {
         cancelBannerRetry()
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             showFakeBanner(adView)
             return
         }
@@ -192,7 +208,7 @@ class AdManager(private val context: Context) {
      * Load an interstitial ad.
      */
     fun loadInterstitialAd() {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             mInterstitialAd = null
             logDebug("Using fake popup for interstitial ad")
             return
@@ -200,7 +216,7 @@ class AdManager(private val context: Context) {
 
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (useTestAds) TEST_INTERSTITIAL_AD_UNIT_ID else PRODUCTION_INTERSTITIAL_AD_UNIT_ID
+            val adUnitId = if (shouldUseTestAds()) TEST_INTERSTITIAL_AD_UNIT_ID else PRODUCTION_INTERSTITIAL_AD_UNIT_ID
 
             InterstitialAd.load(context, adUnitId, adRequest, object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
@@ -228,7 +244,7 @@ class AdManager(private val context: Context) {
      * @return true if an ad was shown, false if no ad was ready
      */
     fun showInterstitialAd(onCompleted: (() -> Unit)? = null): Boolean {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             val completion = onCompleted ?: adDismissedCallback
             return showFakeFullScreenAd {
                 completion?.invoke()
@@ -275,7 +291,7 @@ class AdManager(private val context: Context) {
      * Load a rewarded ad.
      */
     fun loadRewardedAd() {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             mRewardedAd = null
             logDebug("Using fake popup for rewarded ad")
             return
@@ -283,7 +299,7 @@ class AdManager(private val context: Context) {
 
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID
+            val adUnitId = if (shouldUseTestAds()) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -301,7 +317,7 @@ class AdManager(private val context: Context) {
         }
     }
     fun loadRewardedAdUndoBtn() {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             mRewardedAd = null
             logDebug("Using fake popup for rewarded undo ad")
             return
@@ -309,7 +325,7 @@ class AdManager(private val context: Context) {
 
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN
+            val adUnitId = if (shouldUseTestAds()) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_UNDO_BTN
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -327,7 +343,7 @@ class AdManager(private val context: Context) {
         }
     }
     fun loadRewardedAdRedoBtn() {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             mRewardedAd = null
             logDebug("Using fake popup for rewarded redo ad")
             return
@@ -335,7 +351,7 @@ class AdManager(private val context: Context) {
 
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN
+            val adUnitId = if (shouldUseTestAds()) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_REDO_BTN
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -353,7 +369,7 @@ class AdManager(private val context: Context) {
         }
     }
     fun loadRewardedAdRestartBtn() {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             mRewardedAd = null
             logDebug("Using fake popup for rewarded restart ad")
             return
@@ -361,7 +377,7 @@ class AdManager(private val context: Context) {
 
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (useTestAds) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN
+            val adUnitId = if (shouldUseTestAds()) TEST_REWARDED_AD_UNIT_ID else PRODUCTION_REWARDED_AD_UNIT_ID_RESTART_BTN
 
             RewardedAd.load(context, adUnitId, adRequest, object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
@@ -383,7 +399,7 @@ class AdManager(private val context: Context) {
      * Load a rewarded interstitial ad (used in the post-win dialog flow).
      */
     fun loadRewardedInterstitialAd() {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             mRewardedInterstitialAd = null
             logDebug("Using fake popup for rewarded interstitial ad")
             return
@@ -391,7 +407,7 @@ class AdManager(private val context: Context) {
 
         try {
             val adRequest = AdRequest.Builder().build()
-            val adUnitId = if (useTestAds) {
+            val adUnitId = if (shouldUseTestAds()) {
                 TEST_REWARDED_INTERSTITIAL_AD_UNIT_ID
             } else {
                 PRODUCTION_REWARDED_INTERSTITIAL_AD_UNIT_ID
@@ -427,7 +443,7 @@ class AdManager(private val context: Context) {
         onUserEarnedReward: (() -> Unit)? = null,
         onFinished: ((Boolean) -> Unit)? = null
     ): Boolean {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             val completion = onCompleted ?: adDismissedCallback
             return showFakeFullScreenAd {
                 onUserEarnedReward?.invoke()
@@ -475,7 +491,7 @@ class AdManager(private val context: Context) {
         return true
     }
     fun showRewardedAdUndoBtn(onCompleted: (() -> Unit)? = null): Boolean {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             val completion = onCompleted ?: adDismissedCallback
             return showFakeFullScreenAd {
                 completion?.invoke()
@@ -516,7 +532,7 @@ class AdManager(private val context: Context) {
         return true
     }
     fun showRewardedAdRedoBtn(onCompleted: (() -> Unit)? = null): Boolean {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             val completion = onCompleted ?: adDismissedCallback
             return showFakeFullScreenAd {
                 completion?.invoke()
@@ -557,7 +573,7 @@ class AdManager(private val context: Context) {
         return true
     }
     fun showRewardedAdRestartBtn(onCompleted: (() -> Unit)? = null): Boolean {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             val completion = onCompleted ?: adDismissedCallback
             return showFakeFullScreenAd {
                 completion?.invoke()
@@ -609,7 +625,7 @@ class AdManager(private val context: Context) {
         onCompleted: (() -> Unit)? = null,
         onUserEarnedReward: (() -> Unit)? = null
     ): Boolean {
-        if (useFakeAds) {
+        if (shouldUseFakeAds()) {
             val completion = onCompleted ?: adDismissedCallback
             return showFakeFullScreenAd {
                 onUserEarnedReward?.invoke()
@@ -652,13 +668,32 @@ class AdManager(private val context: Context) {
         return true
     }
 
+    fun setDeveloperForceTestAds(forceEnabled: Boolean) {
+        if (!isDebugBuild) {
+            logDebug("Ignoring developer test-ad force outside debug environment")
+            return
+        }
+        developerForceTestAds = forceEnabled
+        isTestMode = baseUseTestAds || forceEnabled
+        val mode = when {
+            shouldUseFakeAds() -> "FAKE_TEST"
+            shouldUseTestAds() -> "ADMOB_TEST"
+            else -> "PRODUCTION"
+        }
+        logDebug("Developer force test ads: $forceEnabled (effective mode=$mode)")
+    }
+
     /**
      * Set whether the app is in test mode (shows test ads)
      * @param testMode true for test ads, false for production ads
      */
     fun setTestMode(testMode: Boolean) {
-        if (useProductionAds || useFakeAds) {
+        if (useProductionAds && !developerForceTestAds) {
             logDebug("Ignoring setTestMode because ad mode is fixed by Gradle properties")
+            return
+        }
+        if (shouldUseFakeAds() && !testMode) {
+            logDebug("Ignoring setTestMode(false) while fake mode is active")
             return
         }
         isTestMode = testMode
