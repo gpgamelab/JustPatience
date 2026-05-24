@@ -955,6 +955,43 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         LARGE
     }
 
+    private fun resolveCurrentAspectConfig(profile: LayoutProfileDevAdjusters): GameBoardLayoutConfig {
+        return if (isLandscapeNow()) {
+            when (binding.gameBoardView.getCurrentAspectCategory()) {
+                DeviceAspectCategory.SLIM -> if (isCompactSlimLandscapeBoard()) profile.landscapeSlimCompact else profile.landscapeSlim
+                DeviceAspectCategory.CLASSIC -> profile.landscapeClassic
+                DeviceAspectCategory.BROAD -> profile.landscapeBroad
+                DeviceAspectCategory.SQUARE -> profile.landscapeSquare
+            }
+        } else {
+            when (binding.gameBoardView.getCurrentAspectCategory()) {
+                DeviceAspectCategory.SLIM -> if (isCompactSlimPortraitBoard()) profile.portraitSlimCompact else profile.portraitSlim
+                DeviceAspectCategory.CLASSIC -> profile.portraitClassic
+                DeviceAspectCategory.BROAD -> profile.portraitBroad
+                DeviceAspectCategory.SQUARE -> profile.portraitSquare
+            }
+        }
+    }
+
+    private fun applyCurrentBannerOffsetsFromProfile(profile: LayoutProfileDevAdjusters) {
+        val cfg = resolveCurrentAspectConfig(profile)
+        if (isLandscapeNow()) {
+            devSmallDeviceLandscapeBannerOffsetXDpState = cfg.bannerSmallOffsetX
+            devSmallDeviceLandscapeBannerOffsetYDpState = cfg.bannerSmallOffsetY
+            devMediumDeviceLandscapeBannerOffsetXDpState = cfg.bannerMediumOffsetX
+            devMediumDeviceLandscapeBannerOffsetYDpState = cfg.bannerMediumOffsetY
+            devLargeDeviceLandscapeBannerOffsetXDpState = cfg.bannerLargeOffsetX
+            devLargeDeviceLandscapeBannerOffsetYDpState = cfg.bannerLargeOffsetY
+        } else {
+            devSmallDevicePortraitBannerOffsetXDpState = cfg.bannerSmallOffsetX
+            devSmallDevicePortraitBannerOffsetYDpState = cfg.bannerSmallOffsetY
+            devMediumDevicePortraitBannerOffsetXDpState = cfg.bannerMediumOffsetX
+            devMediumDevicePortraitBannerOffsetYDpState = cfg.bannerMediumOffsetY
+            devLargeDevicePortraitBannerOffsetXDpState = cfg.bannerLargeOffsetX
+            devLargeDevicePortraitBannerOffsetYDpState = cfg.bannerLargeOffsetY
+        }
+    }
+
     private enum class BannerAdBoxChoice {
         SMALL,
         MEDIUM,
@@ -1086,6 +1123,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devMediumDeviceLandscapeBannerOffsetYDpState: Float = 0f
     private var devLargeDeviceLandscapeBannerOffsetXDpState: Float = 0f
     private var devLargeDeviceLandscapeBannerOffsetYDpState: Float = 0f
+    private var devSmallDevicePortraitBannerOffsetXDpState: Float = 0f
+    private var devSmallDevicePortraitBannerOffsetYDpState: Float = 0f
+    private var devMediumDevicePortraitBannerOffsetXDpState: Float = 0f
+    private var devMediumDevicePortraitBannerOffsetYDpState: Float = 0f
+    private var devLargeDevicePortraitBannerOffsetXDpState: Float = 0f
+    private var devLargeDevicePortraitBannerOffsetYDpState: Float = 0f
     private var devScoreboardOffsetXDpState: Float = 0f
     private var devScoreboardOffsetYDpState: Float = 0f
     private var devGemRewardOffsetXDpState: Float = 0f
@@ -1191,12 +1234,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimCompactDpState,
                 tableauOffsetX = devPortraitTableauOffsetXSlimCompactDpState,
                 tableauOffsetY = devPortraitTableauOffsetYSlimCompactDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDevicePortraitBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDevicePortraitBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDevicePortraitBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDevicePortraitBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDevicePortraitBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDevicePortraitBannerOffsetYDpState,
                 adBoxChoice = devPortraitAdBoxChoiceSlimCompactState
             ),
             portraitSlim = GameBoardLayoutConfig(
@@ -1208,12 +1251,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYSlimDpState,
                 tableauOffsetX = devPortraitTableauOffsetXSlimDpState,
                 tableauOffsetY = devPortraitTableauOffsetYSlimDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDevicePortraitBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDevicePortraitBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDevicePortraitBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDevicePortraitBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDevicePortraitBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDevicePortraitBannerOffsetYDpState,
                 adBoxChoice = devPortraitAdBoxChoiceSlimState
             ),
             portraitClassic = GameBoardLayoutConfig(
@@ -1225,12 +1268,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYClassicDpState,
                 tableauOffsetX = devPortraitTableauOffsetXClassicDpState,
                 tableauOffsetY = devPortraitTableauOffsetYClassicDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDevicePortraitBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDevicePortraitBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDevicePortraitBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDevicePortraitBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDevicePortraitBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDevicePortraitBannerOffsetYDpState,
                 adBoxChoice = devPortraitAdBoxChoiceClassicState
             ),
             portraitBroad = GameBoardLayoutConfig(
@@ -1242,12 +1285,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYBroadDpState,
                 tableauOffsetX = devPortraitTableauOffsetXBroadDpState,
                 tableauOffsetY = devPortraitTableauOffsetYBroadDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDevicePortraitBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDevicePortraitBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDevicePortraitBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDevicePortraitBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDevicePortraitBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDevicePortraitBannerOffsetYDpState,
                 adBoxChoice = devPortraitAdBoxChoiceBroadState
             ),
             portraitSquare = GameBoardLayoutConfig(
@@ -1259,12 +1302,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devPortraitDrawWasteOffsetYSquareDpState,
                 tableauOffsetX = devPortraitTableauOffsetXSquareDpState,
                 tableauOffsetY = devPortraitTableauOffsetYSquareDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDevicePortraitBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDevicePortraitBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDevicePortraitBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDevicePortraitBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDevicePortraitBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDevicePortraitBannerOffsetYDpState,
                 adBoxChoice = devPortraitAdBoxChoiceSquareState
             ),
             portraitPileStockOffsetX = devPortraitPileStockOffsetXDpState,
@@ -1300,10 +1343,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 tableauOffsetY = devLandscapeTableauOffsetYSlimCompactDpState,
                 bannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
                 bannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState,
                 adBoxChoice = devLandscapeAdBoxChoiceSlimCompactState
             ),
             landscapeSlim = GameBoardLayoutConfig(
@@ -1315,12 +1358,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSlimDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSlimDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYSlimDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
                 bannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
                 bannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState,
                 adBoxChoice = devLandscapeAdBoxChoiceSlimState
             ),
             landscapeClassic = GameBoardLayoutConfig(
@@ -1332,12 +1375,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYClassicDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXClassicDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYClassicDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState,
                 adBoxChoice = devLandscapeAdBoxChoiceClassicState
             ),
             landscapeBroad = GameBoardLayoutConfig(
@@ -1349,10 +1392,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYBroadDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXBroadDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYBroadDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
                 bannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
                 bannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState,
                 adBoxChoice = devLandscapeAdBoxChoiceBroadState
@@ -1366,12 +1409,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 drawWasteOffsetY = devLandscapeDrawWasteOffsetYSquareDpState,
                 tableauOffsetX = devLandscapeTableauOffsetXSquareDpState,
                 tableauOffsetY = devLandscapeTableauOffsetYSquareDpState,
-                bannerSmallOffsetX = 0f,
-                bannerSmallOffsetY = 0f,
-                bannerMediumOffsetX = 0f,
-                bannerMediumOffsetY = 0f,
-                bannerLargeOffsetX = 0f,
-                bannerLargeOffsetY = 0f,
+                bannerSmallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
+                bannerSmallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
+                bannerMediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
+                bannerMediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
+                bannerLargeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
+                bannerLargeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState,
                 adBoxChoice = devLandscapeAdBoxChoiceSquareState
             ),
             landscapePileStockOffsetX = devLandscapePileStockOffsetXDpState,
@@ -1569,8 +1612,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitDrawWasteOffsetYSlimCompactDpState = profile.portraitSlimCompact.drawWasteOffsetY
         devPortraitTableauOffsetXSlimCompactDpState = profile.portraitSlimCompact.tableauOffsetX
         devPortraitTableauOffsetYSlimCompactDpState = profile.portraitSlimCompact.tableauOffsetY
-        devSmallDeviceLandscapeBannerOffsetXDpState = profile.landscapeSlimCompact.bannerSmallOffsetX
-        devSmallDeviceLandscapeBannerOffsetYDpState = profile.landscapeSlimCompact.bannerSmallOffsetY
         // Apply HUD offsets from orientation-specific fields
         devScoreboardOffsetXDpState = if (isPortrait) profile.portraitScoreboardOffsetX else profile.landscapeScoreboardOffsetX
         devScoreboardOffsetYDpState = if (isPortrait) profile.portraitScoreboardOffsetY else profile.landscapeScoreboardOffsetY
@@ -1609,8 +1650,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitDrawWasteOffsetYSlimDpState     = profile.portraitSlim.drawWasteOffsetY
         devPortraitTableauOffsetXSlimDpState = profile.portraitSlim.tableauOffsetX
         devPortraitTableauOffsetYSlimDpState = profile.portraitSlim.tableauOffsetY
-        devMediumDeviceLandscapeBannerOffsetXDpState = profile.landscapeSlim.bannerMediumOffsetX
-        devMediumDeviceLandscapeBannerOffsetYDpState = profile.landscapeSlim.bannerMediumOffsetY
         // ...existing code...
         devPortraitOverallOffsetXClassicDpState = profile.portraitClassic.pileOverallOffsetX
         devPortraitOverallOffsetYClassicDpState = profile.portraitClassic.pileOverallOffsetY
@@ -1629,8 +1668,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitDrawWasteOffsetYBroadDpState    = profile.portraitBroad.drawWasteOffsetY
         devPortraitTableauOffsetXBroadDpState = profile.portraitBroad.tableauOffsetX
         devPortraitTableauOffsetYBroadDpState = profile.portraitBroad.tableauOffsetY
-        devLargeDeviceLandscapeBannerOffsetXDpState = profile.landscapeBroad.bannerLargeOffsetX
-        devLargeDeviceLandscapeBannerOffsetYDpState = profile.landscapeBroad.bannerLargeOffsetY
+        applyCurrentBannerOffsetsFromProfile(profile)
         // ...existing code...
         devPortraitOverallOffsetXSquareDpState = profile.portraitSquare.pileOverallOffsetX
         devPortraitOverallOffsetYSquareDpState = profile.portraitSquare.pileOverallOffsetY
@@ -2612,10 +2650,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Initialize and load banner ads
         adManager = AdManager(this)
         adManager.initializeAds()
-        val initialBannerAdSizes = configureCurrentBannerBoxAndResolveAdSizes()
-        val initialBannerAdView = resolveActiveBannerAdView(initialBannerAdSizes)
-        adManager.loadBannerAd(initialBannerAdView, initialBannerAdSizes)
-        updateBannerPlacementForCurrentConfiguration()
+        // Delay banner reload until after GameBoardView is laid out so aspect category can be determined
+        binding.gameBoardView.post {
+            reloadBannerForCurrentConfiguration()
+        }
         adManager.loadRewardedAd()
         adManager.loadRewardedInterstitialAd()
 
@@ -2671,6 +2709,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                             applyPortraitPileLayoutDevConfigToBoard()
                             persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
                             applyTopHudDevOffsets()
+                            // Ensure startup banner size matches the active profile/aspect immediately.
+                            reloadBannerForCurrentConfiguration()
                         }
                         updateScoreLabel(g)
                         binding.tvMovesValue.text = formatMovesValue(g.moves)
@@ -4039,12 +4079,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devLandscapeBannerMediumHeightDp(): Float = devLandscapeBannerMediumHeightDpState
     override fun devLandscapeBannerLargeWidthDp(): Float = devLandscapeBannerLargeWidthDpState
     override fun devLandscapeBannerLargeHeightDp(): Float = devLandscapeBannerLargeHeightDpState
-    override fun devSmallDeviceLandscapeBannerOffsetXDp(): Float = devSmallDeviceLandscapeBannerOffsetXDpState
-    override fun devSmallDeviceLandscapeBannerOffsetYDp(): Float = devSmallDeviceLandscapeBannerOffsetYDpState
-    override fun devMediumDeviceLandscapeBannerOffsetXDp(): Float = devMediumDeviceLandscapeBannerOffsetXDpState
-    override fun devMediumDeviceLandscapeBannerOffsetYDp(): Float = devMediumDeviceLandscapeBannerOffsetYDpState
-    override fun devLargeDeviceLandscapeBannerOffsetXDp(): Float = devLargeDeviceLandscapeBannerOffsetXDpState
-    override fun devLargeDeviceLandscapeBannerOffsetYDp(): Float = devLargeDeviceLandscapeBannerOffsetYDpState
+    override fun devSmallDeviceLandscapeBannerOffsetXDp(): Float = if (isLandscapeNow()) devSmallDeviceLandscapeBannerOffsetXDpState else devSmallDevicePortraitBannerOffsetXDpState
+    override fun devSmallDeviceLandscapeBannerOffsetYDp(): Float = if (isLandscapeNow()) devSmallDeviceLandscapeBannerOffsetYDpState else devSmallDevicePortraitBannerOffsetYDpState
+    override fun devMediumDeviceLandscapeBannerOffsetXDp(): Float = if (isLandscapeNow()) devMediumDeviceLandscapeBannerOffsetXDpState else devMediumDevicePortraitBannerOffsetXDpState
+    override fun devMediumDeviceLandscapeBannerOffsetYDp(): Float = if (isLandscapeNow()) devMediumDeviceLandscapeBannerOffsetYDpState else devMediumDevicePortraitBannerOffsetYDpState
+    override fun devLargeDeviceLandscapeBannerOffsetXDp(): Float = if (isLandscapeNow()) devLargeDeviceLandscapeBannerOffsetXDpState else devLargeDevicePortraitBannerOffsetXDpState
+    override fun devLargeDeviceLandscapeBannerOffsetYDp(): Float = if (isLandscapeNow()) devLargeDeviceLandscapeBannerOffsetYDpState else devLargeDevicePortraitBannerOffsetYDpState
     override fun devScoreboardOffsetXDp(): Float = devScoreboardOffsetXDpState
     override fun devScoreboardOffsetYDp(): Float = devScoreboardOffsetYDpState
     override fun devGemRewardOffsetXDp(): Float = devGemRewardOffsetXDpState
@@ -4259,32 +4299,38 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         reloadBannerForCurrentConfiguration()
     }
     override fun onDevSetSmallDeviceLandscapeBannerOffsetX(value: Float) {
-        devSmallDeviceLandscapeBannerOffsetXDpState = value
+        if (isLandscapeNow()) devSmallDeviceLandscapeBannerOffsetXDpState = value
+        else devSmallDevicePortraitBannerOffsetXDpState = value
         updateBannerPlacementForCurrentConfiguration()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
     }
     override fun onDevSetSmallDeviceLandscapeBannerOffsetY(value: Float) {
-        devSmallDeviceLandscapeBannerOffsetYDpState = value
+        if (isLandscapeNow()) devSmallDeviceLandscapeBannerOffsetYDpState = value
+        else devSmallDevicePortraitBannerOffsetYDpState = value
         updateBannerPlacementForCurrentConfiguration()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
     }
     override fun onDevSetMediumDeviceLandscapeBannerOffsetX(value: Float) {
-        devMediumDeviceLandscapeBannerOffsetXDpState = value
+        if (isLandscapeNow()) devMediumDeviceLandscapeBannerOffsetXDpState = value
+        else devMediumDevicePortraitBannerOffsetXDpState = value
         updateBannerPlacementForCurrentConfiguration()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
     }
     override fun onDevSetMediumDeviceLandscapeBannerOffsetY(value: Float) {
-        devMediumDeviceLandscapeBannerOffsetYDpState = value
+        if (isLandscapeNow()) devMediumDeviceLandscapeBannerOffsetYDpState = value
+        else devMediumDevicePortraitBannerOffsetYDpState = value
         updateBannerPlacementForCurrentConfiguration()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
     }
     override fun onDevSetLargeDeviceLandscapeBannerOffsetX(value: Float) {
-        devLargeDeviceLandscapeBannerOffsetXDpState = value
+        if (isLandscapeNow()) devLargeDeviceLandscapeBannerOffsetXDpState = value
+        else devLargeDevicePortraitBannerOffsetXDpState = value
         updateBannerPlacementForCurrentConfiguration()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
     }
     override fun onDevSetLargeDeviceLandscapeBannerOffsetY(value: Float) {
-        devLargeDeviceLandscapeBannerOffsetYDpState = value
+        if (isLandscapeNow()) devLargeDeviceLandscapeBannerOffsetYDpState = value
+        else devLargeDevicePortraitBannerOffsetYDpState = value
         updateBannerPlacementForCurrentConfiguration()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
     }
@@ -5494,10 +5540,20 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun resolveCurrentBannerOffsetDp(): Pair<Float, Float> {
+        val isLandscape = isLandscapeNow()
         return when (resolveBannerTier(resolveCurrentBannerAdBoxChoice())) {
-            BannerAdTier.SMALL -> devSmallDeviceLandscapeBannerOffsetXDpState to devSmallDeviceLandscapeBannerOffsetYDpState
-            BannerAdTier.MEDIUM -> devMediumDeviceLandscapeBannerOffsetXDpState to devMediumDeviceLandscapeBannerOffsetYDpState
-            BannerAdTier.LARGE -> devLargeDeviceLandscapeBannerOffsetXDpState to devLargeDeviceLandscapeBannerOffsetYDpState
+            BannerAdTier.SMALL -> {
+                if (isLandscape) devSmallDeviceLandscapeBannerOffsetXDpState to devSmallDeviceLandscapeBannerOffsetYDpState
+                else devSmallDevicePortraitBannerOffsetXDpState to devSmallDevicePortraitBannerOffsetYDpState
+            }
+            BannerAdTier.MEDIUM -> {
+                if (isLandscape) devMediumDeviceLandscapeBannerOffsetXDpState to devMediumDeviceLandscapeBannerOffsetYDpState
+                else devMediumDevicePortraitBannerOffsetXDpState to devMediumDevicePortraitBannerOffsetYDpState
+            }
+            BannerAdTier.LARGE -> {
+                if (isLandscape) devLargeDeviceLandscapeBannerOffsetXDpState to devLargeDeviceLandscapeBannerOffsetYDpState
+                else devLargeDevicePortraitBannerOffsetXDpState to devLargeDevicePortraitBannerOffsetYDpState
+            }
         }
     }
 
@@ -5632,7 +5688,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isLandscapeNow && container?.id == R.id.banner_overlay_container) {
             container.post {
-                adManager.loadBannerAd(bannerAdView, requestedAdSizes)
+                // Guard: if another reloadBannerForCurrentConfiguration() ran while this post
+                // was pending, bannerAdView may have been set to GONE by the newer call.
+                // Skip loading an ad into a view that is no longer the active banner.
+                if (bannerAdView.visibility != View.GONE) {
+                    adManager.loadBannerAd(bannerAdView, requestedAdSizes)
+                }
             }
             return
         }

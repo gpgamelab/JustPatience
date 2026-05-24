@@ -707,7 +707,11 @@ class AdManager(private val context: Context) {
     }
 
     private fun hideFakeBanner(adView: AdView) {
-        adView.visibility = View.VISIBLE
+        // Only restore from INVISIBLE (set by showFakeBanner); never override GONE which is
+        // managed by resolveActiveBannerAdView to hide non-selected banner views.
+        if (adView.visibility == View.INVISIBLE) {
+            adView.visibility = View.VISIBLE
+        }
         (context as? Activity)?.findViewById<View>(R.id.fakeBannerView)?.visibility = View.GONE
     }
 
