@@ -19,15 +19,15 @@
                 android:strokeWidth="2" />
         </group>
         <group
-            android:scaleX="0.0624"
-            android:scaleY="0.044"
-            android:translateX="-193.8"
-            android:translateY="-308.6">
+            android:scaleX="0.192"
+            android:scaleY="0.06"
+            android:translateX="-149"
+            android:translateY="-309">
             <path
                 android:pathData="m 50,-460 h 200 m -100,0 v 710 a 200,200 0 0 1 -400,0 v -30"
                 android:fillColor="#00000000"
                 android:strokeColor="#FF000000"
-                android:strokeWidth="120"
+                android:strokeWidth="150"
                 android:strokeLineCap="square"
                 android:strokeMiterLimit="1.5" />
         </group>
@@ -41,15 +41,15 @@
                 android:fillColor="#FFFF0000" />
         </group>
         <group
-            android:scaleX="0.0624"
-            android:scaleY="0.044"
-            android:translateX="-28.8"
-            android:translateY="-38.6">
+            android:scaleX="0.192"
+            android:scaleY="0.06"
+            android:translateX="-74"
+            android:translateY="-39">
             <path
                 android:pathData="m 50,-460 h 200 m -100,0 v 710 a 200,200 0 0 1 -400,0 v -30"
                 android:fillColor="#00000000"
                 android:strokeColor="#FF000000"
-                android:strokeWidth="120"
+                android:strokeWidth="150"
                 android:strokeLineCap="square"
                 android:strokeMiterLimit="1.5" />
         </group>
