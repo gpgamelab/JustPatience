@@ -459,6 +459,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeBroad = GameBoardLayoutConfig(
             pileOverallOffsetX = -120f,
             pileOverallOffsetY = 0f,
+            bannerSmallOffsetX = 0f,
+            bannerSmallOffsetY = 0f,
+            bannerMediumOffsetX = 0f,
+            bannerMediumOffsetY = 0f,
+            bannerLargeOffsetX = 0f,
+            bannerLargeOffsetY = 0f,
             adBoxChoice = BannerAdBoxChoice.LARGE,
             undoControlAdjustments = BottomControlButtonAdjustments(
                 scale = 2f,
@@ -607,7 +613,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = -110f,
@@ -620,7 +627,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = -5f,
@@ -630,7 +638,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeBroad = GameBoardLayoutConfig(
             pileOverallOffsetX = -5f,
@@ -639,7 +648,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
-            bannerLargeOffsetX = 0f,
+            bannerLargeOffsetX = -300f,
             bannerLargeOffsetY = 0f,
             adBoxChoice = BannerAdBoxChoice.LARGE
         ),
@@ -650,8 +659,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
-            bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetX = -300f,
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.LARGE
         ),
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
@@ -675,7 +685,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         portraitSlim = GameBoardLayoutConfig(
             pileOverallOffsetY = -0f,
@@ -687,7 +698,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         portraitClassic = GameBoardLayoutConfig(
             pileOverallOffsetY = 100f,
@@ -699,18 +711,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         portraitBroad = GameBoardLayoutConfig(
             pileOverallOffsetY = -10f,
             drawWasteOffsetX = 45f,
             tableauOffsetY = 25f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
@@ -721,18 +728,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         ),
         portraitSquare = GameBoardLayoutConfig(
             pileOverallOffsetY = -70f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.LARGE
         ),
         portraitPileStockOffsetX = 0f,
         portraitPileStockOffsetY = 0f,
@@ -747,61 +749,40 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSlimCompact = GameBoardLayoutConfig(
             pileOverallOffsetX = 380f,
             pileOverallOffsetY = 0f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = 260f,
             pileOverallOffsetY = 0f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = 275f,
             pileOverallOffsetY = -25f,
             foundationOffsetX = -15f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeBroad = GameBoardLayoutConfig(
             pileOverallOffsetX = 190f,
             pileOverallOffsetY = 0f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
@@ -813,18 +794,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         landscapeSquare = GameBoardLayoutConfig(
             pileOverallOffsetX = 90f,
             pileOverallOffsetY = -100f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.LARGE
         ),
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
@@ -841,52 +817,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private val defaultMirrored2DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
         portraitSlimCompact = GameBoardLayoutConfig(
             tableauOffsetY = 0f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         portraitSlim = GameBoardLayoutConfig(
             pileOverallOffsetY = 0f,
             foundationOffsetX = 35f,
             drawWasteOffsetX = 45f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         portraitClassic = GameBoardLayoutConfig(
             pileOverallOffsetY = 0f,
             foundationOffsetX = 35f,
             drawWasteOffsetX = 65f,
-            
-            
-            
-            
-            
-            
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         portraitBroad = GameBoardLayoutConfig(
             pileOverallOffsetY = -10f,
@@ -906,7 +867,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.LARGE
         ),
         portraitPileStockOffsetX = 0f,
         portraitPileStockOffsetY = 0f,
@@ -926,7 +888,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = 195f,
@@ -938,7 +901,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = 165f,
@@ -948,7 +912,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.SMALL
         ),
         landscapeBroad = GameBoardLayoutConfig(
             pileOverallOffsetX = 90f,
@@ -957,8 +922,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
-            bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetX = 300f,
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.LARGE
         ),
         landscapeSquare = GameBoardLayoutConfig(
             pileOverallOffsetX = 90f,
@@ -967,8 +933,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
             bannerMediumOffsetY = 0f,
-            bannerLargeOffsetX = 0f,
-            bannerLargeOffsetY = 0f
+            bannerLargeOffsetX = 300f,
+            bannerLargeOffsetY = 0f,
+            adBoxChoice = BannerAdBoxChoice.LARGE
         ),
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
