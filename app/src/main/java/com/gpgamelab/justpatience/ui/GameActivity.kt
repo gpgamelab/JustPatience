@@ -2505,7 +2505,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
          devTicketNumberOffsetYDpState = (if (isLandscape) BASELINE_WIN_TICKET_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_TICKET_NUMBER_OFFSET_Y_DP_PORTRAIT) * ratio
          devWandNumberOffsetXDpState = (if (isLandscape) BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_LANDSCAPE else BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_PORTRAIT) * ratio
          devWandNumberOffsetYDpState = (if (isLandscape) BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_PORTRAIT) * ratio
-         devButtonRowOffsetXDpState = (if (isLandscape) BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE else (if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.BAKLAVA) BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT else BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT_BAKLAVA)) * ratio
+         devButtonRowOffsetXDpState = (if (isLandscape) BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE else (if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT else BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT_BAKLAVA)) * ratio
          devButtonRowOffsetYDpState = (if (isLandscape) BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_LANDSCAPE else BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_PORTRAIT) * ratio
          devPopupButton0ScaleXState = 1f
          devPopupButton0ScaleYState = 3f
@@ -2645,7 +2645,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Initialize and load banner ads
         adManager = AdManager(this)
         adManager.initializeAds()
-        val initialBannerAdSizes = configureLandscapeBannerBoxAndResolveAdSizes()
+        val initialBannerAdSizes = configureCurrentBannerBoxAndResolveAdSizes()
         val initialBannerAdView = resolveActiveBannerAdView(initialBannerAdSizes)
         adManager.loadBannerAd(initialBannerAdView, initialBannerAdSizes)
         updateBannerPlacementForCurrentConfiguration()
@@ -2818,7 +2818,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             performUiActionHaptic(anchor)
             showPlayPopup(anchor)
         }
-        binding.magicWandContainer?.setOnClickListener { onMagicWandClicked() }
+        binding.magicWandContainer.setOnClickListener { onMagicWandClicked() }
         findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             onAutoMoveClicked(buttonView)
         }
@@ -2919,20 +2919,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun performSuccessHaptic(sourceView: View? = null) {
-        val successConstant = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            HapticFeedbackConstants.CONFIRM
-        } else {
-            HapticFeedbackConstants.KEYBOARD_TAP
-        }
+        val successConstant = HapticFeedbackConstants.CONFIRM
         performHapticFeedback(successConstant, sourceView)
     }
 
     private fun performErrorHaptic(sourceView: View? = null) {
-        val errorConstant = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            HapticFeedbackConstants.REJECT
-        } else {
-            HapticFeedbackConstants.LONG_PRESS
-        }
+        val errorConstant = HapticFeedbackConstants.REJECT
         performHapticFeedback(errorConstant, sourceView)
     }
 
@@ -3034,9 +3026,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun renderMagicWandHud(total: Int) {
         val safeTotal = total.coerceAtLeast(0)
-        binding.tvMagicWandCount?.text = safeTotal.toString()
-        binding.tvMagicWandCount?.visibility = if (safeTotal > 0) View.VISIBLE else View.GONE
-        binding.ivMagicWandAdBadge?.visibility = if (safeTotal == 0) View.VISIBLE else View.GONE
+        binding.tvMagicWandCount.text = safeTotal.toString()
+        binding.tvMagicWandCount.visibility = if (safeTotal > 0) View.VISIBLE else View.GONE
+        binding.ivMagicWandAdBadge.visibility = if (safeTotal == 0) View.VISIBLE else View.GONE
     }
 
 
@@ -3396,7 +3388,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun setMagicWandSelectionMode(enabled: Boolean) {
         isMagicWandSelectionMode = enabled
-        binding.magicWandContainer?.alpha = if (enabled) 0.7f else 1f
+        binding.magicWandContainer.alpha = if (enabled) 0.7f else 1f
         binding.gameBoardView.setMagicWandSelectionMode(enabled)
     }
 
@@ -3673,41 +3665,41 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun showPlayPopup(anchor: View) {
-        val popupView = layoutInflater.inflate(R.layout.popup_play_menu, null)
+        val popupView = layoutInflater.inflate(R.layout.popup_play_menu, binding.root, false)
         val popup = android.widget.PopupWindow(
             popupView,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
             true
         )
         popup.elevation = 16f
 
-        popupView.findViewById<android.widget.TextView>(R.id.popup_btn_new_game).setOnClickListener {
+        popupView.findViewById<TextView>(R.id.popup_btn_new_game).setOnClickListener {
             popup.dismiss()
             winCelebrationPlayed = false
             startNewGameWithShuffleAndDealAnimation()
         }
-        popupView.findViewById<android.widget.TextView>(R.id.popup_btn_restart).setOnClickListener {
+        popupView.findViewById<TextView>(R.id.popup_btn_restart).setOnClickListener {
             popup.dismiss()
             onHelpControlClicked(HelpControlAction.RESTART, anchor) { handleRestartClick() }
         }
-        popupView.findViewById<android.widget.TextView>(R.id.popup_btn_menu).setOnClickListener {
+        popupView.findViewById<TextView>(R.id.popup_btn_menu).setOnClickListener {
             popup.dismiss()
             showGameMenu()
         }
-        popupView.findViewById<android.widget.TextView>(R.id.popup_btn_testers).setOnClickListener {
+        popupView.findViewById<TextView>(R.id.popup_btn_testers).setOnClickListener {
             popup.dismiss()
             showTesterMenu()
         }
-        popupView.findViewById<android.widget.TextView>(R.id.popup_btn_develop).setOnClickListener {
+        popupView.findViewById<TextView>(R.id.popup_btn_develop).setOnClickListener {
             popup.dismiss()
             showDevelopMenu()
         }
 
         // Show above the anchor button
         popupView.measure(
-            android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED),
-            android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
         )
         val offsetY = -popupView.measuredHeight - anchor.height
         popup.showAsDropDown(anchor, 0, offsetY)
@@ -3721,17 +3713,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
 
         // Flip the info_side_panel to the opposite side
-        val infoPanel = findViewById<android.view.View>(R.id.info_side_panel) ?: return
-        val clp = infoPanel.layoutParams as? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams ?: return
+        val infoPanel = findViewById<View>(R.id.info_side_panel) ?: return
+        val clp = infoPanel.layoutParams as? ConstraintLayout.LayoutParams ?: return
         val marginPx = dpToPx(6f)
         if (mirrored) {
             clp.startToStart = R.id.game_board_view
-            clp.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+            clp.endToEnd = ConstraintLayout.LayoutParams.UNSET
             clp.marginStart = marginPx
             clp.marginEnd = 0
         } else {
             clp.endToEnd = R.id.game_board_view
-            clp.startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+            clp.startToStart = ConstraintLayout.LayoutParams.UNSET
             clp.marginEnd = marginPx
             clp.marginStart = 0
         }
@@ -5032,11 +5024,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun showWasteRecyclesDialog(isInfinite: Boolean, recycleCount: Int) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_waste_recycles, null)
         UiScaleUtil.applyBaselineScale(dialogView, this)
-        val btnMinus = dialogView.findViewById<android.widget.Button>(R.id.btn_recycles_minus)
-        val btnPlus  = dialogView.findViewById<android.widget.Button>(R.id.btn_recycles_plus)
+        val btnMinus = dialogView.findViewById<Button>(R.id.btn_recycles_minus)
+        val btnPlus  = dialogView.findViewById<Button>(R.id.btn_recycles_plus)
         val countText = dialogView.findViewById<TextView>(R.id.text_recycles_count)
         val unlimitedSwitch = dialogView.findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(R.id.switch_recycles_unlimited)
-        val countRow = dialogView.findViewById<android.view.View>(R.id.recycles_count_row)
+        val countRow = dialogView.findViewById<View>(R.id.recycles_count_row)
 
         var currentCount = recycleCount.coerceAtLeast(1)
 
@@ -5563,8 +5555,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     lp.startToStart = ConstraintLayout.LayoutParams.UNSET
                 }
             } else {
-                lp.startToStart = ConstraintLayout.LayoutParams.PARENT_ID
-                lp.endToEnd = ConstraintLayout.LayoutParams.UNSET
+                if (mirrored) {
+                    lp.startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+                    lp.endToEnd = ConstraintLayout.LayoutParams.UNSET
+                } else {
+                    lp.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+                    lp.startToStart = ConstraintLayout.LayoutParams.UNSET
+                }
             }
             container.layoutParams = lp
         }
@@ -5594,25 +5591,33 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private fun configureLandscapeBannerBoxAndResolveAdSizes(): List<AdSize> {
+    private fun resolveCurrentBannerBoxDimensions(tier: BannerAdTier): Pair<Float, Float> {
+        return if (isLandscapeNow()) {
+            when (tier) {
+                BannerAdTier.SMALL -> devLandscapeBannerSmallWidthDpState to devLandscapeBannerSmallHeightDpState
+                BannerAdTier.MEDIUM -> devLandscapeBannerMediumWidthDpState to devLandscapeBannerMediumHeightDpState
+                BannerAdTier.LARGE -> devLandscapeBannerLargeWidthDpState to devLandscapeBannerLargeHeightDpState
+            }
+        } else {
+            when (tier) {
+                BannerAdTier.SMALL -> devPortraitBannerSmallWidthDpState to devPortraitBannerSmallHeightDpState
+                BannerAdTier.MEDIUM -> devPortraitBannerMediumWidthDpState to devPortraitBannerMediumHeightDpState
+                BannerAdTier.LARGE -> devPortraitBannerLargeWidthDpState to devPortraitBannerLargeHeightDpState
+            }
+        }
+    }
+
+    private fun configureCurrentBannerBoxAndResolveAdSizes(): List<AdSize> {
         val container = resolveBannerContainer()
-        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (container == null) {
+            val tierWithoutContainer = resolveBannerTier(resolveCurrentBannerAdBoxChoice())
+            Log.d("GameActivityAds", "Banner container missing; tier=$tierWithoutContainer")
+            return resolveBannerSizesForTier(tierWithoutContainer)
+        }
 
         val choice = resolveCurrentBannerAdBoxChoice()
         val resolvedTier = resolveBannerTier(choice)
-        if (!isLandscapeNow || container == null || container.id != R.id.banner_overlay_container) {
-            Log.d(
-                "GameActivityAds",
-                "Banner tier=$resolvedTier choice=$choice isLandscapeNow=$isLandscapeNow container=$container"
-            )
-            return resolveBannerSizesForTier(resolvedTier)
-        }
-
-        val (boxWidthDp, boxHeightDp) = when (resolvedTier) {
-            BannerAdTier.SMALL -> devLandscapeBannerSmallWidthDpState to devLandscapeBannerSmallHeightDpState
-            BannerAdTier.MEDIUM -> devLandscapeBannerMediumWidthDpState to devLandscapeBannerMediumHeightDpState
-            BannerAdTier.LARGE -> devLandscapeBannerLargeWidthDpState to devLandscapeBannerLargeHeightDpState
-        }
+        val (boxWidthDp, boxHeightDp) = resolveCurrentBannerBoxDimensions(resolvedTier)
 
         val lp = container.layoutParams ?: return emptyList()
         val targetWidthPx = dpToPx(boxWidthDp)
@@ -5626,7 +5631,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         Log.d(
             "GameActivityAds",
-            "Landscape banner tier=$resolvedTier choice=$choice boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
+            "Banner tier=$resolvedTier choice=$choice isLandscape=${isLandscapeNow()} containerId=${container.id} boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
         )
 
         return resolveBannerSizesForTier(resolvedTier)
@@ -5653,7 +5658,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun reloadBannerForCurrentConfiguration() {
         if (!::adManager.isInitialized) return
-        val requestedAdSizes = configureLandscapeBannerBoxAndResolveAdSizes()
+        val requestedAdSizes = configureCurrentBannerBoxAndResolveAdSizes()
         val bannerAdView = resolveActiveBannerAdView(requestedAdSizes)
         updateBannerPlacementForCurrentConfiguration()
         val container = resolveBannerContainer()
@@ -5777,7 +5782,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val targetRect = targetView?.let {
             clampRectToBoardBounds(viewRectInBoardSpace(it, boardLocation), boardView)
         }
-            ?: android.graphics.RectF(
+            ?: RectF(
                 boardView.width * 0.5f - sourceRect.width() * 0.5f,
                 boardView.height * 0.5f - sourceRect.height() * 0.5f,
                 boardView.width * 0.5f + sourceRect.width() * 0.5f,
@@ -5787,19 +5792,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         boardView.scheduleCouponAnimation(sourceRect, targetRect)
 
         // Keep deduction synced with full coupon animation runtime, including midpoint pause.
-        kotlinx.coroutines.delay(CouponFlightAnimator.TOTAL_RUNTIME_MS + 40L)
+        delay(CouponFlightAnimator.TOTAL_RUNTIME_MS + 40L)
         consumeHelpCoupon(control)
     }
 
     private fun viewRectInBoardSpace(
         view: View,
         boardLocationOnScreen: IntArray
-    ): android.graphics.RectF {
+    ): RectF {
         val viewLocation = IntArray(2)
         view.getLocationOnScreen(viewLocation)
         val left = (viewLocation[0] - boardLocationOnScreen[0]).toFloat()
         val top = (viewLocation[1] - boardLocationOnScreen[1]).toFloat()
-        return android.graphics.RectF(
+        return RectF(
             left,
             top,
             left + view.width,
@@ -5808,10 +5813,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun clampRectToBoardBounds(
-        rect: android.graphics.RectF,
+        rect: RectF,
         boardView: View,
         insetPx: Float = 4f
-    ): android.graphics.RectF {
+    ): RectF {
         val boardW = boardView.width.toFloat().coerceAtLeast(1f)
         val boardH = boardView.height.toFloat().coerceAtLeast(1f)
 
@@ -5828,7 +5833,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val centerX = rect.centerX().coerceIn(minX, maxX)
         val centerY = rect.centerY().coerceIn(minY, maxY)
 
-        return android.graphics.RectF(
+        return RectF(
             centerX - halfW,
             centerY - halfH,
             centerX + halfW,
@@ -6237,11 +6242,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.btnStats.iconSize = dpToPx(48f * textScale * ratioProfile.averageRatio)
         binding.btnStats.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
 
-        applyControlAdjustments(binding.btnUndo, devUndoControlScaleState, devUndoControlOffsetXDpState, devUndoControlOffsetYDpState, ratioProfile)
-        applyControlAdjustments(binding.btnRedo, devRedoControlScaleState, devRedoControlOffsetXDpState, devRedoControlOffsetYDpState, ratioProfile)
-        applyControlAdjustments(btnHint, devHintControlScaleState, devHintControlOffsetXDpState, devHintControlOffsetYDpState, ratioProfile)
-        applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState, devMagicWandControlOffsetYDpState, ratioProfile)
-        applyControlAdjustments(binding.btnStats, devPlayControlScaleState, devPlayControlOffsetXDpState, devPlayControlOffsetYDpState, ratioProfile)
+        // Keep mirrored controls inset toward the center; using the same positive X offsets
+        // in both hand modes pushes mirrored controls further off the right edge.
+        val mirroredDirectionX = if (viewModel.isMirroredLayout.value) -1f else 1f
+        applyControlAdjustments(binding.btnUndo, devUndoControlScaleState, devUndoControlOffsetXDpState * mirroredDirectionX, devUndoControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(binding.btnRedo, devRedoControlScaleState, devRedoControlOffsetXDpState * mirroredDirectionX, devRedoControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(btnHint, devHintControlScaleState, devHintControlOffsetXDpState * mirroredDirectionX, devHintControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState * mirroredDirectionX, devMagicWandControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(binding.btnStats, devPlayControlScaleState, devPlayControlOffsetXDpState * mirroredDirectionX, devPlayControlOffsetYDpState, ratioProfile)
     }
 
     private fun applyControlAdjustments(
