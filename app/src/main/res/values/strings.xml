@@ -49,7 +49,7 @@
     <string name="setting_sign_out">Sign Out</string>
 
     <!-- Game Activity Strings (New) -->
-    <string name="game_title">Solitaire</string>
+    <string name="game_title">JustPatience</string>
     <string name="score_format">Score: %d</string>
     <string name="moves_format">Moves: %d</string>
     <string name="scoreboard_label_time">TIME</string>
