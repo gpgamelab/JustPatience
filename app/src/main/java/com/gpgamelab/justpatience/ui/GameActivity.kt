@@ -2945,8 +2945,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var hapticsOn: Boolean = true
 
     private var helpControlFlowInProgress = false
-    private var couponPendingOnRestartConfirm = false
-    private var pendingCouponTargetView: View? = null
 
     private var winDialogShowing: Boolean = false
     private var winCelebrationPlayed: Boolean = false
@@ -3390,11 +3388,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Simple button hookups (if present in layout)
         binding.btnUndo.setOnClickListener { buttonView ->
             performUiActionHaptic(buttonView)
-            onHelpControlClicked(HelpControlAction.UNDO, buttonView) { handleUndoClick() }
+            handleUndoClick()
         }
         binding.btnRedo.setOnClickListener { buttonView ->
             performUiActionHaptic(buttonView)
-            onHelpControlClicked(HelpControlAction.REDO, buttonView) { handleRedoClick() }
+            handleRedoClick()
         }
         // btn_new_game and btn_restart are hidden stubs; actions are in the Play popup.
         binding.btnNewGame.setOnClickListener {
@@ -3629,26 +3627,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
 
     private fun showRestartDialog() {
-        val restartButton = findViewById<Button>(R.id.btn_restart)
-
         AlertDialog.Builder(this)
             .setTitle(R.string.restart_game_title)
             .setMessage(R.string.restart_game_message)
             .setPositiveButton(R.string.restart_game_text) { _, _ ->
                 lifecycleScope.launch {
-                    if (couponPendingOnRestartConfirm) {
-                        val targetView = pendingCouponTargetView ?: restartButton
-                        couponPendingOnRestartConfirm = false
-                        pendingCouponTargetView = null
-                        animateAndConsumeHelpCoupon(targetView, HelpControlAction.RESTART)
-                    }
                     restartGameWithShuffleAndDealAnimation()
                 }
             }
-            .setNegativeButton(android.R.string.cancel) { _, _ ->
-                couponPendingOnRestartConfirm = false
-                pendingCouponTargetView = null
-            }
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -4277,7 +4264,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
         popupView.findViewById<TextView>(R.id.popup_btn_restart).setOnClickListener {
             popup.dismiss()
-            onHelpControlClicked(HelpControlAction.RESTART, anchor) { handleRestartClick() }
+            handleRestartClick()
         }
         popupView.findViewById<TextView>(R.id.popup_btn_menu).setOnClickListener {
             popup.dismiss()
@@ -6331,32 +6318,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun onAutoMoveClicked(buttonView: View) {
         performUiActionHaptic(buttonView)
         if (helpControlFlowInProgress) return
-        val control = HelpControlAction.AUTO
 
         lifecycleScope.launch {
-            val now = System.currentTimeMillis()
-            val unlockExpiry = settingsManager.getHelpControlUnlockExpiry(control.storageKey)
-            val isFree = unlockExpiry > now
-
-            if (!isFree && ticketTotal <= 0) {
-                showNoCouponsDialog(control) {
-                    // user unlocked via ad — run auto move without extra consume
-                    buttonView.isEnabled = false
-                    lifecycleScope.launch {
-                        try {
-                            val movesMade = viewModel.performAutoMove(onCardMoved = { playCardClickMoveSound() })
-                            if (movesMade == 0) {
-                                showErrorFeedback(R.string.no_moves_available, buttonView)
-                            }
-                        } finally {
-                            buttonView.isEnabled = true
-                        }
-                    }
-                }
-                return@launch
-            }
-
-            // Run the auto move first, then conditionally consume a ticket
             buttonView.isEnabled = false
             val movesMade: Int
             try {
@@ -6371,15 +6334,14 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             }
 
             performSuccessHaptic(buttonView)
-
-            // Moves were made — consume a ticket (unless free period)
-            if (!isFree) {
-                animateAndConsumeHelpCoupon(buttonView, control)
-            }
         }
     }
 
     private fun onHelpControlClicked(control: HelpControlAction, targetView: View?, action: () -> Unit) {
+        if (control != HelpControlAction.HINT) {
+            action()
+            return
+        }
         if (helpControlFlowInProgress) return
 
         lifecycleScope.launch {
@@ -6391,21 +6353,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             }
 
             if (ticketTotal > 0) {
-                when (control) {
-                    HelpControlAction.RESTART -> {
-                        // Restart has confirm/cancel semantics, so consume only on positive confirm.
-                        couponPendingOnRestartConfirm = true
-                        pendingCouponTargetView = targetView
-                        action()
-                        return@launch
-                    }
-
-                    else -> {
-                        animateAndConsumeHelpCoupon(targetView, control)
-                        action()
-                        return@launch
-                    }
-                }
+                animateAndConsumeHelpCoupon(targetView, control)
+                action()
+                return@launch
             }
 
             showNoCouponsDialog(control, action)
