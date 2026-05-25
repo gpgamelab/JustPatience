@@ -88,7 +88,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val redoControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
         val hintControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
         val magicWandControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
-        val playControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments()
+        val playControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
+        val autoControlAdjustments: BottomControlButtonAdjustments = BottomControlButtonAdjustments()
     )
 
     private data class BottomControlButtonAdjustments(
@@ -109,7 +110,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val redo: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
         val hint: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
         val magicWand: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
-        val play: BottomControlButtonAdjustments = BottomControlButtonAdjustments()
+        val play: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
+        val auto: BottomControlButtonAdjustments = BottomControlButtonAdjustments()
     )
 
     // Consolidated device adjusters for a layout profile (one instance per deck layout type)
@@ -191,10 +193,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 250f,
                 offsetY = -75f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitSlim = GameBoardLayoutConfig(
             pileOverallOffsetY = 0f,
-            foundationOffsetX = -25f,
+            foundationOffsetX = -50f,
             drawWasteOffsetX = -10f,
             tableauOffsetY = 80f,
             bannerSmallOffsetX = 0f,
@@ -203,32 +210,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL,
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
             undoControlAdjustments = BottomControlButtonAdjustments(
-                scale = 2f,
-                offsetX = 20f,
-                offsetY = 0f
+                scale = 1f,
+                offsetX = 25f,
+                offsetY = -100f
             ),
             redoControlAdjustments = BottomControlButtonAdjustments(
-                scale = 2f,
-                offsetX = 70f,
-                offsetY = 0f
+                scale = 1f,
+                offsetX = 50f,
+                offsetY = -100f
             ),
             hintControlAdjustments = BottomControlButtonAdjustments(
-                scale = 1.5f,
-                offsetX = 120f,
-                offsetY = 0f
+                scale = 0.9f,
+                offsetX = 75f,
+                offsetY = -100f
             ),
             magicWandControlAdjustments = BottomControlButtonAdjustments(
                 scale = 1.5f,
-                offsetX = 150f,
-                offsetY = 0f
+                offsetX = 90f,
+                offsetY = -100f
             ),
             playControlAdjustments = BottomControlButtonAdjustments(
-                scale = 1.7f,
-                offsetX = 190f,
-                offsetY = 0f
+                scale = 2f,
+                offsetX = 135f,
+                offsetY = -100f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitClassic = GameBoardLayoutConfig(
             pileOverallOffsetY = 90f,
@@ -266,6 +278,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 190f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitBroad = GameBoardLayoutConfig(
             pileOverallOffsetY = -10f,
@@ -302,6 +319,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 190f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitSquare = GameBoardLayoutConfig(
             pileOverallOffsetY = -70f,
@@ -337,6 +359,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 190f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitPileStockOffsetX = 0f,
         portraitPileStockOffsetY = 0f,
@@ -383,6 +410,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 225f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = -130f,
@@ -393,32 +425,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL,
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
             undoControlAdjustments = BottomControlButtonAdjustments(
-                scale = 2f,
-                offsetX = 20f,
+                scale = 2.7f,
+                offsetX = 25f,
                 offsetY = 0f
             ),
             redoControlAdjustments = BottomControlButtonAdjustments(
-                scale = 2f,
-                offsetX = 70f,
+                scale = 2.7f,
+                offsetX = 75f,
                 offsetY = 0f
             ),
             hintControlAdjustments = BottomControlButtonAdjustments(
-                scale = 1.5f,
-                offsetX = 120f,
+                scale = 2f,
+                offsetX = 110f,
                 offsetY = 0f
             ),
             magicWandControlAdjustments = BottomControlButtonAdjustments(
-                scale = 1.5f,
-                offsetX = 150f,
+                scale = 2f,
+                offsetX = 130f,
                 offsetY = 0f
             ),
             playControlAdjustments = BottomControlButtonAdjustments(
-                scale = 1.7f,
-                offsetX = 190f,
+                scale = 3f,
+                offsetX = 225f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         landscapeClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = -115f,
@@ -455,6 +492,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 190f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         landscapeBroad = GameBoardLayoutConfig(
             pileOverallOffsetX = -120f,
@@ -491,6 +533,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 190f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         landscapeSquare = GameBoardLayoutConfig(
             pileOverallOffsetX = -5f,
@@ -527,6 +574,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 190f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         landscapePileStockOffsetX = 0f,
         landscapePileStockOffsetY = 0f,
@@ -575,6 +627,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 250f,
                 offsetY = -75f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitSlim = GameBoardLayoutConfig(
             pileOverallOffsetY = 0f,
@@ -587,7 +644,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1f,
+                offsetX = 25f,
+                offsetY = -100f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1f,
+                offsetX = 50f,
+                offsetY = -100f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 0.9f,
+                offsetX = 75f,
+                offsetY = -100f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.5f,
+                offsetX = 90f,
+                offsetY = -100f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 135f,
+                offsetY = -100f
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = 0f,
@@ -665,6 +752,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 offsetX = 225f,
                 offsetY = 0f
             ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = -110f,
@@ -678,8 +770,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
-        ),
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 25f,
+                offsetY = 0f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 75f,
+                offsetY = 0f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 110f,
+                offsetY = 0f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 130f,
+                offsetY = 0f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3f,
+                offsetX = 225f,
+                offsetY = 0f
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )        ),
         landscapeClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = -5f,
             pileOverallOffsetY = -100f,
@@ -761,7 +882,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 scale = 3f,
                 offsetX = 200f,
                 offsetY = -75f
-            ),        ),
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
+        ),
         portraitSlim = GameBoardLayoutConfig(
             pileOverallOffsetY = -0f,
             foundationOffsetX = 35f,
@@ -773,7 +900,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1f,
+                offsetX = 25f,
+                offsetY = -100f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1f,
+                offsetX = 50f,
+                offsetY = -100f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 0.9f,
+                offsetX = 75f,
+                offsetY = -100f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.5f,
+                offsetX = 90f,
+                offsetY = -100f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 135f,
+                offsetY = -100f
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitClassic = GameBoardLayoutConfig(
             pileOverallOffsetY = 100f,
@@ -854,7 +1011,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 scale = 3f,
                 offsetX = 225f,
                 offsetY = 0f
-            ),        ),
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
+        ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = 260f,
             pileOverallOffsetY = 0f,
@@ -864,8 +1027,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
-        ),
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 25f,
+                offsetY = 0f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 75f,
+                offsetY = 0f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 110f,
+                offsetY = 0f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 130f,
+                offsetY = 0f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3f,
+                offsetX = 160f,
+                offsetY = 0f
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )        ),
         landscapeClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = 275f,
             pileOverallOffsetY = -25f,
@@ -915,6 +1107,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private val defaultMirrored2DeckLayoutDevAdjusters = LayoutProfileDevAdjusters(
         portraitSlimCompact = GameBoardLayoutConfig(
             tableauOffsetY = 0f,
+            drawWasteOffsetX = 70f,
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
@@ -946,7 +1139,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 scale = 3f,
                 offsetX = 200f,
                 offsetY = -75f
-            ),        ),
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
+        ),
         portraitSlim = GameBoardLayoutConfig(
             pileOverallOffsetY = 0f,
             foundationOffsetX = 35f,
@@ -957,7 +1156,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1f,
+                offsetX = 25f,
+                offsetY = -100f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1f,
+                offsetX = 50f,
+                offsetY = -100f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 0.9f,
+                offsetX = 75f,
+                offsetY = -100f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.5f,
+                offsetX = 90f,
+                offsetY = -100f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 135f,
+                offsetY = -100f
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 1.9f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
         ),
         portraitClassic = GameBoardLayoutConfig(
             pileOverallOffsetY = 0f,
@@ -1036,7 +1265,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 scale = 3f,
                 offsetX = 225f,
                 offsetY = 0f
-            ),        ),
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )
+        ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = 195f,
             pileOverallOffsetY = -80f,
@@ -1048,8 +1283,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
-        ),
+            adBoxChoice = BannerAdBoxChoice.MEDIUM,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 25f,
+                offsetY = 0f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 75f,
+                offsetY = 0f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 110f,
+                offsetY = 0f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 130f,
+                offsetY = 0f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3f,
+                offsetX = 225f,
+                offsetY = 0f
+            ),
+            autoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3.8f,
+                offsetX = 0f,
+                offsetY = -200f
+            )        ),
         landscapeClassic = GameBoardLayoutConfig(
             pileOverallOffsetX = 165f,
             pileOverallOffsetY = -100f,
@@ -1296,6 +1560,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devPlayControlScaleState: Float = 1f
     private var devPlayControlOffsetXDpState: Float = 0f
     private var devPlayControlOffsetYDpState: Float = 0f
+    private var devAutoControlScaleState: Float = 1f
+    private var devAutoControlOffsetXDpState: Float = 0f
+    private var devAutoControlOffsetYDpState: Float = 0f
     private var devGemRewardScaleState: Float = 1f
     private var devGemRewardCounterOffsetXDpState: Float = 0f
     private var devGemRewardCounterOffsetYDpState: Float = 0f
@@ -1305,7 +1572,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devTicketRewardCounterOffsetYDpState: Float = 0f
     private var devTicketRewardCounterScaleState: Float = 1f
 //    private var devAdBoxChoiceState: BannerAdBoxChoice = BannerAdBoxChoice.SMALL
-    // ZYZZX
     private var devLandscapeAdBoxChoiceSlimCompactState: BannerAdBoxChoice = BannerAdBoxChoice.SMALL
     private var devLandscapeAdBoxChoiceSlimState: BannerAdBoxChoice = BannerAdBoxChoice.SMALL
     private var devLandscapeAdBoxChoiceClassicState: BannerAdBoxChoice = BannerAdBoxChoice.MEDIUM
@@ -1604,6 +1870,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         scale = devPlayControlScaleState,
                         offsetX = devPlayControlOffsetXDpState,
                         offsetY = devPlayControlOffsetYDpState
+                    ),
+                    auto = BottomControlButtonAdjustments(
+                        scale = devAutoControlScaleState,
+                        offsetX = devAutoControlOffsetXDpState,
+                        offsetY = devAutoControlOffsetYDpState
                     )
                 )
             )
@@ -1615,7 +1886,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             redoControlAdjustments = values.redo,
             hintControlAdjustments = values.hint,
             magicWandControlAdjustments = values.magicWand,
-            playControlAdjustments = values.play
+            playControlAdjustments = values.play,
+            autoControlAdjustments = values.auto
         )
     }
 
@@ -1640,7 +1912,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             redo = redoControlAdjustments,
             hint = hintControlAdjustments,
             magicWand = magicWandControlAdjustments,
-            play = playControlAdjustments
+            play = playControlAdjustments,
+            auto = autoControlAdjustments
         )
     }
 
@@ -1695,11 +1968,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPlayControlScaleState = controls.play.scale
         devPlayControlOffsetXDpState = controls.play.offsetX
         devPlayControlOffsetYDpState = controls.play.offsetY
+        devAutoControlScaleState = controls.auto.scale
+        devAutoControlOffsetXDpState = controls.auto.offsetX
+        devAutoControlOffsetYDpState = controls.auto.offsetY
     }
 
     private fun applyLayoutScopedDevAdjusters(profile: LayoutProfileDevAdjusters) {
         val isPortrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
-        // ...existing code...
         devLandscapeOverallOffsetXSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetX
         devLandscapeOverallOffsetYSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetY
         devLandscapeFoundationOffsetXSlimCompactDpState = profile.landscapeSlimCompact.foundationOffsetX
@@ -1708,7 +1983,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devLandscapeDrawWasteOffsetYSlimCompactDpState = profile.landscapeSlimCompact.drawWasteOffsetY
         devLandscapeTableauOffsetXSlimCompactDpState = profile.landscapeSlimCompact.tableauOffsetX
         devLandscapeTableauOffsetYSlimCompactDpState = profile.landscapeSlimCompact.tableauOffsetY
-        // ...existing code...
         devLandscapeOverallOffsetXSlimDpState = profile.landscapeSlim.pileOverallOffsetX
         devLandscapeOverallOffsetYSlimDpState = profile.landscapeSlim.pileOverallOffsetY
         devLandscapeFoundationOffsetXSlimDpState = profile.landscapeSlim.foundationOffsetX
@@ -1717,7 +1991,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devLandscapeDrawWasteOffsetYSlimDpState = profile.landscapeSlim.drawWasteOffsetY
         devLandscapeTableauOffsetXSlimDpState = profile.landscapeSlim.tableauOffsetX
         devLandscapeTableauOffsetYSlimDpState = profile.landscapeSlim.tableauOffsetY
-        // ...existing code...
         devLandscapeOverallOffsetXClassicDpState = profile.landscapeClassic.pileOverallOffsetX
         devLandscapeOverallOffsetYClassicDpState = profile.landscapeClassic.pileOverallOffsetY
         devLandscapeFoundationOffsetXClassicDpState = profile.landscapeClassic.foundationOffsetX
@@ -1726,7 +1999,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devLandscapeDrawWasteOffsetYClassicDpState = profile.landscapeClassic.drawWasteOffsetY
         devLandscapeTableauOffsetXClassicDpState = profile.landscapeClassic.tableauOffsetX
         devLandscapeTableauOffsetYClassicDpState = profile.landscapeClassic.tableauOffsetY
-        // ...existing code...
         devLandscapeOverallOffsetXBroadDpState = profile.landscapeBroad.pileOverallOffsetX
         devLandscapeOverallOffsetYBroadDpState = profile.landscapeBroad.pileOverallOffsetY
         devLandscapeFoundationOffsetXBroadDpState = profile.landscapeBroad.foundationOffsetX
@@ -1735,7 +2007,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devLandscapeDrawWasteOffsetYBroadDpState = profile.landscapeBroad.drawWasteOffsetY
         devLandscapeTableauOffsetXBroadDpState = profile.landscapeBroad.tableauOffsetX
         devLandscapeTableauOffsetYBroadDpState = profile.landscapeBroad.tableauOffsetY
-        // ...existing code...
         devLandscapeOverallOffsetXSquareDpState = profile.landscapeSquare.pileOverallOffsetX
         devLandscapeOverallOffsetYSquareDpState = profile.landscapeSquare.pileOverallOffsetY
         devLandscapeFoundationOffsetXSquareDpState = profile.landscapeSquare.foundationOffsetX
@@ -1744,12 +2015,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devLandscapeDrawWasteOffsetYSquareDpState = profile.landscapeSquare.drawWasteOffsetY
         devLandscapeTableauOffsetXSquareDpState = profile.landscapeSquare.tableauOffsetX
         devLandscapeTableauOffsetYSquareDpState = profile.landscapeSquare.tableauOffsetY
-        // ...existing code...
         devLandscapePileStockOffsetXDpState = profile.landscapePileStockOffsetX
         devLandscapePileStockOffsetYDpState = profile.landscapePileStockOffsetY
         devLandscapePileWasteOffsetXDpState = profile.landscapePileWasteOffsetX
         devLandscapePileWasteOffsetYDpState = profile.landscapePileWasteOffsetY
-        // ...existing code...
         devPortraitOverallOffsetXSlimCompactDpState = profile.portraitSlimCompact.pileOverallOffsetX
         devPortraitOverallOffsetYSlimCompactDpState = profile.portraitSlimCompact.pileOverallOffsetY
         devPortraitFoundationOffsetXSlimCompactDpState = profile.portraitSlimCompact.foundationOffsetX
@@ -1785,9 +2054,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitAdBoxChoiceClassicState = profile.portraitClassic.adBoxChoice
         devPortraitAdBoxChoiceBroadState = profile.portraitBroad.adBoxChoice
         devPortraitAdBoxChoiceSquareState = profile.portraitSquare.adBoxChoice
-        // ZYZZX
-
-        // ...existing code...
         devPortraitOverallOffsetXSlimDpState = profile.portraitSlim.pileOverallOffsetX
         devPortraitOverallOffsetYSlimDpState = profile.portraitSlim.pileOverallOffsetY
         devPortraitFoundationOffsetXSlimDpState    = profile.portraitSlim.foundationOffsetX
@@ -1796,7 +2062,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitDrawWasteOffsetYSlimDpState     = profile.portraitSlim.drawWasteOffsetY
         devPortraitTableauOffsetXSlimDpState = profile.portraitSlim.tableauOffsetX
         devPortraitTableauOffsetYSlimDpState = profile.portraitSlim.tableauOffsetY
-        // ...existing code...
         devPortraitOverallOffsetXClassicDpState = profile.portraitClassic.pileOverallOffsetX
         devPortraitOverallOffsetYClassicDpState = profile.portraitClassic.pileOverallOffsetY
         devPortraitFoundationOffsetXClassicDpState = profile.portraitClassic.foundationOffsetX
@@ -1805,7 +2070,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitDrawWasteOffsetYClassicDpState  = profile.portraitClassic.drawWasteOffsetY
         devPortraitTableauOffsetXClassicDpState = profile.portraitClassic.tableauOffsetX
         devPortraitTableauOffsetYClassicDpState = profile.portraitClassic.tableauOffsetY
-        // ...existing code...
         devPortraitOverallOffsetXBroadDpState = profile.portraitBroad.pileOverallOffsetX
         devPortraitOverallOffsetYBroadDpState = profile.portraitBroad.pileOverallOffsetY
         devPortraitFoundationOffsetXBroadDpState   = profile.portraitBroad.foundationOffsetX
@@ -1815,7 +2079,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitTableauOffsetXBroadDpState = profile.portraitBroad.tableauOffsetX
         devPortraitTableauOffsetYBroadDpState = profile.portraitBroad.tableauOffsetY
         applyCurrentBannerOffsetsFromProfile(profile)
-        // ...existing code...
         devPortraitOverallOffsetXSquareDpState = profile.portraitSquare.pileOverallOffsetX
         devPortraitOverallOffsetYSquareDpState = profile.portraitSquare.pileOverallOffsetY
         devPortraitFoundationOffsetXSquareDpState  = profile.portraitSquare.foundationOffsetX
@@ -1824,7 +2087,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPortraitDrawWasteOffsetYSquareDpState   = profile.portraitSquare.drawWasteOffsetY
         devPortraitTableauOffsetXSquareDpState = profile.portraitSquare.tableauOffsetX
         devPortraitTableauOffsetYSquareDpState = profile.portraitSquare.tableauOffsetY
-        // ...existing code...
         devPortraitPileStockOffsetXDpState = profile.portraitPileStockOffsetX
         devPortraitPileStockOffsetYDpState = profile.portraitPileStockOffsetY
         devPortraitPileWasteOffsetXDpState = profile.portraitPileWasteOffsetX
@@ -2972,7 +3234,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             showPlayPopup(anchor)
         }
         binding.magicWandContainer.setOnClickListener { onMagicWandClicked() }
-        findViewById<Button>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
+        findViewById<View>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             onAutoMoveClicked(buttonView)
         }
 
@@ -4252,6 +4514,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devPlayControlScale(): Float = devPlayControlScaleState
     override fun devPlayControlOffsetXDp(): Float = devPlayControlOffsetXDpState
     override fun devPlayControlOffsetYDp(): Float = devPlayControlOffsetYDpState
+    override fun devAutoControlScale(): Float = devAutoControlScaleState
+    override fun devAutoControlOffsetXDp(): Float = devAutoControlOffsetXDpState
+    override fun devAutoControlOffsetYDp(): Float = devAutoControlOffsetYDpState
     override fun devGemRewardScale(): Float = devGemRewardScaleState
     override fun devGemRewardCounterOffsetXDp(): Float = devGemRewardCounterOffsetXDpState
     override fun devGemRewardCounterOffsetYDp(): Float = devGemRewardCounterOffsetYDpState
@@ -4562,6 +4827,18 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
     override fun onDevSetPlayControlOffsetY(value: Float) {
         devPlayControlOffsetYDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetAutoControlScale(value: Float) {
+        devAutoControlScaleState = value.coerceAtLeast(0.1f)
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetAutoControlOffsetX(value: Float) {
+        devAutoControlOffsetXDpState = value
+        applyResponsiveControlSizing()
+    }
+    override fun onDevSetAutoControlOffsetY(value: Float) {
+        devAutoControlOffsetYDpState = value
         applyResponsiveControlSizing()
     }
     override fun onDevSetGemRewardScale(value: Float) {
@@ -6345,7 +6622,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val moveGroup = findViewById<FrameLayout>(R.id.move_controls_group)
         val btnHint = findViewById<View?>(R.id.btn_hint)
         val btnRestart = findViewById<Button?>(R.id.btn_restart)
-        val btnAuto = findViewById<Button?>(R.id.btn_auto_move)
+        val btnAuto = findViewById<View?>(R.id.btn_auto_move)
         val undoMain = findViewById<ImageView?>(R.id.undo_main)
         val redoMain = findViewById<ImageView?>(R.id.redo_main)
 
@@ -6369,28 +6646,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             setButtonSizeDp(binding.btnStats, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
             setButtonSizeDp(btnHint, 32f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 72f * controlHeightScale)
             setButtonSizeDp(btnRestart, 67f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+            setButtonSizeDp(btnAuto, 96f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 48f * controlHeightScale)
         } else {
             setButtonSizeDp(btnHint, 56f * widthScale, 56f * controlHeightScale)
-        }
-
-        btnAuto?.let { autoButton ->
-            val autoLp = autoButton.layoutParams
-            if (autoLp != null) {
-                autoLp.width = 0
-                autoLp.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                if (autoLp is ViewGroup.MarginLayoutParams) {
-                    autoLp.marginStart = dpToPx(24f * widthScale)
-                    autoLp.marginEnd = dpToPx(24f * widthScale)
-                    autoLp.bottomMargin = dpToPx(6f * heightScale)
-                }
-                autoButton.layoutParams = autoLp
-            }
-            autoButton.minHeight = 0
-            autoButton.minimumHeight = 0
-            autoButton.minWidth = 0
-            autoButton.minimumWidth = 0
-            autoButton.maxLines = 1
-            autoButton.setSingleLine(true)
+            setButtonSizeDp(btnAuto, 108f * widthScale, 44f * controlHeightScale)
         }
 
         applyButtonScale(binding.btnNewGame, controlTextSp, textScale * ratioProfile.averageRatio)
@@ -6399,11 +6658,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.btnStats.minimumHeight = 0
         binding.btnStats.setPaddingRelative(0, 0, 0, 0)
         btnRestart?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
-        btnAuto?.let {
-            applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio)
-            it.minWidth = 0
-            it.minimumWidth = 0
-        }
 
         // Portrait undo/redo widths also use the baseline-only scale (no extra compression).
         val undoWidthScale = if (isLandscape) widthScale else portraitButtonWidthScale
@@ -6435,6 +6689,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyControlAdjustments(btnHint, devHintControlScaleState, devHintControlOffsetXDpState * mirroredDirectionX, devHintControlOffsetYDpState, ratioProfile)
         applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState * mirroredDirectionX, devMagicWandControlOffsetYDpState, ratioProfile)
         applyControlAdjustments(binding.btnStats, devPlayControlScaleState, devPlayControlOffsetXDpState * mirroredDirectionX, devPlayControlOffsetYDpState, ratioProfile)
+        applyControlAdjustments(btnAuto, devAutoControlScaleState, devAutoControlOffsetXDpState * mirroredDirectionX, devAutoControlOffsetYDpState, ratioProfile)
     }
 
     private fun applyControlAdjustments(

@@ -1327,6 +1327,19 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="@string/develop_menu_bottom_control_auto_section"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="16dp">
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_auto_control_scale" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_auto_control_offset_x" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btn_dev_auto_control_offset_y" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp" android:text="0.00" android:textColor="#FFC107" app:strokeColor="#777777"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:text="@string/develop_menu_reward_adjustments_section"
                 android:textSize="11sp"
                 android:textAllCaps="true"

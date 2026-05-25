@@ -232,6 +232,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun devPlayControlScale(): Float
         fun devPlayControlOffsetXDp(): Float
         fun devPlayControlOffsetYDp(): Float
+        fun devAutoControlScale(): Float
+        fun devAutoControlOffsetXDp(): Float
+        fun devAutoControlOffsetYDp(): Float
         fun devGemRewardScale(): Float
         fun devGemRewardCounterOffsetXDp(): Float
         fun devGemRewardCounterOffsetYDp(): Float
@@ -274,6 +277,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetPlayControlScale(value: Float)
         fun onDevSetPlayControlOffsetX(value: Float)
         fun onDevSetPlayControlOffsetY(value: Float)
+        fun onDevSetAutoControlScale(value: Float)
+        fun onDevSetAutoControlOffsetX(value: Float)
+        fun onDevSetAutoControlOffsetY(value: Float)
         fun onDevSetGemRewardScale(value: Float)
         fun onDevSetGemRewardCounterOffsetX(value: Float)
         fun onDevSetGemRewardCounterOffsetY(value: Float)
@@ -657,6 +663,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
         bind(R.id.btn_dev_play_control_scale, R.string.develop_menu_bottom_control_play_scale, host::devPlayControlScale, host::onDevSetPlayControlScale)
         bind(R.id.btn_dev_play_control_offset_x, R.string.develop_menu_bottom_control_play_offset_x, host::devPlayControlOffsetXDp, host::onDevSetPlayControlOffsetX)
         bind(R.id.btn_dev_play_control_offset_y, R.string.develop_menu_bottom_control_play_offset_y, host::devPlayControlOffsetYDp, host::onDevSetPlayControlOffsetY)
+        bind(R.id.btn_dev_auto_control_scale, R.string.develop_menu_bottom_control_auto_scale, host::devAutoControlScale, host::onDevSetAutoControlScale)
+        bind(R.id.btn_dev_auto_control_offset_x, R.string.develop_menu_bottom_control_auto_offset_x, host::devAutoControlOffsetXDp, host::onDevSetAutoControlOffsetX)
+        bind(R.id.btn_dev_auto_control_offset_y, R.string.develop_menu_bottom_control_auto_offset_y, host::devAutoControlOffsetYDp, host::onDevSetAutoControlOffsetY)
     }
 
     private fun bindRewardHudAdjustments(view: View, host: Host) {
@@ -859,6 +868,9 @@ class DevelopMenuDialogFragment : DialogFragment() {
         root.findViewById<MaterialButton>(R.id.btn_dev_play_control_scale).text = fmt(host.devPlayControlScale())
         root.findViewById<MaterialButton>(R.id.btn_dev_play_control_offset_x).text = fmt(host.devPlayControlOffsetXDp())
         root.findViewById<MaterialButton>(R.id.btn_dev_play_control_offset_y).text = fmt(host.devPlayControlOffsetYDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_auto_control_scale).text = fmt(host.devAutoControlScale())
+        root.findViewById<MaterialButton>(R.id.btn_dev_auto_control_offset_x).text = fmt(host.devAutoControlOffsetXDp())
+        root.findViewById<MaterialButton>(R.id.btn_dev_auto_control_offset_y).text = fmt(host.devAutoControlOffsetYDp())
     }
 
     private fun refreshRewardHudDisplays(root: View, host: Host) {

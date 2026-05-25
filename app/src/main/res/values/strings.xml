@@ -183,6 +183,7 @@
     <string name="develop_menu_bottom_control_hint_section">Hint button</string>
     <string name="develop_menu_bottom_control_magic_wand_section">Magic wand button</string>
     <string name="develop_menu_bottom_control_play_section">Play button</string>
+    <string name="develop_menu_bottom_control_auto_section">Auto-complete button</string>
     <string name="develop_menu_bottom_control_undo_scale">Undo scale</string>
     <string name="develop_menu_bottom_control_undo_offset_x">Undo offset X</string>
     <string name="develop_menu_bottom_control_undo_offset_y">Undo offset Y</string>
@@ -198,6 +199,9 @@
     <string name="develop_menu_bottom_control_play_scale">Play scale</string>
     <string name="develop_menu_bottom_control_play_offset_x">Play offset X</string>
     <string name="develop_menu_bottom_control_play_offset_y">Play offset Y</string>
+    <string name="develop_menu_bottom_control_auto_scale">Auto-complete scale</string>
+    <string name="develop_menu_bottom_control_auto_offset_x">Auto-complete offset X</string>
+    <string name="develop_menu_bottom_control_auto_offset_y">Auto-complete offset Y</string>
     <string name="develop_menu_reward_adjustments_section">Reward HUD adjustments</string>
     <string name="develop_menu_reward_gem_section">Gem reward</string>
     <string name="develop_menu_reward_ticket_section">Ticket reward</string>
