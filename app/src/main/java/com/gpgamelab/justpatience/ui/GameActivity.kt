@@ -549,31 +549,31 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.LARGE,
+            adBoxChoice = BannerAdBoxChoice.SMALL,
             undoControlAdjustments = BottomControlButtonAdjustments(
-                scale = 2.7f,
+                scale = 1.5f,
                 offsetX = 25f,
-                offsetY = 0f
+                offsetY = -75f
             ),
             redoControlAdjustments = BottomControlButtonAdjustments(
-                scale = 2.7f,
-                offsetX = 75f,
-                offsetY = 0f
+                scale = 1.5f,
+                offsetX = 80f,
+                offsetY = -75f
             ),
             hintControlAdjustments = BottomControlButtonAdjustments(
                 scale = 2f,
-                offsetX = 110f,
-                offsetY = 0f
+                offsetX = 135f,
+                offsetY = -75f
             ),
             magicWandControlAdjustments = BottomControlButtonAdjustments(
-                scale = 2f,
-                offsetX = 130f,
-                offsetY = 0f
+                scale = 1.5f,
+                offsetX = 170f,
+                offsetY = -75f
             ),
             playControlAdjustments = BottomControlButtonAdjustments(
                 scale = 3f,
-                offsetX = 225f,
-                offsetY = 0f
+                offsetX = 250f,
+                offsetY = -75f
             ),
         ),
         portraitSlim = GameBoardLayoutConfig(
@@ -639,8 +639,32 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
-        ),
+            adBoxChoice = BannerAdBoxChoice.LARGE,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 25f,
+                offsetY = 0f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 75f,
+                offsetY = 0f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 110f,
+                offsetY = 0f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 130f,
+                offsetY = 0f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3f,
+                offsetX = 225f,
+                offsetY = 0f
+            ),        ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = -110f,
             pileOverallOffsetY = -80f,
