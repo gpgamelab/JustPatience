@@ -948,7 +948,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitBroad = GameBoardLayoutConfig(
             pileOverallOffsetY = -10f,
             drawWasteOffsetX = 45f,
-            tableauOffsetY = 25f,
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
@@ -1203,6 +1202,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         portraitBroad = GameBoardLayoutConfig(
             pileOverallOffsetY = -10f,
             drawWasteOffsetX = 45f,
+            tableauOffsetY = 25f,
             bannerSmallOffsetX = 0f,
             bannerSmallOffsetY = 0f,
             bannerMediumOffsetX = 0f,
@@ -3039,11 +3039,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             onMagicWandTargetSelected(type, index, cardIndex)
         }
         applyLockedPileAdIconDevConfigToBoard()
-        applyLandscapePileLayoutDevConfigToBoard()
-        applyPortraitPileLayoutDevConfigToBoard()
+        applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
+        applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
         applyAspectCategoryPileTrimsToBoard()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
-        applyTopHudDevOffsets()
+        applyTopHudDevOffsets(persistProfile = false)
         
         // Apply device scale ratio to control buttons after the board geometry is computed
         binding.gameBoardView.post {
@@ -3113,10 +3113,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     viewModel.game.collect { g ->
                         val profileChanged = switchLayoutScopedDevAdjustersIfNeeded(resolveActiveLayoutProfileKey())
                         if (profileChanged) {
-                            applyLandscapePileLayoutDevConfigToBoard()
-                            applyPortraitPileLayoutDevConfigToBoard()
+                            applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
+                            applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
+                            applyResponsiveControlSizing()
                             persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
-                            applyTopHudDevOffsets()
+                            applyTopHudDevOffsets(persistProfile = false)
                             // Ensure startup banner size matches the active profile/aspect immediately.
                             reloadBannerForCurrentConfiguration()
                         }
@@ -4122,8 +4123,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun applyMirroredLayoutUi(mirrored: Boolean) {
         switchLayoutScopedDevAdjustersIfNeeded(resolveActiveLayoutProfileKey())
-        applyLandscapePileLayoutDevConfigToBoard()
-        applyPortraitPileLayoutDevConfigToBoard()
+        applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
+        applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
         applyAspectCategoryPileTrimsToBoard()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
 
@@ -4169,7 +4170,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         // Keep HUD/control sizing tied to device + deck state, not mirrored hand preference.
         applyResponsiveControlSizing()
-        infoPanel.post { applyTopHudDevOffsets() }
+        infoPanel.post { applyTopHudDevOffsets(persistProfile = false) }
     }
 
     private fun showGameMenu() {
@@ -5711,9 +5712,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 refreshActiveStarburstDebugAndMotion()
             }
             applyLockedPileAdIconDevConfigToBoard()
-            applyLandscapePileLayoutDevConfigToBoard()
-            applyPortraitPileLayoutDevConfigToBoard()
-            applyTopHudDevOffsets()
+            applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
+            applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
+            applyTopHudDevOffsets(persistProfile = false)
             reloadBannerForCurrentConfiguration()
         }
     }
@@ -5783,8 +5784,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         )
     }
 
-    private fun applyLandscapePileLayoutDevConfigToBoard() {
-        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
+    private fun applyLandscapePileLayoutDevConfigToBoard(persistProfile: Boolean = true) {
+        if (persistProfile) {
+            persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
+        }
         val ratioProfile = calculateDevOffsetRatioProfile()
         val aspectOffsets = currentLandscapeAspectPileOffsets()
         binding.gameBoardView.setLandscapePileLayoutTuning(
@@ -5804,8 +5807,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.gameBoardView.dumpPileLayoutDebug("applyLandscapePileLayoutDevConfigToBoard")
     }
 
-    private fun applyPortraitPileLayoutDevConfigToBoard() {
-        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
+    private fun applyPortraitPileLayoutDevConfigToBoard(persistProfile: Boolean = true) {
+        if (persistProfile) {
+            persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
+        }
         val ratioProfile = calculateDevOffsetRatioProfile()
         val aspectOffsets = currentPortraitAspectPileOffsets()
         binding.gameBoardView.setPortraitPileLayoutTuning(
@@ -5825,8 +5830,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.gameBoardView.dumpPileLayoutDebug("applyPortraitPileLayoutDevConfigToBoard")
     }
 
-    private fun applyTopHudDevOffsets() {
-        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
+    private fun applyTopHudDevOffsets(persistProfile: Boolean = true) {
+        if (persistProfile) {
+            persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
+        }
         val ratioProfile = calculateDevOffsetRatioProfile()
         val scoreboardX = scaleDevDpOffsetX(devScoreboardOffsetXDpState, ratioProfile)
         val scoreboardY = scaleDevDpOffsetY(devScoreboardOffsetYDpState, ratioProfile)
