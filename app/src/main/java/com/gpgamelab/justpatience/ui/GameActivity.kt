@@ -4274,9 +4274,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             popup.dismiss()
             showTesterMenu()
         }
-        popupView.findViewById<TextView>(R.id.popup_btn_develop).setOnClickListener {
-            popup.dismiss()
-            showDevelopMenu()
+        popupView.findViewById<TextView>(R.id.popup_btn_develop).let { developEntry ->
+            if (BuildConfig.SHOW_DEVELOP_BUTTON) {
+                developEntry.visibility = View.VISIBLE
+                developEntry.setOnClickListener {
+                    popup.dismiss()
+                    showDevelopMenu()
+                }
+            } else {
+                developEntry.visibility = View.GONE
+                developEntry.setOnClickListener(null)
+            }
         }
 
         // Show above the anchor button
@@ -4375,6 +4383,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun showDevelopMenu() {
+        if (!BuildConfig.SHOW_DEVELOP_BUTTON) return
         if (supportFragmentManager.findFragmentByTag(DevelopMenuDialogFragment.TAG) != null) return
         DevelopMenuDialogFragment.newInstance(developMenuExpandState)
             .show(supportFragmentManager, DevelopMenuDialogFragment.TAG)
