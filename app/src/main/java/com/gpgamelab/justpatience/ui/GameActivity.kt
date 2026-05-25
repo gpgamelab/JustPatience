@@ -664,7 +664,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 scale = 3f,
                 offsetX = 225f,
                 offsetY = 0f
-            ),        ),
+            ),
+        ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = -110f,
             pileOverallOffsetY = -80f,
@@ -828,8 +829,32 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
-        ),
+            adBoxChoice = BannerAdBoxChoice.LARGE,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 25f,
+                offsetY = 0f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 75f,
+                offsetY = 0f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 110f,
+                offsetY = 0f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 130f,
+                offsetY = 0f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3f,
+                offsetX = 225f,
+                offsetY = 0f
+            ),        ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = 260f,
             pileOverallOffsetY = 0f,
@@ -986,8 +1011,32 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             bannerMediumOffsetY = 0f,
             bannerLargeOffsetX = 0f,
             bannerLargeOffsetY = 0f,
-            adBoxChoice = BannerAdBoxChoice.SMALL
-        ),
+            adBoxChoice = BannerAdBoxChoice.LARGE,
+            undoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 25f,
+                offsetY = 0f
+            ),
+            redoControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2.7f,
+                offsetX = 75f,
+                offsetY = 0f
+            ),
+            hintControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 110f,
+                offsetY = 0f
+            ),
+            magicWandControlAdjustments = BottomControlButtonAdjustments(
+                scale = 2f,
+                offsetX = 130f,
+                offsetY = 0f
+            ),
+            playControlAdjustments = BottomControlButtonAdjustments(
+                scale = 3f,
+                offsetX = 225f,
+                offsetY = 0f
+            ),        ),
         landscapeSlim = GameBoardLayoutConfig(
             pileOverallOffsetX = 195f,
             pileOverallOffsetY = -80f,
@@ -5373,19 +5422,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         applyImmersiveFullscreen()
-        applyResponsiveControlSizing()
-        applyMirroredLayoutUi(viewModel.isMirroredLayout.value)
-        applyAutoWinPopupRatios()
-        if (testerStarburstAutoLayoutEnabled) {
-            applyAutoStarburstProfile()
-            refreshActiveStarburstDebugAndMotion()
+        // Rotation is handled via configChanges, so wait for fresh layout bounds before choosing
+        // compact-vs-regular slim configs and banner/control variants.
+        binding.gameBoardView.post {
+            reapplyActiveLayoutScopedDevAdjustersForCurrentConfiguration()
+            applyResponsiveControlSizing()
+            applyMirroredLayoutUi(viewModel.isMirroredLayout.value)
+            applyAutoWinPopupRatios()
+            if (testerStarburstAutoLayoutEnabled) {
+                applyAutoStarburstProfile()
+                refreshActiveStarburstDebugAndMotion()
+            }
+            applyLockedPileAdIconDevConfigToBoard()
+            applyLandscapePileLayoutDevConfigToBoard()
+            applyPortraitPileLayoutDevConfigToBoard()
+            applyTopHudDevOffsets()
+            reloadBannerForCurrentConfiguration()
         }
-        applyLockedPileAdIconDevConfigToBoard()
-        applyLandscapePileLayoutDevConfigToBoard()
-        applyPortraitPileLayoutDevConfigToBoard()
-        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
-        applyTopHudDevOffsets()
-        reloadBannerForCurrentConfiguration()
+    }
+
+    private fun reapplyActiveLayoutScopedDevAdjustersForCurrentConfiguration() {
+        val key = resolveActiveLayoutProfileKey()
+        applyLayoutScopedDevAdjusters(profileStateFor(key))
+        appliedLayoutProfileKey = key
+        hasAppliedLayoutScopedDevProfile = true
     }
 
     private fun onLockedTableauUnlockRequested() {
@@ -5782,19 +5842,19 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val bannerAdView = resolveActiveBannerAdView(requestedAdSizes)
         updateBannerPlacementForCurrentConfiguration()
         val container = resolveBannerContainer()
-        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        if (isLandscapeNow && container?.id == R.id.banner_overlay_container) {
-            container.post {
-                // Guard: if another reloadBannerForCurrentConfiguration() ran while this post
-                // was pending, bannerAdView may have been set to GONE by the newer call.
-                // Skip loading an ad into a view that is no longer the active banner.
-                if (bannerAdView.visibility != View.GONE) {
-                    adManager.loadBannerAd(bannerAdView, requestedAdSizes)
-                }
+        val loadBanner = {
+            // Guard: if another reloadBannerForCurrentConfiguration() ran while this post
+            // was pending, bannerAdView may have been set to GONE by the newer call.
+            if (bannerAdView.visibility != View.GONE) {
+                adManager.loadBannerAd(bannerAdView, requestedAdSizes)
             }
-            return
         }
-        adManager.loadBannerAd(bannerAdView, requestedAdSizes)
+        // Always defer actual ad load to post-layout so rotation has settled bounds/container size.
+        if (container != null) {
+            container.post { loadBanner() }
+        } else {
+            binding.root.post { loadBanner() }
+        }
     }
 
     private fun applyImmersiveFullscreen() {
