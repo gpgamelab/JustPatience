@@ -3256,9 +3256,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         private const val BASELINE_WIN_WAND_NUMBER_OFFSET_X_DP_LANDSCAPE = 40f
         private const val BASELINE_WIN_WAND_NUMBER_OFFSET_Y_DP_LANDSCAPE = -50f
         // Button row offset
-        private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT = 85f
+        private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT = 80f
         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_PORTRAIT_BAKLAVA = 50f
-        private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE = 90f
+        private const val BASELINE_WIN_BUTTON_ROW_OFFSET_X_DP_LANDSCAPE = 80f
         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_PORTRAIT = -45f
         private const val BASELINE_WIN_BUTTON_ROW_OFFSET_Y_DP_LANDSCAPE = -30f
 
