@@ -1815,7 +1815,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private fun snapshotLayoutScopedDevAdjusters(): LayoutProfileDevAdjusters {
+    private data class BannerOffsetAdjustments(
+        val smallOffsetX: Float,
+        val smallOffsetY: Float,
+        val mediumOffsetX: Float,
+        val mediumOffsetY: Float,
+        val largeOffsetX: Float,
+        val largeOffsetY: Float
+    )
+
+    private fun snapshotLayoutScopedDevAdjusters(profileKey: LayoutProfileKey): LayoutProfileDevAdjusters {
         val snapshot = LayoutProfileDevAdjusters(
             portraitSlimCompact = GameBoardLayoutConfig(
                 pileOverallOffsetX = devPortraitOverallOffsetXSlimCompactDpState,
@@ -2021,9 +2030,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             landscapeTicketRewardOffsetY = devTicketRewardOffsetYDpState
         )
 
-        val existingProfile = profileStateFor(resolveActiveLayoutProfileKey())
+        // Preserve non-active per-device bottom-button variants from the profile
+        // we're persisting, not whichever profile is currently resolving.
+        val existingProfile = profileStateFor(profileKey)
         return snapshot
             .withBottomControlAdjustmentsFrom(existingProfile)
+            .withBannerOffsetsFrom(existingProfile)
             .withCurrentDeviceBottomControlAdjustments(
                 BottomControlAdjustmentsSet(
                     undo = BottomControlButtonAdjustments(
@@ -2058,6 +2070,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     )
                 )
             )
+            .withCurrentDeviceBannerOffsets(currentBannerOffsetAdjustments())
     }
 
     private fun GameBoardLayoutConfig.withBottomControlAdjustments(values: BottomControlAdjustmentsSet): GameBoardLayoutConfig {
@@ -2097,6 +2110,65 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         )
     }
 
+    private fun GameBoardLayoutConfig.withBannerOffsets(values: BannerOffsetAdjustments): GameBoardLayoutConfig {
+        return copy(
+            bannerSmallOffsetX = values.smallOffsetX,
+            bannerSmallOffsetY = values.smallOffsetY,
+            bannerMediumOffsetX = values.mediumOffsetX,
+            bannerMediumOffsetY = values.mediumOffsetY,
+            bannerLargeOffsetX = values.largeOffsetX,
+            bannerLargeOffsetY = values.largeOffsetY
+        )
+    }
+
+    private fun GameBoardLayoutConfig.bannerOffsets(): BannerOffsetAdjustments {
+        return BannerOffsetAdjustments(
+            smallOffsetX = bannerSmallOffsetX,
+            smallOffsetY = bannerSmallOffsetY,
+            mediumOffsetX = bannerMediumOffsetX,
+            mediumOffsetY = bannerMediumOffsetY,
+            largeOffsetX = bannerLargeOffsetX,
+            largeOffsetY = bannerLargeOffsetY
+        )
+    }
+
+    private fun LayoutProfileDevAdjusters.withBannerOffsetsFrom(source: LayoutProfileDevAdjusters): LayoutProfileDevAdjusters {
+        return copy(
+            portraitSlimCompact = portraitSlimCompact.withBannerOffsets(source.portraitSlimCompact.bannerOffsets()),
+            portraitSlim = portraitSlim.withBannerOffsets(source.portraitSlim.bannerOffsets()),
+            portraitClassic = portraitClassic.withBannerOffsets(source.portraitClassic.bannerOffsets()),
+            portraitBroad = portraitBroad.withBannerOffsets(source.portraitBroad.bannerOffsets()),
+            portraitSquare = portraitSquare.withBannerOffsets(source.portraitSquare.bannerOffsets()),
+            landscapeSlimCompact = landscapeSlimCompact.withBannerOffsets(source.landscapeSlimCompact.bannerOffsets()),
+            landscapeSlim = landscapeSlim.withBannerOffsets(source.landscapeSlim.bannerOffsets()),
+            landscapeClassic = landscapeClassic.withBannerOffsets(source.landscapeClassic.bannerOffsets()),
+            landscapeBroad = landscapeBroad.withBannerOffsets(source.landscapeBroad.bannerOffsets()),
+            landscapeSquare = landscapeSquare.withBannerOffsets(source.landscapeSquare.bannerOffsets())
+        )
+    }
+
+    private fun currentBannerOffsetAdjustments(): BannerOffsetAdjustments {
+        return if (isLandscapeNow()) {
+            BannerOffsetAdjustments(
+                smallOffsetX = devSmallDeviceLandscapeBannerOffsetXDpState,
+                smallOffsetY = devSmallDeviceLandscapeBannerOffsetYDpState,
+                mediumOffsetX = devMediumDeviceLandscapeBannerOffsetXDpState,
+                mediumOffsetY = devMediumDeviceLandscapeBannerOffsetYDpState,
+                largeOffsetX = devLargeDeviceLandscapeBannerOffsetXDpState,
+                largeOffsetY = devLargeDeviceLandscapeBannerOffsetYDpState
+            )
+        } else {
+            BannerOffsetAdjustments(
+                smallOffsetX = devSmallDevicePortraitBannerOffsetXDpState,
+                smallOffsetY = devSmallDevicePortraitBannerOffsetYDpState,
+                mediumOffsetX = devMediumDevicePortraitBannerOffsetXDpState,
+                mediumOffsetY = devMediumDevicePortraitBannerOffsetYDpState,
+                largeOffsetX = devLargeDevicePortraitBannerOffsetXDpState,
+                largeOffsetY = devLargeDevicePortraitBannerOffsetYDpState
+            )
+        }
+    }
+
     private fun LayoutProfileDevAdjusters.currentDeviceLayoutConfig(): GameBoardLayoutConfig {
         val isLandscape = isLandscapeNow()
         return when (binding.gameBoardView.getCurrentAspectCategory()) {
@@ -2128,6 +2200,24 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             DeviceAspectCategory.CLASSIC -> if (isLandscape) copy(landscapeClassic = landscapeClassic.withBottomControlAdjustments(values)) else copy(portraitClassic = portraitClassic.withBottomControlAdjustments(values))
             DeviceAspectCategory.BROAD -> if (isLandscape) copy(landscapeBroad = landscapeBroad.withBottomControlAdjustments(values)) else copy(portraitBroad = portraitBroad.withBottomControlAdjustments(values))
             DeviceAspectCategory.SQUARE -> if (isLandscape) copy(landscapeSquare = landscapeSquare.withBottomControlAdjustments(values)) else copy(portraitSquare = portraitSquare.withBottomControlAdjustments(values))
+        }
+    }
+
+    private fun LayoutProfileDevAdjusters.withCurrentDeviceBannerOffsets(values: BannerOffsetAdjustments): LayoutProfileDevAdjusters {
+        val isLandscape = isLandscapeNow()
+        return when (binding.gameBoardView.getCurrentAspectCategory()) {
+            DeviceAspectCategory.SLIM -> {
+                if (isLandscape) {
+                    if (isCompactSlimLandscapeBoard()) copy(landscapeSlimCompact = landscapeSlimCompact.withBannerOffsets(values))
+                    else copy(landscapeSlim = landscapeSlim.withBannerOffsets(values))
+                } else {
+                    if (isCompactSlimPortraitBoard()) copy(portraitSlimCompact = portraitSlimCompact.withBannerOffsets(values))
+                    else copy(portraitSlim = portraitSlim.withBannerOffsets(values))
+                }
+            }
+            DeviceAspectCategory.CLASSIC -> if (isLandscape) copy(landscapeClassic = landscapeClassic.withBannerOffsets(values)) else copy(portraitClassic = portraitClassic.withBannerOffsets(values))
+            DeviceAspectCategory.BROAD -> if (isLandscape) copy(landscapeBroad = landscapeBroad.withBannerOffsets(values)) else copy(portraitBroad = portraitBroad.withBannerOffsets(values))
+            DeviceAspectCategory.SQUARE -> if (isLandscape) copy(landscapeSquare = landscapeSquare.withBannerOffsets(values)) else copy(portraitSquare = portraitSquare.withBannerOffsets(values))
         }
     }
 
@@ -2304,7 +2394,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun persistActiveLayoutScopedDevAdjusters(profileKey: LayoutProfileKey) {
         if (!hasAppliedLayoutScopedDevProfile) return
-        setProfileStateFor(profileKey, snapshotLayoutScopedDevAdjusters())
+        setProfileStateFor(profileKey, snapshotLayoutScopedDevAdjusters(profileKey))
     }
 
     private fun currentPortraitAspectPileOffsets(): GameBoardLayoutConfig {
@@ -3223,9 +3313,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
         applyTopHudDevOffsets(persistProfile = false)
         
-        // Apply device scale ratio to control buttons after the board geometry is computed
+        // Re-apply profile-dependent sizing after board bounds are available so
+        // compact-slim selection uses real board dimensions instead of startup fallbacks.
         binding.gameBoardView.post {
+            if (hasAppliedLayoutScopedDevProfile) {
+                reapplyActiveLayoutScopedDevAdjustersForCurrentConfiguration()
+                applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
+                applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
+                applyResponsiveControlSizing()
+            }
             scaleControlButtonsBasedOnDeviceRatio()
+            reloadBannerForCurrentConfiguration()
         }
         
         binding.gameBoardView.bindToViewModel(this)
@@ -3236,10 +3334,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Initialize and load banner ads
         adManager = AdManager(this)
         adManager.initializeAds()
-        // Delay banner reload until after GameBoardView is laid out so aspect category can be determined
-        binding.gameBoardView.post {
-            reloadBannerForCurrentConfiguration()
-        }
+        // Banner reload is scheduled in the shared post-layout block above.
         adManager.loadRewardedAd()
         adManager.loadRewardedInterstitialAd()
 
