@@ -53,8 +53,8 @@ android {
         applicationId = "com.gpgamelab.justpatience"
         minSdk = 30
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.0.8"
+        versionCode = 9
+        versionName = "1.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
