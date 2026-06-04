@@ -27,7 +27,7 @@
                 android:pathData="M -260,430 V -430 M -50,0 v -310 a 150,150 0 0 1 300,0 v 620 a 150,150 0 0 1 -300,0 z"
                 android:fillColor="#00000000"
                 android:strokeColor="#FF000000"
-                android:strokeWidth="150"
+                android:strokeWidth="120"
                 android:strokeLineCap="square"
                 android:strokeMiterLimit="1.5" />
         </group>
@@ -49,7 +49,7 @@
                 android:pathData="M -260,430 V -430 M -50,0 v -310 a 150,150 0 0 1 300,0 v 620 a 150,150 0 0 1 -300,0 z"
                 android:fillColor="#00000000"
                 android:strokeColor="#FF000000"
-                android:strokeWidth="150"
+                android:strokeWidth="120"
                 android:strokeLineCap="square"
                 android:strokeMiterLimit="1.5" />
         </group>

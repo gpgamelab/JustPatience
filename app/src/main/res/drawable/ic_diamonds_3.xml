@@ -27,7 +27,7 @@
                 android:pathData="m -250,-320 v -140 h 450 l -310,380 c 10,-10 60,-40 110,-40 200,0 250,120 250,270 0,200 -80,310 -280,310 -200,0 -230,-160 -230,-160"
                 android:fillColor="#00000000"
                 android:strokeColor="#FF000000"
-                android:strokeWidth="150"
+                android:strokeWidth="120"
                 android:strokeLineCap="square"
                 android:strokeMiterLimit="1.5" />
         </group>
@@ -49,7 +49,7 @@
                 android:pathData="m -250,-320 v -140 h 450 l -310,380 c 10,-10 60,-40 110,-40 200,0 250,120 250,270 0,200 -80,310 -280,310 -200,0 -230,-160 -230,-160"
                 android:fillColor="#00000000"
                 android:strokeColor="#FF000000"
-                android:strokeWidth="150"
+                android:strokeWidth="120"
                 android:strokeLineCap="square"
                 android:strokeMiterLimit="1.5" />
         </group>
