@@ -5255,6 +5255,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    override fun testerDeviceAspectCategoryLabel(): String = devCurrentAspectCategoryLabel()
+
     // ------------------------------------------------------------------
 
     override fun onGameMenuStatisticsSummary() {
@@ -5281,7 +5283,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     override fun onGameMenuOpenAbout() {
-        startActivity(Intent(this, AboutActivity::class.java))
+        startActivity(Intent(this, AboutActivity::class.java).apply {
+            putExtra(AboutActivity.EXTRA_DEVICE_TYPE_LABEL, devCurrentAspectCategoryLabel())
+        })
     }
 
     override fun onGameMenuOpenHowToPlay() {

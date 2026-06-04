@@ -35,6 +35,16 @@ class AboutActivity : AppCompatActivity() {
             versionName,
             versionCode
         )
+
+        val deviceTypeText = findViewById<TextView>(R.id.tv_about_device_type_value)
+        val deviceTypeLabel = intent.getStringExtra(EXTRA_DEVICE_TYPE_LABEL)
+        if (!deviceTypeLabel.isNullOrBlank()) {
+            deviceTypeText.text = deviceTypeLabel
+        }
+    }
+
+    companion object {
+        const val EXTRA_DEVICE_TYPE_LABEL = "extra_device_type_label"
     }
 
     override fun onSupportNavigateUp(): Boolean {

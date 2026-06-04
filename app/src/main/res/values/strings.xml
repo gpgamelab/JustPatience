@@ -283,6 +283,8 @@
     <string name="about_coming_features_list">- In-app purchases, including premium subscription to remove most ads\n- In-game store to buy content\n- Selectable tabletop backgrounds\n- Selectable card backs and card faces\n- Cool animations\n- Sound effects\n- Theme packs\n- And more</string>
     <string name="about_additional_info_title">Additional Info (Example)</string>
     <string name="about_additional_info_body">Organization: GNU Paradigms - Games Lab\nContact: support@example.com\nWebsite: https://example.com\nTerms of Use: https://example.com/terms\n\nThank you for playing JustPatience! Your feedback helps shape future updates.</string>
+    <string name="about_device_type_title">Device Profile</string>
+    <string name="about_device_type_value">%1$s</string>
     <string name="about_privacy_title">Privacy</string>
     <string name="about_privacy_body">This is placeholder privacy content for now.\n\nWe collect only the minimum data needed to run core features (for example: local game state and statistics on your device). Ads may collect limited diagnostic or device data through ad providers.\n\nTODO: Replace this text with your final privacy policy wording before publication.</string>
 
