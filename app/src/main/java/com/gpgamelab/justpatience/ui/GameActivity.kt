@@ -3389,7 +3389,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                             applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
                             applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
                             applyResponsiveControlSizing()
-                            persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
                             applyTopHudDevOffsets(persistProfile = false)
                             // Ensure startup banner size matches the active profile/aspect immediately.
                             reloadBannerForCurrentConfiguration()
@@ -4396,7 +4395,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
         applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
         applyAspectCategoryPileTrimsToBoard()
-        persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
 
         // Flip the info_side_panel to the opposite side
         val infoPanel = findViewById<View>(R.id.info_side_panel) ?: return
@@ -6659,7 +6657,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         applyTopHudSizing(isLandscapeNow, widthScale, heightScale, textScale)
         applyBottomControlsSizing(isLandscapeNow, widthScale, heightScale, textScale, portraitButtonWidthScale)
-        applyTopHudDevOffsets()
+        // Runtime relayout should not mutate saved profile state.
+        applyTopHudDevOffsets(persistProfile = false)
     }
 
     private fun applyTopHudSizing(
