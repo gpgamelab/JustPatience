@@ -150,8 +150,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var pileCountBadgeInset = 6f
 
     // Board and Card dimensions
-    private val cardWidthRatio = 1.5f
-    private val cardHeightRatio = 2.0f
+    private val cardWidthRatio = 1.4f
+    private val cardHeightRatio = 1.7f
     private var cardRadius = 20f
     private var cardPadding = 1f
     private var tableauOffset = 40f
