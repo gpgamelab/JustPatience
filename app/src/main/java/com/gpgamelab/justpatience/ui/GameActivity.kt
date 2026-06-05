@@ -1763,27 +1763,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private var devPortraitAdBoxChoiceBroadState: BannerAdBoxChoice = BannerAdBoxChoice.LARGE
     private var devPortraitAdBoxChoiceSquareState: BannerAdBoxChoice = BannerAdBoxChoice.LARGE
 
-    // Aspect-ratio category Y trims (dp).  Applied as the final boardStartY adjustment.
-    // Positive = move piles DOWN, negative = move piles UP.
-    private var devAspectPortraitSlimYDpState:    Float = 0f
-    private var devAspectPortraitClassicYDpState: Float = 0f
-    private var devAspectPortraitBroadYDpState:   Float = 0f
-    private var devAspectPortraitSquareYDpState:  Float = 0f
-    private var devAspectLandscapeSlimYDpState:    Float = 0f
-    private var devAspectLandscapeClassicYDpState: Float = 0f
-    private var devAspectLandscapeBroadYDpState:   Float = 0f
-    private var devAspectLandscapeSquareYDpState:  Float = 0f
-
-    // Aspect-ratio category X trims (dp).  Applied as the final boardStartX adjustment.
-    // Positive = move piles RIGHT, negative = move piles LEFT.
-    private var devAspectPortraitSlimXDpState:    Float = 0f
-    private var devAspectPortraitClassicXDpState: Float = 0f
-    private var devAspectPortraitBroadXDpState:   Float = 0f
-    private var devAspectPortraitSquareXDpState:  Float = 0f
-    private var devAspectLandscapeSlimXDpState:    Float = 0f
-    private var devAspectLandscapeClassicXDpState: Float = 0f
-    private var devAspectLandscapeBroadXDpState:   Float = 0f
-    private var devAspectLandscapeSquareXDpState:  Float = 0f
     private var classic1DeckLayoutDevAdjustersState = defaultClassic1DeckLayoutDevAdjusters
     private var classic2DeckLayoutDevAdjustersState = defaultClassic2DeckLayoutDevAdjusters
     private var mirrored1DeckLayoutDevAdjustersState = defaultMirrored1DeckLayoutDevAdjusters
@@ -3309,7 +3288,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         applyLockedPileAdIconDevConfigToBoard()
         applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
         applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
-        applyAspectCategoryPileTrimsToBoard()
         persistActiveLayoutScopedDevAdjusters(resolveActiveLayoutProfileKey())
         applyTopHudDevOffsets(persistProfile = false)
         
@@ -4394,8 +4372,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         switchLayoutScopedDevAdjustersIfNeeded(resolveActiveLayoutProfileKey())
         applyLandscapePileLayoutDevConfigToBoard(persistProfile = false)
         applyPortraitPileLayoutDevConfigToBoard(persistProfile = false)
-        applyAspectCategoryPileTrimsToBoard()
-
         // Flip the info_side_panel to the opposite side
         val infoPanel = findViewById<View>(R.id.info_side_panel) ?: return
         val clp = infoPanel.layoutParams as? ConstraintLayout.LayoutParams ?: return
@@ -4801,23 +4777,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devShuffleTailDelayMs(): Float = devShuffleTailDelayMsState
     override fun devDealCardIntervalMs(): Float = devDealCardIntervalMsState
 
-    // Aspect-ratio category
-    override fun devAspectPortraitSlimXDp(): Float    = devAspectPortraitSlimXDpState
-    override fun devAspectPortraitClassicXDp(): Float = devAspectPortraitClassicXDpState
-    override fun devAspectPortraitBroadXDp(): Float   = devAspectPortraitBroadXDpState
-    override fun devAspectPortraitSquareXDp(): Float  = devAspectPortraitSquareXDpState
-    override fun devAspectPortraitSlimYDp(): Float    = devAspectPortraitSlimYDpState
-    override fun devAspectPortraitClassicYDp(): Float = devAspectPortraitClassicYDpState
-    override fun devAspectPortraitBroadYDp(): Float   = devAspectPortraitBroadYDpState
-    override fun devAspectPortraitSquareYDp(): Float  = devAspectPortraitSquareYDpState
-    override fun devAspectLandscapeSlimXDp(): Float    = devAspectLandscapeSlimXDpState
-    override fun devAspectLandscapeClassicXDp(): Float = devAspectLandscapeClassicXDpState
-    override fun devAspectLandscapeBroadXDp(): Float   = devAspectLandscapeBroadXDpState
-    override fun devAspectLandscapeSquareXDp(): Float  = devAspectLandscapeSquareXDpState
-    override fun devAspectLandscapeSlimYDp(): Float    = devAspectLandscapeSlimYDpState
-    override fun devAspectLandscapeClassicYDp(): Float = devAspectLandscapeClassicYDpState
-    override fun devAspectLandscapeBroadYDp(): Float   = devAspectLandscapeBroadYDpState
-    override fun devAspectLandscapeSquareYDp(): Float  = devAspectLandscapeSquareYDpState
     override fun devCurrentAspectCategoryLabel(): String {
         val category = binding.gameBoardView.getCurrentAspectCategory()
         val isCompactSlim = when (resources.configuration.orientation) {
@@ -5154,70 +5113,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Persist the newly selected tier first so reload uses the new setting immediately.
         setCurrentBannerAdBoxChoice(nextAdBoxChoice)
         reloadBannerForCurrentConfiguration()
-    }
-    override fun onDevSetAspectPortraitSlimY(value: Float) {
-        devAspectPortraitSlimYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectPortraitClassicY(value: Float) {
-        devAspectPortraitClassicYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectPortraitBroadY(value: Float) {
-        devAspectPortraitBroadYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectPortraitSquareY(value: Float) {
-        devAspectPortraitSquareYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeSlimY(value: Float) {
-        devAspectLandscapeSlimYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeClassicY(value: Float) {
-        devAspectLandscapeClassicYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeBroadY(value: Float) {
-        devAspectLandscapeBroadYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeSquareY(value: Float) {
-        devAspectLandscapeSquareYDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectPortraitSlimX(value: Float) {
-        devAspectPortraitSlimXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectPortraitClassicX(value: Float) {
-        devAspectPortraitClassicXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectPortraitBroadX(value: Float) {
-        devAspectPortraitBroadXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectPortraitSquareX(value: Float) {
-        devAspectPortraitSquareXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeSlimX(value: Float) {
-        devAspectLandscapeSlimXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeClassicX(value: Float) {
-        devAspectLandscapeClassicXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeBroadX(value: Float) {
-        devAspectLandscapeBroadXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
-    }
-    override fun onDevSetAspectLandscapeSquareX(value: Float) {
-        devAspectLandscapeSquareXDpState = value
-        applyAspectCategoryPileTrimsToBoard()
     }
     override fun onDevSetShuffleSecondClipDelayMs(value: Float) { devShuffleSecondClipDelayMsState = value.coerceAtLeast(0f) }
     override fun onDevSetShuffleTailDelayMs(value: Float) { devShuffleTailDelayMsState = value.coerceAtLeast(0f) }
@@ -6031,29 +5926,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             landscapeOffsetY = scaleDevPxOffsetY(devLockedPileAdOffsetYLandscapePxState, ratioProfile),
             landscapeScaleX = devLockedPileAdScaleXLandscapeState,
             landscapeScaleY = devLockedPileAdScaleYLandscapeState
-        )
-    }
-
-    private fun applyAspectCategoryPileTrimsToBoard() {
-        binding.gameBoardView.setAspectCategoryPileXTrimsDp(
-            portraitSlimDp    = devAspectPortraitSlimXDpState,
-            portraitClassicDp = devAspectPortraitClassicXDpState,
-            portraitBroadDp   = devAspectPortraitBroadXDpState,
-            portraitSquareDp  = devAspectPortraitSquareXDpState,
-            landscapeSlimDp   = devAspectLandscapeSlimXDpState,
-            landscapeClassicDp = devAspectLandscapeClassicXDpState,
-            landscapeBroadDp  = devAspectLandscapeBroadXDpState,
-            landscapeSquareDp = devAspectLandscapeSquareXDpState
-        )
-        binding.gameBoardView.setAspectCategoryPileYTrimsDp(
-            portraitSlimDp    = devAspectPortraitSlimYDpState,
-            portraitClassicDp = devAspectPortraitClassicYDpState,
-            portraitBroadDp   = devAspectPortraitBroadYDpState,
-            portraitSquareDp  = devAspectPortraitSquareYDpState,
-            landscapeSlimDp   = devAspectLandscapeSlimYDpState,
-            landscapeClassicDp = devAspectLandscapeClassicYDpState,
-            landscapeBroadDp  = devAspectLandscapeBroadYDpState,
-            landscapeSquareDp = devAspectLandscapeSquareYDpState
         )
     }
 
