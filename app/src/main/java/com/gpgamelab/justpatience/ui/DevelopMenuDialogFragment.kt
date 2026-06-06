@@ -28,8 +28,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
         val popupExpanded: Boolean = false,
         val cardPilesExpanded: Boolean = false,
         val adsRewardsExpanded: Boolean = false,
-        val shuffleExpanded: Boolean = false,
-        val aspectRatioExpanded: Boolean = false
+        val shuffleExpanded: Boolean = false
     )
 
     interface Host {
@@ -290,8 +289,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         fun onDevSetShuffleTailDelayMs(value: Float)
         fun onDevSetDealCardIntervalMs(value: Float)
 
-        fun devCurrentAspectCategoryLabel(): String
-
         fun onDevExpandStateChanged(state: ExpandState)
     }
 
@@ -384,18 +381,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
             adsRewardsExpanded = !adsRewardsExpanded
             setSectionExpanded(adsRewardsContent, adsRewardsArrow, adsRewardsExpanded)
             expandState = expandState.copy(adsRewardsExpanded = adsRewardsExpanded)
-            host.onDevExpandStateChanged(expandState)
-        }
-
-        val aspectRatioHeader = view.findViewById<View>(R.id.layout_develop_aspect_ratio_header)
-        val aspectRatioArrow = view.findViewById<TextView>(R.id.tv_develop_aspect_ratio_arrow)
-        val aspectRatioContent = view.findViewById<LinearLayout>(R.id.layout_develop_aspect_ratio_content)
-        var aspectRatioExpanded = expandState.aspectRatioExpanded
-        setSectionExpanded(aspectRatioContent, aspectRatioArrow, aspectRatioExpanded)
-        aspectRatioHeader.setOnClickListener {
-            aspectRatioExpanded = !aspectRatioExpanded
-            setSectionExpanded(aspectRatioContent, aspectRatioArrow, aspectRatioExpanded)
-            expandState = expandState.copy(aspectRatioExpanded = aspectRatioExpanded)
             host.onDevExpandStateChanged(expandState)
         }
 
@@ -660,18 +645,12 @@ class DevelopMenuDialogFragment : DialogFragment() {
         }
     }
 
-    private fun refreshAspectRatioDisplays(root: View, host: Host) {
-        root.findViewById<TextView>(R.id.tv_dev_aspect_current_category).text =
-            getString(R.string.develop_menu_aspect_current_device_format, host.devCurrentAspectCategoryLabel())
-    }
-
     private fun refreshAllDisplays(root: View, host: Host) {
         refreshStarburstDisplays(host)
         refreshPopupDisplays(root, host)
         refreshBottomControlDisplays(root, host)
         refreshRewardHudDisplays(root, host)
         refreshLandscapeBannerBoxChoice(root, host)
-        refreshAspectRatioDisplays(root, host)
     }
 
     private fun refreshStarburstDisplays(host: Host) {
@@ -825,8 +804,7 @@ class DevelopMenuDialogFragment : DialogFragment() {
             popupExpanded = b.getBoolean(ARG_POPUP_EXPANDED, false),
             cardPilesExpanded = b.getBoolean(ARG_CARD_PILES_EXPANDED, false),
             adsRewardsExpanded = b.getBoolean(ARG_ADS_REWARDS_EXPANDED, false),
-            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false),
-            aspectRatioExpanded = b.getBoolean(ARG_ASPECT_RATIO_EXPANDED, false)
+            shuffleExpanded = b.getBoolean(ARG_SHUFFLE_EXPANDED, false)
         )
     }
 
@@ -907,7 +885,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
         private const val ARG_CARD_PILES_EXPANDED = "arg_card_piles_expanded"
         private const val ARG_ADS_REWARDS_EXPANDED = "arg_ads_rewards_expanded"
         private const val ARG_SHUFFLE_EXPANDED = "arg_shuffle_expanded"
-        private const val ARG_ASPECT_RATIO_EXPANDED = "arg_aspect_ratio_expanded"
 
         fun newInstance(state: ExpandState = ExpandState()): DevelopMenuDialogFragment {
             return DevelopMenuDialogFragment().apply {
@@ -917,7 +894,6 @@ class DevelopMenuDialogFragment : DialogFragment() {
                     putBoolean(ARG_CARD_PILES_EXPANDED, state.cardPilesExpanded)
                     putBoolean(ARG_ADS_REWARDS_EXPANDED, state.adsRewardsExpanded)
                     putBoolean(ARG_SHUFFLE_EXPANDED, state.shuffleExpanded)
-                    putBoolean(ARG_ASPECT_RATIO_EXPANDED, state.aspectRatioExpanded)
                 }
             }
         }

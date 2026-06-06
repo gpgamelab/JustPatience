@@ -4777,7 +4777,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     override fun devShuffleTailDelayMs(): Float = devShuffleTailDelayMsState
     override fun devDealCardIntervalMs(): Float = devDealCardIntervalMsState
 
-    override fun devCurrentAspectCategoryLabel(): String {
+    private fun devCurrentAspectCategoryLabel(): String {
         val category = binding.gameBoardView.getCurrentAspectCategory()
         val isCompactSlim = when (resources.configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> category == DeviceAspectCategory.SLIM && isCompactSlimLandscapeBoard()

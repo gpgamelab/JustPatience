@@ -56,10 +56,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     var onMagicWandTargetSelected: ((StackType, Int, Int) -> Unit)? = null
 
     private var currentDeviceScaleRatio = 1f
+    // Device aspect category (SLIM, CLASSIC, BROAD, SQUARE) detected from physical display size.
+    // Used for device-specific tuning and display in tester/about menus.
     private var currentAspectCategory: DeviceAspectCategory = DeviceAspectCategory.SLIM
 
     // Per-category Y trim applied as the very last step of board-start positioning.
     // Positive = move piles DOWN, negative = move piles UP.  All values are raw px.
+    // (Currently all hardcoded to 0; kept for future category-specific tuning.)
     private var aspectCategoryPortraitTrimSlimPx   = 0f
     private var aspectCategoryPortraitTrimClassicPx = 0f
     private var aspectCategoryPortraitTrimBroadPx  = 0f
@@ -71,6 +74,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     // Per-category X trim applied as the very last step of board-start positioning.
     // Positive = move piles RIGHT, negative = move piles LEFT. All values are raw px.
+    // (Currently all hardcoded to 0; kept for future category-specific tuning.)
     private var aspectCategoryPortraitTrimXSlimPx   = 0f
     private var aspectCategoryPortraitTrimXClassicPx = 0f
     private var aspectCategoryPortraitTrimXBroadPx   = 0f
@@ -300,9 +304,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     fun getCurrentAspectCategory(): DeviceAspectCategory = currentAspectCategory
 
     /**
-     * Push the per-category Y trim values from the activity. All values are dp;
-     * they will be converted to px inside GameBoardView so the board stays
-     * self-contained.
+     * Unused stub: per-category Y trim values reserved for future category-specific tuning.
+     * Currently all trim values remain 0 (no repositioning by device category).
+     * The aspect-category system itself (SLIM/CLASSIC/BROAD/SQUARE) is still detected and
+     * exported to tester/about menus for device identification.
+     * @deprecated No longer called from GameActivity; kept as placeholder for future enhancement.
      */
     fun setAspectCategoryPileYTrimsDp(
         portraitSlimDp:    Float, portraitClassicDp: Float,
@@ -323,6 +329,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         invalidate()
     }
 
+    /**
+     * Unused stub: per-category X trim values reserved for future category-specific tuning.
+     * Currently all trim values remain 0 (no repositioning by device category).
+     * The aspect-category system itself (SLIM/CLASSIC/BROAD/SQUARE) is still detected and
+     * exported to tester/about menus for device identification.
+     * @deprecated No longer called from GameActivity; kept as placeholder for future enhancement.
+     */
     fun setAspectCategoryPileXTrimsDp(
         portraitSlimDp:    Float, portraitClassicDp: Float,
         portraitBroadDp:   Float, portraitSquareDp:  Float,
