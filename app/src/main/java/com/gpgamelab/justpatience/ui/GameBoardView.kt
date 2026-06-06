@@ -1003,7 +1003,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         } else {
             0f
         }
-        return getTopRowY() + cardH + cardPadding + tableauOffset + extraFoundationRow
+        // Stock and waste are now stacked vertically, so tableau starts below both
+        val stockWasteStackHeight = (cardH * 2f) + cardPadding
+        return getTopRowY() + stockWasteStackHeight + cardPadding + tableauOffset + extraFoundationRow
     }
 
     private fun getLandscapeFoundationBaseY(index: Int): Float {
@@ -1054,8 +1056,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun portraitTopRowStockWasteBlockWidth(): Float {
+        // Stock and waste are now stacked vertically, so width is just one card + fan spread
         val wasteFanSpread = getWasteFanOffsetX() * (MAX_VISIBLE_WASTE_CARDS - 1)
-        return (cardW * 2f) + cardPadding + wasteFanSpread
+        return cardW + wasteFanSpread
     }
 
     private fun portraitTopRowFoundationBlockWidth(): Float {
@@ -1095,15 +1098,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun portraitStockBaseX(): Float {
-        val baseX = portraitTopRowDrawWasteBaseX()
-        val slotStep = cardW + cardPadding
-        return if (isMirrored) baseX + slotStep else baseX
+        return portraitTopRowDrawWasteBaseX()
     }
 
     private fun portraitWasteBaseX(): Float {
-        val baseX = portraitTopRowDrawWasteBaseX()
-        val slotStep = cardW + cardPadding
-        return if (isMirrored) baseX else baseX + slotStep
+        return portraitTopRowDrawWasteBaseX()
     }
 
     private fun portraitFoundationColumnBaseX(column: Int): Float {
@@ -1127,7 +1126,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
      private fun getStockRect(): RectF {
         if (!isLandscape) {
             val yWithOffset = applyPortraitPileYOffset(
-                rawBaseY = getPortraitTopPileBaseY(),
+                // Portrait matches landscape ordering: waste on top, stock below.
+                rawBaseY = getPortraitTopPileBaseY() + cardH + cardPadding,
                 groupOffsetY = portraitDrawWasteOffsetYPx,
                 specificOffsetY = portraitStockOffsetYPx
             )
@@ -1153,17 +1153,17 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return RectF(x, y, x + cardW, y + cardH)
     }
 
-     private fun getWasteRect(): RectF {
-        if (!isLandscape) {
-            val yWithOffset = applyPortraitPileYOffset(
-                rawBaseY = getPortraitTopPileBaseY(),
-                groupOffsetY = portraitDrawWasteOffsetYPx,
-                specificOffsetY = portraitWasteOffsetYPx
-            )
-            val x = portraitWasteBaseX() +
-                portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx + portraitWasteOffsetXPx
-            return RectF(x, yWithOffset, x + cardW, yWithOffset + cardH)
-        }
+      private fun getWasteRect(): RectF {
+         if (!isLandscape) {
+             val yWithOffset = applyPortraitPileYOffset(
+                 rawBaseY = getPortraitTopPileBaseY(),
+                 groupOffsetY = portraitDrawWasteOffsetYPx,
+                 specificOffsetY = portraitWasteOffsetYPx
+             )
+             val x = portraitWasteBaseX() +
+                 portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx + portraitWasteOffsetXPx
+             return RectF(x, yWithOffset, x + cardW, yWithOffset + cardH)
+         }
 
         val y = applyLandscapePileYOffset(
             rawBaseY = getLandscapeWasteBaseY(),
@@ -2442,10 +2442,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             }
         }
 
-        // In portrait mode, check stock and waste in top row using their actual rects
+        // In portrait mode, check top-row pile hit targets using their actual rects.
         if (!isLandscape) {
-            if (getStockRect().contains(x, y)) return Triple(StackType.STOCK, 0, -1)
             if (getWasteHitRect().contains(x, y)) return Triple(StackType.WASTE, 0, -1)
+            if (getStockRect().contains(x, y)) return Triple(StackType.STOCK, 0, -1)
         }
 
         // Check tableau
