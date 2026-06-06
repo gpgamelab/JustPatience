@@ -1649,31 +1649,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             cardToDraw?.let { drawCard(canvas, it, rect) }
         }
 
-        // Labels above stock and waste piles.
-        drawTopPileLabels(canvas, stockRect, wasteRect)
-    }
-
-    private fun drawTopPileLabels(canvas: Canvas, stockRect: RectF, wasteRect: RectF) {
-        val drawCount = viewModel.getDrawCountLabelValue()
-        val drawTopLine = resources.getQuantityString(R.plurals.stock_draw_label, drawCount, drawCount)
-        val drawLines = listOf(drawTopLine, context.getString(R.string.stock_draw_label_line_2))
-
-        val remainingRecycles = viewModel.getRemainingRecycleCount()
-        val recycleLines = if (remainingRecycles == null) {
-            listOf(
-                context.getString(R.string.recycle_remaining_unlimited),
-                context.getString(R.string.recycle_remaining_unlimited_line_2)
-            )
-        } else {
-            listOf(
-                context.getString(R.string.recycle_remaining_format, remainingRecycles),
-                context.getString(R.string.recycle_remaining_limited_line_2)
-            )
-        }
-
-        drawLabelAboveRect(canvas, stockRect, drawLines)
-        val recycleLabelColor = if (remainingRecycles == 0) Color.RED else Color.WHITE
-        drawLabelAboveRect(canvas, wasteRect, recycleLines, recycleLabelColor)
     }
 
     private fun drawPileCountBadge(canvas: Canvas, pileRect: RectF, count: Int) {

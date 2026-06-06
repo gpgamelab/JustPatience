@@ -406,16 +406,6 @@ Locale: %7$s</string>
     <string name="settings_board_layout_left">Mirrored (Draw Pile Right)</string>
     <string name="settings_allow_foundation_to_tableau_drag">Allow drag from foundation to tableau</string>
 
-    <!-- Board pile labels -->
-    <plurals name="stock_draw_label">
-        <item quantity="one">%d card</item>
-        <item quantity="other">%d cards</item>
-    </plurals>
-    <string name="stock_draw_label_line_2">Draw</string>
-    <string name="recycle_remaining_format">%1$d recycles</string>
-    <string name="recycle_remaining_unlimited">unlimited</string>
-    <string name="recycle_remaining_unlimited_line_2">recycles</string>
-    <string name="recycle_remaining_limited_line_2">remaining</string>
 
     <string name="stats_summary_title">Statistics Summary</string>
     <string name="stats_summary_draw_one">1 Card</string>

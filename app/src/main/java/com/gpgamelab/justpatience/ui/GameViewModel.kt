@@ -249,7 +249,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return if (rawDrawCount <= 0) 1 else rawDrawCount
     }
 
-    fun getDrawCountLabelValue(): Int = _drawCountForDisplay.value
 
     fun getRemainingRecycleCount(): Int? {
         if (currentInfiniteRecycles) return null
