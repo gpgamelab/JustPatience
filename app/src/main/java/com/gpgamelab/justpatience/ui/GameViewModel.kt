@@ -599,29 +599,28 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             return false
         }
 
-        for (i in game.foundations.indices) {
-            val updated = game.moveWasteToFoundation(i)
-            if (updated != null) {
-                animateCardMove(
-                    card = wasteCard,
-                    sourceStackType = StackType.WASTE,
-                    sourceIndex = 0,
-                    sourceCardIndex = -1,
-                    destStackType = StackType.FOUNDATION,
-                    destIndex = i
-                )
-                clearSingleClickGlow()
-                resetHintTimer()
-                undoStack.addLast(game)
-                redoStack.clear()
-                val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
-                _game.value = updatedWithScore
-                saveGame()
-                updateUndoRedoState()
-                return true
-            }
-        }
-        return false
+        val foundationIndex = firstLegalFoundationIndex(game) { index ->
+            game.moveWasteToFoundation(index) != null
+        } ?: return false
+
+        val updated = game.moveWasteToFoundation(foundationIndex) ?: return false
+        animateCardMove(
+            card = wasteCard,
+            sourceStackType = StackType.WASTE,
+            sourceIndex = 0,
+            sourceCardIndex = -1,
+            destStackType = StackType.FOUNDATION,
+            destIndex = foundationIndex
+        )
+        clearSingleClickGlow()
+        resetHintTimer()
+        undoStack.addLast(game)
+        redoStack.clear()
+        val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
+        _game.value = updatedWithScore
+        saveGame()
+        updateUndoRedoState()
+        return true
     }
 
     fun tryAutoMoveTableauTopToFoundation(tableauIndex: Int, respectThreshold: Boolean = false): Boolean {
@@ -636,30 +635,28 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (topCard?.isFaceUp != true) return false
         if (respectThreshold && !foundationBalanceAllowsMoveToFoundation(game, topCard)) return false
 
-        for (i in game.foundations.indices) {
-            val updated = game.moveTableauToFoundation(tableauIndex, topIndex, i)
-            if (updated != null) {
-                animateCardMove(
-                    card = topCard,
-                    sourceStackType = StackType.TABLEAU,
-                    sourceIndex = tableauIndex,
-                    sourceCardIndex = topIndex,
-                    destStackType = StackType.FOUNDATION,
-                    destIndex = i
-                )
-                clearSingleClickGlow()
-                resetHintTimer()
-                undoStack.addLast(game)
-                redoStack.clear()
-                val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
-                _game.value = updatedWithScore
-                saveGame()
-                updateUndoRedoState()
-                return true
-            }
-        }
+        val foundationIndex = firstLegalFoundationIndex(game) { index ->
+            game.moveTableauToFoundation(tableauIndex, topIndex, index) != null
+        } ?: return false
 
-        return false
+        val updated = game.moveTableauToFoundation(tableauIndex, topIndex, foundationIndex) ?: return false
+        animateCardMove(
+            card = topCard,
+            sourceStackType = StackType.TABLEAU,
+            sourceIndex = tableauIndex,
+            sourceCardIndex = topIndex,
+            destStackType = StackType.FOUNDATION,
+            destIndex = foundationIndex
+        )
+        clearSingleClickGlow()
+        resetHintTimer()
+        undoStack.addLast(game)
+        redoStack.clear()
+        val updatedWithScore = updateAfterMove(updated, scoreDelta = 10)
+        _game.value = updatedWithScore
+        saveGame()
+        updateUndoRedoState()
+        return true
     }
 
     /**
@@ -770,16 +767,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val game = _game.value
         val moves = mutableListOf<HintMove>()
 
-        // ── Waste → Foundation ───────────────────────────────────
+        // -- Waste -> Foundation
         if (game.waste.peek() != null) {
-            for (fi in game.foundations.indices) {
-                if (game.moveWasteToFoundation(fi) != null) {
-                    moves.add(HintMove(StackType.WASTE, 0, -1, StackType.FOUNDATION, fi))
-                    break // Only one foundation accepts a given card
-                }
+            val wasteFoundationIndex = firstLegalFoundationIndex(game) { foundationIndex ->
+                game.moveWasteToFoundation(foundationIndex) != null
+            }
+            if (wasteFoundationIndex != null) {
+                moves.add(HintMove(StackType.WASTE, 0, -1, StackType.FOUNDATION, wasteFoundationIndex))
             }
 
-            // ── Waste → Tableau ──────────────────────────────────
+            // -- Waste -> Tableau
             for (ti in game.tableau.indices) {
                 if (game.moveWasteToTableau(ti) != null) {
                     moves.add(HintMove(StackType.WASTE, 0, -1, StackType.TABLEAU, ti))
@@ -787,23 +784,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // ── Tableau → Foundation / Tableau ──────────────────────
+        // -- Tableau -> Foundation / Tableau
         for (fromIdx in game.tableau.indices) {
             val cards = game.tableau[fromIdx].asList()
             for (cardIdx in cards.indices) {
                 if (!cards[cardIdx].isFaceUp) continue
 
-                // Top card → Foundation
                 if (cardIdx == cards.lastIndex) {
-                    for (fi in game.foundations.indices) {
-                        if (game.moveTableauToFoundation(fromIdx, cardIdx, fi) != null) {
-                            moves.add(HintMove(StackType.TABLEAU, fromIdx, cardIdx, StackType.FOUNDATION, fi))
-                            break
-                        }
+                    val tableauFoundationIndex = firstLegalFoundationIndex(game) { foundationIndex ->
+                        game.moveTableauToFoundation(fromIdx, cardIdx, foundationIndex) != null
+                    }
+                    if (tableauFoundationIndex != null) {
+                        moves.add(HintMove(StackType.TABLEAU, fromIdx, cardIdx, StackType.FOUNDATION, tableauFoundationIndex))
                     }
                 }
 
-                // Any face-up card (+ sequence below) → another Tableau pile
                 for (toIdx in game.tableau.indices) {
                     if (toIdx == fromIdx) continue
                     if (game.moveTableauToTableau(fromIdx, cardIdx, toIdx) != null) {
@@ -831,6 +826,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         return !_enforceFoundationBalanceEnabled.value || shouldPreferFoundationOnSingleTap(game, card)
     }
 
+    /** Returns the first legal foundation index in stable slot order, or null if none. */
+    private inline fun firstLegalFoundationIndex(game: Game, canMoveToIndex: (Int) -> Boolean): Int? {
+        for (foundationIndex in game.foundations.indices) {
+            if (canMoveToIndex(foundationIndex)) return foundationIndex
+        }
+        return null
+    }
+
     // ─────────────────────────────────────────────────────────────
     // Single-click glow system (independent from hints)
     // ─────────────────────────────────────────────────────────────
@@ -848,42 +851,34 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val game = _game.value
         val wasteCard = game.waste.peek() ?: return false
 
-        // Collect valid destinations
-        val canFoundation = game.foundations.indices.any { game.moveWasteToFoundation(it) != null }
+        val foundationDestIndex = firstLegalFoundationIndex(game) { foundationIndex ->
+            game.moveWasteToFoundation(foundationIndex) != null
+        }
+        val canFoundation = foundationDestIndex != null
         val tableauDests = game.tableau.indices.filter { game.moveWasteToTableau(it) != null }
 
         val shouldPreferFoundation = canFoundation && foundationBalanceAllowsMoveToFoundation(game, wasteCard)
 
         when {
-            // Foundation only and threshold prefers foundation → move there.
             canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
-                for (i in game.foundations.indices) {
-                    if (tryMoveWasteToFoundation(i)) return true
-                }
-                return false
+                return tryMoveWasteToFoundation(foundationDestIndex ?: return false)
             }
-            // Tableau only → move to first valid tableau
             tableauDests.isNotEmpty() && !canFoundation -> {
                 return tryMoveWasteToTableau(tableauDests[0])
             }
-            // Both available → use the same threshold rule as top-tableau cards
             canFoundation && tableauDests.isNotEmpty() -> {
-                if (shouldPreferFoundation) {
-                    for (i in game.foundations.indices) {
-                        if (tryMoveWasteToFoundation(i)) return true
-                    }
-                    return false
+                return if (shouldPreferFoundation) {
+                    tryMoveWasteToFoundation(foundationDestIndex ?: return false)
                 } else {
-                    return tryMoveWasteToTableau(tableauDests[0])
+                    tryMoveWasteToTableau(tableauDests[0])
                 }
             }
-            // Foundation-only but threshold does not prefer foundation → require explicit confirm tap.
             canFoundation -> {
                 _singleClickGlowState.value = SingleClickGlowState(
                     sourceStackType = StackType.WASTE,
                     sourceStackIndex = 0,
                     sourceCardIndex = -1,
-                    destinations = listOf(GlowDestination(StackType.FOUNDATION, game.foundations.indices.first { game.moveWasteToFoundation(it) != null }))
+                    destinations = listOf(GlowDestination(StackType.FOUNDATION, foundationDestIndex ?: return false))
                 )
                 return false
             }
@@ -904,7 +899,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val pile = game.tableau.getOrNull(tableauIndex) ?: return false
         val cards = pile.asList()
 
-        // Find the top face-up card
         var topFaceUpIndex = -1
         for (i in cards.indices.reversed()) {
             if (cards[i].isFaceUp) {
@@ -914,7 +908,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
         if (topFaceUpIndex < 0) return false
 
-        // Use the tapped card when it is a valid face-up card in this pile.
         val sourceIndex = if (
             tappedCardIndex in cards.indices && cards[tappedCardIndex].isFaceUp
         ) {
@@ -923,16 +916,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             topFaceUpIndex
         }
 
-        // Check tableau destinations (any face-up card can go)
         val tableauDests = game.tableau.indices.filter { destIdx ->
             destIdx != tableauIndex && game.moveTableauToTableau(tableauIndex, sourceIndex, destIdx) != null
         }
 
-        // Foundation move is only possible from the top exposed card.
         val isTopCard = sourceIndex == cards.lastIndex
-        val canFoundation = isTopCard && game.foundations.indices.any { foundIdx ->
-            game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null
+        val foundationDestIndex = if (isTopCard) {
+            firstLegalFoundationIndex(game) { foundationIndex ->
+                game.moveTableauToFoundation(tableauIndex, sourceIndex, foundationIndex) != null
+            }
+        } else {
+            null
         }
+        val canFoundation = foundationDestIndex != null
         val shouldPreferFoundation = isTopCard && canFoundation && foundationBalanceAllowsMoveToFoundation(game, cards[sourceIndex])
 
         when {
@@ -942,22 +938,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
             // Top cards should move to foundation immediately when they satisfy the threshold rule.
             shouldPreferFoundation -> {
-                for (i in game.foundations.indices) {
-                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return true
-                }
-                return false
+                return tryMoveTableauToFoundation(tableauIndex, sourceIndex, foundationDestIndex ?: return false)
             }
             // Tableau-only destinations should move immediately to the first valid tableau.
             tableauDests.isNotEmpty() && !canFoundation -> {
                 return tryMoveTableauToTableau(tableauIndex, sourceIndex, tableauDests.first())
-            }
-            // Can move to foundation only AND threshold says to prefer foundation → move immediately.
-            // If threshold says no, fall through to the glow branch so the user must confirm.
-            canFoundation && tableauDests.isEmpty() && shouldPreferFoundation -> {
-                for (i in game.foundations.indices) {
-                    if (tryMoveTableauToFoundation(tableauIndex, sourceIndex, i)) return true
-                }
-                return false
             }
             // Multiple destinations (tableau or foundation) → show all destination glows
             tableauDests.isNotEmpty() || canFoundation -> {
@@ -966,12 +951,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 dests.addAll(tableauDests.map { GlowDestination(StackType.TABLEAU, it) })
                 // Add foundation destination(s) if available
                 if (canFoundation) {
-                    for (foundIdx in game.foundations.indices) {
-                        if (game.moveTableauToFoundation(tableauIndex, sourceIndex, foundIdx) != null) {
-                            dests.add(GlowDestination(StackType.FOUNDATION, foundIdx))
-                            break  // Only one foundation can accept a given card
-                        }
-                    }
+                    dests.add(GlowDestination(StackType.FOUNDATION, foundationDestIndex ?: return false))
                 }
                 _singleClickGlowState.value = SingleClickGlowState(
                     sourceStackType = StackType.TABLEAU,
@@ -1565,16 +1545,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             else -> game.tableau
         }
 
-        val normalizedFoundations = when {
-            game.foundations.size < expectedFoundationCount -> {
-                changed = true
-                game.foundations + List(expectedFoundationCount - game.foundations.size) { FoundationPile() }
+        val normalizedFoundations = List(expectedFoundationCount) { index ->
+            val existing = game.foundations.getOrNull(index)
+            val reservedSuit = Game.reservedFoundationSuitForIndex(index)
+            when {
+                existing == null -> {
+                    changed = true
+                    FoundationPile(reservedSuit = reservedSuit)
+                }
+                existing.reservedSuit != reservedSuit -> {
+                    changed = true
+                    FoundationPile(existing.asList().map { it.copy() }.toMutableList(), reservedSuit)
+                }
+                else -> existing
             }
-            game.foundations.size > expectedFoundationCount -> {
-                changed = true
-                game.foundations.take(expectedFoundationCount)
-            }
-            else -> game.foundations
         }
 
         val normalizedGame = if (
@@ -1616,8 +1600,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             TableauPile(pile.asList().map(::normalizeCard).toMutableList())
         }
 
-        val migratedFoundations = normalizedGame.foundations.map { pile ->
-            FoundationPile(pile.asList().map(::normalizeCard).toMutableList())
+        val migratedFoundations = normalizedGame.foundations.mapIndexed { index, pile ->
+            val reservedSuit = Game.reservedFoundationSuitForIndex(index)
+            if (pile.reservedSuit != reservedSuit) changed = true
+            FoundationPile(
+                cards = pile.asList().map(::normalizeCard).toMutableList(),
+                reservedSuit = reservedSuit
+            )
         }
 
         return Pair(
@@ -1796,4 +1785,7 @@ private class CardRankAdapter : JsonSerializer<CardRank>, JsonDeserializer<CardR
         throw JsonParseException("Unknown CardRank token: $raw")
     }
 }
+
+
+
 

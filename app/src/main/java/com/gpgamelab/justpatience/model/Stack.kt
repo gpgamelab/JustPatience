@@ -249,12 +249,14 @@ class Waste : CardStack(StackType.WASTE) {
 }
 
 class FoundationPile(
-    cards: MutableList<Card> = mutableListOf()
+    cards: MutableList<Card> = mutableListOf(),
+    val reservedSuit: CardSuit? = null
 ) : CardStack(StackType.FOUNDATION, cards) {
 
     override fun canPush(card: Card): Boolean {
 
         if (!card.isFaceUp) return false
+        if (reservedSuit != null && card.suit != reservedSuit) return false
 
         // Empty foundation → must be Ace
         if (cards.isEmpty()) {
@@ -279,26 +281,25 @@ class FoundationPile(
     fun withCardAdded(card: Card): FoundationPile {
         if (!canPush(card)) return this
         return FoundationPile(
-            (cards.map { it.copy() } + card).toMutableList()
+            cards = (cards.map { it.copy() } + card).toMutableList(),
+            reservedSuit = reservedSuit
         )
     }
 
     fun withCardRemoved(): Pair<FoundationPile, Card?> {
         if (cards.isEmpty()) return Pair(this, null)
         val removed = cards.lastOrNull()
-        val newPile = FoundationPile(cards.dropLast(1).map { it.copy() }.toMutableList())
+        val newPile = FoundationPile(
+            cards = cards.dropLast(1).map { it.copy() }.toMutableList(),
+            reservedSuit = reservedSuit
+        )
         return Pair(newPile, removed)
     }
 
     override fun deepCopy(): FoundationPile {
+        // Copy raw order directly so cloning never depends on gameplay legality checks.
         val copiedCards = cards.map { it.copy() }.toMutableList()
-        val newFoundationPile = FoundationPile()
-
-        copiedCards.forEach { card ->
-            newFoundationPile.push(card)
-        }
-
-        return newFoundationPile
+        return FoundationPile(cards = copiedCards, reservedSuit = reservedSuit)
     }
 }
 

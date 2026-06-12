@@ -341,7 +341,7 @@
         android:padding="0dp"
         android:scaleType="fitCenter"
         app:srcCompat="@drawable/button_auto_complete"
-        app:layout_constraintBottom_toTopOf="@id/control_buttons_flow"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
     <FrameLayout

@@ -48,6 +48,16 @@ data class Game(
         const val DEALT_TABLEAU_COUNT_2_DECK = 9
         const val FOUNDATION_COUNT_2_DECK = 8
 
+        // Fixed suit order for reserved foundation slots (index order).
+        // 1-deck: Spades, Hearts, Diamonds, Clubs
+        // 2-deck: Spades, Hearts, Diamonds, Clubs, Spades, Hearts, Diamonds, Clubs
+        private val FOUNDATION_RESERVED_SUIT_SEQUENCE = listOf(
+            CardSuit.SPADES,
+            CardSuit.HEARTS,
+            CardSuit.DIAMONDS,
+            CardSuit.CLUBS
+        )
+
         fun normalizeDeckCount(rawDeckCount: Int): Int {
             return if (rawDeckCount == 2) 2 else 1
         }
@@ -62,6 +72,18 @@ data class Game(
 
         fun foundationCountFor(deckCount: Int): Int {
             return if (normalizeDeckCount(deckCount) == 2) FOUNDATION_COUNT_2_DECK else FOUNDATION_COUNT_1_DECK
+        }
+
+        fun reservedFoundationSuitForIndex(index: Int): CardSuit {
+            val safeIndex = index.coerceAtLeast(0)
+            return FOUNDATION_RESERVED_SUIT_SEQUENCE[safeIndex % FOUNDATION_RESERVED_SUIT_SEQUENCE.size]
+        }
+
+        fun newFoundationPilesForDeckCount(deckCount: Int): List<FoundationPile> {
+            val count = foundationCountFor(deckCount)
+            return List(count) { index ->
+                FoundationPile(reservedSuit = reservedFoundationSuitForIndex(index))
+            }
         }
 
         /**
@@ -99,7 +121,7 @@ data class Game(
                 stock = stock,
                 waste = Waste(),
                 tableau = tableauPiles,
-                foundations = List(foundationCount) { FoundationPile() },
+                foundations = newFoundationPilesForDeckCount(normalizedDeckCount),
                 status = GameStatus.IN_PROGRESS,
                 score = 0,
                 windowsScore = 0,
