@@ -37,6 +37,7 @@ import com.gpgamelab.justpatience.ui.layout.GroupBox
 import com.gpgamelab.justpatience.ui.layout.GroupId
 import com.gpgamelab.justpatience.ui.layout.LayoutConfig
 import com.gpgamelab.justpatience.ui.layout.RefToScreenTransform
+import com.gpgamelab.justpatience.ui.layout.TopRowRectResolver
 import com.gpgamelab.justpatience.ui.layout.buildRefToScreenTransform
 import com.gpgamelab.justpatience.ui.layout.containsTouch
 import com.gpgamelab.justpatience.ui.layout.defaultCardSpec
@@ -87,30 +88,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     // Used for device-specific tuning and display in tester/about menus.
     private var currentAspectCategory: DeviceAspectCategory = DeviceAspectCategory.SLIM
 
-    // Per-category Y trim applied as the very last step of board-start positioning.
-    // Positive = move piles DOWN, negative = move piles UP.  All values are raw px.
-    // (Currently all hardcoded to 0; kept for future category-specific tuning.)
-    private var aspectCategoryPortraitTrimSlimPx   = 0f
-    private var aspectCategoryPortraitTrimClassicPx = 0f
-    private var aspectCategoryPortraitTrimBroadPx  = 0f
-    private var aspectCategoryPortraitTrimSquarePx = 0f
-    private var aspectCategoryLandscapeTrimSlimPx   = 0f
-    private var aspectCategoryLandscapeTrimClassicPx = 0f
-    private var aspectCategoryLandscapeTrimBroadPx  = 0f
-    private var aspectCategoryLandscapeTrimSquarePx = 0f
-
-    // Per-category X trim applied as the very last step of board-start positioning.
-    // Positive = move piles RIGHT, negative = move piles LEFT. All values are raw px.
-    // (Currently all hardcoded to 0; kept for future category-specific tuning.)
-    private var aspectCategoryPortraitTrimXSlimPx   = 0f
-    private var aspectCategoryPortraitTrimXClassicPx = 0f
-    private var aspectCategoryPortraitTrimXBroadPx   = 0f
-    private var aspectCategoryPortraitTrimXSquarePx  = 0f
-    private var aspectCategoryLandscapeTrimXSlimPx   = 0f
-    private var aspectCategoryLandscapeTrimXClassicPx = 0f
-    private var aspectCategoryLandscapeTrimXBroadPx  = 0f
-    private var aspectCategoryLandscapeTrimXSquarePx  = 0f
-
     private val currentSetId = "default"
 
     private var lastTapTime = 0L
@@ -125,23 +102,19 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var isMirrored = false
     private var BOARD_WIDTH_FRACTION = 0.70f
     private var BOARD_SHIFT_LEFT_PX = 150f
-    private var BOARD_SHIFT_DOWN_PX = 120f
-    private val LANDSCAPE_DIRECTIONAL_SHIFT_PX = 20f
 
     // Portrait-specific offsets
     private val PORTRAIT_BOARD_WIDTH_FRACTION = 0.75f
     private val PORTRAIT_BOARD_SHIFT_LEFT_PX = 0f
-    private val PORTRAIT_BOARD_SHIFT_DOWN_PX = 120f
 
-    // Landscape-specific offsets (estimates - can be adjusted later)
-    private val LANDSCAPE_BOARD_WIDTH_FRACTION = 0.90f  // Use more of the width
-    private val LANDSCAPE_BOARD_SHIFT_LEFT_PX = 40f * context.resources.displayMetrics.density  // density-aware dp offset
-    private val LANDSCAPE_BOARD_SHIFT_DOWN_PX = 20f     // Less top shift (landscape is shorter)
+    // Landscape-specific offsets
+    private val LANDSCAPE_BOARD_WIDTH_FRACTION = 0.90f
+    private val LANDSCAPE_BOARD_SHIFT_LEFT_PX = 40f * context.resources.displayMetrics.density
 
     // Card size multipliers for different orientations
-    private var CARD_SIZE_MULTIPLIER = 1.0f  // Will be updated based on orientation
-    private val PORTRAIT_CARD_SIZE_MULTIPLIER = 1.0f   // Full size in portrait
-    private val LANDSCAPE_CARD_SIZE_MULTIPLIER = 0.72f  // Larger cards in landscape while still fitting
+    private var CARD_SIZE_MULTIPLIER = 1.0f
+    private val PORTRAIT_CARD_SIZE_MULTIPLIER = 1.0f
+    private val LANDSCAPE_CARD_SIZE_MULTIPLIER = 0.72f
 
     private val cardPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; style = Paint.Style.FILL }
@@ -154,13 +127,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
     private val textPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 48f; textAlign = Paint.Align.CENTER }
-    private val pileLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        textAlign = Paint.Align.CENTER
-        textSize = 30f
-        style = Paint.Style.FILL
-        setShadowLayer(6f, 0f, 2f, Color.BLACK)
-    }
     private val pileCountBadgeFillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#D32F2F")
         style = Paint.Style.FILL
@@ -185,31 +151,15 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val cardHeightRatio = 1.7f
     private var cardRadius = 20f
     private var cardPadding = 1f
-    private var tableauOffset = 40f
 
     private val baseCardRadius = 20f
     private val baseCardPadding = 1f
     private val baseTableauOffset = 40f
-    private val LANDSCAPE_TOP_PILE_SHIFT_RATIO = 0.22f
-    private val LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO = 0.22f
-    private val PORTRAIT_TOP_PILE_SHIFT_RATIO = 0.10f
     private val LANDSCAPE_OUTER_GAP_FACTOR = 1.0f
-    private val LANDSCAPE_FOUNDATION_BASE_Y_SHIFT_RATIO = 0f
-    private val LANDSCAPE_FOUNDATION_STEP_RATIO_MULTI_COLUMN = 1.02f
-    private val PORTRAIT_TOP_ROW_EDGE_INSET_DP = 10f
-    private val PORTRAIT_TOP_ROW_GROUP_GAP_RATIO = 0.28f
-    private val PORTRAIT_FOUNDATION_STEP_PADDING_RATIO = 0.6f
-    private val LANDSCAPE_TOP_ROW_INSET_CARD_HEIGHT_RATIO = 0.28f
-    private val PORTRAIT_TOP_ROW_INSET_CARD_HEIGHT_RATIO = 0.18f
-    private val TOP_ROW_INSET_MIN_DP = 10f
-    private val LANDSCAPE_STOCK_EXTRA_GAP_RATIO = 0.25f
-
-    private var boardStartY = 0f
 
     private var cardW = 0f
     private var cardH = 0f
     private var columns = Game.TOTAL_TABLEAU_PILES_1_DECK
-    private val columnX = mutableListOf<Float>()
 
     // drag state
     private var dragStackType: StackType? = null
@@ -247,39 +197,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var lockedPileAdScaleXLandscape = 1f
     private var lockedPileAdScaleYLandscape = 1f
 
-    // Landscape-only developer tuning for card-pile placement (all values are px).
-    private var landscapeOverallOffsetXPx = 0f
-    private var landscapeOverallOffsetYPx = 0f
-    private var landscapeFoundationOffsetXPx = 0f
-    private var landscapeFoundationOffsetYPx = 0f
-    private var landscapeDrawWasteOffsetXPx = 0f
-    private var landscapeDrawWasteOffsetYPx = 0f
-    private var landscapeStockOffsetXPx = 0f
-    private var landscapeStockOffsetYPx = 0f
-    private var landscapeWasteOffsetXPx = 0f
-    private var landscapeWasteOffsetYPx = 0f
-    private var landscapeTableauOffsetXPx = 0f
-    private var landscapeTableauOffsetYPx = 0f
-
-    // Portrait-only developer tuning for card-pile placement (all values are px).
-    private var portraitOverallOffsetXPx = 0f
-    private var portraitOverallOffsetYPx = 0f
-    private var portraitFoundationOffsetXPx = 0f
-    private var portraitFoundationOffsetYPx = 0f
-    private var portraitDrawWasteOffsetXPx = 0f
-    private var portraitDrawWasteOffsetYPx = 0f
-    private var portraitStockOffsetXPx = 0f
-    private var portraitStockOffsetYPx = 0f
-    private var portraitWasteOffsetXPx = 0f
-    private var portraitWasteOffsetYPx = 0f
-    private var portraitTableauOffsetXPx = 0f
-    private var portraitTableauOffsetYPx = 0f
     private var lastPileLayoutDebugFingerprint: String? = null
 
-    // Phase 2 bootstrap: reference-model layout cache (currently diagnostic/scaffolding only).
+    // Phase 2 reference-model layout cache.
     private var phase2RefTransform: RefToScreenTransform? = null
     private var phase2GroupBoxesRef: Map<GroupId, GroupBox> = emptyMap()
-    private var lastPhase2TopRowParityFingerprint: String? = null
     private var lastPhase2DrawWasteGuardFingerprint: String? = null
     private var lastPhase2DrawWasteSpacingFingerprint: String? = null
 
@@ -337,68 +259,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     fun getCurrentDeviceScaleRatio(): Float = currentDeviceScaleRatio
     fun getCurrentAspectCategory(): DeviceAspectCategory = currentAspectCategory
 
-    /**
-     * Unused stub: per-category Y trim values reserved for future category-specific tuning.
-     * Currently all trim values remain 0 (no repositioning by device category).
-     * The aspect-category system itself (SLIM/CLASSIC/BROAD/SQUARE) is still detected and
-     * exported to tester/about menus for device identification.
-     * @deprecated No longer called from GameActivity; kept as placeholder for future enhancement.
-     */
-    fun setAspectCategoryPileYTrimsDp(
-        portraitSlimDp:    Float, portraitClassicDp: Float,
-        portraitBroadDp:   Float, portraitSquareDp:  Float,
-        landscapeSlimDp:   Float, landscapeClassicDp: Float,
-        landscapeBroadDp:  Float, landscapeSquareDp:  Float
-    ) {
-        val density = resources.displayMetrics.density.coerceAtLeast(1f)
-        aspectCategoryPortraitTrimSlimPx    = portraitSlimDp    * density
-        aspectCategoryPortraitTrimClassicPx = portraitClassicDp * density
-        aspectCategoryPortraitTrimBroadPx   = portraitBroadDp   * density
-        aspectCategoryPortraitTrimSquarePx  = portraitSquareDp  * density
-        aspectCategoryLandscapeTrimSlimPx    = landscapeSlimDp    * density
-        aspectCategoryLandscapeTrimClassicPx = landscapeClassicDp * density
-        aspectCategoryLandscapeTrimBroadPx   = landscapeBroadDp   * density
-        aspectCategoryLandscapeTrimSquarePx  = landscapeSquareDp  * density
-        if (width > 0 && height > 0) recomputeBoardGeometry(width, height)
-        invalidate()
-    }
-
-    /**
-     * Unused stub: per-category X trim values reserved for future category-specific tuning.
-     * Currently all trim values remain 0 (no repositioning by device category).
-     * The aspect-category system itself (SLIM/CLASSIC/BROAD/SQUARE) is still detected and
-     * exported to tester/about menus for device identification.
-     * @deprecated No longer called from GameActivity; kept as placeholder for future enhancement.
-     */
-    fun setAspectCategoryPileXTrimsDp(
-        portraitSlimDp:    Float, portraitClassicDp: Float,
-        portraitBroadDp:   Float, portraitSquareDp:  Float,
-        landscapeSlimDp:   Float, landscapeClassicDp: Float,
-        landscapeBroadDp:  Float, landscapeSquareDp:  Float
-    ) {
-        val density = resources.displayMetrics.density.coerceAtLeast(1f)
-        aspectCategoryPortraitTrimXSlimPx    = portraitSlimDp    * density
-        aspectCategoryPortraitTrimXClassicPx = portraitClassicDp * density
-        aspectCategoryPortraitTrimXBroadPx   = portraitBroadDp   * density
-        aspectCategoryPortraitTrimXSquarePx  = portraitSquareDp  * density
-        aspectCategoryLandscapeTrimXSlimPx    = landscapeSlimDp    * density
-        aspectCategoryLandscapeTrimXClassicPx = landscapeClassicDp * density
-        aspectCategoryLandscapeTrimXBroadPx   = landscapeBroadDp   * density
-        aspectCategoryLandscapeTrimXSquarePx  = landscapeSquareDp  * density
-        if (width > 0 && height > 0) recomputeBoardGeometry(width, height)
-        invalidate()
-    }
-
     private fun updateOffsetsForOrientation() {
         if (isLandscape) {
             BOARD_WIDTH_FRACTION = LANDSCAPE_BOARD_WIDTH_FRACTION
             BOARD_SHIFT_LEFT_PX = LANDSCAPE_BOARD_SHIFT_LEFT_PX
-            BOARD_SHIFT_DOWN_PX = LANDSCAPE_BOARD_SHIFT_DOWN_PX
             CARD_SIZE_MULTIPLIER = LANDSCAPE_CARD_SIZE_MULTIPLIER
         } else {
             BOARD_WIDTH_FRACTION = PORTRAIT_BOARD_WIDTH_FRACTION
             BOARD_SHIFT_LEFT_PX = PORTRAIT_BOARD_SHIFT_LEFT_PX
-            BOARD_SHIFT_DOWN_PX = PORTRAIT_BOARD_SHIFT_DOWN_PX
             CARD_SIZE_MULTIPLIER = PORTRAIT_CARD_SIZE_MULTIPLIER
         }
     }
@@ -448,8 +316,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 launch {
                     viewModel.isMirroredLayout.collect { mirrored ->
                         isMirrored = mirrored
-                        if (width > 0 && height > 0 && cardW > 0f) {
-                            computeColumnX()
+                        if (width > 0 && height > 0) {
+                            // Recompute Phase2 so host Activity receives fresh mirrored screen rects.
+                            recomputePhase2ReferenceLayout(width, height)
                             logPileLayoutDebugIfNeeded("mirroredLayoutChanged")
                         }
                         invalidate()
@@ -506,19 +375,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         tableauOffsetX: Float,
         tableauOffsetY: Float
     ) {
-        landscapeOverallOffsetXPx = overallOffsetX
-        landscapeOverallOffsetYPx = overallOffsetY
-        landscapeFoundationOffsetXPx = foundationOffsetX
-        landscapeFoundationOffsetYPx = foundationOffsetY
-        landscapeDrawWasteOffsetXPx = drawWasteOffsetX
-        landscapeDrawWasteOffsetYPx = drawWasteOffsetY
-        landscapeStockOffsetXPx = stockOffsetX
-        landscapeStockOffsetYPx = stockOffsetY
-        landscapeWasteOffsetXPx = wasteOffsetX
-        landscapeWasteOffsetYPx = wasteOffsetY
-        landscapeTableauOffsetXPx = tableauOffsetX
-        landscapeTableauOffsetYPx = tableauOffsetY
-
+        // Offset parameters accepted for API compatibility; Phase2 reference-model
+        // layout now drives all pile positions – per-device px offsets are not applied.
         if (width > 0 && height > 0) {
             recomputeBoardGeometry(width, height)
             logPileLayoutDebugIfNeeded("setLandscapePileLayoutTuning", force = true)
@@ -540,19 +398,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         tableauOffsetX: Float,
         tableauOffsetY: Float
     ) {
-        portraitOverallOffsetXPx = overallOffsetX
-        portraitOverallOffsetYPx = overallOffsetY
-        portraitFoundationOffsetXPx = foundationOffsetX
-        portraitFoundationOffsetYPx = foundationOffsetY
-        portraitDrawWasteOffsetXPx = drawWasteOffsetX
-        portraitDrawWasteOffsetYPx = drawWasteOffsetY
-        portraitStockOffsetXPx = stockOffsetX
-        portraitStockOffsetYPx = stockOffsetY
-        portraitWasteOffsetXPx = wasteOffsetX
-        portraitWasteOffsetYPx = wasteOffsetY
-        portraitTableauOffsetXPx = tableauOffsetX
-        portraitTableauOffsetYPx = tableauOffsetY
-
+        // Offset parameters accepted for API compatibility; Phase2 reference-model
+        // layout now drives all pile positions – per-device px offsets are not applied.
         if (width > 0 && height > 0) {
             recomputeBoardGeometry(width, height)
             logPileLayoutDebugIfNeeded("setPortraitPileLayoutTuning", force = true)
@@ -751,18 +598,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         val spacingScale = (cardW / 70f).coerceIn(0.70f, 1.15f)
         cardPadding = baseCardPadding * spacingScale
-        tableauOffset = baseTableauOffset * spacingScale
         cardRadius = baseCardRadius * spacingScale * currentDeviceScaleRatio
 
         // Scale border and placeholder stroke widths with card size
         borderPaint.strokeWidth = (cardW * 0.025f).coerceIn(1.5f, 4f)
         placeholderPaint.strokeWidth = (cardW * 0.05f).coerceIn(2f, 7f)
 
-        computeColumnX()
-        computeBoardStartY(height)
 
-        // Keep pile labels legible across phone/tablet sizes.
-        pileLabelPaint.textSize = (cardW * 0.18f).coerceIn(10f, 40f)
+        // Keep score/loading text legible across phone/tablet sizes.
         textPaint.textSize = ((min(width, height) * 0.10f) * aspectFactors.textCompression).coerceIn(10f, 60f)
 
         // Count badge scales with card size.
@@ -772,7 +615,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         pileCountBadgeTextPaint.textSize = (pileCountBadgeRadius * 1.15f).coerceIn(12f, 24f)
 
         recomputePhase2ReferenceLayout(width, height)
-        logPhase2TopRowParityIfNeeded()
         logPhase2DrawWasteSpacingIfNeeded()
 
         logPileLayoutDebugIfNeeded("recomputeBoardGeometry")
@@ -905,49 +747,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return (candidateCardW * LANDSCAPE_OUTER_GAP_FACTOR).coerceAtLeast(10f)
     }
 
-    private fun computeColumnX() {
-        columnX.clear()
-
-        val boardWidth =
-            (cardW * columns) + (cardPadding * (columns - 1))
-
-        var startX = (width - boardWidth) / 2f - BOARD_SHIFT_LEFT_PX
-
-        if (isLandscape) {
-            startX += if (isMirrored) {
-                LANDSCAPE_DIRECTIONAL_SHIFT_PX
-            } else {
-                -LANDSCAPE_DIRECTIONAL_SHIFT_PX
-            }
-        }
-
-        // In 2-deck landscape, foundations consume a second side column.
-        // Nudge tableau toward stock/waste so both foundation columns remain visible.
-        if (isLandscape && getFoundationCountForLayout() > 4) {
-            val shiftTowardStockWaste = (cardW + cardPadding * 0.6f) * 0.55f
-            startX += if (isMirrored) shiftTowardStockWaste else -shiftTowardStockWaste
-        }
-
-        startX += currentAspectCategoryXTrimPx()
-
-        var x = startX
-        repeat(columns) {
-            columnX.add(x)
-            x += cardW + cardPadding
-        }
-    }
-
-    private fun getTableauGlobalOffsetX(): Float {
-        return if (isLandscape) {
-            landscapeOverallOffsetXPx + landscapeTableauOffsetXPx
-        } else {
-            portraitOverallOffsetXPx + portraitTableauOffsetXPx
-        }
-    }
-
-    private fun getTableauColumnX(index: Int): Float? {
-        return columnX.getOrNull(index)?.plus(getTableauGlobalOffsetX())
-    }
 
     private fun getTableauGroupRectPhase2OrNull(): RectF? {
         val rect = getPhase2GroupRect(GroupId.TABLEAU) ?: return null
@@ -955,20 +754,22 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return rect
     }
 
+    private fun getRequiredTableauGroupRect(): RectF {
+        return requirePhase2Rect("tableau-group") { getTableauGroupRectPhase2OrNull() }
+    }
+
     private fun getTableauColumnXVisual(index: Int): Float? {
-        val tableauRect = getTableauGroupRectPhase2OrNull() ?: return getTableauColumnX(index)
+        val tableauRect = getRequiredTableauGroupRect()
         if (index !in 0 until columns) return null
 
         val boardWidth = (cardW * columns) + (cardPadding * (columns - 1).coerceAtLeast(0))
-        if (boardWidth > tableauRect.width() + 1f) return getTableauColumnX(index)
-
-        val startX = tableauRect.left + ((tableauRect.width() - boardWidth) / 2f)
+        val centeredInset = ((tableauRect.width() - boardWidth) / 2f).coerceAtLeast(0f)
+        val startX = tableauRect.left + centeredInset
         return startX + index * (cardW + cardPadding)
     }
 
     private fun getTableauStartYVisual(): Float {
-        val tableauRect = getTableauGroupRectPhase2OrNull() ?: return getTableauStartY()
-        return tableauRect.top
+        return getRequiredTableauGroupRect().top
     }
 
     private fun getTableauCardRectVisual(
@@ -986,36 +787,36 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return RectF(x, y, x + cardW, y + cardH)
     }
 
+    private fun resolveTableauCardRect(
+        stackIndex: Int,
+        pile: TableauPile,
+        cardIndex: Int
+    ): RectF? {
+        return getTableauCardRectVisual(stackIndex, pile, cardIndex)
+    }
+
     fun dumpPileLayoutDebug(reason: String = "manual") {
         logPileLayoutDebugIfNeeded(reason, force = true)
     }
 
     private fun logPileLayoutDebugIfNeeded(reason: String, force: Boolean = false) {
-        if (width <= 0 || height <= 0 || cardW <= 0f || cardH <= 0f || columnX.isEmpty()) return
+        if (width <= 0 || height <= 0 || cardW <= 0f || cardH <= 0f) return
+        if (phase2RefTransform == null || phase2GroupBoxesRef.isEmpty()) return
 
-        val stockRect = getStockRect()
-        val wasteRect = getWasteRect()
-        val foundationRect = getFoundationRect(0)
-        val tableauBaseX = columnX.firstOrNull() ?: return
-        val tableauFinalX = getTableauColumnX(0) ?: return
+        val stockRect   = getStockRectPhase2OrNull()   ?: return
+        val wasteRect   = getWasteRectPhase2OrNull()   ?: return
+        val foundRect   = getFoundationRectPhase2OrNull(0) ?: return
+        val tableauX    = getTableauColumnXVisual(0)   ?: return
 
         val debugSnapshot = buildString {
             append(if (isLandscape) "L" else "P")
             append('|').append(if (isMirrored) "M" else "C")
             append('|').append(stockRect.left.toInt())
             append('|').append(wasteRect.left.toInt())
-            append('|').append(foundationRect.left.toInt())
-            append('|').append(tableauFinalX.toInt())
+            append('|').append(foundRect.left.toInt())
+            append('|').append(tableauX.toInt())
             append('|').append(cardW.toInt())
             append('|').append(getFoundationCountForLayout())
-            append('|').append(landscapeOverallOffsetXPx.toInt())
-            append('|').append(portraitOverallOffsetXPx.toInt())
-            append('|').append(landscapeDrawWasteOffsetXPx.toInt())
-            append('|').append(portraitDrawWasteOffsetXPx.toInt())
-            append('|').append(landscapeFoundationOffsetXPx.toInt())
-            append('|').append(portraitFoundationOffsetXPx.toInt())
-            append('|').append(landscapeTableauOffsetXPx.toInt())
-            append('|').append(portraitTableauOffsetXPx.toInt())
         }
 
         if (!force && debugSnapshot == lastPileLayoutDebugFingerprint) return
@@ -1023,207 +824,14 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         fun fmt(value: Float): String = String.format(Locale.US, "%.1f", value)
 
-        val overallX = if (isLandscape) landscapeOverallOffsetXPx else portraitOverallOffsetXPx
-        val drawWasteGroupX = if (isLandscape) landscapeDrawWasteOffsetXPx else portraitDrawWasteOffsetXPx
-        val foundationGroupX = if (isLandscape) landscapeFoundationOffsetXPx else portraitFoundationOffsetXPx
-        val tableauGroupX = if (isLandscape) landscapeTableauOffsetXPx else portraitTableauOffsetXPx
-        val stockSpecificX = if (isLandscape) landscapeStockOffsetXPx else portraitStockOffsetXPx
-        val wasteSpecificX = if (isLandscape) landscapeWasteOffsetXPx else portraitWasteOffsetXPx
-        val stockAnchorX = if (!isLandscape) {
-            portraitStockBaseX()
-        } else {
-            stockRect.left - overallX - drawWasteGroupX - stockSpecificX
-        }
-
-        val wasteAnchorX = if (!isLandscape) {
-            portraitWasteBaseX()
-        } else {
-            wasteRect.left - overallX - drawWasteGroupX - wasteSpecificX
-        }
-
-        val foundationAnchorX = if (!isLandscape) {
-            portraitFoundationColumnBaseX(0)
-        } else {
-            foundationRect.left - overallX - foundationGroupX
-        }
-
         Log.d(
             "GameBoardViewLayout",
             "reason=$reason orient=${if (isLandscape) "landscape" else "portrait"} mirrored=$isMirrored cardW=${fmt(cardW)} board=${width}x${height}"
         )
-        Log.i(
-            "GameBoardViewLayout",
-            "tableau0 base=${fmt(tableauBaseX)} overall=${fmt(overallX)} tableau=${fmt(tableauGroupX)} final=${fmt(tableauFinalX)}"
-        )
-        Log.i(
-            "GameBoardViewLayout",
-            "stock anchor=${fmt(stockAnchorX)} overall=${fmt(overallX)} drawWaste=${fmt(drawWasteGroupX)} specific=${fmt(stockSpecificX)} final=${fmt(stockRect.left)}"
-        )
-        Log.i(
-            "GameBoardViewLayout",
-            "waste anchor=${fmt(wasteAnchorX)} overall=${fmt(overallX)} drawWaste=${fmt(drawWasteGroupX)} specific=${fmt(wasteSpecificX)} final=${fmt(wasteRect.left)}"
-        )
-        Log.i(
-            "GameBoardViewLayout",
-            "foundation0 anchor=${fmt(foundationAnchorX)} overall=${fmt(overallX)} foundation=${fmt(foundationGroupX)} final=${fmt(foundationRect.left)}"
-        )
-    }
-
-    private fun getTopRowY(): Float = boardStartY + cardPadding
-
-    private fun getTopRowInsetTargetPx(): Float {
-        val density = resources.displayMetrics.density.coerceAtLeast(1f)
-        val minInsetPx = TOP_ROW_INSET_MIN_DP * density
-        val ratio = if (isLandscape) {
-            LANDSCAPE_TOP_ROW_INSET_CARD_HEIGHT_RATIO
-        } else {
-            PORTRAIT_TOP_ROW_INSET_CARD_HEIGHT_RATIO
-        }
-        return minInsetPx + (cardH * ratio)
-    }
-
-     private fun applyPortraitPileYOffset(
-         rawBaseY: Float,
-         groupOffsetY: Float = 0f,
-         specificOffsetY: Float = 0f
-     ): Float = rawBaseY + portraitOverallOffsetYPx + groupOffsetY + specificOffsetY
-
-     private fun applyLandscapePileYOffset(
-         rawBaseY: Float,
-         groupOffsetY: Float = 0f,
-         specificOffsetY: Float = 0f
-     ): Float = rawBaseY + landscapeOverallOffsetYPx + groupOffsetY + specificOffsetY
-
-    private fun getPortraitTopPileBaseY(): Float = getTopRowY() + topPileVerticalShiftPx()
-
-    private fun getPortraitFoundationBaseY(row: Int): Float {
-        return getTopRowY() + row * (cardH + cardPadding * 0.85f)
-    }
-
-    private fun getPortraitTableauBaseY(): Float {
-        val extraFoundationRow = if (getFoundationCountForLayout() > 4) {
-            cardH + (cardPadding * 0.85f)
-        } else {
-            0f
-        }
-        // Stock and waste are now stacked vertically, so tableau starts below both
-        val stockWasteStackHeight = (cardH * 2f) + cardPadding
-        return getTopRowY() + stockWasteStackHeight + cardPadding + tableauOffset + extraFoundationRow
-    }
-
-    private fun getLandscapeFoundationBaseY(index: Int): Float {
-        val foundationCount = getFoundationCountForLayout()
-        val row = if (foundationCount > 4) index % 4 else index
-        val baseY = getTopRowY() + cardH + cardPadding + tableauOffset -
-            (cardH * LANDSCAPE_FOUNDATION_BASE_Y_SHIFT_RATIO)
-        val stepY = if (foundationCount > 4) {
-            cardH * LANDSCAPE_FOUNDATION_STEP_RATIO_MULTI_COLUMN
-        } else {
-            cardH * 0.88f
-        }
-        return if (foundationCount > 4) {
-            baseY + (row * stepY)
-        } else {
-            val pileAdjustmentFractions = floatArrayOf(-0.65f, -0.40f, -0.15f, 0.15f)
-            val pileAdjust = pileAdjustmentFractions.getOrElse(index) { 0f } * cardH
-            baseY + (index * stepY) + pileAdjust
-        }
-    }
-
-    private fun getLandscapeWasteBaseY(): Float {
-        return getLandscapeFoundationBaseY(0) + topPileVerticalShiftPx()
-    }
-
-    private fun getLandscapeStockBaseY(): Float {
-        return getLandscapeFoundationBaseY(1) +
-            topPileVerticalShiftPx() +
-            (cardH * LANDSCAPE_WASTE_EXTRA_SHIFT_RATIO) +
-            (cardH * LANDSCAPE_STOCK_EXTRA_GAP_RATIO)
-    }
-
-    private fun portraitTopRowEdgeInsetPx(): Float {
-        val density = resources.displayMetrics.density.coerceAtLeast(1f)
-        return max(cardPadding, PORTRAIT_TOP_ROW_EDGE_INSET_DP * density)
-    }
-
-    private fun portraitTopRowGroupGapPx(): Float {
-        return max(cardPadding * 2f, cardW * PORTRAIT_TOP_ROW_GROUP_GAP_RATIO)
-    }
-
-    private fun portraitFoundationStepPx(): Float {
-        return cardW + (cardPadding * PORTRAIT_FOUNDATION_STEP_PADDING_RATIO)
-    }
-
-    private fun portraitTopRowFoundationCols(): Int {
-        return min(getFoundationCountForLayout(), 4).coerceAtLeast(1)
-    }
-
-    private fun portraitTopRowStockWasteBlockWidth(): Float {
-        // Stock and waste are now stacked vertically, so width is just one card + fan spread
-        val wasteFanSpread = getWasteFanOffsetX() * (MAX_VISIBLE_WASTE_CARDS - 1)
-        return cardW + wasteFanSpread
-    }
-
-    private fun portraitTopRowFoundationBlockWidth(): Float {
-        val foundationCols = portraitTopRowFoundationCols()
-        return cardW + ((foundationCols - 1) * portraitFoundationStepPx())
-    }
-
-    private fun portraitTopRowContainerWidth(): Float {
-        return portraitTopRowStockWasteBlockWidth() +
-            portraitTopRowGroupGapPx() +
-            portraitTopRowFoundationBlockWidth()
-    }
-
-    private fun portraitTopRowContainerLeft(): Float {
-        val edgeInset = portraitTopRowEdgeInsetPx()
-        return if (isMirrored) {
-            width - edgeInset - portraitTopRowContainerWidth()
-        } else {
-            edgeInset
-        }
-    }
-
-    private fun portraitTopRowDrawWasteBaseX(): Float {
-        return if (isMirrored) {
-            portraitTopRowContainerLeft() + portraitTopRowFoundationBlockWidth() + portraitTopRowGroupGapPx()
-        } else {
-            portraitTopRowContainerLeft()
-        }
-    }
-
-    private fun portraitTopRowFoundationBaseX(): Float {
-        return if (isMirrored) {
-            portraitTopRowContainerLeft()
-        } else {
-            portraitTopRowContainerLeft() + portraitTopRowStockWasteBlockWidth() + portraitTopRowGroupGapPx()
-        }
-    }
-
-    private fun portraitStockBaseX(): Float {
-        return portraitTopRowDrawWasteBaseX()
-    }
-
-    private fun portraitWasteBaseX(): Float {
-        return portraitTopRowDrawWasteBaseX()
-    }
-
-    private fun portraitFoundationColumnBaseX(column: Int): Float {
-        return portraitTopRowFoundationBaseX() + (column * portraitFoundationStepPx())
-    }
-
-    private fun getTableauStartY(): Float {
-        if (!isLandscape) {
-            return applyPortraitPileYOffset(
-                rawBaseY = getPortraitTableauBaseY(),
-                specificOffsetY = portraitTableauOffsetYPx
-            )
-        }
-
-        return applyLandscapePileYOffset(
-            rawBaseY = getLandscapeFoundationBaseY(0),
-            specificOffsetY = landscapeTableauOffsetYPx
-        )
+        Log.i("GameBoardViewLayout", "stock x=${fmt(stockRect.left)}")
+        Log.i("GameBoardViewLayout", "waste x=${fmt(wasteRect.left)}")
+        Log.i("GameBoardViewLayout", "foundation0 x=${fmt(foundRect.left)}")
+        Log.i("GameBoardViewLayout", "tableau0 x=${fmt(tableauX)}")
     }
 
     private fun getPhase2GroupRect(id: GroupId): RectF? {
@@ -1240,20 +848,26 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun getWasteRectPhase2OrNull(): RectF? {
         val drawWasteRect = getPhase2GroupRect(GroupId.DRAW_WASTE) ?: return null
         if (cardW <= 0f || cardH <= 0f) return null
-        val x = if (isMirrored) drawWasteRect.right - cardW else drawWasteRect.left
-        val y = drawWasteRect.top
-        return RectF(x, y, x + cardW, y + cardH)
+        return TopRowRectResolver.resolveWasteRect(
+            drawWasteRect = drawWasteRect,
+            cardW = cardW,
+            cardH = cardH,
+            isMirrored = isMirrored
+        )
     }
 
     private fun getStockRectPhase2OrNull(): RectF? {
         val wasteRect = getWasteRectPhase2OrNull() ?: return null
         val drawWasteRect = getPhase2GroupRect(GroupId.DRAW_WASTE) ?: return null
-        val x = wasteRect.left
         // Keep stock directly below waste in both orientations.
         val density = resources.displayMetrics.density.coerceAtLeast(1f)
         val stackGap = max(cardPadding, density * 2f)
-        val y = wasteRect.bottom + stackGap
-        val stockRect = RectF(x, y, x + cardW, y + cardH)
+        val stockRect = TopRowRectResolver.resolveStockRect(
+            wasteRect = wasteRect,
+            cardW = cardW,
+            cardH = cardH,
+            stackGap = stackGap
+        )
 
         // Guardrail for small/short screens: never collapse stock into waste to keep it "inside" the box.
         // If the DRAW_WASTE group is too short for current card metrics, keep non-overlap and log once.
@@ -1286,108 +900,37 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         val foundationRect = getPhase2GroupRect(GroupId.FOUNDATION) ?: return null
         val gap = cardPadding * 0.6f
-
-        return if (isLandscape) {
-            val row = if (foundationCount > 4) index % 4 else index
-            val col = if (foundationCount > 4) index / 4 else 0
-            val totalRows = 4
-            val totalHeight = (totalRows * cardH) + ((totalRows - 1) * gap)
-            // Keep foundations anchored at the group top when card metrics outgrow the group box.
-            val centeredOffsetY = ((foundationRect.height() - totalHeight) / 2f).coerceAtLeast(0f)
-            val startY = foundationRect.top + centeredOffsetY
-            val y = startY + row * (cardH + gap)
-
-            // Landscape 1-deck uses the column closest to tableau.
-            val closestColumnX = if (isMirrored) foundationRect.right - cardW else foundationRect.left
-            val x = if (isMirrored) {
-                closestColumnX - col * (cardW + gap)
-            } else {
-                closestColumnX + col * (cardW + gap)
-            }
-            RectF(x, y, x + cardW, y + cardH)
-        } else {
-            val row = if (foundationCount > 4) index / 4 else 1
-            val col = if (foundationCount > 4) index % 4 else index
-            val totalCols = 4
-            val totalRows = 2
-            val totalWidth = (totalCols * cardW) + ((totalCols - 1) * gap)
-            val totalHeight = (totalRows * cardH) + ((totalRows - 1) * gap)
-            val centeredOffsetX = ((foundationRect.width() - totalWidth) / 2f).coerceAtLeast(0f)
-            val centeredOffsetY = ((foundationRect.height() - totalHeight) / 2f).coerceAtLeast(0f)
-            val startX = foundationRect.left + centeredOffsetX
-            val startY = foundationRect.top + centeredOffsetY
-            val x = startX + col * (cardW + gap)
-            val y = startY + row * (cardH + gap)
-            RectF(x, y, x + cardW, y + cardH)
-        }
-    }
-
-    private fun getStockRectLegacy(): RectF {
-        if (!isLandscape) {
-            val yWithOffset = applyPortraitPileYOffset(
-                // Portrait matches landscape ordering: waste on top, stock below.
-                rawBaseY = getPortraitTopPileBaseY() + cardH + cardPadding,
-                groupOffsetY = portraitDrawWasteOffsetYPx,
-                specificOffsetY = portraitStockOffsetYPx
-            )
-            val x = portraitStockBaseX() +
-                portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx + portraitStockOffsetXPx
-            return RectF(x, yWithOffset, x + cardW, yWithOffset + cardH)
-        }
-
-        val y = applyLandscapePileYOffset(
-            rawBaseY = getLandscapeStockBaseY(),
-            groupOffsetY = landscapeDrawWasteOffsetYPx,
-            specificOffsetY = landscapeStockOffsetYPx
+        return TopRowRectResolver.resolveFoundationRect(
+            foundationRect = foundationRect,
+            cardW = cardW,
+            cardH = cardH,
+            gap = gap,
+            foundationCount = foundationCount,
+            index = index,
+            isLandscape = isLandscape,
+            isMirrored = isMirrored
         )
-        val landscapeOuterGap = landscapeOuterGap()
-        val baseX = if (isMirrored) {
-            // Mirrored: stock to the RIGHT of tableau
-            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
-        } else {
-            // Classic: stock to the LEFT of tableau
-            (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
-        }
-        val x = baseX + landscapeOverallOffsetXPx + landscapeDrawWasteOffsetXPx + landscapeStockOffsetXPx
-        return RectF(x, y, x + cardW, y + cardH)
     }
 
-      private fun getStockRect(): RectF {
-          return getStockRectPhase2OrNull() ?: getStockRectLegacy()
-      }
-
-    private fun getWasteRectLegacy(): RectF {
-          if (!isLandscape) {
-             val yWithOffset = applyPortraitPileYOffset(
-                 rawBaseY = getPortraitTopPileBaseY(),
-                 groupOffsetY = portraitDrawWasteOffsetYPx,
-                 specificOffsetY = portraitWasteOffsetYPx
-             )
-             val x = portraitWasteBaseX() +
-                 portraitOverallOffsetXPx + portraitDrawWasteOffsetXPx + portraitWasteOffsetXPx
-             return RectF(x, yWithOffset, x + cardW, yWithOffset + cardH)
-         }
-
-        val y = applyLandscapePileYOffset(
-            rawBaseY = getLandscapeWasteBaseY(),
-            groupOffsetY = landscapeDrawWasteOffsetYPx,
-            specificOffsetY = landscapeWasteOffsetYPx
-        )
-        val landscapeOuterGap = landscapeOuterGap()
-        val baseX = if (isMirrored) {
-            // Mirrored: waste to the RIGHT of tableau (same X column as mirrored stock)
-            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
-        } else {
-            // Classic: waste to the LEFT of tableau (same X column as classic stock)
-            (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
-        }
-        val x = baseX + landscapeOverallOffsetXPx + landscapeDrawWasteOffsetXPx + landscapeWasteOffsetXPx
-        return RectF(x, y, x + cardW, y + cardH)
+    private fun ensurePhase2LayoutReady() {
+        if (phase2RefTransform != null && phase2GroupBoxesRef.isNotEmpty()) return
+        if (width <= 0 || height <= 0) return
+        recomputePhase2ReferenceLayout(width, height)
     }
 
-       private fun getWasteRect(): RectF {
-           return getWasteRectPhase2OrNull() ?: getWasteRectLegacy()
-      }
+    private fun requirePhase2Rect(name: String, resolver: () -> RectF?): RectF {
+        resolver()?.let { return it }
+        ensurePhase2LayoutReady()
+        return resolver() ?: throw IllegalStateException("Phase2 rect unavailable: $name")
+    }
+
+    private fun getStockRect(): RectF {
+        return requirePhase2Rect("stock") { getStockRectPhase2OrNull() }
+    }
+
+    private fun getWasteRect(): RectF {
+        return requirePhase2Rect("waste") { getWasteRectPhase2OrNull() }
+    }
 
     private fun getWasteFanOffsetXForCardWidth(candidateCardW: Float): Float =
         (candidateCardW * 0.3f).coerceIn(12f, 45f)
@@ -1421,91 +964,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         )
     }
 
-    private fun getFoundationRectLegacy(index: Int): RectF {
-          if (!isLandscape) {
-             val foundationCount = getFoundationCountForLayout()
-
-             val row = if (foundationCount > 4) index / 4 else 0
-             val col = if (foundationCount > 4) index % 4 else index
-             val x = portraitFoundationColumnBaseX(col) +
-                 portraitOverallOffsetXPx + portraitFoundationOffsetXPx
-             val y = applyPortraitPileYOffset(
-                 rawBaseY = getPortraitFoundationBaseY(row),
-                 specificOffsetY = portraitFoundationOffsetYPx
-             )
-             return RectF(x, y, x + cardW, y + cardH)
-         }
-
-        // Landscape: foundations are outside the tableau columns
-        val landscapeOuterGap = landscapeOuterGap()
-        val foundationSideBaseX = if (isMirrored) {
-            // Mirrored: foundations to the LEFT of tableau
-            (columnX.firstOrNull() ?: cardPadding) - cardW - landscapeOuterGap
-        } else {
-            // Classic: foundations to the RIGHT of tableau
-            (columnX.lastOrNull()?.let { it + cardW } ?: (width - cardPadding)) + landscapeOuterGap
-        }
-
-        val foundationCount = getFoundationCountForLayout()
-        val row = if (foundationCount > 4) index % 4 else index
-        val col = if (foundationCount > 4) (index / 4) else 0
-        val columnStep = cardW + (cardPadding * 0.6f)
-        val foundationColumnBaseX = if (isMirrored) {
-            foundationSideBaseX - (col * columnStep)
-        } else {
-            foundationSideBaseX + (col * columnStep)
-        }
-        val x = foundationColumnBaseX + landscapeOverallOffsetXPx + landscapeFoundationOffsetXPx
-
-        val y = applyLandscapePileYOffset(
-            rawBaseY = getLandscapeFoundationBaseY(index),
-            specificOffsetY = landscapeFoundationOffsetYPx
-        )
-
-        return RectF(x, y, x + cardW, y + cardH)
-    }
-
      private fun getFoundationRect(index: Int): RectF {
-         return getFoundationRectPhase2OrNull(index) ?: getFoundationRectLegacy(index)
-    }
-
-    private fun logPhase2TopRowParityIfNeeded() {
-        val phase2Stock = getStockRectPhase2OrNull() ?: return
-        val phase2Waste = getWasteRectPhase2OrNull() ?: return
-        val phase2Foundation = getFoundationRectPhase2OrNull(0) ?: return
-
-        val legacyStock = getStockRectLegacy()
-        val legacyWaste = getWasteRectLegacy()
-        val legacyFoundation = getFoundationRectLegacy(0)
-
-        val fingerprint = buildString {
-            append(if (isLandscape) 'L' else 'P')
-            append('|').append(if (isMirrored) 'M' else 'C')
-            append('|').append(cardW.toInt())
-            append('|').append(cardH.toInt())
-            append('|').append(legacyStock.left.toInt()).append(',').append(phase2Stock.left.toInt())
-            append('|').append(legacyWaste.left.toInt()).append(',').append(phase2Waste.left.toInt())
-            append('|').append(legacyFoundation.left.toInt()).append(',').append(phase2Foundation.left.toInt())
-            append('|').append(legacyStock.top.toInt()).append(',').append(phase2Stock.top.toInt())
-            append('|').append(legacyWaste.top.toInt()).append(',').append(phase2Waste.top.toInt())
-            append('|').append(legacyFoundation.top.toInt()).append(',').append(phase2Foundation.top.toInt())
-        }
-
-        if (fingerprint == lastPhase2TopRowParityFingerprint) return
-        lastPhase2TopRowParityFingerprint = fingerprint
-
-        fun delta(a: RectF, b: RectF): String {
-            val dx = String.format(Locale.US, "%.1f", b.left - a.left)
-            val dy = String.format(Locale.US, "%.1f", b.top - a.top)
-            val dw = String.format(Locale.US, "%.1f", b.width() - a.width())
-            val dh = String.format(Locale.US, "%.1f", b.height() - a.height())
-            return "dx=$dx dy=$dy dw=$dw dh=$dh"
-        }
-
-        Log.d(
-            "GameBoardViewLayout",
-            "phase2Parity orient=${if (isLandscape) "landscape" else "portrait"} mirrored=$isMirrored stock(${delta(legacyStock, phase2Stock)}) waste(${delta(legacyWaste, phase2Waste)}) foundation0(${delta(legacyFoundation, phase2Foundation)})"
-        )
+         return requirePhase2Rect("foundation[$index]") { getFoundationRectPhase2OrNull(index) }
     }
 
     private fun logPhase2DrawWasteSpacingIfNeeded() {
@@ -1539,58 +999,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
-    private fun getLandscapeFoundationTop(index: Int): Float {
-        return getLandscapeFoundationBaseY(index)
-    }
-
-    private fun currentAspectCategoryYTrimPx(): Float {
-        return if (isLandscape) {
-            when (currentAspectCategory) {
-                // SLIM_COMPACT uses the same trim as SLIM (all values currently 0; kept for future tuning)
-                DeviceAspectCategory.SLIM_COMPACT,
-                DeviceAspectCategory.SLIM    -> aspectCategoryLandscapeTrimSlimPx
-                DeviceAspectCategory.CLASSIC -> aspectCategoryLandscapeTrimClassicPx
-                DeviceAspectCategory.BROAD   -> aspectCategoryLandscapeTrimBroadPx
-                DeviceAspectCategory.SQUARE  -> aspectCategoryLandscapeTrimSquarePx
-            }
-        } else {
-            when (currentAspectCategory) {
-                DeviceAspectCategory.SLIM_COMPACT,
-                DeviceAspectCategory.SLIM    -> aspectCategoryPortraitTrimSlimPx
-                DeviceAspectCategory.CLASSIC -> aspectCategoryPortraitTrimClassicPx
-                DeviceAspectCategory.BROAD   -> aspectCategoryPortraitTrimBroadPx
-                DeviceAspectCategory.SQUARE  -> aspectCategoryPortraitTrimSquarePx
-            }
-        }
-    }
-
-    private fun currentAspectCategoryXTrimPx(): Float {
-        return if (isLandscape) {
-            when (currentAspectCategory) {
-                DeviceAspectCategory.SLIM_COMPACT,
-                DeviceAspectCategory.SLIM    -> aspectCategoryLandscapeTrimXSlimPx
-                DeviceAspectCategory.CLASSIC -> aspectCategoryLandscapeTrimXClassicPx
-                DeviceAspectCategory.BROAD   -> aspectCategoryLandscapeTrimXBroadPx
-                DeviceAspectCategory.SQUARE  -> aspectCategoryLandscapeTrimXSquarePx
-            }
-        } else {
-            when (currentAspectCategory) {
-                DeviceAspectCategory.SLIM_COMPACT,
-                DeviceAspectCategory.SLIM    -> aspectCategoryPortraitTrimXSlimPx
-                DeviceAspectCategory.CLASSIC -> aspectCategoryPortraitTrimXClassicPx
-                DeviceAspectCategory.BROAD   -> aspectCategoryPortraitTrimXBroadPx
-                DeviceAspectCategory.SQUARE  -> aspectCategoryPortraitTrimXSquarePx
-            }
-        }
-    }
-
-    private fun computeBoardStartY(viewHeight: Int) {
-        val estimatedBoardHeight = estimateBoardHeight(cardW)
-        val desiredBoardStartY = getTopRowInsetTargetPx() - cardPadding + currentAspectCategoryYTrimPx()
-        val maxBoardStartY = (viewHeight - estimatedBoardHeight).coerceAtLeast(0f)
-        boardStartY = desiredBoardStartY.coerceIn(0f, maxBoardStartY)
-    }
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawTabletop(canvas)
@@ -1600,7 +1008,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
             return
         }
         syncColumnsWithGame()
-        if (cardW <= 0f || cardH <= 0f || columnX.size < columns) {
+        if (cardW <= 0f || cardH <= 0f || phase2RefTransform == null || phase2GroupBoxesRef.isEmpty()) {
             animationActiveThisFrame = false
             drawLoading(canvas)
             return
@@ -1942,11 +1350,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         canvas.drawText(badgeText, cx, baseline, pileCountBadgeTextPaint)
     }
 
-    private fun topPileVerticalShiftPx(): Float {
-        val ratio = if (isLandscape) LANDSCAPE_TOP_PILE_SHIFT_RATIO else PORTRAIT_TOP_PILE_SHIFT_RATIO
-        return cardH * ratio
-    }
-
     private fun drawEmptyStockPlaceholder(canvas: Canvas, rect: RectF) {
         canvas.drawRoundRect(rect, cardRadius, cardRadius, placeholderPaint)
 
@@ -1971,28 +1374,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return remainingRecycles == null || remainingRecycles > 0
     }
 
-    private fun drawLabelAboveRect(canvas: Canvas, rect: RectF, lines: List<String>, color: Int = Color.WHITE) {
-        if (lines.isEmpty()) return
-
-        val density = resources.displayMetrics.density
-        val lineSpacing = 2f * density
-        val fontMetrics = pileLabelPaint.fontMetrics
-        val lineHeight = (fontMetrics.descent - fontMetrics.ascent).coerceAtLeast(1f)
-        val totalTextHeight = lines.size * lineHeight + (lines.size - 1) * lineSpacing
-        val minBottomBaseline = (-fontMetrics.ascent) + totalTextHeight - lineHeight + 2f
-        val labelBottomY = (rect.top - (6f * density)).coerceAtLeast(minBottomBaseline)
-
-        val previousColor = pileLabelPaint.color
-        pileLabelPaint.color = color
-
-        var baseline = labelBottomY - (lines.size - 1) * (lineHeight + lineSpacing)
-        lines.forEach { line ->
-            canvas.drawText(line, rect.centerX(), baseline, pileLabelPaint)
-            baseline += lineHeight + lineSpacing
-        }
-
-        pileLabelPaint.color = previousColor
-    }
 
     private fun drawTableau(canvas: Canvas) {
         val startY = getTableauStartYVisual()
@@ -2411,18 +1792,8 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
             StackType.TABLEAU -> {
                 val pile = viewModel.game.value.tableau.getOrNull(stackIndex)
-                // Prefer Phase2/visual coordinates so drag-start and render match exactly.
-                getTableauCardRectVisual(stackIndex, pile ?: return RectF(0f, 0f, cardW, cardH), cardIndex)
-                    ?: run {
-                        // Fallback to legacy if Phase2 not yet ready.
-                        val x = getTableauColumnX(stackIndex) ?: return RectF(0f, 0f, cardW, cardH)
-                        var y = getTableauStartY()
-                        val cards = pile.asList()
-                        for (i in 0 until cardIndex) {
-                            y += if (cards[i].isFaceUp) cardW * 0.4f else cardW * 0.1f
-                        }
-                        RectF(x, y, x + cardW, y + cardH)
-                    }
+                resolveTableauCardRect(stackIndex, pile ?: return RectF(0f, 0f, cardW, cardH), cardIndex)
+                    ?: RectF(0f, 0f, cardW, cardH)
             }
         }
     }
@@ -2521,17 +1892,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     dragStackIndex = stackIndex
                     dragCardIndex = dragStartIndex
 
-                    // Use Phase2/visual card rect so drag offsets stay aligned with what's drawn.
-                    val cardRect = getTableauCardRectVisual(stackIndex, pile, dragCardIndex)
-                        ?: run {
-                            // Fallback to legacy if Phase2 not ready yet
-                            val startY = getTableauStartY()
-                            val cardTopY = startY + tableauYOffsetForIndex(pile, dragCardIndex)
-                            val colX = getTableauColumnX(stackIndex) ?: return false
-                            dragOffsetX = event.x - colX
-                            dragOffsetY = event.y - cardTopY
-                            return true
-                        }
+                    val cardRect = resolveTableauCardRect(stackIndex, pile, dragCardIndex) ?: return false
                     dragOffsetX = event.x - cardRect.left
                     dragOffsetY = event.y - cardRect.top
 
@@ -2722,8 +2083,9 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
     private fun findTableauHitStrict(x: Float, y: Float): Pair<Int, Int>? {
-        val visibleColumns = min(columns, columnX.size)
-        for (stackIndex in 0 until visibleColumns) {
+        // Require Phase2 layout to be ready before hit-testing tableau.
+        if (phase2RefTransform == null || phase2GroupBoxesRef.isEmpty()) return null
+        for (stackIndex in 0 until columns) {
             val pile = viewModel.game.value.tableau.getOrNull(stackIndex) ?: continue
 
             if (pile.isEmpty()) {
@@ -2755,12 +2117,6 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     }
 
 
-    private fun getStack(type: StackType, index: Int) = when (type) {
-        StackType.STOCK -> viewModel.game.value.stock
-        StackType.WASTE -> viewModel.game.value.waste
-        StackType.TABLEAU -> viewModel.game.value.tableau.getOrNull(index)
-        StackType.FOUNDATION -> viewModel.game.value.foundations.getOrNull(index)
-    }
 
 
     override fun onDetachedFromWindow() {

@@ -8,15 +8,27 @@ import android.graphics.RectF
  */
 object TopRowRectResolver {
 
+    private fun RectF.toFloatRect(): FloatRect = FloatRect(
+        left = left,
+        top = top,
+        right = right,
+        bottom = bottom
+    )
+
+    private fun FloatRect.toRectF(): RectF = RectF(left, top, right, bottom)
+
     fun resolveWasteRect(
         drawWasteRect: RectF,
         cardW: Float,
         cardH: Float,
         isMirrored: Boolean
     ): RectF {
-        val x = if (isMirrored) drawWasteRect.right - cardW else drawWasteRect.left
-        val y = drawWasteRect.top
-        return RectF(x, y, x + cardW, y + cardH)
+        return TopRowRectMath.resolveWasteRect(
+            drawWasteRect = drawWasteRect.toFloatRect(),
+            cardW = cardW,
+            cardH = cardH,
+            isMirrored = isMirrored
+        ).toRectF()
     }
 
     fun resolveStockRect(
@@ -25,9 +37,12 @@ object TopRowRectResolver {
         cardH: Float,
         stackGap: Float
     ): RectF {
-        val x = wasteRect.left
-        val y = wasteRect.bottom + stackGap
-        return RectF(x, y, x + cardW, y + cardH)
+        return TopRowRectMath.resolveStockRect(
+            wasteRect = wasteRect.toFloatRect(),
+            cardW = cardW,
+            cardH = cardH,
+            stackGap = stackGap
+        ).toRectF()
     }
 
     fun resolveFoundationRect(
@@ -40,37 +55,17 @@ object TopRowRectResolver {
         isLandscape: Boolean,
         isMirrored: Boolean
     ): RectF {
-        return if (isLandscape) {
-            val row = if (foundationCount > 4) index % 4 else index
-            val col = if (foundationCount > 4) index / 4 else 0
-            val totalRows = 4
-            val totalHeight = (totalRows * cardH) + ((totalRows - 1) * gap)
-            val centeredOffsetY = ((foundationRect.height() - totalHeight) / 2f).coerceAtLeast(0f)
-            val startY = foundationRect.top + centeredOffsetY
-            val y = startY + row * (cardH + gap)
-
-            val closestColumnX = if (isMirrored) foundationRect.right - cardW else foundationRect.left
-            val x = if (isMirrored) {
-                closestColumnX - col * (cardW + gap)
-            } else {
-                closestColumnX + col * (cardW + gap)
-            }
-            RectF(x, y, x + cardW, y + cardH)
-        } else {
-            val row = if (foundationCount > 4) index / 4 else 1
-            val col = if (foundationCount > 4) index % 4 else index
-            val totalCols = 4
-            val totalRows = 2
-            val totalWidth = (totalCols * cardW) + ((totalCols - 1) * gap)
-            val totalHeight = (totalRows * cardH) + ((totalRows - 1) * gap)
-            val centeredOffsetX = ((foundationRect.width() - totalWidth) / 2f).coerceAtLeast(0f)
-            val centeredOffsetY = ((foundationRect.height() - totalHeight) / 2f).coerceAtLeast(0f)
-            val startX = foundationRect.left + centeredOffsetX
-            val startY = foundationRect.top + centeredOffsetY
-            val x = startX + col * (cardW + gap)
-            val y = startY + row * (cardH + gap)
-            RectF(x, y, x + cardW, y + cardH)
-        }
+        return TopRowRectMath.resolveFoundationRect(
+            foundationRect = foundationRect.toFloatRect(),
+            cardW = cardW,
+            cardH = cardH,
+            gap = gap,
+            foundationCount = foundationCount,
+            index = index,
+            isLandscape = isLandscape,
+            isMirrored = isMirrored
+        ).toRectF()
     }
 }
+
 

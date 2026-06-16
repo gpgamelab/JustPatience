@@ -1,7 +1,6 @@
 package com.gpgamelab.justpatience.util
 
 import android.content.Context
-import android.util.Log
 
 /**
  * Reusable helper for scaling feature-specific values from a portrait baseline device.
@@ -65,7 +64,6 @@ object BaselineResolutionScaleUtil {
         val widthRatio = safeCurrentWidthPx.toFloat() / baselineWidthPx.toFloat()
         val heightRatio = safeCurrentHeightPx.toFloat() / baselineHeightPx.toFloat()
         val averageRatio = ((widthRatio + heightRatio) / 2f).coerceAtLeast(MIN_AVERAGE_RATIO)
-        Log.d("BaselineResolutionScaleUtil", "This Device: isLandscape = $isLandscape, currentWidthPx = $currentWidthPx, currentHeightPx = $currentHeightPx, baselineWidthPx = $baselineWidthPx, baselineHeightPx = $baselineHeightPx, safeCurrentWidthPx = $safeCurrentWidthPx, safeCurrentHeightPx = $safeCurrentHeightPx, safeCurrentHeightPx = $safeCurrentHeightPx, safeBaselinePortraitWidthPx = $safeBaselinePortraitWidthPx, safeBaselinePortraitHeightPx = $safeBaselinePortraitHeightPx, widthRatio = $widthRatio, heightRatio = $heightRatio, averageRatio = $averageRatio")
 
         return ResolutionRatioProfile(
             currentWidthPx = safeCurrentWidthPx,
