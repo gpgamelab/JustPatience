@@ -138,11 +138,11 @@ sealed class AdPlacementResult {
  *
  * | Category    | Primary | Fallback | Rationale                                   |
  * |-------------|---------|----------|---------------------------------------------|
- * | SLIM_COMPACT| SMALL   | none     | 320dp banner already ≥85% screen width      |
- * | SLIM        | SMALL   | MEDIUM   | SMALL preferred; MEDIUM fits if ADS box big |
- * | CLASSIC     | MEDIUM  | SMALL    | Standard 16:9 phone; MEDIUM comfortable     |
- * | BROAD       | LARGE   | MEDIUM   | Tablet/wide; plenty of room for rectangle   |
- * | SQUARE      | LARGE   | MEDIUM   | Foldable/near-square; lots of height        |
+ * | SLIM_COMPACT| SMALL   | MEDIUM   | Ultra-narrow devices still prefer SMALL      |
+ * | SLIM        | SMALL   | MEDIUM   | SMALL preferred; MEDIUM is the fallback      |
+ * | CLASSIC     | MEDIUM  | LARGE    | Standard phone; use medium first             |
+ * | BROAD       | LARGE   | null     | Wide/tablet layouts use the large banner     |
+ * | SQUARE      | MEDIUM  | LARGE    | Near-square layouts prefer medium first      |
  *
  * SLIM_COMPACT uses [AdSafetyGap.GENEROUS] because accidental taps are more common
  * on ultra-narrow screens.
@@ -155,7 +155,7 @@ fun defaultAdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
         primaryTier  = AdBannerTier.SMALL,
-        fallbackTier = null,
+        fallbackTier = AdBannerTier.MEDIUM,
         safetyGap    = AdSafetyGap.GENEROUS   // 6 dp on narrow screens
     )
     DeviceAspectCategory.SLIM -> AdPlacementPolicy(
@@ -168,13 +168,20 @@ fun defaultAdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
         primaryTier  = AdBannerTier.MEDIUM,
-        fallbackTier = AdBannerTier.SMALL
+        fallbackTier = AdBannerTier.LARGE
     )
-    DeviceAspectCategory.BROAD, DeviceAspectCategory.SQUARE -> AdPlacementPolicy(
+    DeviceAspectCategory.BROAD -> AdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
         primaryTier  = AdBannerTier.LARGE,
-        fallbackTier = AdBannerTier.MEDIUM
+        fallbackTier = null
+    )
+    DeviceAspectCategory.SQUARE -> AdPlacementPolicy(
+        category     = category,
+        isLandscape  = isLandscape,
+        primaryTier  = AdBannerTier.MEDIUM,
+        fallbackTier = AdBannerTier.LARGE
     )
 }
+
 

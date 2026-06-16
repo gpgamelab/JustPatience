@@ -62,6 +62,19 @@ object AdPlacementValidator {
         groupRects:  Map<GroupId, RectF>,
         safetyGapPx: Float
     ): Boolean {
+        // If an ADS zone is defined the ad must be fully contained within it.
+        // Use explicit field comparisons to avoid Android-stub copy-constructor issues.
+        val adsZone = groupRects[GroupId.ADS]
+        if (adsZone != null) {
+            val adL = adRect.left;  val adT = adRect.top
+            val adR = adRect.right; val adB = adRect.bottom
+            val azL = adsZone.left; val azT = adsZone.top
+            val azR = adsZone.right; val azB = adsZone.bottom
+            if (adL < azL || adT < azT || adR > azR || adB > azB) {
+                return false
+            }
+        }
+
         val zones = getInteractiveZones(groupRects)
         if (zones.isEmpty()) {
             return true
@@ -83,7 +96,14 @@ object AdPlacementValidator {
      */
     fun getInteractiveZones(groupRects: Map<GroupId, RectF>): List<InteractiveZone> =
         INTERACTIVE_GROUP_IDS.mapNotNull { id ->
-            groupRects[id]?.let { rect -> InteractiveZone(label = id.name, rect = RectF(rect)) }
+            groupRects[id]?.let { rect ->
+                // Use default constructor + direct field assignment so this works in JVM unit tests
+                // where the Android stub's multi-arg RectF constructors are no-ops.
+                val copy = RectF()
+                copy.left = rect.left; copy.top = rect.top
+                copy.right = rect.right; copy.bottom = rect.bottom
+                InteractiveZone(label = id.name, rect = copy)
+            }
         }
 
     /**
@@ -92,13 +112,16 @@ object AdPlacementValidator {
      * Returns a new [RectF]; the original is not modified.
      * If [gapPx] is 0, a copy of the original is returned.
      */
-    fun expandRect(rect: RectF, gapPx: Float): RectF =
-        RectF(
-            rect.left   - gapPx,
-            rect.top    - gapPx,
-            rect.right  + gapPx,
-            rect.bottom + gapPx
-        )
+    fun expandRect(rect: RectF, gapPx: Float): RectF {
+        // Use default constructor + direct field assignment so this works in JVM unit tests
+        // where the Android stub's multi-arg RectF constructors are no-ops.
+        val r = RectF()
+        r.left   = rect.left   - gapPx
+        r.top    = rect.top    - gapPx
+        r.right  = rect.right  + gapPx
+        r.bottom = rect.bottom + gapPx
+        return r
+    }
 
     /**
      * Returns true if rectangles [a] and [b] share any overlapping area.
@@ -110,6 +133,15 @@ object AdPlacementValidator {
     fun overlaps(a: RectF, b: RectF): Boolean =
         a.left < b.right  && a.right  > b.left &&
         a.top  < b.bottom && a.bottom > b.top
+
+    /**
+     * Returns true if [outer] fully contains [inner].
+     */
+    fun contains(outer: RectF, inner: RectF): Boolean =
+        inner.left >= outer.left &&
+        inner.top >= outer.top &&
+        inner.right <= outer.right &&
+        inner.bottom <= outer.bottom
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -126,5 +158,10 @@ data class InteractiveZone(
     val label: String,
     val rect:  RectF
 )
+
+
+
+
+
 
 

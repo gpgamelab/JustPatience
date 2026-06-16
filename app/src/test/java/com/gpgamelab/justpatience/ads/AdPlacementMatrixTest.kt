@@ -12,6 +12,12 @@ import org.junit.Assert.*
  *
  * These tests validate the interplay between [AdPlacementPolicy], [AdPlacementValidator],
  * and [AdPlacementCoordinator] across a matrix of device categories and placements.
+ *
+ * NOTE ON ANDROID STUB: The Android SDK test stub's multi-argument RectF constructors are
+ * no-ops — they create the object but never assign the public fields (all stay 0.0f).
+ * We work around this by using [rectF], which uses the zero-arg constructor and sets each
+ * field directly via PUTFIELD — the only reliable way to create non-zero RectF values in
+ * plain JVM unit tests (no Robolectric required).
  */
 class AdPlacementMatrixTest {
 
@@ -23,37 +29,51 @@ class AdPlacementMatrixTest {
     // Tablet viewport (landscape):               1600×2560 logical pixels
 
     /**
+     * Creates a RectF with correct field values despite the Android stub constructor being
+     * a no-op. Uses the zero-arg constructor then assigns each public field directly.
+     */
+    private fun rectF(l: Float, t: Float, r: Float, b: Float): RectF =
+        RectF().also { it.left = l; it.top = t; it.right = r; it.bottom = b }
+
+    /**
      * Represents a standard solitaire board layout with interactive zones.
      * These are typical Phase 2 group rects for a 1-deck portrait layout.
+     *
+     * Geometry (px):
+     *   DRAW_WASTE  50, 80  →  250, 180
+     *   FOUNDATION 300, 80  → 1030, 180
+     *   TABLEAU     50, 220 → 1030, 1500
+     *   CONTROLS    50,1550 → 1030, 1720
+     *   STATS      850,  30 → 1030,  100
+     *   ADS        150,1750 →  930, 1900   (below controls, 30px gap)
      */
     private fun createPortraitBoardLayout(): Map<GroupId, RectF> = mapOf(
-        // Top row: stock/waste, foundations
-        GroupId.DRAW_WASTE to RectF(50f, 80f, 250f, 180f),
-        GroupId.FOUNDATION to RectF(300f, 80f, 1030f, 180f),
-
-        // Main tableau (7 columns)
-        GroupId.TABLEAU to RectF(50f, 220f, 1030f, 1500f),
-
-        // Control buttons at bottom
-        GroupId.CONTROLS to RectF(50f, 1550f, 1030f, 1720f),
-
-        // Scoreboard (top right)
-        GroupId.STATS to RectF(850f, 30f, 1030f, 100f),
-
-        // Safe ad zone (bottom center)
-        GroupId.ADS to RectF(150f, 1750f, 930f, 1900f)
+        GroupId.DRAW_WASTE to rectF(50f, 80f, 250f, 180f),
+        GroupId.FOUNDATION to rectF(300f, 80f, 1030f, 180f),
+        GroupId.TABLEAU    to rectF(50f, 220f, 1030f, 1500f),
+        GroupId.CONTROLS   to rectF(50f, 1550f, 1030f, 1720f),
+        GroupId.STATS      to rectF(850f, 30f, 1030f, 100f),
+        GroupId.ADS        to rectF(150f, 1750f, 930f, 1900f)
     )
 
     /**
      * Landscape version of the board layout.
+     *
+     * Geometry (px) — ADS zone is physically below every interactive zone:
+     *   DRAW_WASTE   50,  50 →  250,  200
+     *   FOUNDATION  270,  50 → 1700,  200
+     *   TABLEAU      50, 230 → 1900,  700
+     *   CONTROLS     50, 720 → 1900,  780   (20px gap below TABLEAU)
+     *   STATS      1750,  50 → 1900,  200
+     *   ADS          50, 800 → 1900, 1060   (20px gap below CONTROLS)
      */
     private fun createLandscapeBoardLayout(): Map<GroupId, RectF> = mapOf(
-        GroupId.DRAW_WASTE to RectF(50f, 50f, 200f, 200f),
-        GroupId.FOUNDATION to RectF(250f, 50f, 1700f, 200f),
-        GroupId.TABLEAU to RectF(50f, 250f, 1900f, 1030f),
-        GroupId.CONTROLS to RectF(50f, 1050f, 1900f, 1080f),
-        GroupId.STATS to RectF(1750f, 50f, 1900f, 200f),
-        GroupId.ADS to RectF(300f, 1040f, 1600f, 1070f)
+        GroupId.DRAW_WASTE to rectF(50f, 50f, 250f, 200f),
+        GroupId.FOUNDATION to rectF(270f, 50f, 1700f, 200f),
+        GroupId.TABLEAU    to rectF(50f, 230f, 1900f, 700f),
+        GroupId.CONTROLS   to rectF(50f, 720f, 1900f, 780f),
+        GroupId.STATS      to rectF(1750f, 50f, 1900f, 200f),
+        GroupId.ADS        to rectF(50f, 800f, 1900f, 1060f)
     )
 
     @Before
@@ -69,7 +89,7 @@ class AdPlacementMatrixTest {
     fun testSmallPhonePortraitSmallBanner() {
         val boardLayout = createPortraitBoardLayout()
         val adsZone = boardLayout[GroupId.ADS]!!
-        val smallBannerRect = RectF(adsZone.left, adsZone.top, adsZone.left + 320f, adsZone.top + 60f)
+        val smallBannerRect = rectF(adsZone.left, adsZone.top, adsZone.left + 320f, adsZone.top + 60f)
 
         val result = AdPlacementValidator.validate(smallBannerRect, boardLayout, safetyGapPx)
         assertTrue("Small banner should fit in ADS zone", result)
@@ -83,7 +103,7 @@ class AdPlacementMatrixTest {
     fun testTabletLandscapeLargeBanner() {
         val boardLayout = createLandscapeBoardLayout()
         val adsZone = boardLayout[GroupId.ADS]!!
-        val largeBannerRect = RectF(
+        val largeBannerRect = rectF(
             adsZone.left, adsZone.top,
             adsZone.left + 320f, adsZone.top + 260f
         )
@@ -102,7 +122,7 @@ class AdPlacementMatrixTest {
         val tableauZone = boardLayout[GroupId.TABLEAU]!!
 
         // Position banner overlapping tableau
-        val badBannerRect = RectF(
+        val badBannerRect = rectF(
             tableauZone.left + 100f,
             tableauZone.top - 30f,  // Overlaps tableau top
             tableauZone.left + 400f,
@@ -124,7 +144,7 @@ class AdPlacementMatrixTest {
         val adsZone = boardLayout[GroupId.ADS]!!
 
         // Place banner in ADS zone but closer than safetyGap to controls
-        val badBannerRect = RectF(
+        val badBannerRect = rectF(
             adsZone.left,
             controlsZone.bottom - safetyGapPx + 2f,  // Only 2px gap, need 16px
             adsZone.left + 320f,
@@ -172,24 +192,32 @@ class AdPlacementMatrixTest {
      */
     @Test
     fun testOrientationRotationRepositions() {
-        val portraitLayout = createPortraitBoardLayout()
+        val portraitLayout  = createPortraitBoardLayout()
         val landscapeLayout = createLandscapeBoardLayout()
 
         // Portrait placement (valid)
         val portraitAdsZone = portraitLayout[GroupId.ADS]!!
-        val portraitBanner = RectF(portraitAdsZone.left, portraitAdsZone.top, portraitAdsZone.left + 320f, portraitAdsZone.top + 60f)
-        assertTrue("Portrait banner should be valid", AdPlacementValidator.validate(portraitBanner, portraitLayout, safetyGapPx))
+        val portraitBanner = rectF(
+            portraitAdsZone.left, portraitAdsZone.top,
+            portraitAdsZone.left + 320f, portraitAdsZone.top + 60f
+        )
+        assertTrue("Portrait banner should be valid",
+            AdPlacementValidator.validate(portraitBanner, portraitLayout, safetyGapPx))
 
-        // Same rect coords in landscape might overlap (different viewport)
-        val landscapeAdsZone = landscapeLayout[GroupId.ADS]!!
+        // Same portrait coords are outside the landscape ADS zone (different bottom boundary)
         assertFalse(
             "Portrait banner coords should not fit landscape ADS zone",
             AdPlacementValidator.validate(portraitBanner, landscapeLayout, safetyGapPx)
         )
 
         // Landscape-specific banner should work
-        val landscapeBanner = RectF(landscapeAdsZone.left, landscapeAdsZone.top, landscapeAdsZone.left + 320f, landscapeAdsZone.top + 110f)
-        assertTrue("Landscape banner should be valid", AdPlacementValidator.validate(landscapeBanner, landscapeLayout, safetyGapPx))
+        val landscapeAdsZone = landscapeLayout[GroupId.ADS]!!
+        val landscapeBanner = rectF(
+            landscapeAdsZone.left, landscapeAdsZone.top,
+            landscapeAdsZone.left + 320f, landscapeAdsZone.top + 110f
+        )
+        assertTrue("Landscape banner should be valid",
+            AdPlacementValidator.validate(landscapeBanner, landscapeLayout, safetyGapPx))
     }
 
     /**
@@ -199,7 +227,7 @@ class AdPlacementMatrixTest {
     @Test
     fun testEmptyBoardNoGroupsFails() {
         val emptyLayout = emptyMap<GroupId, RectF>()
-        val bannerRect = RectF(0f, 0f, 320f, 60f)
+        val bannerRect = rectF(0f, 0f, 320f, 60f)
 
         // With no groups to validate against, AdPlacementValidator should pass
         val result = AdPlacementValidator.validate(bannerRect, emptyLayout, safetyGapPx)
@@ -215,8 +243,8 @@ class AdPlacementMatrixTest {
         val boardLayout = createPortraitBoardLayout()
         val adsZone = boardLayout[GroupId.ADS]!!
 
-        // Banner exactly matches ADS zone
-        val exactBanner = RectF(adsZone)
+        // Banner exactly matches ADS zone — use rectF() to avoid copy-constructor stub
+        val exactBanner = rectF(adsZone.left, adsZone.top, adsZone.right, adsZone.bottom)
 
         val result = AdPlacementValidator.validate(exactBanner, boardLayout, safetyGapPx)
         assertTrue("Banner exactly matching ADS zone should be valid", result)
@@ -241,5 +269,3 @@ class AdPlacementMatrixTest {
         // assertSame("Device category should be cached", cat1, cat2)
     }
 }
-
-
