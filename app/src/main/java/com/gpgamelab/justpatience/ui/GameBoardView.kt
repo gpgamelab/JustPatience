@@ -83,6 +83,24 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
      */
     fun getPhase2GroupScreenRect(id: GroupId): RectF? = getPhase2GroupRect(id)
 
+    /**
+     * Returns an immutable snapshot of all current screen-space Phase 2 group rects.
+     *
+     * Returns an empty map if the Phase 2 layout has not been computed yet.
+     * Each value is a defensive copy; callers may retain or mutate the returned RectFs.
+     *
+     * Used by [AdPlacementCoordinator] / [AdPlacementValidator] in GameActivity to
+     * validate banner placement against the live board layout.
+     */
+    fun getPhase2AllGroupScreenRects(): Map<GroupId, RectF> {
+        val transform = phase2RefTransform ?: return emptyMap()
+        val modelW = if (width > height) com.gpgamelab.justpatience.ui.layout.LANDSCAPE_MODEL_W
+                     else               com.gpgamelab.justpatience.ui.layout.PORTRAIT_MODEL_W
+        return phase2GroupBoxesRef.mapValues { (_, box) ->
+            box.toScreenRectF(transform, modelW, isMirrored = isMirrored)
+        }
+    }
+
     private var currentDeviceScaleRatio = 1f
     // Device aspect category (SLIM, CLASSIC, BROAD, SQUARE) detected from physical display size.
     // Used for device-specific tuning and display in tester/about menus.

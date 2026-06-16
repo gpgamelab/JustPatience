@@ -763,4 +763,26 @@ class AdManager(private val context: Context) {
     fun setAdDismissedCallback(callback: () -> Unit) {
         adDismissedCallback = callback
     }
+
+    /**
+     * Notify AdManager that a banner ad has been successfully placed at the given rectangle.
+     *
+     * This method is called after Phase 4 placement validation confirms that the banner
+     * does not overlap any critical game UI zones. It can be used to:
+     * - Log successful placements for analytics
+     * - Cache placement data for recovery after rotation
+     * - Trigger follow-up UI layout adjustments
+     *
+     * @param bannerRect Screen-space rectangle (in pixels) where the banner is now positioned.
+     *                   Coordinates are relative to the Activity root View.
+     */
+    fun acceptPlacementRect(bannerRect: android.graphics.RectF) {
+        logDebug(
+            "Banner placement accepted: " +
+            "(${bannerRect.left.toInt()},${bannerRect.top.toInt()}," +
+            "${bannerRect.right.toInt()},${bannerRect.bottom.toInt()}) " +
+            "size=${bannerRect.width().toInt()}×${bannerRect.height().toInt()}"
+        )
+        // Future: store bannerRect for recovery, emit placement event, etc.
+    }
 }

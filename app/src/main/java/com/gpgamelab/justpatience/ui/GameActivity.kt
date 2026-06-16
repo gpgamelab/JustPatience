@@ -50,6 +50,9 @@ import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.review.testing.FakeReviewManager
 import com.gpgamelab.justpatience.BuildConfig
 import com.gpgamelab.justpatience.ads.AdManager
+import com.gpgamelab.justpatience.ads.AdBannerTier
+import com.gpgamelab.justpatience.ads.AdPlacementResult
+import com.gpgamelab.justpatience.ads.AdPlacementCoordinator
 import com.gpgamelab.justpatience.assets.AndroidAssetResolver
 import com.gpgamelab.justpatience.R
 import com.gpgamelab.justpatience.data.SettingsManager
@@ -3070,6 +3073,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     // Ad management
     private lateinit var adManager: AdManager
+    private lateinit var adPlacementCoordinator: AdPlacementCoordinator
     private lateinit var statsManager: GameStatsManager
     private lateinit var settingsManager: SettingsManager
     private lateinit var rewardPopupDialog: RewardPopupDialog
@@ -3400,6 +3404,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         // Initialize and load banner ads
         adManager = AdManager(this)
+        adPlacementCoordinator = AdPlacementCoordinator(this)
         adManager.initializeAds()
         // Banner reload is scheduled in the shared post-layout block above.
         adManager.loadRewardedAd()
@@ -6393,6 +6398,16 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    private fun AdBannerTier.toLegacyBannerTier(): BannerAdTier = when (this) {
+        AdBannerTier.SMALL -> BannerAdTier.SMALL
+        AdBannerTier.MEDIUM -> BannerAdTier.MEDIUM
+        AdBannerTier.LARGE -> BannerAdTier.LARGE
+    }
+
+    private fun resolveBannerSizesForTier(tier: AdBannerTier): List<AdSize> {
+        return resolveBannerSizesForTier(tier.toLegacyBannerTier())
+    }
+
     private fun resolveBannerSizesForTier(tier: BannerAdTier): List<AdSize> {
         return when (tier) {
             BannerAdTier.SMALL -> listOf(AdSize.BANNER)
@@ -6401,9 +6416,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private fun resolveCurrentBannerOffsetDp(): Pair<Float, Float> {
+    private fun resolveCurrentBannerOffsetDp(tierOverride: AdBannerTier? = null): Pair<Float, Float> {
         val isLandscape = isLandscapeNow()
-        return when (resolveBannerTier(resolveCurrentBannerAdBoxChoice())) {
+        return when (tierOverride?.toLegacyBannerTier() ?: resolveBannerTier(resolveCurrentBannerAdBoxChoice())) {
             BannerAdTier.SMALL -> {
                 if (isLandscape) devSmallDeviceLandscapeBannerOffsetXDpState to devSmallDeviceLandscapeBannerOffsetYDpState
                 else devSmallDevicePortraitBannerOffsetXDpState to devSmallDevicePortraitBannerOffsetYDpState
@@ -6434,12 +6449,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun hasCachedPhase2OverlayLayout(): Boolean = cachedPhase2GroupRects.isNotEmpty()
 
-    private fun updateBannerPlacementForCurrentConfiguration() {
+    private fun updateBannerPlacementForCurrentConfiguration(tierOverride: AdBannerTier? = null) {
         val container = resolveBannerContainer() ?: return
         val isLandscape = isLandscapeNow()
         val mirrored = viewModel.isMirroredLayout.value
         val ratioProfile = calculateDevOffsetRatioProfile()
-        val (offsetXDp, offsetYDp) = resolveCurrentBannerOffsetDp()
+        val (offsetXDp, offsetYDp) = resolveCurrentBannerOffsetDp(tierOverride)
         val fineTuneX = scaleDevDpOffsetX(offsetXDp, ratioProfile)
         val fineTuneY = scaleDevDpOffsetY(offsetYDp, ratioProfile)
 
@@ -6532,16 +6547,17 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    private fun configureCurrentBannerBoxAndResolveAdSizes(): List<AdSize> {
+    private fun configureCurrentBannerBoxAndResolveAdSizes(tierOverride: AdBannerTier? = null): List<AdSize> {
         val container = resolveBannerContainer()
         if (container == null) {
-            val tierWithoutContainer = resolveBannerTier(resolveCurrentBannerAdBoxChoice())
+            val tierWithoutContainer = tierOverride?.toLegacyBannerTier()
+                ?: resolveBannerTier(resolveCurrentBannerAdBoxChoice())
             Log.d("GameActivityAds", "Banner container missing; tier=$tierWithoutContainer")
             return resolveBannerSizesForTier(tierWithoutContainer)
         }
 
-        val choice = resolveCurrentBannerAdBoxChoice()
-        val resolvedTier = resolveBannerTier(choice)
+        val resolvedTier = tierOverride?.toLegacyBannerTier()
+            ?: resolveBannerTier(resolveCurrentBannerAdBoxChoice())
         val (boxWidthDp, boxHeightDp) = resolveCurrentBannerBoxDimensions(resolvedTier)
 
         val lp = container.layoutParams ?: return emptyList()
@@ -6556,7 +6572,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         Log.d(
             "GameActivityAds",
-            "Banner tier=$resolvedTier choice=$choice isLandscape=${isLandscapeNow()} containerId=${container.id} boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
+            "Banner tier=$resolvedTier isLandscape=${isLandscapeNow()} containerId=${container.id} boxDp=${boxWidthDp}x${boxHeightDp} boxPx=${targetWidthPx}x${targetHeightPx}"
         )
 
         return resolveBannerSizesForTier(resolvedTier)
@@ -6583,23 +6599,74 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun reloadBannerForCurrentConfiguration() {
         if (!::adManager.isInitialized) return
-        val requestedAdSizes = configureCurrentBannerBoxAndResolveAdSizes()
+        reloadBannerForTier(adPlacementCoordinator.resolvePolicy().primaryTier, allowFallbackRetry = true)
+    }
+
+    private fun reloadBannerForTier(tier: AdBannerTier, allowFallbackRetry: Boolean) {
+        val policy = adPlacementCoordinator.resolvePolicy()
+        val requestedAdSizes = configureCurrentBannerBoxAndResolveAdSizes(tier)
         val bannerAdView = resolveActiveBannerAdView(requestedAdSizes)
-        updateBannerPlacementForCurrentConfiguration()
+        updateBannerPlacementForCurrentConfiguration(tier)
         val container = resolveBannerContainer()
-        val loadBanner = {
+        val loadBanner = loadBanner@{
             // Guard: if another reloadBannerForCurrentConfiguration() ran while this post
             // was pending, bannerAdView may have been set to GONE by the newer call.
-            if (bannerAdView.visibility != View.GONE) {
-                adManager.loadBannerAd(bannerAdView, requestedAdSizes)
+            if (bannerAdView.visibility == View.GONE) return@loadBanner
+
+            val currentContainer = resolveBannerContainer() ?: return@loadBanner
+            if (currentContainer.width <= 0 || currentContainer.height <= 0) {
+                currentContainer.post { reloadBannerForTier(tier, allowFallbackRetry) }
+                return@loadBanner
+            }
+
+            val containerRect = getViewRectOnScreen(currentContainer)
+            val safetyGapPx = adPlacementCoordinator.safetyGapDpToPx(policy.safetyGap.dpValue)
+            when (val result = adPlacementCoordinator.validateForCurrentLayout(
+                adContainerRect = containerRect,
+                groupRects = cachedPhase2GroupRects,
+                safetyGapPx = safetyGapPx
+            )) {
+                is AdPlacementResult.Valid -> {
+                    if (result.tier != tier && allowFallbackRetry) {
+                        currentContainer.post { reloadBannerForTier(result.tier, allowFallbackRetry = false) }
+                        return@loadBanner
+                    }
+                    adManager.acceptPlacementRect(containerRect)
+                    adManager.loadBannerAd(bannerAdView, requestedAdSizes)
+                }
+
+                is AdPlacementResult.NoPlacement -> {
+                    Log.w("GameActivityAds", result.reason)
+                    hideAllBannerAdViews()
+                }
             }
         }
+
         // Always defer actual ad load to post-layout so rotation has settled bounds/container size.
         if (container != null) {
             container.post { loadBanner() }
         } else {
             binding.root.post { loadBanner() }
         }
+    }
+
+    private fun getViewRectOnScreen(view: View): RectF {
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        return RectF(
+            location[0].toFloat(),
+            location[1].toFloat(),
+            location[0].toFloat() + view.width,
+            location[1].toFloat() + view.height
+        )
+    }
+
+    private fun hideAllBannerAdViews() {
+        listOfNotNull(
+            findViewById<AdView?>(R.id.adView),
+            findViewById(R.id.adViewBannerMedium),
+            findViewById(R.id.adViewBannerSmall)
+        ).forEach { it.visibility = View.GONE }
     }
 
     private fun applyImmersiveFullscreen() {
