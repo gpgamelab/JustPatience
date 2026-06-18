@@ -155,20 +155,19 @@ fun defaultAdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
         primaryTier  = AdBannerTier.SMALL,
-        fallbackTier = AdBannerTier.MEDIUM,
-        safetyGap    = AdSafetyGap.GENEROUS   // 6 dp on narrow screens
+        fallbackTier = null
     )
     DeviceAspectCategory.SLIM -> AdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
         primaryTier  = AdBannerTier.SMALL,
-        fallbackTier = AdBannerTier.MEDIUM
+        fallbackTier = null
     )
     DeviceAspectCategory.CLASSIC -> AdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
-        primaryTier  = AdBannerTier.MEDIUM,
-        fallbackTier = AdBannerTier.LARGE
+        primaryTier  = AdBannerTier.SMALL,
+        fallbackTier = null
     )
     DeviceAspectCategory.BROAD -> AdPlacementPolicy(
         category     = category,
@@ -179,8 +178,8 @@ fun defaultAdPlacementPolicy(
     DeviceAspectCategory.SQUARE -> AdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
-        primaryTier  = AdBannerTier.MEDIUM,
-        fallbackTier = AdBannerTier.LARGE
+        primaryTier  = AdBannerTier.LARGE,
+        fallbackTier = null
     )
 }
 
