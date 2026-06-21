@@ -87,14 +87,8 @@ object TopRowRectMath {
             FloatRect(x, y, x + cardW, y + cardH)
         } else {
             val slot = resolveFoundationSlot(foundationCount, index, isLandscape = false)
-            val totalCols = 4
-            val totalRows = 2
-            val totalWidth = (totalCols * cardW) + ((totalCols - 1) * gap)
-            val totalHeight = (totalRows * cardH) + ((totalRows - 1) * gap)
-            val centeredOffsetX = ((foundationRect.width - totalWidth) / 2f).coerceAtLeast(0f)
-            val centeredOffsetY = ((foundationRect.height - totalHeight) / 2f).coerceAtLeast(0f)
-            val startX = foundationRect.left + centeredOffsetX
-            val startY = foundationRect.top + centeredOffsetY
+            val startY = foundationRect.top
+            val startX = foundationRect.left
             val x = startX + slot.col * (cardW + gap)
             val y = startY + slot.row * (cardH + gap)
             FloatRect(x, y, x + cardW, y + cardH)
