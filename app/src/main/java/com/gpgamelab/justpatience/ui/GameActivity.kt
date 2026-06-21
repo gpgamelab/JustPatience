@@ -6187,18 +6187,56 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun resolvePhase2ControlsAnchorDelta(): Pair<Float, Float> {
         if (!hasCachedPhase2OverlayLayout()) return 0f to 0f
-        val controlsRect = getCachedPhase2GroupRect(GroupId.CONTROLS) ?: return 0f to 0f
 
-        val rowViews = listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnStats)
+        val controlsRect =
+            getCachedPhase2GroupRect(GroupId.CONTROLS) ?: return 0f to 0f
+
+        val rowViews = listOf(
+            binding.btnUndo,
+            binding.btnRedo,
+            binding.btnHint,
+            binding.magicWandContainer,
+            binding.btnStats
+        )
+
         if (rowViews.any { it.width <= 0 || it.height <= 0 }) return 0f to 0f
 
-        val rowNaturalBounds = unionNaturalBoundsInRoot(rowViews) ?: return 0f to 0f
-        val targetCenterX = controlsRect.centerX()
+        val rowNaturalBounds =
+            unionNaturalBoundsInRoot(rowViews) ?: return 0f to 0f
+
+        val targetX =
+            if (viewModel.isMirroredLayout.value)
+                controlsRect.right
+            else
+                controlsRect.left
+
+        val currentX =
+            if (viewModel.isMirroredLayout.value)
+                rowNaturalBounds.right
+            else
+                rowNaturalBounds.left
+
         val targetBottom = controlsRect.bottom
-        val currentCenterX = rowNaturalBounds.centerX()
         val currentBottom = rowNaturalBounds.bottom
-        return (targetCenterX - currentCenterX) to (targetBottom - currentBottom)
+
+        return (targetX - currentX) to
+                (targetBottom - currentBottom)
     }
+
+//    private fun resolvePhase2ControlsAnchorDelta(): Pair<Float, Float> {
+//        if (!hasCachedPhase2OverlayLayout()) return 0f to 0f
+//        val controlsRect = getCachedPhase2GroupRect(GroupId.CONTROLS) ?: return 0f to 0f
+//
+//        val rowViews = listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnStats)
+//        if (rowViews.any { it.width <= 0 || it.height <= 0 }) return 0f to 0f
+//
+//        val rowNaturalBounds = unionNaturalBoundsInRoot(rowViews) ?: return 0f to 0f
+//        val targetCenterX = controlsRect.centerX()
+//        val targetBottom = controlsRect.bottom
+//        val currentCenterX = rowNaturalBounds.centerX()
+//        val currentBottom = rowNaturalBounds.bottom
+//        return (targetCenterX - currentCenterX) to (targetBottom - currentBottom)
+//    }
 
     private fun resolvePhase2AutoCompleteAnchorDelta(autoButton: View?): Pair<Float, Float> {
         autoButton ?: return 0f to 0f

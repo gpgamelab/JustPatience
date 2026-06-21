@@ -123,7 +123,7 @@ object BoardGroupLayoutEngine {
             ),
             GroupId.CONTROLS to GroupBox(
                 id = GroupId.CONTROLS,
-                left = -200, // OLD margin + statsW + gap,
+                left = margin, // -200, // OLD margin + statsW + gap,
                 top = controlsTop,
                 width = controlsW,
                 height = bottomControlsH
