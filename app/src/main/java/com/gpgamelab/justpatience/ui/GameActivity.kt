@@ -116,7 +116,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val hint: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
         val magicWand: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
         val play: BottomControlButtonAdjustments = BottomControlButtonAdjustments(),
-        val auto: BottomControlButtonAdjustments = BottomControlButtonAdjustments()
+        val autoMove: BottomControlButtonAdjustments = BottomControlButtonAdjustments()
     )
 
     // Consolidated device adjusters for a layout profile (one instance per deck layout type)
@@ -1814,13 +1814,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val source: String,
         val controlsDx: Int,
         val controlsDy: Int,
-        val autoDx: Int,
-        val autoDy: Int,
+//        val autoDx: Int,
+//        val autoDy: Int,
         val statsDx: Int,
         val statsDy: Int,
         val controlsRect: RectF,
         val controlsBounds: RectF,
-        val autoBounds: RectF,
+//        val autoBounds: RectF,
         val statsRect: RectF,
         val statsBounds: RectF
     )
@@ -2064,7 +2064,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         offsetX = devPlayControlOffsetXDpState,
                         offsetY = devPlayControlOffsetYDpState
                     ),
-                    auto = BottomControlButtonAdjustments(
+                    autoMove = BottomControlButtonAdjustments(
                         scale = devAutoControlScaleState,
                         offsetX = devAutoControlOffsetXDpState,
                         offsetY = devAutoControlOffsetYDpState
@@ -2081,7 +2081,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             hintControlAdjustments = values.hint,
             magicWandControlAdjustments = values.magicWand,
             playControlAdjustments = values.play,
-            autoControlAdjustments = values.auto
+            autoControlAdjustments = values.autoMove
         )
     }
 
@@ -2107,7 +2107,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             hint = hintControlAdjustments,
             magicWand = magicWandControlAdjustments,
             play = playControlAdjustments,
-            auto = autoControlAdjustments
+            autoMove = autoControlAdjustments
         )
     }
 
@@ -2248,9 +2248,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         devPlayControlScaleState = controls.play.scale
         devPlayControlOffsetXDpState = controls.play.offsetX
         devPlayControlOffsetYDpState = controls.play.offsetY
-        devAutoControlScaleState = controls.auto.scale
-        devAutoControlOffsetXDpState = controls.auto.offsetX
-        devAutoControlOffsetYDpState = controls.auto.offsetY
+        devAutoControlScaleState = controls.autoMove.scale
+        devAutoControlOffsetXDpState = controls.autoMove.offsetX
+        devAutoControlOffsetYDpState = controls.autoMove.offsetY
     }
 
     private fun applyLayoutScopedDevAdjusters(profile: LayoutProfileDevAdjusters) {
@@ -3417,7 +3417,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         renderGemHud(gemTotal)
         renderTicketHud(ticketTotal)
         renderMagicWandHud(magicWandTotal)
-        binding.btnAutoMove.visibility = View.GONE
+//        binding.btnAutoMove.visibility = View.GONE
 
         // Launcher starts directly in GameActivity; default behavior is resume-or-new.
         forceNewGameOnLaunch = intent.getBooleanExtra("force_new_game", false)
@@ -3467,7 +3467,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                         }
                         updateScoreLabel(g)
                         binding.tvMovesValue.text = formatMovesValue(g.moves)
-                        updateAutoCompleteButtonVisibility(g)
+//                        updateAutoCompleteButtonVisibility(g)
 
                         if (g.status != GameStatus.WON) {
                             winCelebrationPlayed = false
@@ -3478,12 +3478,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                     }
                 }
 
-                launch {
-                    viewModel.autoCompleteEnabled.collect { enabled ->
-                        autoCompleteButtonEnabled = enabled
-                        updateAutoCompleteButtonVisibility(viewModel.game.value)
-                    }
-                }
+//                launch {
+//                    viewModel.autoCompleteEnabled.collect { enabled ->
+//                        autoCompleteButtonEnabled = enabled
+//                        updateAutoCompleteButtonVisibility(viewModel.game.value)
+//                    }
+//                }
 
                 launch {
                     viewModel.gameTime.collect { seconds ->
@@ -3561,10 +3561,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             handleRedoClick()
         }
         // btn_new_game and btn_restart are hidden stubs; actions are in the Play popup.
-        binding.btnNewGame.setOnClickListener {
-            winCelebrationPlayed = false
-            startNewGameWithShuffleAndDealAnimation()
-        }
+//        binding.btnNewGame.setOnClickListener {
+//            winCelebrationPlayed = false
+//            startNewGameWithShuffleAndDealAnimation()
+//        }
         // btn_restart stub kept for ViewBinding; handled via Play popup
         findViewById<View>(R.id.btn_hint)?.setOnClickListener { buttonView ->
             performUiActionHaptic(buttonView)
@@ -3574,7 +3574,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 }
             }
         }
-        binding.btnStats.setOnClickListener { anchor ->
+        binding.btnPlay.setOnClickListener { anchor ->
             performUiActionHaptic(anchor)
             showPlayPopup(anchor)
         }
@@ -3616,10 +3616,10 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         binding.boardScoreboardContainer.visibility = if (visibleRows == 0) View.GONE else View.VISIBLE
     }
 
-    private fun updateAutoCompleteButtonVisibility(game: com.gpgamelab.justpatience.model.Game) {
-        binding.btnAutoMove.visibility =
-            if (autoCompleteButtonEnabled && areAllCardsFaceUp(game)) View.VISIBLE else View.GONE
-    }
+//    private fun updateAutoCompleteButtonVisibility(game: com.gpgamelab.justpatience.model.Game) {
+//        binding.btnAutoMove.visibility =
+//            if (autoCompleteButtonEnabled && areAllCardsFaceUp(game)) View.VISIBLE else View.GONE
+//    }
 
     private fun areAllCardsFaceUp(game: com.gpgamelab.justpatience.model.Game): Boolean {
         val stockAllFaceUp = game.stock.asList().all { it.isFaceUp }
@@ -4496,9 +4496,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
              val flow = findViewById<androidx.constraintlayout.helper.widget.Flow?>(R.id.control_buttons_flow)
              if (flow != null) {
                  flow.referencedIds = if (mirrored) {
-                     intArrayOf(R.id.btn_stats, R.id.magic_wand_container, R.id.btn_hint, R.id.btnRedo, R.id.btnUndo)
+                     intArrayOf(R.id.btn_auto_move, R.id.btn_play, R.id.magic_wand_container, R.id.btn_hint, R.id.btnRedo, R.id.btnUndo)
                  } else {
-                     intArrayOf(R.id.btnUndo, R.id.btnRedo, R.id.btn_hint, R.id.magic_wand_container, R.id.btn_stats)
+                     intArrayOf(R.id.btnUndo, R.id.btnRedo, R.id.btn_hint, R.id.magic_wand_container, R.id.btn_play, R.id.btn_auto_move)
                  }
                  flow.requestLayout()
              }
@@ -6196,7 +6196,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             binding.btnRedo,
             binding.btnHint,
             binding.magicWandContainer,
-            binding.btnStats
+            binding.btnPlay,
+            binding.btnAutoMove
         )
 
         if (rowViews.any { it.width <= 0 || it.height <= 0 }) return 0f to 0f
@@ -6227,7 +6228,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 //        if (!hasCachedPhase2OverlayLayout()) return 0f to 0f
 //        val controlsRect = getCachedPhase2GroupRect(GroupId.CONTROLS) ?: return 0f to 0f
 //
-//        val rowViews = listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnStats)
+//        val rowViews = listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnPlay)
 //        if (rowViews.any { it.width <= 0 || it.height <= 0 }) return 0f to 0f
 //
 //        val rowNaturalBounds = unionNaturalBoundsInRoot(rowViews) ?: return 0f to 0f
@@ -6287,22 +6288,22 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val controlsRect = getCachedPhase2GroupRect(GroupId.CONTROLS) ?: return
         val statsRect = getCachedPhase2GroupRect(GroupId.STATS) ?: return
         val controlsBounds = unionNaturalBoundsInRoot(
-            listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnStats)
+            listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnPlay, binding.btnAutoMove)
         ) ?: return
-        val autoBounds = getNaturalBoundsInRoot(binding.btnAutoMove) ?: return
+//        val autoBounds = getNaturalBoundsInRoot(binding.btnAutoMove) ?: return
         val statsBounds = getNaturalBoundsInRoot(binding.infoSidePanel) ?: return
 
         val controlsDx = controlsRect.centerX() - controlsBounds.centerX()
         val controlsDy = controlsRect.bottom - controlsBounds.bottom
-        val autoDx = controlsRect.centerX() - autoBounds.centerX()
-        val autoDy = (controlsRect.top - dpToPxFloatSigned(6f)) - autoBounds.bottom
+//        val autoDx = controlsRect.centerX() - autoBounds.centerX()
+//        val autoDy = (controlsRect.top - dpToPxFloatSigned(6f)) - autoBounds.bottom
         val statsDx = statsRect.left - statsBounds.left
         val statsDy = statsRect.top - statsBounds.top
 
         val thresholdPx = dpToPxFloatSigned(2f)
         val driftFingerprint = listOf(
             controlsDx.roundToInt(), controlsDy.roundToInt(),
-            autoDx.roundToInt(), autoDy.roundToInt(),
+//            autoDx.roundToInt(), autoDy.roundToInt(),
             statsDx.roundToInt(), statsDy.roundToInt()
         ).joinToString(":")
 
@@ -6313,13 +6314,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             source = source,
             controlsDx = controlsDx.roundToInt(),
             controlsDy = controlsDy.roundToInt(),
-            autoDx = autoDx.roundToInt(),
-            autoDy = autoDy.roundToInt(),
+//            autoDx = autoDx.roundToInt(),
+//            autoDy = autoDy.roundToInt(),
             statsDx = statsDx.roundToInt(),
             statsDy = statsDy.roundToInt(),
             controlsRect = RectF(controlsRect),
             controlsBounds = RectF(controlsBounds),
-            autoBounds = RectF(autoBounds),
+//            autoBounds = RectF(autoBounds),
             statsRect = RectF(statsRect),
             statsBounds = RectF(statsBounds)
         )
@@ -6328,11 +6329,12 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         fun fmtRect(rect: RectF): String =
             "(${rect.left.roundToInt()},${rect.top.roundToInt()},${rect.right.roundToInt()},${rect.bottom.roundToInt()})"
 
-        val maxDrift = maxOf(abs(controlsDx), abs(controlsDy), abs(autoDx), abs(autoDy), abs(statsDx), abs(statsDy))
+        val maxDrift = maxOf(abs(controlsDx), abs(controlsDy), /*abs(autoDx), abs(autoDy),*/ abs(statsDx), abs(statsDy))
         if (maxDrift > thresholdPx) {
             Log.w(
                 "GameActivityPhase2",
-                "overlayDrift source=${snapshot.source} max=${maxDrift.roundToInt()} controls=(${snapshot.controlsDx},${snapshot.controlsDy}) auto=(${snapshot.autoDx},${snapshot.autoDy}) stats=(${snapshot.statsDx},${snapshot.statsDy}) controlsRef=${fmtRect(snapshot.controlsRect)} controlsUi=${fmtRect(snapshot.controlsBounds)} autoUi=${fmtRect(snapshot.autoBounds)} statsRef=${fmtRect(snapshot.statsRect)} statsUi=${fmtRect(snapshot.statsBounds)}"
+//                "overlayDrift source=${snapshot.source} max=${maxDrift.roundToInt()} controls=(${snapshot.controlsDx},${snapshot.controlsDy}) /*auto=(${snapshot.autoDx},${snapshot.autoDy})*/ stats=(${snapshot.statsDx},${snapshot.statsDy}) controlsRef=${fmtRect(snapshot.controlsRect)} controlsUi=${fmtRect(snapshot.controlsBounds)} autoUi=${fmtRect(snapshot.autoBounds)} statsRef=${fmtRect(snapshot.statsRect)} statsUi=${fmtRect(snapshot.statsBounds)}"
+                "overlayDrift source=${snapshot.source} max=${maxDrift.roundToInt()} controls=(${snapshot.controlsDx},${snapshot.controlsDy}) stats=(${snapshot.statsDx},${snapshot.statsDy}) controlsRef=${fmtRect(snapshot.controlsRect)} controlsUi=${fmtRect(snapshot.controlsBounds)} statsRef=${fmtRect(snapshot.statsRect)} statsUi=${fmtRect(snapshot.statsBounds)}"
             )
         }
     }
@@ -6949,7 +6951,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             widthScale
 
         applyTopHudSizing(isLandscapeNow, widthScale, heightScale, textScale)
-        applyBottomControlsSizing(isLandscapeNow, widthScale, heightScale, textScale, portraitButtonWidthScale)
+        applyBottomControlsSizing(isLandscapeNow, widthScale, heightScale, /*textScale, */portraitButtonWidthScale)
         // Runtime relayout should not mutate saved profile state.
         applyTopHudDevOffsets(persistProfile = false)
         logPhase2OverlayDriftIfNeeded("responsiveControlSizing")
@@ -7150,26 +7152,30 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    //    ZYZZX
     private fun applyBottomControlsSizing(
         isLandscape: Boolean,
         widthScale: Float,
         heightScale: Float,
-        textScale: Float,
+//        textScale: Float,
         portraitButtonWidthScale: Float = widthScale
     ) {
-        val moveGroup = findViewById<FrameLayout>(R.id.move_controls_group)
-        val btnHint = findViewById<View?>(R.id.btn_hint)
-        val btnRestart = findViewById<Button?>(R.id.btn_restart)
-        val btnAuto = findViewById<View?>(R.id.btn_auto_move)
+//        val moveGroup = findViewById<FrameLayout>(R.id.move_controls_group)
+//        val btnRestart = findViewById<Button?>(R.id.btn_restart)
         val undoMain = findViewById<ImageView?>(R.id.undo_main)
         val redoMain = findViewById<ImageView?>(R.id.redo_main)
+        val hintMain = findViewById<View?>(R.id.hint_main)
+        val magicMain = findViewById<ImageView?>(R.id.iv_magic_wand)
+        val playMain = findViewById<ImageView?>(R.id.play_main)
+        val autoMoveMain = findViewById<View?>(R.id.auto_move_main)
 
-        val controlTextSp = 8f * textScale
+//        val controlTextSp = 8f * textScale
         // Both orientations use heightScale:
         //   Portrait  → heightScale carries the expansion factor (long axis) → buttons grow taller ✓
         //   Landscape → heightScale carries the compression factor (short axis) → buttons shrink ✓
         val controlHeightScale = heightScale
-        val portraitWidthBoost = 1.75f
+//        val portraitWidthBoost = 1.75f
+        val portraitWidthBoost = 1f
 
         val ratioProfile = BaselineResolutionScaleUtil.calculateAverageRatio(
             context = this,
@@ -7177,59 +7183,72 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             baselinePortraitHeightPx = WIN_POPUP_BASELINE_PORTRAIT_HEIGHT_PX
         )
 
-        if (!isLandscape) {
-            // Portrait uses fixed button widths; portraitButtonWidthScale strips the extreme-aspect
-            // compression so the existing portraitWidthBoost is not double-penalised.
-            setButtonSizeDp(binding.btnNewGame, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
-            setButtonSizeDp(binding.btnStats, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
-            setButtonSizeDp(btnHint, 32f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 72f * controlHeightScale)
-            setButtonSizeDp(btnRestart, 67f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
-            setButtonSizeDp(btnAuto, 96f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 48f * controlHeightScale)
-        } else {
-            setButtonSizeDp(btnHint, 56f * widthScale, 56f * controlHeightScale)
-            setButtonSizeDp(btnAuto, 108f * widthScale, 44f * controlHeightScale)
-        }
+//        if (!isLandscape) {
+//            // Portrait uses fixed button widths; portraitButtonWidthScale strips the extreme-aspect
+//            // compression so the existing portraitWidthBoost is not double-penalised.
+////            setButtonSizeDp(binding.btnNewGame, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+//            setButtonSizeDp(binding.btnPlay, 50f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+//            setButtonSizeDp(btnHint, 32f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 72f * controlHeightScale)
+////            setButtonSizeDp(btnRestart, 67f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 50f * controlHeightScale)
+//            setButtonSizeDp(btnAutoMove, 25f * portraitWidthBoost * portraitButtonWidthScale * ratioProfile.averageRatio, 305f * controlHeightScale)
+//        } else {
+//            setButtonSizeDp(btnHint, 56f * widthScale, 56f * controlHeightScale)
+//            setButtonSizeDp(btnAutoMove, 108f * widthScale, 44f * controlHeightScale)
+//        }
 
-        applyButtonScale(binding.btnNewGame, controlTextSp, textScale * ratioProfile.averageRatio)
-        binding.btnStats.minWidth = 0
-        binding.btnStats.minimumWidth = 0
-        binding.btnStats.minimumHeight = 0
-        binding.btnStats.setPaddingRelative(0, 0, 0, 0)
-        btnRestart?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
+//        applyButtonScale(binding.btnNewGame, controlTextSp, textScale * ratioProfile.averageRatio)
+//        binding.btnPlay.minWidth = 0
+//        binding.btnPlay.minimumWidth = 0
+//        binding.btnPlay.minimumHeight = 0
+//        binding.btnPlay.setPaddingRelative(0, 0, 0, 0)
+//        btnRestart?.let { applyButtonScale(it, controlTextSp, textScale * ratioProfile.averageRatio) }
 
         // Portrait undo/redo widths also use the baseline-only scale (no extra compression).
-        val undoWidthScale = if (isLandscape) widthScale else portraitButtonWidthScale
-        val undoFrameW = if (isLandscape) 40f else 30f * portraitWidthBoost
-        val undoFrameH = if (isLandscape) 40f else 72f
-        val undoImgW = if (isLandscape) 40f else 30f * portraitWidthBoost
-        val undoImgH = if (isLandscape) 40f else 66f
+//        val undoWidthScale = if (isLandscape) widthScale else portraitButtonWidthScale
+//        val undoFrameW = if (isLandscape) 40f else 30f * portraitWidthBoost
+//        val undoFrameH = if (isLandscape) 40f else 72f
+//        val undoImgW = if (isLandscape) 40f else 30f * portraitWidthBoost
+//        val undoImgH = if (isLandscape) 40f else 66f
+        val undoWidthScale = widthScale
+        val undoFrameW = 80f
+        val undoFrameH = 80f
+        val undoImgW = 80f
+        val undoImgH = 80f
 
         resizeFrame(binding.btnUndo, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
         resizeFrame(binding.btnRedo, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
+        resizeFrame(binding.btnHint, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
+        resizeFrame(binding.magicWandContainer, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
+        resizeFrame(binding.btnPlay, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
+        resizeFrame(binding.btnAutoMove, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
         undoMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
         redoMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
+        hintMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
+        magicMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
+        playMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
+        autoMoveMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
 
-        moveGroup?.setPaddingRelative(
-            dpToPx((if (isLandscape) 4f else 3f) * widthScale),
-            dpToPx((if (isLandscape) 4f else 2f) * heightScale),
-            dpToPx((if (isLandscape) 4f else 3f) * widthScale),
-            dpToPx((if (isLandscape) 4f else 2f) * heightScale)
-        )
+//        moveGroup?.setPaddingRelative(
+//            dpToPx((if (isLandscape) 4f else 3f) * widthScale),
+//            dpToPx((if (isLandscape) 4f else 2f) * heightScale),
+//            dpToPx((if (isLandscape) 4f else 3f) * widthScale),
+//            dpToPx((if (isLandscape) 4f else 2f) * heightScale)
+//        )
 
-        binding.btnStats.iconSize = dpToPx(48f * textScale * ratioProfile.averageRatio)
-        binding.btnStats.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
+//        binding.btnPlay.iconSize = dpToPx(64f )//* textScale * ratioProfile.averageRatio)
+//        binding.btnPlay.iconPadding = dpToPx(if (isLandscape) -12f * textScale else -4f * textScale)
 
-        // Keep mirrored controls inset toward the center; using the same positive X offsets
-        // in both hand modes pushes mirrored controls further off the right edge.
-        val mirroredDirectionX = if (viewModel.isMirroredLayout.value) -1f else 1f
-        val (phase2ControlsBaseX, phase2ControlsBaseY) = resolvePhase2ControlsAnchorDelta()
-        val (phase2AutoBaseX, phase2AutoBaseY) = resolvePhase2AutoCompleteAnchorDelta(btnAuto)
-        applyControlAdjustments(binding.btnUndo, devUndoControlScaleState, devUndoControlOffsetXDpState * mirroredDirectionX, devUndoControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
-        applyControlAdjustments(binding.btnRedo, devRedoControlScaleState, devRedoControlOffsetXDpState * mirroredDirectionX, devRedoControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
-        applyControlAdjustments(btnHint, devHintControlScaleState, devHintControlOffsetXDpState * mirroredDirectionX, devHintControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
-        applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState * mirroredDirectionX, devMagicWandControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
-        applyControlAdjustments(binding.btnStats, devPlayControlScaleState, devPlayControlOffsetXDpState * mirroredDirectionX, devPlayControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
-        applyControlAdjustments(btnAuto, devAutoControlScaleState, devAutoControlOffsetXDpState * mirroredDirectionX, devAutoControlOffsetYDpState, ratioProfile, phase2AutoBaseX, phase2AutoBaseY)
+//        // Keep mirrored controls inset toward the center; using the same positive X offsets
+//        // in both hand modes pushes mirrored controls further off the right edge.
+//        val mirroredDirectionX = if (viewModel.isMirroredLayout.value) -1f else 1f
+//        val (phase2ControlsBaseX, phase2ControlsBaseY) = resolvePhase2ControlsAnchorDelta()
+//        val (phase2AutoBaseX, phase2AutoBaseY) = resolvePhase2AutoCompleteAnchorDelta(btnAutoMove)
+//        applyControlAdjustments(binding.btnUndo, devUndoControlScaleState, devUndoControlOffsetXDpState * mirroredDirectionX, devUndoControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
+//        applyControlAdjustments(binding.btnRedo, devRedoControlScaleState, devRedoControlOffsetXDpState * mirroredDirectionX, devRedoControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
+//        applyControlAdjustments(btnHint, devHintControlScaleState, devHintControlOffsetXDpState * mirroredDirectionX, devHintControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
+//        applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState * mirroredDirectionX, devMagicWandControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
+//        applyControlAdjustments(binding.btnPlay, devPlayControlScaleState, devPlayControlOffsetXDpState * mirroredDirectionX, devPlayControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
+//        applyControlAdjustments(btnAutoMove, devAutoControlScaleState, devAutoControlOffsetXDpState * mirroredDirectionX, devAutoControlOffsetYDpState, ratioProfile, phase2AutoBaseX, phase2AutoBaseY)
     }
 
     private fun applyControlAdjustments(

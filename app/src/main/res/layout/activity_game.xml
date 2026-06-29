@@ -9,16 +9,19 @@
     android:background="@color/background_color"
     tools:context=".ui.GameActivity">
     <!-- Game Board fills from top down to the control button row -->
+    <!-- Info side panel: Scoreboard stacked above Gems above Tickets.
+         Classic = upper-right (marginEnd); code updates constraints for left_hand layout. -->
     <com.gpgamelab.justpatience.ui.GameBoardView
         android:id="@+id/game_board_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <!-- Info side panel: Scoreboard stacked above Gems above Tickets.
-         Classic = upper-right (marginEnd); code updates constraints for left_hand layout. -->
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
     <LinearLayout
         android:id="@+id/info_side_panel"
         android:layout_width="wrap_content"
@@ -203,7 +206,7 @@
         android:id="@+id/control_buttons_flow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_stats"
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_play,btn_auto_move"
         app:flow_horizontalGap="2dp"
         app:flow_horizontalStyle="packed"
         app:flow_verticalAlign="center"
@@ -217,18 +220,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_stats" />
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_play,btn_auto_move" />
 
     <!-- Undo -->
     <FrameLayout
         android:id="@+id/btnUndo"
-        android:layout_width="30dp"
-        android:layout_height="72dp"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
         android:background="?android:attr/selectableItemBackground">
         <ImageView
             android:id="@+id/undo_main"
-            android:layout_width="30dp"
-            android:layout_height="66dp"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
             android:contentDescription="@string/action_undo"
@@ -239,13 +242,13 @@
     <!-- Redo -->
     <FrameLayout
         android:id="@+id/btnRedo"
-        android:layout_width="30dp"
-        android:layout_height="72dp"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
         android:background="?android:attr/selectableItemBackground">
         <ImageView
             android:id="@+id/redo_main"
-            android:layout_width="30dp"
-            android:layout_height="66dp"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
             android:contentDescription="@string/action_redo"
@@ -256,20 +259,16 @@
     <!-- Hint -->
     <FrameLayout
         android:id="@+id/btn_hint"
-        android:layout_width="56dp"
-        android:layout_height="72dp"
-        android:background="?android:attr/selectableItemBackground"
-        android:clickable="true"
-        android:contentDescription="@string/action_hint"
-        android:focusable="true">
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="?android:attr/selectableItemBackground">
         <ImageView
             android:id="@+id/hint_main"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
-            android:contentDescription="@null"
-            android:importantForAccessibility="no"
+            android:contentDescription="@string/action_hint"
             android:scaleType="fitCenter"
             android:src="@drawable/button_crystal_ball_hint" />
     </FrameLayout>
@@ -277,16 +276,13 @@
     <!-- Magic Wand -->
     <FrameLayout
         android:id="@+id/magic_wand_container"
-        android:layout_width="90dp"
-        android:layout_height="90dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true"
-        android:translationY="10dp">
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless">
         <ImageView
             android:id="@+id/iv_magic_wand"
-            android:layout_width="58dp"
-            android:layout_height="50dp"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
             android:layout_gravity="center"
             android:contentDescription="@string/magic_wand_content_description"
             android:scaleType="fitCenter"
@@ -320,18 +316,50 @@
             android:visibility="gone" />
     </FrameLayout>
 
+    <!-- Play button -->
+    <FrameLayout
+        android:id="@+id/btn_play"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="?android:attr/selectableItemBackground">
+        <ImageView
+            android:id="@+id/play_main"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:contentDescription="@string/play_button_label"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:src="@drawable/button_play" />
+    </FrameLayout>
     <!-- Hidden views kept for ViewBinding compatibility -->
-    <Button
+    <!-- Button
         android:id="@+id/btn_new_game"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="gone" />
-    <Button
+        android:visibility="gone" / -->
+    <!-- Button
         android:id="@+id/btn_restart"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="gone" />
-    <androidx.appcompat.widget.AppCompatImageButton
+        android:visibility="gone" / -->
+
+    <!-- Auto Move button -->
+    <FrameLayout
+        android:id="@+id/btn_auto_move"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="?android:attr/selectableItemBackground">
+        <ImageView
+            android:id="@+id/auto_move_main"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:contentDescription="@string/auto_complete_button_text"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:src="@drawable/button_auto_complete" />
+    </FrameLayout>
+
+    <!-- androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/btn_auto_move"
         android:layout_width="96dp"
         android:layout_height="48dp"
@@ -343,15 +371,15 @@
         app:srcCompat="@drawable/button_auto_complete"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" / -->
     <FrameLayout
         android:id="@+id/move_controls_group"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone" />
     <!-- Play button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_stats"
+    <!-- com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_play"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="56dp"
         android:layout_height="56dp"
@@ -367,7 +395,7 @@
         app:iconPadding="0dp"
         app:iconTint="@null"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" / -->
     <!-- Portrait floating banner box; size/position is tuned in GameActivity developer controls. -->
     <FrameLayout
         android:id="@+id/portrait_banner_container"
