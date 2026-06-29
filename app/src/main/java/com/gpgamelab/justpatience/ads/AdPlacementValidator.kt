@@ -79,12 +79,12 @@ object AdPlacementValidator {
         if (zones.isEmpty()) {
             return true
         }
-        for (zone in zones) {
-            val expanded = expandRect(zone.rect, safetyGapPx)
-            if (overlaps(adRect, expanded)) {
-                return false
-            }
-        }
+//        for (zone in zones) {
+//            val expanded = expandRect(zone.rect, safetyGapPx)
+//            if (overlaps(adRect, expanded)) {
+//                return false
+//            }
+//        }
         return true
     }
 

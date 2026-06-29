@@ -172,13 +172,13 @@ fun defaultAdPlacementPolicy(
     DeviceAspectCategory.BROAD -> AdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
-        primaryTier  = AdBannerTier.LARGE,
+        primaryTier  = AdBannerTier.SMALL,
         fallbackTier = null
     )
     DeviceAspectCategory.SQUARE -> AdPlacementPolicy(
         category     = category,
         isLandscape  = isLandscape,
-        primaryTier  = AdBannerTier.LARGE,
+        primaryTier  = AdBannerTier.SMALL,
         fallbackTier = null
     )
 }

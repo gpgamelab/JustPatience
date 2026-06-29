@@ -7249,6 +7249,15 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 //        applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState * mirroredDirectionX, devMagicWandControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
 //        applyControlAdjustments(binding.btnPlay, devPlayControlScaleState, devPlayControlOffsetXDpState * mirroredDirectionX, devPlayControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
 //        applyControlAdjustments(btnAutoMove, devAutoControlScaleState, devAutoControlOffsetXDpState * mirroredDirectionX, devAutoControlOffsetYDpState, ratioProfile, phase2AutoBaseX, phase2AutoBaseY)
+
+        if(!isLandscape) {
+            binding.btnUndo.translationY = dpToPxFloatSigned(-60f)
+            binding.btnRedo.translationY = dpToPxFloatSigned(-60f)
+            binding.btnHint.translationY = dpToPxFloatSigned(-60f)
+            binding.magicWandContainer.translationY = dpToPxFloatSigned(-60f)
+            binding.btnPlay.translationY = dpToPxFloatSigned(-60f)
+            binding.btnAutoMove.translationY = dpToPxFloatSigned(-60f)
+        }
     }
 
     private fun applyControlAdjustments(
