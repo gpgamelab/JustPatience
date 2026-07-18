@@ -1554,7 +1554,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         return if (isLandscapeNow()) {
             when (binding.gameBoardView.getCurrentAspectCategory()) {
                 DeviceAspectCategory.SLIM_COMPACT -> profile.landscapeSlimCompact
-                DeviceAspectCategory.SLIM -> if (isCompactSlimLandscapeBoard()) profile.landscapeSlimCompact else profile.landscapeSlim
+                DeviceAspectCategory.SLIM -> profile.landscapeSlim
                 DeviceAspectCategory.CLASSIC -> profile.landscapeClassic
                 DeviceAspectCategory.BROAD -> profile.landscapeBroad
                 DeviceAspectCategory.SQUARE -> profile.landscapeSquare
@@ -1562,7 +1562,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         } else {
             when (binding.gameBoardView.getCurrentAspectCategory()) {
                 DeviceAspectCategory.SLIM_COMPACT -> profile.portraitSlimCompact
-                DeviceAspectCategory.SLIM -> if (isCompactSlimPortraitBoard()) profile.portraitSlimCompact else profile.portraitSlim
+                DeviceAspectCategory.SLIM -> profile.portraitSlim
                 DeviceAspectCategory.CLASSIC -> profile.portraitClassic
                 DeviceAspectCategory.BROAD -> profile.portraitBroad
                 DeviceAspectCategory.SQUARE -> profile.portraitSquare
@@ -1596,7 +1596,11 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun isLandscapeNow(): Boolean {
-        return resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        var result = true
+        // Always force landscape for the square device
+        if (binding.gameBoardView.getCurrentAspectCategory() != DeviceAspectCategory.SQUARE)
+            result = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        return result
     }
 
     // Lets narrow SLIM phones (e.g. 720px portrait board) use a separate tuning set.
@@ -2254,7 +2258,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     }
 
     private fun applyLayoutScopedDevAdjusters(profile: LayoutProfileDevAdjusters) {
-        val isPortrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+//        val isPortrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+        val isPortrait = !isLandscapeNow()
         devLandscapeOverallOffsetXSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetX
         devLandscapeOverallOffsetYSlimCompactDpState = profile.landscapeSlimCompact.pileOverallOffsetY
         devLandscapeFoundationOffsetXSlimCompactDpState = profile.landscapeSlimCompact.foundationOffsetX
@@ -2590,7 +2595,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun isCompactSlimPortraitBoard(): Boolean {
         val boardWidthPx = binding.gameBoardView.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels
-        val isPortrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+//        val isPortrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+        val isPortrait = !isLandscapeNow()
         return isPortrait && boardWidthPx <= portraitSlimCompactMaxBoardWidthPx
     }
 
@@ -2744,7 +2750,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun isCompactSlimLandscapeBoard(): Boolean {
         val boardHeightPx = binding.gameBoardView.height.takeIf { it > 0 } ?: resources.displayMetrics.heightPixels
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+//        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isLandscape = isLandscapeNow()
         return isLandscape && boardHeightPx <= landscapeSlimCompactMaxBoardHeightPx
     }
 
@@ -2851,7 +2858,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val heightPortrait = (winPopupUiConfig.dialogHeightPercent * winPopupUiConfig.dialogScalePortrait)
             .coerceIn(0.1f, 1f)
 
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+//        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isLandscape = isLandscapeNow()
         return RewardPopupDialog.UiConfig(
             dialogWidthPercentLandscape = widthLandscape,
             dialogWidthPercentPortrait = widthPortrait,
@@ -3017,7 +3025,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
 
         val shouldShowStarburst = uiConfig.showStarburst && model.showStarburst
-        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+//        val isLandscapeNow = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isLandscapeNow = isLandscapeNow()
         val dialogWidthPercent = if (isLandscapeNow) uiConfig.dialogWidthPercentLandscape else uiConfig.dialogWidthPercentPortrait
         val dialogHeightPercent = if (isLandscapeNow) uiConfig.dialogHeightPercentLandscape else uiConfig.dialogHeightPercentPortrait
         val (usableWidthPx, usableHeightPx) = getUsableWindowSizePx()
@@ -3225,7 +3234,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
      * Baseline is the medium tablet at 1600 × 2560 px.
      */
      private fun applyAutoWinPopupRatios() {
-         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+//         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+         val isLandscape = isLandscapeNow()
          val ratio = BaselineResolutionScaleUtil.calculateAverageRatio(
              this,
              baselinePortraitWidthPx  = 1600,
@@ -3282,7 +3292,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
          // Win popup element baselines tuned on the medium tablet (1600 × 2560 px).
          private const val BASELINE_WIN_GEM_HEIGHT_DP     = 60f
          private const val BASELINE_WIN_TICKET_HEIGHT_DP  = 180f
-         private const val BASELINE_WIN_MAGIC_WAND_HEIGHT_DP  = 100f
+         private const val BASELINE_WIN_MAGIC_WAND_HEIGHT_DP  = 50f
          private const val BASELINE_WIN_REWARD_TEXT_SP    = 60f
          private const val BASELINE_WIN_VICTORY_TEXT_SP   = 60f
 
@@ -3578,7 +3588,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             performUiActionHaptic(anchor)
             showPlayPopup(anchor)
         }
-        binding.magicWandContainer.setOnClickListener { onMagicWandClicked() }
+        binding.btnMagicWand.setOnClickListener { onMagicWandClicked() }
         findViewById<View>(R.id.btn_auto_move)?.setOnClickListener { buttonView ->
             onAutoMoveClicked(buttonView)
         }
@@ -4137,7 +4147,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
     private fun setMagicWandSelectionMode(enabled: Boolean) {
         isMagicWandSelectionMode = enabled
-        binding.magicWandContainer.alpha = if (enabled) 0.7f else 1f
+        binding.btnMagicWand.alpha = if (enabled) 0.7f else 1f
         binding.gameBoardView.setMagicWandSelectionMode(enabled)
     }
 
@@ -4496,9 +4506,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
              val flow = findViewById<androidx.constraintlayout.helper.widget.Flow?>(R.id.control_buttons_flow)
              if (flow != null) {
                  flow.referencedIds = if (mirrored) {
-                     intArrayOf(R.id.btn_auto_move, R.id.btn_play, R.id.magic_wand_container, R.id.btn_hint, R.id.btnRedo, R.id.btnUndo)
+                     intArrayOf(R.id.btn_auto_move, R.id.btn_play, R.id.btn_magic_wand, R.id.btn_hint, R.id.btnRedo, R.id.btnUndo)
                  } else {
-                     intArrayOf(R.id.btnUndo, R.id.btnRedo, R.id.btn_hint, R.id.magic_wand_container, R.id.btn_play, R.id.btn_auto_move)
+                     intArrayOf(R.id.btnUndo, R.id.btnRedo, R.id.btn_hint, R.id.btn_magic_wand, R.id.btn_play, R.id.btn_auto_move)
                  }
                  flow.requestLayout()
              }
@@ -6195,7 +6205,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             binding.btnUndo,
             binding.btnRedo,
             binding.btnHint,
-            binding.magicWandContainer,
+            binding.btnMagicWand,
             binding.btnPlay,
             binding.btnAutoMove
         )
@@ -6228,7 +6238,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 //        if (!hasCachedPhase2OverlayLayout()) return 0f to 0f
 //        val controlsRect = getCachedPhase2GroupRect(GroupId.CONTROLS) ?: return 0f to 0f
 //
-//        val rowViews = listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnPlay)
+//        val rowViews = listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.btnMagicWand, binding.btnPlay)
 //        if (rowViews.any { it.width <= 0 || it.height <= 0 }) return 0f to 0f
 //
 //        val rowNaturalBounds = unionNaturalBoundsInRoot(rowViews) ?: return 0f to 0f
@@ -6288,7 +6298,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val controlsRect = getCachedPhase2GroupRect(GroupId.CONTROLS) ?: return
         val statsRect = getCachedPhase2GroupRect(GroupId.STATS) ?: return
         val controlsBounds = unionNaturalBoundsInRoot(
-            listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.magicWandContainer, binding.btnPlay, binding.btnAutoMove)
+            listOf(binding.btnUndo, binding.btnRedo, binding.btnHint, binding.btnMagicWand, binding.btnPlay, binding.btnAutoMove)
         ) ?: return
 //        val autoBounds = getNaturalBoundsInRoot(binding.btnAutoMove) ?: return
         val statsBounds = getNaturalBoundsInRoot(binding.infoSidePanel) ?: return
@@ -6388,7 +6398,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         return if (isLandscapeNow()) {
             when (binding.gameBoardView.getCurrentAspectCategory()) {
                 DeviceAspectCategory.SLIM_COMPACT -> devLandscapeAdBoxChoiceSlimCompactState
-                DeviceAspectCategory.SLIM -> if (isCompactSlimLandscapeBoard()) devLandscapeAdBoxChoiceSlimCompactState else devLandscapeAdBoxChoiceSlimState
+                DeviceAspectCategory.SLIM -> devLandscapeAdBoxChoiceSlimState
                 DeviceAspectCategory.CLASSIC -> devLandscapeAdBoxChoiceClassicState
                 DeviceAspectCategory.BROAD -> devLandscapeAdBoxChoiceBroadState
                 DeviceAspectCategory.SQUARE -> devLandscapeAdBoxChoiceSquareState
@@ -6396,7 +6406,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         } else {
             when (binding.gameBoardView.getCurrentAspectCategory()) {
                 DeviceAspectCategory.SLIM_COMPACT -> devPortraitAdBoxChoiceSlimCompactState
-                DeviceAspectCategory.SLIM -> if (isCompactSlimPortraitBoard()) devPortraitAdBoxChoiceSlimCompactState else devPortraitAdBoxChoiceSlimState
+                DeviceAspectCategory.SLIM -> devPortraitAdBoxChoiceSlimState
                 DeviceAspectCategory.CLASSIC -> devPortraitAdBoxChoiceClassicState
                 DeviceAspectCategory.BROAD -> devPortraitAdBoxChoiceBroadState
                 DeviceAspectCategory.SQUARE -> devPortraitAdBoxChoiceSquareState
@@ -6408,10 +6418,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         if (isLandscapeNow()) {
             when (binding.gameBoardView.getCurrentAspectCategory()) {
                 DeviceAspectCategory.SLIM_COMPACT -> devLandscapeAdBoxChoiceSlimCompactState = choice
-                DeviceAspectCategory.SLIM -> {
-                    if (isCompactSlimLandscapeBoard()) devLandscapeAdBoxChoiceSlimCompactState = choice
-                    else devLandscapeAdBoxChoiceSlimState = choice
-                }
+                DeviceAspectCategory.SLIM -> devLandscapeAdBoxChoiceSlimState = choice
                 DeviceAspectCategory.CLASSIC -> devLandscapeAdBoxChoiceClassicState = choice
                 DeviceAspectCategory.BROAD -> devLandscapeAdBoxChoiceBroadState = choice
                 DeviceAspectCategory.SQUARE -> devLandscapeAdBoxChoiceSquareState = choice
@@ -6419,10 +6426,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         } else {
             when (binding.gameBoardView.getCurrentAspectCategory()) {
                 DeviceAspectCategory.SLIM_COMPACT -> devPortraitAdBoxChoiceSlimCompactState = choice
-                DeviceAspectCategory.SLIM -> {
-                    if (isCompactSlimPortraitBoard()) devPortraitAdBoxChoiceSlimCompactState = choice
-                    else devPortraitAdBoxChoiceSlimState = choice
-                }
+                DeviceAspectCategory.SLIM -> devPortraitAdBoxChoiceSlimState = choice
                 DeviceAspectCategory.CLASSIC -> devPortraitAdBoxChoiceClassicState = choice
                 DeviceAspectCategory.BROAD -> devPortraitAdBoxChoiceBroadState = choice
                 DeviceAspectCategory.SQUARE -> devPortraitAdBoxChoiceSquareState = choice
@@ -6933,7 +6937,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val config = resources.configuration
         val widthDp = config.screenWidthDp.toFloat()
         val heightDp = config.screenHeightDp.toFloat()
-        val isLandscapeNow = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+//        val isLandscapeNow = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isLandscapeNow = isLandscapeNow()
 
         val factors = UiScaleUtil.calculateBaselineScaleFactors(widthDp, heightDp)
         val widthScale = factors.horizontal
@@ -6963,27 +6968,35 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         heightScale: Float,
         textScale: Float
     ) {
-        val boardScale = ((widthScale + heightScale) * 0.5f)
+//        val boardScale = ((widthScale + heightScale) * 0.5f)
         val scoreboardWidthDp = 120f * widthScale
-        val scoreboardPaddingDp = 3f * boardScale
+//        val scoreboardPaddingDp = 3f * boardScale
         val scoreboardMarginTopDp = 3f * heightScale
         val scoreboardMarginEndDp = 4f * widthScale
-        val rowHeightDp = (if (isLandscape) 60f else 20f) * heightScale
+        val rowHeightDp = (if (isLandscape) 50f else 20f) * heightScale
         val rowGapDp = 2f * heightScale
         val rowHorizontalPaddingDp = 6f * widthScale
-        val labelTextSp = 11f * textScale
-        val valueTextSp = 13f * textScale
+//        val labelTextSp = 11f * textScale
+//        val valueTextSp = 13f * textScale
+        val labelTextSp = (if (isLandscape) 15f else 11f) * textScale
+        val valueTextSp = (if (isLandscape) 17f else 13f) * textScale
 
         resizeFrame(
             binding.boardScoreboardContainer,
             dpToPx(scoreboardWidthDp),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+//        binding.boardScoreboardContainer.setPadding(
+//            dpToPx(scoreboardPaddingDp),
+//            dpToPx(scoreboardPaddingDp),
+//            dpToPx(scoreboardPaddingDp),
+//            dpToPx(scoreboardPaddingDp)
+//        )
         binding.boardScoreboardContainer.setPadding(
-            dpToPx(scoreboardPaddingDp),
-            dpToPx(scoreboardPaddingDp),
-            dpToPx(scoreboardPaddingDp),
-            dpToPx(scoreboardPaddingDp)
+            dpToPx(3f * widthScale),
+            dpToPx(3f * heightScale),
+            dpToPx(3f * widthScale),
+            dpToPx(3f * heightScale)
         )
         (binding.boardScoreboardContainer.layoutParams as? ConstraintLayout.LayoutParams)?.let { lp ->
             lp.topMargin = dpToPx(scoreboardMarginTopDp)
@@ -7009,44 +7022,54 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             it.setTextSize(TypedValue.COMPLEX_UNIT_SP, valueTextSp)
         }
 
-        val baseGemBagDp = if (isLandscape) 22f else 24f
+        val baseGemBagDp = if (isLandscape) 30f else 20f
         // gem bag reduced to ~0.75 of old size (user tuned: 80dp → 60dp in portrait XML)
         val gemBagBaseDp = baseGemBagDp * 2.5f
-        val gemCountBaseSp = if (isLandscape) 10f else 11f
-        val gemMinWidthBaseDp = if (isLandscape) 26f else 28f
-        val wandContainerBaseDp = 56f * 1.6f
-        // wand icon height reduced ~0.86 (user tuned: 58dp → 50dp in portrait XML)
-        val wandIconBaseDp = 36f * 1.38f
-        val gemSizePx = dpToPx(gemBagBaseDp * textScale)
-        val ticketSizePx = dpToPx((baseGemBagDp * 3.7f) * textScale)
-        val wandContainerPx = dpToPx(wandContainerBaseDp * textScale)
-        val wandIconPx = dpToPx(wandIconBaseDp * textScale)
+        val gemCountBaseSp = if (isLandscape) 15f else 11f
+        val gemMinWidthBaseDp = if (isLandscape) 30f else 28f
+//        val wandContainerBaseDp = 56f * 1.6f
+//        // wand icon height reduced ~0.86 (user tuned: 58dp → 50dp in portrait XML)
+//        val wandIconBaseDp = 36f * 1.38f
+//        val wandContainerPx = dpToPx(wandContainerBaseDp * textScale)
+//        val wandIconPx = dpToPx(wandIconBaseDp * textScale)
 
+        val gemSizePx = dpToPx(gemBagBaseDp * textScale)
         resizeFrame(binding.ivGemBag, gemSizePx, gemSizePx)
-        resizeFrame(binding.ivTicketIcon, ticketSizePx, ticketSizePx)
-        resizeFrame(binding.magicWandContainer, wandContainerPx, wandContainerPx)
-        resizeFrame(binding.ivMagicWand, wandIconPx, wandIconPx)
+
+//        resizeFrame(binding.btnMagicWand, wandContainerPx, wandContainerPx)
+//        resizeFrame(binding.magicWandMain, wandIconPx, wandIconPx)
         binding.tvGemCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
-        binding.tvTicketCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
         binding.tvGemCount.minWidth = dpToPx(gemMinWidthBaseDp * widthScale)
-        binding.tvTicketCount.minWidth = dpToPx(gemMinWidthBaseDp * widthScale)
         binding.tvGemCount.setPaddingRelative(
             dpToPx(6f * widthScale),
             dpToPx(1f * heightScale),
             dpToPx(6f * widthScale),
             dpToPx(1f * heightScale)
         )
+
+        val ticketSizePx = dpToPx((baseGemBagDp * 3.9f) * textScale)
+        resizeFrame(binding.ivTicketIcon, ticketSizePx, ticketSizePx)
+        binding.tvTicketCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, gemCountBaseSp * textScale)
+        binding.tvTicketCount.minWidth = dpToPx(gemMinWidthBaseDp * widthScale)
         binding.tvTicketCount.setPaddingRelative(
             dpToPx(6f * widthScale),
             dpToPx(1f * heightScale),
             dpToPx(6f * widthScale),
             dpToPx(1f * heightScale)
         )
+
         // Allow count ovals to move outside their container bounds when nudged upward.
         binding.boardCurrencyHudContainer.clipChildren = false
         binding.boardCurrencyHudContainer.clipToPadding = false
         binding.gemsContainer.clipChildren = false
         binding.gemsContainer.clipToPadding = false
+
+//        val gemTranslationX = if (isLandscape) {
+//            dpToPxFloatSigned(-160f * widthScale)
+//        } else {
+//            dpToPxFloatSigned(-100f * widthScale)
+//        }
+//        binding.gemsContainer.translationX = gemTranslationX
 
         // Portrait keeps the original horizontal row; landscape stacks wand -> tickets -> gems.
         binding.boardCurrencyHudContainer.orientation = if (isLandscape) {
@@ -7063,9 +7086,9 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         // Gem count number: use signed conversion. dpToPx() clamps negatives to +1,
         // so it cannot be used for upward offsets.
         val gemCountTranslationY = if (isLandscape) {
-            dpToPxFloatSigned(-14f * heightScale)
+            dpToPxFloatSigned(-16f * heightScale)
         } else {
-            dpToPxFloatSigned(-8f * heightScale)
+            dpToPxFloatSigned(-10f * heightScale)
         }
         when (val lp = binding.tvGemCount.layoutParams) {
             is LinearLayout.LayoutParams -> {
@@ -7081,26 +7104,26 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             }
         }
         binding.tvGemCount.translationY = gemCountTranslationY
-        (binding.magicWandContainer.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
-            lp.marginStart = 0
-            lp.marginEnd = 0
-            lp.bottomMargin = if (isLandscape) dpToPx(4f * heightScale) else 0
-            binding.magicWandContainer.layoutParams = lp
-        }
+//        (binding.btnMagicWand.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+//            lp.marginStart = 0
+//            lp.marginEnd = 0
+//            lp.bottomMargin = if (isLandscape) dpToPx(4f * heightScale) else 0
+//            binding.btnMagicWand.layoutParams = lp
+//        }
         // Wand container: landscape moves further up, portrait moves up more than ticket
-        val wandTranslationY = when {
-            isLandscape -> dpToPx(-8f * heightScale).toFloat()   // landscape: move up
-            else        -> dpToPx(-10f * heightScale).toFloat()  // portrait: move up more than ticket
-        }
-        binding.magicWandContainer.translationY = wandTranslationY
+//        val wandTranslationY = when {
+//            isLandscape -> dpToPx(-8f * heightScale).toFloat()   // landscape: move up
+//            else        -> dpToPx(-10f * heightScale).toFloat()  // portrait: move up more than ticket
+//        }
+//        binding.btnMagicWand.translationY = wandTranslationY
 
-        // Wand count number: move upward in both orientations (same amount as gem count)
-        val wandCountTopOffset = if (isLandscape) dpToPx(-10f * heightScale) else dpToPx(-8f * heightScale)
-        (binding.tvMagicWandCount.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
-            lp.gravity = Gravity.END or Gravity.TOP
-            lp.topMargin = wandCountTopOffset
-            binding.tvMagicWandCount.layoutParams = lp
-        }
+//        // Wand count number: move upward in both orientations (same amount as gem count)
+//        val wandCountTopOffset = if (isLandscape) dpToPx(-10f * heightScale) else dpToPx(-8f * heightScale)
+//        (binding.tvMagicWandCount.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+//            lp.gravity = Gravity.END or Gravity.TOP
+//            lp.topMargin = wandCountTopOffset
+//            binding.tvMagicWandCount.layoutParams = lp
+//        }
 
         // Ticket count number: unchanged (user confirmed fine)
         when (val lp = binding.tvTicketCount.layoutParams) {
@@ -7152,7 +7175,6 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
-    //    ZYZZX
     private fun applyBottomControlsSizing(
         isLandscape: Boolean,
         widthScale: Float,
@@ -7165,7 +7187,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         val undoMain = findViewById<ImageView?>(R.id.undo_main)
         val redoMain = findViewById<ImageView?>(R.id.redo_main)
         val hintMain = findViewById<View?>(R.id.hint_main)
-        val magicMain = findViewById<ImageView?>(R.id.iv_magic_wand)
+        val magicMain = findViewById<ImageView?>(R.id.magic_wand_main)
         val playMain = findViewById<ImageView?>(R.id.play_main)
         val autoMoveMain = findViewById<View?>(R.id.auto_move_main)
 
@@ -7218,7 +7240,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         resizeFrame(binding.btnUndo, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
         resizeFrame(binding.btnRedo, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
         resizeFrame(binding.btnHint, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
-        resizeFrame(binding.magicWandContainer, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
+        resizeFrame(binding.btnMagicWand, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
         resizeFrame(binding.btnPlay, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
         resizeFrame(binding.btnAutoMove, dpToPx(undoFrameW * undoWidthScale), dpToPx(undoFrameH * controlHeightScale))
         undoMain?.let { resizeFrame(it, dpToPx(undoImgW * undoWidthScale), dpToPx(undoImgH * controlHeightScale)) }
@@ -7246,15 +7268,23 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 //        applyControlAdjustments(binding.btnUndo, devUndoControlScaleState, devUndoControlOffsetXDpState * mirroredDirectionX, devUndoControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
 //        applyControlAdjustments(binding.btnRedo, devRedoControlScaleState, devRedoControlOffsetXDpState * mirroredDirectionX, devRedoControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
 //        applyControlAdjustments(btnHint, devHintControlScaleState, devHintControlOffsetXDpState * mirroredDirectionX, devHintControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
-//        applyControlAdjustments(findViewById(R.id.magic_wand_container), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState * mirroredDirectionX, devMagicWandControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
+//        applyControlAdjustments(findViewById(R.id.btnMagicWand), devMagicWandControlScaleState, devMagicWandControlOffsetXDpState * mirroredDirectionX, devMagicWandControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
 //        applyControlAdjustments(binding.btnPlay, devPlayControlScaleState, devPlayControlOffsetXDpState * mirroredDirectionX, devPlayControlOffsetYDpState, ratioProfile, phase2ControlsBaseX, phase2ControlsBaseY)
 //        applyControlAdjustments(btnAutoMove, devAutoControlScaleState, devAutoControlOffsetXDpState * mirroredDirectionX, devAutoControlOffsetYDpState, ratioProfile, phase2AutoBaseX, phase2AutoBaseY)
 
-        if(!isLandscape) {
+        if(isLandscape && binding.gameBoardView.getCurrentAspectCategory() != DeviceAspectCategory.CLASSIC ) {
+            binding.btnUndo.translationY = dpToPxFloatSigned(0f)
+            binding.btnRedo.translationY = dpToPxFloatSigned(0f)
+            binding.btnHint.translationY = dpToPxFloatSigned(0f)
+            binding.btnMagicWand.translationY = dpToPxFloatSigned(0f)
+            binding.btnPlay.translationY = dpToPxFloatSigned(0f)
+            binding.btnAutoMove.translationY = dpToPxFloatSigned(0f)
+        }
+        else {
             binding.btnUndo.translationY = dpToPxFloatSigned(-60f)
             binding.btnRedo.translationY = dpToPxFloatSigned(-60f)
             binding.btnHint.translationY = dpToPxFloatSigned(-60f)
-            binding.magicWandContainer.translationY = dpToPxFloatSigned(-60f)
+            binding.btnMagicWand.translationY = dpToPxFloatSigned(-60f)
             binding.btnPlay.translationY = dpToPxFloatSigned(-60f)
             binding.btnAutoMove.translationY = dpToPxFloatSigned(-60f)
         }
