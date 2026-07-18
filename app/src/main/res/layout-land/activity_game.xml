@@ -223,7 +223,7 @@
         android:id="@+id/control_buttons_flow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_play, btn_auto_move"
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,btn_magic_wand,btn_play, btn_auto_move"
         app:flow_horizontalGap="2dp"
         app:flow_horizontalStyle="packed"
         app:flow_verticalAlign="center"
@@ -237,7 +237,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_play, btn_auto_move" />
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,btn_magic_wand,btn_play, btn_auto_move" />
 
     <!-- Undo -->
     <FrameLayout
@@ -276,8 +276,7 @@
         android:id="@+id/btn_hint"
         android:layout_width="8dp"
         android:layout_height="8dp"
-        android:background="?android:attr/selectableItemBackground"
-        android:focusable="true">
+        android:background="?android:attr/selectableItemBackground">
         <ImageView
             android:id="@+id/hint_main"
             android:layout_width="8dp"
@@ -290,13 +289,13 @@
 
     <!-- Magic Wand -->
     <FrameLayout
-        android:id="@+id/magic_wand_container"
+        android:id="@+id/btn_magic_wand"
         android:layout_width="8dp"
         android:layout_height="8dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless">
+        android:background="?android:attr/selectableItemBackground">
 
         <ImageView
-            android:id="@+id/iv_magic_wand"
+            android:id="@+id/magic_wand_main"
             android:layout_width="8dp"
             android:layout_height="8dp"
             android:layout_gravity="center"
@@ -321,7 +320,6 @@
             android:textSize="10sp"
             android:textStyle="bold"
             tools:text="0" />
-
         <ImageView
             android:id="@+id/iv_magic_wand_ad_badge"
             android:layout_width="22dp"

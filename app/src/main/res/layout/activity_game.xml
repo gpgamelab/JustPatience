@@ -132,7 +132,7 @@
             android:layout_height="wrap_content"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:layout_gravity="end">
             <ImageView
                 android:id="@+id/iv_gem_bag"
@@ -169,8 +169,8 @@
             android:layout_gravity="end">
             <ImageView
                 android:id="@+id/iv_ticket_icon"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:contentDescription="@string/tickets_total_label"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_ticket_green_yellow_helper" />
@@ -206,7 +206,7 @@
         android:id="@+id/control_buttons_flow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_play,btn_auto_move"
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,btn_magic_wand,btn_play,btn_auto_move"
         app:flow_horizontalGap="2dp"
         app:flow_horizontalStyle="packed"
         app:flow_verticalAlign="center"
@@ -220,7 +220,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,magic_wand_container,btn_play,btn_auto_move" />
+        app:constraint_referenced_ids="btnUndo,btnRedo,btn_hint,btn_magic_wand,btn_play,btn_auto_move" />
 
     <!-- Undo -->
     <FrameLayout
@@ -275,12 +275,12 @@
 
     <!-- Magic Wand -->
     <FrameLayout
-        android:id="@+id/magic_wand_container"
+        android:id="@+id/btn_magic_wand"
         android:layout_width="8dp"
         android:layout_height="8dp"
         android:background="?android:attr/selectableItemBackgroundBorderless">
         <ImageView
-            android:id="@+id/iv_magic_wand"
+            android:id="@+id/magic_wand_main"
             android:layout_width="8dp"
             android:layout_height="8dp"
             android:layout_gravity="center"
