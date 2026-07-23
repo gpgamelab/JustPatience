@@ -1120,7 +1120,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             return when (targetType) {
                 StackType.TABLEAU -> {
                     val tbl = newTableau ?: baseGame.tableau.toMutableList()
-                    val targetPile = baseGame.tableau.getOrNull(targetIndex) ?: return null
+                    val targetPile = tbl.getOrNull(targetIndex) ?: return null
                     val updatedTarget = targetPile.withCardsAdded(listOf(candidateFaceUp))
                     if (updatedTarget === targetPile && !targetPile.isEmpty()) return null
                     tbl[targetIndex] = updatedTarget
@@ -1253,8 +1253,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // Helper: does this face-up card satisfy the target slot?
         fun canSatisfy(candidateFaceUp: Card, sourcePileIndex: Int): Boolean = when (targetType) {
             StackType.TABLEAU -> {
-                if (sourcePileIndex == targetIndex) false
-                else game.tableau.getOrNull(targetIndex)?.canPush(candidateFaceUp) == true
+                game.tableau.getOrNull(targetIndex)?.canPush(candidateFaceUp) == true
             }
             StackType.FOUNDATION -> game.foundations.getOrNull(targetIndex)?.canPush(candidateFaceUp) == true
             else -> false
