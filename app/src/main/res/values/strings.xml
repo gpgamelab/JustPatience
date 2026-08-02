@@ -1,5 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">JustPatience</string>
+    <string name="shortcut_secret_menu_short">Secret Menu</string>
+    <string name="shortcut_secret_menu_long">Open Secret Menu</string>
 
     <!-- Settings Activity Strings -->
     <string name="win_rate_format">%s%%</string>

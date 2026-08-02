@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="secret_menu"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_secret_menu_short"
+        android:shortcutLongLabel="@string/shortcut_secret_menu_long">
+        <intent
+            android:action="com.gpgamelab.justpatience.action.SECRET_MENU"
+            android:targetPackage="com.gpgamelab.justpatience"
+            android:targetClass="com.gpgamelab.justpatience.ui.GameActivity" />
+    </shortcut>
+</shortcuts>
+

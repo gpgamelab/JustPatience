@@ -3336,6 +3336,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         // Daily popup baselines for ratio/orientation scaling
         private var sessionDevelopMenuExpandState = DevelopMenuDialogFragment.ExpandState()
+        // Static launcher shortcut action for opening the temporary Secret Menu entry point.
+        private const val ACTION_SECRET_MENU_SHORTCUT = "com.gpgamelab.justpatience.action.SECRET_MENU"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -3595,6 +3597,7 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
 
         applyResponsiveControlSizing()
         maybeShowDailyBonusOnFirstLaunch()
+        handleLauncherShortcutIntent(intent, savedInstanceState = savedInstanceState)
     }
 
     @SuppressLint("DefaultLocale")
@@ -4553,6 +4556,34 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
     private fun showTesterMenu() {
         if (supportFragmentManager.findFragmentByTag(TesterMenuDialogFragment.TAG) != null) return
         TesterMenuDialogFragment.newInstance().show(supportFragmentManager, TesterMenuDialogFragment.TAG)
+    }
+
+    /** Temporary launcher entry point; later this can open a dedicated Secret Menu dialog. */
+    private fun secretMenu() {
+        showTesterMenu()
+    }
+
+    private fun handleLauncherShortcutIntent(
+        launchIntent: Intent?,
+        savedInstanceState: Bundle? = null,
+        fromNewIntent: Boolean = false
+    ) {
+        val incomingIntent = launchIntent ?: return
+        if (!fromNewIntent && savedInstanceState != null) return
+        if (incomingIntent.action != ACTION_SECRET_MENU_SHORTCUT) return
+
+        // Post to ensure activity/fragment manager are fully ready on cold start.
+        binding.root.post {
+            if (!isFinishing && !isDestroyed) {
+                secretMenu()
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleLauncherShortcutIntent(intent, fromNewIntent = true)
     }
 
     private fun showDevelopMenu() {
