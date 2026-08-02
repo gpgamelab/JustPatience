@@ -44,6 +44,7 @@ import com.gpgamelab.justpatience.ui.layout.defaultCardSpec
 import com.gpgamelab.justpatience.ui.layout.toScreenRectF
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import android.os.SystemClock
@@ -189,6 +190,11 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var dragOffsetY = 0f
     private var dropTargetTableauIndex: Int? = null
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+    private val dropTargetExpandTouchSlopMultiplier = 1.5f
+    private val dropTargetExpandCardWidthRatio = 0.20f
+    private val dropTargetExpandCardWidthCapRatio = 0.40f
+    private val dropTargetMinOverlapRatio = 0.10f
+    private val dropTargetMaxCenterDistanceCardWidthRatio = 0.75f
     private var downX = 0f
     private var downY = 0f
     private var isDragging = false
@@ -1987,23 +1993,7 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                         val rect = getFoundationRect(i)
 
                         if (containsTouch(rect, event.x, event.y)) {
-                            when (dragStackType) {
-
-                                StackType.WASTE -> {
-                                    moveSucceeded = viewModel.tryMoveWasteToFoundation(i, animate = false)
-                                }
-
-                                StackType.TABLEAU -> {
-                                    moveSucceeded = viewModel.tryMoveTableauToFoundation(
-                                        dragStackIndex,
-                                        dragCardIndex,
-                                        i,
-                                        animate = false
-                                    )
-                                }
-
-                                else -> {}
-                            }
+                            moveSucceeded = tryCommitDropToTarget(StackType.FOUNDATION, i)
                             break
                         }
                     }
@@ -2012,38 +2002,19 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     if (!moveSucceeded) {
                         val dropTableauIndex = findTableauDropTargetStrict(event.x, event.y)
                         if (dropTableauIndex != null) {
-                            when (dragStackType) {
-
-                                StackType.WASTE -> {
-                                    moveSucceeded = viewModel.tryMoveWasteToTableau(dropTableauIndex, animate = false)
-                                }
-
-                                StackType.TABLEAU -> {
-                                    moveSucceeded = viewModel.tryMoveTableauToTableau(
-                                        dragStackIndex,
-                                        dragCardIndex,
-                                        dropTableauIndex,
-                                        animate = false
-                                    )
-                                }
-
-                                StackType.FOUNDATION -> {
-                                    moveSucceeded = viewModel.tryMoveFoundationToTableau(
-                                        dragStackIndex,
-                                        dropTableauIndex
-                                    )
-                                }
-
-                                else -> {
-                                    moveSucceeded = false
-                                }
-                            }
+                            moveSucceeded = tryCommitDropToTarget(StackType.TABLEAU, dropTableauIndex)
                         }
+                    }
+
+                    // 3️⃣ Fuzzy fallback: if strict pointer hit misses, score nearby legal targets
+                    // from the dragged card geometry so corner-grab drags remain user-friendly.
+                    if (!moveSucceeded) {
+                        moveSucceeded = tryFuzzyDropTarget(event.x, event.y)
                     }
 
                 }
 
-                // 3️⃣ Tap fallback
+                // 4️⃣ Tap fallback
                 if (!moveSucceeded) {
                     val dx = abs(event.x - downX)
                     val dy = abs(event.y - downY)
@@ -2057,13 +2028,157 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                     onDragDropResult?.invoke(moveSucceeded)
                 }
 
-                // 4️⃣ ALWAYS clear drag state ONCE
+                // 5️⃣ ALWAYS clear drag state ONCE
                 clearDragState()
                 postInvalidateOnAnimation()
                 return true
             }
         }
         return false
+    }
+
+    private data class DropCandidate(
+        val stackType: StackType,
+        val stackIndex: Int,
+        val score: Float
+    )
+
+    private fun tryFuzzyDropTarget(pointerX: Float, pointerY: Float): Boolean {
+        val sourceType = dragStackType ?: return false
+        val ghostRect = getCurrentDragPrimaryCardRect() ?: return false
+        val candidates = mutableListOf<DropCandidate>()
+
+        fun addCandidate(targetType: StackType, targetIndex: Int, targetRect: RectF?) {
+            val rect = targetRect ?: return
+            if (!isLegalDropCandidate(targetType, targetIndex)) return
+            val score = scoreDropCandidate(pointerX, pointerY, ghostRect, rect) ?: return
+            candidates.add(DropCandidate(targetType, targetIndex, score))
+        }
+
+        if (sourceType != StackType.FOUNDATION) {
+            for (foundationIndex in viewModel.game.value.foundations.indices) {
+                addCandidate(StackType.FOUNDATION, foundationIndex, getFoundationRect(foundationIndex))
+            }
+        }
+
+        for (tableauIndex in 0 until columns) {
+            addCandidate(StackType.TABLEAU, tableauIndex, getTableauDropRect(tableauIndex))
+        }
+
+        return candidates
+            .sortedByDescending { it.score }
+            .any { candidate -> tryCommitDropToTarget(candidate.stackType, candidate.stackIndex) }
+    }
+
+    private fun getCurrentDragPrimaryCardRect(): RectF? {
+        val sourceType = dragStackType ?: return null
+        val left = dragX - dragOffsetX
+        val top = dragY - dragOffsetY
+        return when (sourceType) {
+            StackType.TABLEAU, StackType.WASTE, StackType.FOUNDATION -> RectF(left, top, left + cardW, top + cardH)
+            else -> null
+        }
+    }
+
+    private fun getTableauDropRect(tableauIndex: Int): RectF? {
+        val pile = viewModel.game.value.tableau.getOrNull(tableauIndex) ?: return null
+        val cardIndex = if (pile.isEmpty()) 0 else pile.size() - 1
+        return getTableauCardRectVisual(tableauIndex, pile, cardIndex)
+    }
+
+    private fun isLegalDropCandidate(targetType: StackType, targetIndex: Int): Boolean {
+        val sourceType = dragStackType ?: return false
+        val game = viewModel.game.value
+        return when (sourceType) {
+            StackType.WASTE -> when (targetType) {
+                StackType.FOUNDATION -> game.moveWasteToFoundation(targetIndex) != null
+                StackType.TABLEAU -> game.moveWasteToTableau(targetIndex) != null
+                else -> false
+            }
+            StackType.TABLEAU -> when (targetType) {
+                StackType.FOUNDATION -> game.moveTableauToFoundation(dragStackIndex, dragCardIndex, targetIndex) != null
+                StackType.TABLEAU -> game.moveTableauToTableau(dragStackIndex, dragCardIndex, targetIndex) != null
+                else -> false
+            }
+            StackType.FOUNDATION -> {
+                targetType == StackType.TABLEAU &&
+                    viewModel.allowFoundationToTableauDrag.value &&
+                    game.moveFoundationToTableau(dragStackIndex, targetIndex) != null
+            }
+            else -> false
+        }
+    }
+
+    private fun scoreDropCandidate(
+        pointerX: Float,
+        pointerY: Float,
+        draggedRect: RectF,
+        targetRect: RectF
+    ): Float? {
+        val expansion = max(
+            touchSlop * dropTargetExpandTouchSlopMultiplier,
+            cardW * dropTargetExpandCardWidthRatio
+        ).coerceAtMost(cardW * dropTargetExpandCardWidthCapRatio)
+
+        val expandedRect = RectF(
+            targetRect.left - expansion,
+            targetRect.top - expansion,
+            targetRect.right + expansion,
+            targetRect.bottom + expansion
+        )
+
+        val pointerInsideExpanded = containsTouch(expandedRect, pointerX, pointerY)
+        val overlapRatio = rectOverlapRatio(draggedRect, targetRect)
+        val centerDistance = hypot(
+            draggedRect.centerX() - targetRect.centerX(),
+            draggedRect.centerY() - targetRect.centerY()
+        )
+        val maxDistance = cardW * dropTargetMaxCenterDistanceCardWidthRatio
+
+        if (!pointerInsideExpanded && overlapRatio < dropTargetMinOverlapRatio && centerDistance > maxDistance) {
+            return null
+        }
+
+        val pointerDistance = hypot(pointerX - targetRect.centerX(), pointerY - targetRect.centerY())
+        return (overlapRatio * 1000f) - centerDistance - (pointerDistance * 0.2f)
+    }
+
+    private fun rectOverlapRatio(a: RectF, b: RectF): Float {
+        val overlapW = (min(a.right, b.right) - max(a.left, b.left)).coerceAtLeast(0f)
+        val overlapH = (min(a.bottom, b.bottom) - max(a.top, b.top)).coerceAtLeast(0f)
+        val overlapArea = overlapW * overlapH
+        val draggedArea = (a.width() * a.height()).coerceAtLeast(1f)
+        return overlapArea / draggedArea
+    }
+
+    private fun tryCommitDropToTarget(targetType: StackType, targetIndex: Int): Boolean {
+        return when (dragStackType) {
+            StackType.WASTE -> when (targetType) {
+                StackType.FOUNDATION -> viewModel.tryMoveWasteToFoundation(targetIndex, animate = false)
+                StackType.TABLEAU -> viewModel.tryMoveWasteToTableau(targetIndex, animate = false)
+                else -> false
+            }
+            StackType.TABLEAU -> when (targetType) {
+                StackType.FOUNDATION -> viewModel.tryMoveTableauToFoundation(
+                    dragStackIndex,
+                    dragCardIndex,
+                    targetIndex,
+                    animate = false
+                )
+                StackType.TABLEAU -> viewModel.tryMoveTableauToTableau(
+                    dragStackIndex,
+                    dragCardIndex,
+                    targetIndex,
+                    animate = false
+                )
+                else -> false
+            }
+            StackType.FOUNDATION -> {
+                if (targetType != StackType.TABLEAU) return false
+                viewModel.tryMoveFoundationToTableau(dragStackIndex, targetIndex)
+            }
+            else -> false
+        }
     }
 
     private fun findStackAt(x: Float, y: Float): Triple<StackType?, Int, Int> {
