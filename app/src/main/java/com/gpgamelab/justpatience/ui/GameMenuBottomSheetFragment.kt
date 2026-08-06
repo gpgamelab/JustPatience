@@ -8,12 +8,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.R as MaterialR
 import com.gpgamelab.justpatience.R
+import com.gpgamelab.justpatience.data.SettingsManager
 import com.gpgamelab.justpatience.util.UiScaleUtil
+import kotlinx.coroutines.launch
 
 class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
@@ -88,6 +92,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentScoreMethod = arguments?.getString(ARG_CURRENT_SCORE_METHOD) ?: "windows"
         val currentFoundationToTableau = arguments?.getBoolean(ARG_CURRENT_FOUNDATION_TO_TABLEAU, false) ?: false
         val currentEnforceFoundationBalance = arguments?.getBoolean(ARG_CURRENT_ENFORCE_FOUNDATION_BALANCE, false) ?: false
+
+        // Initial render from passed snapshot (for immediate first frame).
         if (currentNickname.isNotEmpty()) {
             val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
             nicknameLabel.text = getString(
@@ -214,89 +220,89 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
         // Active actions
         view.findViewById<View>(R.id.menu_stats_summary_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuStatisticsSummary() }
+            runInPlace { host.onGameMenuStatisticsSummary() }
         }
         view.findViewById<View>(R.id.menu_stats_history_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuStatisticsHistory() }
+            runInPlace { host.onGameMenuStatisticsHistory() }
         }
         view.findViewById<View>(R.id.menu_stats_reset_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuResetStats() }
+            runInPlace { host.onGameMenuResetStats() }
         }
         view.findViewById<View>(R.id.menu_how_to_play_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuOpenHowToPlay() }
+            runInPlace { host.onGameMenuOpenHowToPlay() }
         }
         view.findViewById<View>(R.id.menu_rate_us_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuRateUs() }
+            runInPlace { host.onGameMenuRateUs() }
         }
         view.findViewById<View>(R.id.menu_share_app_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuShareApp() }
+            runInPlace { host.onGameMenuShareApp() }
         }
         view.findViewById<View>(R.id.menu_contact_us_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuContactUs() }
+            runInPlace { host.onGameMenuContactUs() }
         }
         view.findViewById<View>(R.id.menu_privacy_policy_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuOpenPrivacyPolicy() }
+            runInPlace { host.onGameMenuOpenPrivacyPolicy() }
         }
         view.findViewById<View>(R.id.menu_terms_of_service_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuOpenTermsOfService() }
+            runInPlace { host.onGameMenuOpenTermsOfService() }
         }
         view.findViewById<View>(R.id.menu_common_nickname_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuEditNickname() }
+            runInPlace { host.onGameMenuEditNickname() }
         }
         view.findViewById<View>(R.id.menu_common_draw_cards_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuDrawCards() }
+            runInPlace { host.onGameMenuDrawCards() }
         }
         view.findViewById<View>(R.id.menu_common_deck_count_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuDeckCount() }
+            runInPlace { host.onGameMenuDeckCount() }
         }
         view.findViewById<View>(R.id.menu_common_waste_recycles_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuWasteRecycles() }
+            runInPlace { host.onGameMenuWasteRecycles() }
         }
         view.findViewById<View>(R.id.menu_settings_sound_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuSoundToggle() }
+            runInPlace { host.onGameMenuSoundToggle() }
         }
         view.findViewById<View>(R.id.menu_about_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuOpenAbout() }
+            runInPlace { host.onGameMenuOpenAbout() }
         }
 
         view.findViewById<View>(R.id.menu_advanced_show_timer_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuShowGameTimerToggle() }
+            runInPlace { host.onGameMenuShowGameTimerToggle() }
         }
         view.findViewById<View>(R.id.menu_advanced_show_score_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuShowScoreToggle() }
+            runInPlace { host.onGameMenuShowScoreToggle() }
         }
         view.findViewById<View>(R.id.menu_advanced_show_moves_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuShowMovesToggle() }
+            runInPlace { host.onGameMenuShowMovesToggle() }
         }
         view.findViewById<View>(R.id.menu_advanced_show_card_animations_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuShowCardAnimationsToggle() }
+            runInPlace { host.onGameMenuShowCardAnimationsToggle() }
         }
         view.findViewById<View>(R.id.menu_advanced_auto_complete_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuAutoCompleteToggle() }
+            runInPlace { host.onGameMenuAutoCompleteToggle() }
         }
         view.findViewById<View>(R.id.menu_advanced_haptics_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuHapticsToggle() }
+            runInPlace { host.onGameMenuHapticsToggle() }
         }
         view.findViewById<View>(R.id.menu_advanced_tap_to_move_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuTapToMoveToggle() }
+            runInPlace { host.onGameMenuTapToMoveToggle() }
         }
 
         // Board layout popup
         view.findViewById<View>(R.id.menu_advanced_board_layout_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuBoardLayout() }
+            runInPlace { host.onGameMenuBoardLayout() }
         }
 
         // Score method popup
         view.findViewById<View>(R.id.menu_advanced_score_method_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuScoreMethod() }
+            runInPlace { host.onGameMenuScoreMethod() }
         }
 
         // Foundation to tableau toggle
         view.findViewById<View>(R.id.menu_advanced_foundation_to_tableau_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuFoundationToTableauToggle() }
+            runInPlace { host.onGameMenuFoundationToTableauToggle() }
         }
         view.findViewById<View>(R.id.menu_advanced_enforce_foundation_balance_row).setOnClickListener {
-            dismissAndRun { host.onGameMenuEnforceFoundationBalanceToggle() }
+            runInPlace { host.onGameMenuEnforceFoundationBalanceToggle() }
         }
 
         // Premium Acct toggle is now in the Testers Menu (btn_testers on the game board).
@@ -305,6 +311,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_exit_app_row).setOnClickListener {
             dismissAndRun { host.onGameMenuExitApp() }
         }
+
+        observeMenuSettingsLive(view, fallbackNickname = currentNickname)
     }
 
     override fun onStart() {
@@ -320,6 +328,10 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun dismissAndRun(action: () -> Unit) {
         dismiss()
+        activity?.window?.decorView?.post(action) ?: action()
+    }
+
+    private fun runInPlace(action: () -> Unit) {
         activity?.window?.decorView?.post(action) ?: action()
     }
 
@@ -341,6 +353,107 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             informationExpanded = b.getBoolean(ARG_INFORMATION_EXPANDED, false),
             settingsExpanded = b.getBoolean(ARG_SETTINGS_EXPANDED, false)
         )
+    }
+
+    private fun observeMenuSettingsLive(root: View, fallbackNickname: String) {
+        val settingsManager = SettingsManager(requireContext().applicationContext)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                settingsManager.gamePlaySettingsFlow.collect { settings ->
+                    val nickname = settings.playerDisplayName.trim().ifEmpty { fallbackNickname }
+                    if (nickname.isNotEmpty()) {
+                        val nicknameLabel = root.findViewById<TextView>(R.id.menu_common_nickname_text)
+                        nicknameLabel.text = getString(
+                            R.string.game_menu_my_nickname_with_value,
+                            formatNicknameForMenu(nickname)
+                        )
+                        nicknameLabel.contentDescription = getString(
+                            R.string.game_menu_my_nickname_with_value,
+                            nickname
+                        )
+                    }
+
+                    val normalizedDrawSize = if (settings.drawSize == 3) 3 else 1
+                    root.findViewById<TextView>(R.id.menu_common_draw_cards_text).text =
+                        getString(R.string.game_menu_draw_cards_with_value, normalizedDrawSize)
+
+                    val deckLabel = if (settings.deckCount == 2) {
+                        getString(R.string.game_menu_deck_two)
+                    } else {
+                        getString(R.string.game_menu_deck_one)
+                    }
+                    root.findViewById<TextView>(R.id.menu_common_deck_count_text).text =
+                        getString(R.string.game_menu_deck_count_with_value, deckLabel)
+
+                    root.findViewById<TextView>(R.id.menu_common_waste_recycles_text).text =
+                        if (settings.infiniteRecycles) {
+                            getString(
+                                R.string.game_menu_waste_recycles_with_value,
+                                getString(R.string.settings_recycle_unlimited)
+                            )
+                        } else {
+                            getString(R.string.game_menu_waste_recycles_with_value, settings.recycleCount.toString())
+                        }
+
+                    val stateEnabled = getString(R.string.setting_state_enabled)
+                    val stateDisabled = getString(R.string.setting_state_disabled)
+                    val stateOn = getString(R.string.setting_state_on)
+                    val stateOff = getString(R.string.setting_state_off)
+
+                    root.findViewById<TextView>(R.id.menu_settings_sound_text).text = getString(
+                        R.string.game_menu_sound_with_value,
+                        if (settings.soundOn) stateOn else stateOff
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_show_timer_text).text = getString(
+                        R.string.game_menu_show_game_timer_with_value,
+                        if (settings.showGameTimer) stateEnabled else stateDisabled
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_show_score_text).text = getString(
+                        R.string.game_menu_show_score_with_value,
+                        if (settings.showScore) stateEnabled else stateDisabled
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_show_moves_text).text = getString(
+                        R.string.game_menu_show_moves_with_value,
+                        if (settings.showMoves) stateEnabled else stateDisabled
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_show_card_animations_text).text = getString(
+                        R.string.game_menu_show_card_movement_animations_with_value,
+                        if (settings.showCardAnimations) stateEnabled else stateDisabled
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_auto_complete_text).text = getString(
+                        R.string.game_menu_auto_complete_with_value,
+                        if (settings.autoComplete) stateEnabled else stateDisabled
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_haptics_text).text = getString(
+                        R.string.game_menu_haptics_with_value,
+                        if (settings.haptics) stateOn else stateOff
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_tap_to_move_text).text = getString(
+                        R.string.game_menu_tap_to_move_with_value,
+                        if (settings.tapToMove) stateEnabled else stateDisabled
+                    )
+
+                    val scoreMethodLabel = when (settings.scoreMethod) {
+                        "vegas" -> getString(R.string.score_method_vegas)
+                        "vegas_cumulative" -> getString(R.string.score_method_vegas_cumulative)
+                        "completion" -> getString(R.string.score_method_completion)
+                        else -> getString(R.string.score_method_windows)
+                    }
+                    root.findViewById<TextView>(R.id.menu_advanced_score_method_text).text = getString(
+                        R.string.game_menu_score_method_with_value,
+                        scoreMethodLabel
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_foundation_to_tableau_text).text = getString(
+                        R.string.game_menu_foundation_to_tableau_with_value,
+                        if (settings.allowFoundationToTableauDrag) stateEnabled else stateDisabled
+                    )
+                    root.findViewById<TextView>(R.id.menu_advanced_enforce_foundation_balance_text).text = getString(
+                        R.string.game_menu_enforce_foundation_balance_with_value,
+                        if (settings.enforceFoundationBalance) stateEnabled else stateDisabled
+                    )
+                }
+            }
+        }
     }
 
     companion object {
@@ -415,6 +528,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 }
+
+
 
 
 
