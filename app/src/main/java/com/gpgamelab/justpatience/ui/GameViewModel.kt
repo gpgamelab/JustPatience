@@ -146,6 +146,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _fullScreenEnabled = MutableStateFlow(false)
     val fullScreenEnabled: StateFlow<Boolean> = _fullScreenEnabled
 
+    // Waste display mode: "show_1", "show_3", or "auto" (matches draw size).
+    // The resolved card count is exposed separately so GameBoardView can observe a single Int.
+    private val _wasteDisplayMode = MutableStateFlow("auto")
+    val wasteDisplayMode: StateFlow<String> = _wasteDisplayMode
+
+    private val _visibleWasteCardCount = MutableStateFlow(3)
+    /** Effective number of waste cards to show (1 or 3, resolved from mode + draw size). */
+    val visibleWasteCardCount: StateFlow<Int> = _visibleWasteCardCount
+
     // Hint system (manual only via HINT button)
     private val _hintDisplayState = MutableStateFlow<HintDisplayState?>(null)
     val hintDisplayState: StateFlow<HintDisplayState?> = _hintDisplayState
@@ -240,6 +249,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _hapticsEnabled.value = settings.haptics
                 _tapToMoveEnabled.value = settings.tapToMove
                 _fullScreenEnabled.value = settings.fullScreen
+                _wasteDisplayMode.value = settings.wasteDisplay
+                _visibleWasteCardCount.value = resolveVisibleWasteCardCount(settings.wasteDisplay, currentDrawSize)
 
             }
         }
@@ -247,6 +258,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun normalizeDrawCount(rawDrawCount: Int): Int {
         return if (rawDrawCount <= 0) 1 else rawDrawCount
+    }
+
+    /**
+     * Resolves the effective number of waste cards to display.
+     * "show_1" → 1, "show_3" → 3, "auto" (or unknown) → follows draw size (1 or 3).
+     */
+    private fun resolveVisibleWasteCardCount(mode: String, drawSize: Int): Int {
+        return when (mode) {
+            "show_1" -> 1
+            "show_3" -> 3
+            else     -> if (normalizeDrawCount(drawSize) >= 3) 3 else 1
+        }
     }
 
 

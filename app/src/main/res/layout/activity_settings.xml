@@ -102,6 +102,22 @@
                     android:textColor="@color/text_color" />
             </RadioGroup>
 
+            <!-- Waste Card Display -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_waste_display_label"
+                android:textColor="@color/text_color"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinner_waste_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="200dp" />
+
             <!-- Recycle Waste Pile -->
             <TextView
                 android:layout_width="wrap_content"

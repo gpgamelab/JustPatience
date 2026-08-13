@@ -33,6 +33,16 @@ class SettingsActivity : AppCompatActivity() {
     }
     private val boardLayoutKeys = listOf("right_hand", "left_hand")
 
+    // Waste display spinner values
+    private val wasteDisplayLabels by lazy {
+        listOf(
+            getString(R.string.settings_waste_show_1),
+            getString(R.string.settings_waste_show_3),
+            getString(R.string.settings_waste_auto)
+        )
+    }
+    private val wasteDisplayKeys = listOf("show_1", "show_3", "auto")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -52,6 +62,10 @@ class SettingsActivity : AppCompatActivity() {
         val boardAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, boardLayoutLabels)
         boardAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerBoardLayout.adapter = boardAdapter
+
+        val wasteAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, wasteDisplayLabels)
+        wasteAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerWasteDisplay.adapter = wasteAdapter
     }
 
     private fun observeSettings() {
@@ -93,6 +107,10 @@ class SettingsActivity : AppCompatActivity() {
         // Board layout
         val boardIndex = boardLayoutKeys.indexOf(settings.boardLayout).coerceAtLeast(0)
         binding.spinnerBoardLayout.setSelection(boardIndex, false)
+
+        // Waste display
+        val wasteIndex = wasteDisplayKeys.indexOf(settings.wasteDisplay).let { if (it < 0) 2 else it }
+        binding.spinnerWasteDisplay.setSelection(wasteIndex, false)
 
         // Player name
         binding.editPlayerName.setText(settings.playerDisplayName)
@@ -157,6 +175,17 @@ class SettingsActivity : AppCompatActivity() {
                     if (isBindingUi || !settingsLoaded) return
                     val key = boardLayoutKeys[position]
                     saveSettings(currentSettings.copy(boardLayout = key))
+                }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+            }
+
+        // Waste display spinner
+        binding.spinnerWasteDisplay.onItemSelectedListener =
+            object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                    if (isBindingUi || !settingsLoaded) return
+                    val key = wasteDisplayKeys[position]
+                    saveSettings(currentSettings.copy(wasteDisplay = key))
                 }
                 override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
             }

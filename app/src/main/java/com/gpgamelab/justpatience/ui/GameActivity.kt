@@ -4545,7 +4545,8 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 currentTapToMove = currentSettings.tapToMove,
                 currentScoreMethod = currentSettings.scoreMethod,
                 currentFoundationToTableau = currentSettings.allowFoundationToTableauDrag,
-                currentEnforceFoundationBalance = currentSettings.enforceFoundationBalance
+                currentEnforceFoundationBalance = currentSettings.enforceFoundationBalance,
+                currentWasteDisplay = currentSettings.wasteDisplay
             ).show(
                 supportFragmentManager,
                 GameMenuBottomSheetFragment.TAG
@@ -5441,6 +5442,13 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
         }
     }
 
+    override fun onGameMenuWasteDisplay() {
+        lifecycleScope.launch {
+            val currentSettings = settingsManager.gamePlaySettingsFlow.first()
+            showWasteDisplayDialog(currentSettings.wasteDisplay)
+        }
+    }
+
     override fun onGameMenuDeckCount() {
         lifecycleScope.launch {
             val currentSettings = settingsManager.gamePlaySettingsFlow.first()
@@ -5708,6 +5716,29 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
                 lifecycleScope.launch {
                     val currentSettings = settingsManager.gamePlaySettingsFlow.first()
                     settingsManager.saveGamePlaySettings(currentSettings.copy(drawSize = selectedDrawSize))
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showWasteDisplayDialog(currentWasteDisplay: String) {
+        val wasteKeys = listOf("show_1", "show_3", "auto")
+        val wasteOptions = arrayOf(
+            getString(R.string.settings_waste_show_1),
+            getString(R.string.settings_waste_show_3),
+            getString(R.string.settings_waste_auto)
+        )
+        val checkedItem = wasteKeys.indexOf(currentWasteDisplay).let { if (it < 0) 2 else it }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.game_menu_waste_display)
+            .setSingleChoiceItems(wasteOptions, checkedItem) { dialog, which ->
+                val selectedKey = wasteKeys[which]
+                lifecycleScope.launch {
+                    val latest = settingsManager.gamePlaySettingsFlow.first()
+                    settingsManager.saveGamePlaySettings(latest.copy(wasteDisplay = selectedKey))
                 }
                 dialog.dismiss()
             }

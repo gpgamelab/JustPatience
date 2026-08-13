@@ -40,6 +40,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         fun onGameMenuOpenTermsOfService()
         fun onGameMenuEditNickname()
         fun onGameMenuDrawCards()
+        fun onGameMenuWasteDisplay()
         fun onGameMenuDeckCount()
         fun onGameMenuWasteRecycles()
         fun onGameMenuSoundToggle()
@@ -93,6 +94,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val currentFoundationToTableau = arguments?.getBoolean(ARG_CURRENT_FOUNDATION_TO_TABLEAU, false) ?: false
         val currentEnforceFoundationBalance = arguments?.getBoolean(ARG_CURRENT_ENFORCE_FOUNDATION_BALANCE, false) ?: false
 
+        val currentWasteDisplay = arguments?.getString(ARG_CURRENT_WASTE_DISPLAY) ?: "auto"
+
         // Initial render from passed snapshot (for immediate first frame).
         if (currentNickname.isNotEmpty()) {
             val nicknameLabel = view.findViewById<TextView>(R.id.menu_common_nickname_text)
@@ -109,6 +112,14 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         val normalizedDeckCount = if (currentDeckCount == 2) 2 else 1
         val drawCardsLabel = view.findViewById<TextView>(R.id.menu_common_draw_cards_text)
         drawCardsLabel.text = getString(R.string.game_menu_draw_cards_with_value, normalizedDrawSize)
+
+        val wasteDisplayLabel = view.findViewById<TextView>(R.id.menu_common_waste_display_text)
+        val wasteDisplayValue = when (currentWasteDisplay) {
+            "show_1" -> getString(R.string.settings_waste_show_1)
+            "show_3" -> getString(R.string.settings_waste_show_3)
+            else     -> getString(R.string.settings_waste_auto)
+        }
+        wasteDisplayLabel.text = getString(R.string.game_menu_waste_display_with_value, wasteDisplayValue)
 
         val deckLabel = if (normalizedDeckCount == 2) {
             getString(R.string.game_menu_deck_two)
@@ -252,6 +263,9 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         view.findViewById<View>(R.id.menu_common_draw_cards_row).setOnClickListener {
             runInPlace { host.onGameMenuDrawCards() }
         }
+        view.findViewById<View>(R.id.menu_common_waste_display_row).setOnClickListener {
+            runInPlace { host.onGameMenuWasteDisplay() }
+        }
         view.findViewById<View>(R.id.menu_common_deck_count_row).setOnClickListener {
             runInPlace { host.onGameMenuDeckCount() }
         }
@@ -377,6 +391,14 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     root.findViewById<TextView>(R.id.menu_common_draw_cards_text).text =
                         getString(R.string.game_menu_draw_cards_with_value, normalizedDrawSize)
 
+                    val wasteDisplayValue = when (settings.wasteDisplay) {
+                        "show_1" -> getString(R.string.settings_waste_show_1)
+                        "show_3" -> getString(R.string.settings_waste_show_3)
+                        else -> getString(R.string.settings_waste_auto)
+                    }
+                    root.findViewById<TextView>(R.id.menu_common_waste_display_text).text =
+                        getString(R.string.game_menu_waste_display_with_value, wasteDisplayValue)
+
                     val deckLabel = if (settings.deckCount == 2) {
                         getString(R.string.game_menu_deck_two)
                     } else {
@@ -477,6 +499,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
         private const val ARG_CURRENT_SCORE_METHOD = "arg_current_score_method"
         private const val ARG_CURRENT_FOUNDATION_TO_TABLEAU = "arg_current_foundation_to_tableau"
         private const val ARG_CURRENT_ENFORCE_FOUNDATION_BALANCE = "arg_current_enforce_foundation_balance"
+        private const val ARG_CURRENT_WASTE_DISPLAY = "arg_current_waste_display"
         private const val MAX_MENU_NICKNAME_LENGTH = 20
         private const val DEFAULT_DRAW_SIZE = 3
         private const val DEFAULT_DECK_COUNT = 1
@@ -499,7 +522,8 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
             currentTapToMove: Boolean = true,
             currentScoreMethod: String = "windows",
             currentFoundationToTableau: Boolean = false,
-            currentEnforceFoundationBalance: Boolean = false
+            currentEnforceFoundationBalance: Boolean = false,
+            currentWasteDisplay: String = "auto"
         ): GameMenuBottomSheetFragment {
             return GameMenuBottomSheetFragment().apply {
                 arguments = Bundle().apply {
@@ -523,6 +547,7 @@ class GameMenuBottomSheetFragment : BottomSheetDialogFragment() {
                     putString(ARG_CURRENT_SCORE_METHOD, currentScoreMethod)
                     putBoolean(ARG_CURRENT_FOUNDATION_TO_TABLEAU, currentFoundationToTableau)
                     putBoolean(ARG_CURRENT_ENFORCE_FOUNDATION_BALANCE, currentEnforceFoundationBalance)
+                    putString(ARG_CURRENT_WASTE_DISPLAY, currentWasteDisplay)
                 }
             }
         }

@@ -54,6 +54,7 @@ import java.util.Locale
 
 private const val DEFAULT_STOCK_BACK_IMAGE_PATH = "drawable:card_back_crosshatch_001"
 private const val NEW_GAME_DEAL_CARD_INTERVAL_MS = 70L
+// Hard cap: never show more than 3 waste cards in the fan regardless of mode.
 private const val MAX_VISIBLE_WASTE_CARDS = 3
 private const val WASTE_COUNT_BADGE_MIN_VISIBLE_COUNT = 3
 
@@ -336,6 +337,10 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
                 }
                 launch {
                     viewModel.isInfiniteRecycles.collect { invalidate() }
+                }
+                launch {
+                    // Redraw when waste display mode changes (show 1 / show 3 / auto).
+                    viewModel.visibleWasteCardCount.collect { invalidate() }
                 }
                 launch {
                     viewModel.isMirroredLayout.collect { mirrored ->
@@ -963,7 +968,16 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
 
     private fun getWasteFanDirection(): Float = if (isMirrored) -1f else 1f
 
-    private fun getVisibleWasteCardCount(wasteSize: Int): Int = min(wasteSize, MAX_VISIBLE_WASTE_CARDS)
+    private fun getVisibleWasteCardCount(wasteSize: Int): Int {
+        // Use the ViewModel-resolved count (driven by the waste display setting + draw size).
+        // Cap at both the setting limit and the actual waste pile size.
+        val settingLimit = if (::viewModel.isInitialized) {
+            viewModel.visibleWasteCardCount.value.coerceIn(1, MAX_VISIBLE_WASTE_CARDS)
+        } else {
+            MAX_VISIBLE_WASTE_CARDS
+        }
+        return min(wasteSize, settingLimit)
+    }
 
     private fun getWasteVisibleCardRect(visibleIndex: Int): RectF {
         val base = getWasteRect()
