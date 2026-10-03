@@ -329,7 +329,7 @@
             android:contentDescription="@string/play_button_label"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:src="@drawable/button_play" />
+            android:src="@drawable/button_menus_2048x2048" />
     </FrameLayout>
     <!-- Hidden views kept for ViewBinding compatibility -->
     <!-- Button

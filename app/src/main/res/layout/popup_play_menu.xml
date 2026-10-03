@@ -23,6 +23,7 @@
         android:textStyle="bold" />
 
     <View
+        android:id="@+id/popup_divider_menu_to_testers"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#33FFFFFF" />
@@ -42,6 +43,7 @@
         android:textSize="15sp" />
 
     <View
+        android:id="@+id/popup_divider_testers_to_develop"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#33FFFFFF" />

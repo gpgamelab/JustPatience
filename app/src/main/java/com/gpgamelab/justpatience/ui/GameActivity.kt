@@ -4449,22 +4449,37 @@ class GameActivity : AppCompatActivity(), GameMenuBottomSheetFragment.Host, Test
             popup.dismiss()
             showGameMenu()
         }
-        popupView.findViewById<TextView>(R.id.popup_btn_testers).setOnClickListener {
-            popup.dismiss()
-            showTesterMenu()
-        }
-        popupView.findViewById<TextView>(R.id.popup_btn_develop).let { developEntry ->
-            if (BuildConfig.SHOW_DEVELOP_BUTTON) {
-                developEntry.visibility = View.VISIBLE
-                developEntry.setOnClickListener {
-                    popup.dismiss()
-                    showDevelopMenu()
-                }
-            } else {
-                developEntry.visibility = View.GONE
-                developEntry.setOnClickListener(null)
+        val testerEntry = popupView.findViewById<TextView>(R.id.popup_btn_testers)
+        val developEntry = popupView.findViewById<TextView>(R.id.popup_btn_develop)
+        val dividerMenuToTesters = popupView.findViewById<View>(R.id.popup_divider_menu_to_testers)
+        val dividerTestersToDevelop = popupView.findViewById<View>(R.id.popup_divider_testers_to_develop)
+        val showTesterEntry = BuildConfig.SHOW_TESTER_BUTTON
+        val showDevelopEntry = BuildConfig.SHOW_DEVELOP_BUTTON
+
+        if (showTesterEntry) {
+            testerEntry.visibility = View.VISIBLE
+            testerEntry.setOnClickListener {
+                popup.dismiss()
+                showTesterMenu()
             }
+        } else {
+            testerEntry.visibility = View.GONE
+            testerEntry.setOnClickListener(null)
         }
+
+        if (showDevelopEntry) {
+            developEntry.visibility = View.VISIBLE
+            developEntry.setOnClickListener {
+                popup.dismiss()
+                showDevelopMenu()
+            }
+        } else {
+            developEntry.visibility = View.GONE
+            developEntry.setOnClickListener(null)
+        }
+
+        dividerMenuToTesters.visibility = if (showTesterEntry || showDevelopEntry) View.VISIBLE else View.GONE
+        dividerTestersToDevelop.visibility = if (showTesterEntry && showDevelopEntry) View.VISIBLE else View.GONE
 
         // Show above the anchor button
         popupView.measure(
