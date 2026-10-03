@@ -979,6 +979,13 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         return min(wasteSize, settingLimit)
     }
 
+    private fun shouldRevealNextWasteCardWhileDragging(wasteSize: Int): Boolean {
+        return isDragging &&
+            dragStackType == StackType.WASTE &&
+            getVisibleWasteCardCount(wasteSize) == 1 &&
+            wasteSize >= 2
+    }
+
     private fun getWasteVisibleCardRect(visibleIndex: Int): RectF {
         val base = getWasteRect()
         val shift = getWasteFanOffsetX() * visibleIndex * getWasteFanDirection()
@@ -1335,8 +1342,18 @@ class GameBoardView(context: Context, attrs: AttributeSet?) : View(context, attr
         val wasteRect = getWasteRect()
         val waste = viewModel.game.value.waste
         if (!waste.isEmpty()) {
-            val visibleCount = getVisibleWasteCardCount(waste.size())
-            val visibleCards = waste.asList().takeLast(visibleCount)
+            val wasteCards = waste.asList()
+            val visibleCount = getVisibleWasteCardCount(wasteCards.size)
+
+            // In 1-card display mode, dragging the top waste card should temporarily reveal
+            // the next card underneath. This is view-only feedback; move rules/state stay unchanged.
+            if (shouldRevealNextWasteCardWhileDragging(wasteCards.size)) {
+                wasteCards.getOrNull(wasteCards.lastIndex - 1)?.let { nextCard ->
+                    drawCard(canvas, nextCard, wasteRect)
+                }
+            }
+
+            val visibleCards = wasteCards.takeLast(visibleCount)
             visibleCards.forEachIndexed { visibleIndex, card ->
                 val isTopVisible = visibleIndex == visibleCards.lastIndex
                 if (isDragging && dragStackType == StackType.WASTE && isTopVisible) return@forEachIndexed
